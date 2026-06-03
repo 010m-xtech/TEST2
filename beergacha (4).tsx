@@ -1,0 +1,329 @@
+import React, { useState, useMemo } from 'react';
+
+// --- 景品データ定義 ---
+const PRIZES = [
+  { 
+    id: 1, rank: '1等', name: 'ゴールドビール', desc: '華やかな香りと深いコク！', prob: 1, 
+    bg: 'bg-gradient-to-r from-yellow-400 to-yellow-600', text: 'text-yellow-100', border: 'border-yellow-300',
+    resultTitle: '1等おめでとう！', resultSub: '(1%の超奇跡！)', actionText: '店員に提示して特典ゲット！', actionColor: 'bg-green-600 hover:bg-green-500'
+  },
+  { 
+    id: 2, rank: '2等', name: 'シルクビール', desc: 'まろやかでなめらか', prob: 3, 
+    bg: 'bg-gradient-to-r from-slate-400 to-slate-600', text: 'text-white', border: 'border-slate-300',
+    resultTitle: '2等おめでとう！', resultSub: '(3%の幸運！)', actionText: '店員に提示して特典ゲット！', actionColor: 'bg-green-600 hover:bg-green-500'
+  },
+  { 
+    id: 3, rank: '3等', name: '速達生ビール', desc: 'いつもの最高鮮度！', prob: 8, 
+    bg: 'bg-gradient-to-r from-amber-600 to-amber-800', text: 'text-amber-100', border: 'border-amber-500',
+    resultTitle: '3等当たり！', resultSub: '美味しく飲んでね！', actionText: '店員に提示して特典ゲット！', actionColor: 'bg-green-600 hover:bg-green-500'
+  },
+  { 
+    id: 4, rank: 'ハズレ', name: '', desc: '', prob: 88, 
+    bg: 'bg-gradient-to-r from-zinc-800 to-zinc-950', text: 'text-zinc-500', border: 'border-zinc-700',
+    resultTitle: 'ハズレ！残念！', resultSub: '美味しいビールへの道は険しい...', actionText: '', actionColor: ''
+  }
+];
+
+// --- カスタムアニメーション用のCSS ---
+const customStyles = `
+@keyframes floatUp {
+  0% { transform: translateY(80px) scale(0.6); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px) rotate(-5deg); }
+  75% { transform: translateX(8px) rotate(5deg); }
+}
+@keyframes popZoom {
+  0% { transform: scale(0.5); opacity: 0; }
+  70% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes shine {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+/* 泡が真っ直ぐ画面上部まで昇るアニメーション */
+@keyframes riseUp {
+  0% { transform: translateY(100vh) scale(0.3); opacity: 0; }
+  10% { opacity: 0.8; }
+  90% { opacity: 0.8; }
+  100% { transform: translateY(-20vh) scale(1.5); opacity: 0; }
+}
+/* カプセルが開いた時の泡の飛び散り */
+@keyframes foamBurst {
+  0% { transform: translate(0, 0) scale(0); opacity: 0; }
+  20% { transform: translate(calc(var(--tx) * 0.3), calc(var(--ty) * 0.3)) scale(1.2); opacity: 1; }
+  100% { transform: translate(var(--tx), calc(var(--ty) - 50px)) scale(0); opacity: 0; }
+}
+.sunburst {
+  background: repeating-conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 10deg,
+    rgba(255, 255, 255, 0.4) 10deg,
+    rgba(255, 255, 255, 0.2) 20deg
+  );
+}
+.glass-highlight {
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+}
+`;
+
+// --- ビールグラスを描画するSVGコンポーネント ---
+const BeerGlass = ({ rank }) => {
+    const fillColors = {
+        '1等': ['#FEF08A', '#EAB308', '#A16207'],
+        '2等': ['#F8FAFC', '#E2E8F0', '#94A3B8'],
+        '3等': ['#FDE047', '#D97706', '#92400E'],
+        'ハズレ': ['#3f3f46', '#27272a', '#18181b'], 
+    };
+    const colors = fillColors[rank] || fillColors['3等'];
+
+    return (
+        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-xl overflow-visible">
+            <defs>
+                <linearGradient id={`grad-${rank}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor={colors[0]} />
+                    <stop offset="50%" stopColor={colors[1]} />
+                    <stop offset="100%" stopColor={colors[2]} />
+                </linearGradient>
+            </defs>
+            <path d="M75 40 C 100 40, 100 75, 75 75" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="6" strokeLinecap="round" />
+            <path d="M25 25 C 25 25, 20 85, 35 90 C 50 95, 60 95, 75 90 C 90 85, 85 25, 85 25 Z" fill={`url(#grad-${rank})`} stroke="rgba(255,255,255,0.6)" strokeWidth="3" />
+            <path d="M35 30 Q 30 60 40 85" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="4" strokeLinecap="round" />
+            {rank !== 'ハズレ' ? (
+                <>
+                    <path d="M20 25 Q 30 5 55 15 Q 75 5 90 25 Q 95 35 85 40 Q 55 45 25 40 Q 15 35 20 25 Z" fill="#FFFFFF" />
+                    <circle cx="35" cy="15" r="8" fill="#FFFFFF" />
+                    <circle cx="65" cy="12" r="10" fill="#FFFFFF" />
+                    <circle cx="50" cy="8" r="12" fill="#FFFFFF" />
+                    <path d="M 75 15 L 80 10 M 80 20 L 85 18 M 70 20 L 68 15" stroke="yellow" strokeWidth="2" strokeLinecap="round" />
+                </>
+            ) : (
+                <>
+                    <path d="M30 38 Q 45 35 60 38 Q 75 35 80 39 Q 55 42 30 38 Z" fill="#71717a" opacity="0.2" />
+                </>
+            )}
+        </svg>
+    );
+};
+
+// --- ガチャマシンのコンポーネント ---
+const GachaMachine = ({ onPlay }) => {
+    return (
+        <div className="flex flex-col items-center justify-center cursor-pointer group w-full h-[100dvh]" onClick={onPlay}>
+            {/* ユーザーが作成した画像をここに配置します。
+              実際の環境に合わせて、srcの画像パスを書き換えてご使用ください。
+            */}
+            <div className="relative w-full h-full transition-transform duration-300 group-hover:scale-[1.02] flex items-center justify-center">
+                <img 
+                    src="④ビールガチャ　本体案⑤　トラックあり　新鮮文字あり.jpg" 
+                    alt="速達生ビールガチャ" 
+                    className="w-full h-full max-h-[100dvh] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
+                    onError={(e) => {
+                        // プレビュー環境等で実際の画像が見つからない場合の代替画像
+                        e.target.onerror = null;
+                        e.target.src = "https://placehold.co/1080x1080/27272a/f59e0b?text=Tap+to+Start!%5Cn(Your+Image+Here)";
+                    }}
+                />
+                {/* ホバー時（カーソルを合わせた時）に少し光るエフェクト */}
+                <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300 pointer-events-none"></div>
+            </div>
+        </div>
+    );
+};
+
+// --- アニメーション用カプセルコンポーネント ---
+const Capsule = ({ isCracking }) => {
+    return (
+        <div className="relative w-48 h-48 md:w-64 md:h-64 z-10 animate-[floatUp_0.5s_ease-out_forwards]">
+            <div 
+                className={`absolute inset-0 bg-gradient-to-br from-yellow-200 to-amber-500 rounded-full border-4 border-white shadow-[inset_0_0_30px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-700 ease-out ${isCracking ? '-translate-x-16 -rotate-45 opacity-0' : ''}`} 
+                style={{ clipPath: 'polygon(0 0, 50% 0, 50% 100%, 0 100%)' }}
+            >
+                <div className="absolute top-0 w-full h-1/3 bg-white/80 filter blur-sm"></div>
+            </div>
+            <div 
+                className={`absolute inset-0 bg-gradient-to-br from-yellow-200 to-amber-500 rounded-full border-4 border-white shadow-[inset_0_0_30px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-700 ease-out ${isCracking ? 'translate-x-16 rotate-45 opacity-0' : ''}`} 
+                style={{ clipPath: 'polygon(50% 0, 100% 0, 100% 100%, 50% 100%)' }}
+            >
+                <div className="absolute top-0 w-full h-1/3 bg-white/80 filter blur-sm"></div>
+            </div>
+            
+            {!isCracking && (
+               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white text-amber-600 font-black text-4xl rounded-full w-16 h-16 flex items-center justify-center shadow-lg border-2 border-amber-300">
+                   ?
+               </div>
+            )}
+        </div>
+    );
+};
+
+// --- アプリケーションのメイン ---
+export default function App() {
+  const [stage, setStage] = useState('idle');
+  const [result, setResult] = useState(null);
+
+  // useMemoで泡のアニメーションプロパティを完全固定
+  const bubbles = useMemo(() => {
+    return Array.from({ length: 400 }).map((_, i) => {
+        const size = Math.random() * 20 + 5; 
+        const left = Math.random() * 100;
+        const duration = Math.random() * 4 + 2; 
+        const delay = Math.random() * -10; 
+        return { size, left, duration, delay };
+    });
+  }, []);
+
+  // カプセルバーストのパラメータを固定
+  const burstParticles = useMemo(() => {
+    return Array.from({ length: 40 }).map((_, i) => {
+        const angle = (Math.random() * 360) * (Math.PI / 180);
+        const distance = Math.random() * 200 + 80;
+        const tx = Math.cos(angle) * distance;
+        let ty = Math.sin(angle) * distance;
+        if (ty > 0) ty *= 0.4; 
+        const size = Math.random() * 30 + 10;
+        return { tx, ty, size };
+    });
+  }, []);
+
+  const drawPrize = () => {
+    const rand = Math.random() * 100;
+    let sum = 0;
+    for (const prize of PRIZES) {
+        sum += prize.prob;
+        if (rand <= sum) return prize;
+    }
+    return PRIZES[PRIZES.length - 1];
+  };
+
+  const handlePlay = () => {
+    if (stage !== 'idle') return;
+    
+    setResult(drawPrize());
+    setStage('shaking');
+    
+    setTimeout(() => {
+      setStage('cracking');
+      
+      setTimeout(() => {
+        setStage('result');
+      }, 600);
+    }, 1500); 
+  };
+
+  return (
+    <>
+      <style>{customStyles}</style>
+      
+      <div className="min-h-screen bg-gradient-to-br from-amber-950 via-zinc-900 to-black font-sans overflow-x-hidden relative selection:bg-amber-600 selection:text-white">
+        
+        {/* 背景に浮かぶ生ビールの泡のエフェクト */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+            {bubbles.map((bubble, i) => (
+                <div key={i}
+                     className="absolute bottom-0 bg-white/10 rounded-full border border-white/5 backdrop-blur-[1px]"
+                     style={{
+                         width: `${bubble.size}px`, height: `${bubble.size}px`, left: `${bubble.left}%`,
+                         animation: `riseUp ${bubble.duration}s linear infinite ${bubble.delay}s`
+                     }}
+                />
+            ))}
+            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-amber-500/10 rounded-full blur-[100px] mix-blend-overlay"></div>
+            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-amber-800/10 rounded-full blur-[120px] mix-blend-multiply"></div>
+        </div>
+
+        {/* メインビューポート（画面いっぱいに画像を表示） */}
+        <div className="w-full mx-auto flex flex-col items-center justify-center min-h-[100dvh] relative z-10">
+            <div className="w-full h-[100dvh] flex justify-center items-center">
+                <GachaMachine onPlay={handlePlay} />
+            </div>
+        </div>
+
+        {/* 演出用オーバーレイ */}
+        {stage !== 'idle' && (
+            <div className="fixed inset-0 bg-black/80 z-50 flex flex-col items-center justify-center p-4 backdrop-blur-md">
+                
+                {stage === 'shaking' && (
+                    <div className="flex flex-col items-center">
+                        <div className="animate-[shake_0.4s_ease-in-out_infinite]">
+                            <Capsule isCracking={false} />
+                        </div>
+                        <div className="mt-12 text-3xl md:text-5xl font-black text-white tracking-wider drop-shadow-[0_4px_15px_rgba(0,0,0,0.8)] animate-pulse" style={{ WebkitTextStroke: '2px #b45309', paintOrder: 'stroke fill' }}>
+                            何が出るかはお楽しみ！
+                        </div>
+                    </div>
+                )}
+
+                {stage === 'cracking' && (
+                    <div className="flex flex-col items-center relative">
+                        <div className="absolute top-1/2 left-1/2 w-full h-full z-20 pointer-events-none">
+                            {burstParticles.map((particle, i) => (
+                                <div key={`burst-${i}`}
+                                     className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 bg-white rounded-full shadow-sm"
+                                     style={{
+                                         width: `${particle.size}px`, height: `${particle.size}px`,
+                                         '--tx': `${particle.tx}px`, '--ty': `${particle.ty}px`,
+                                         animation: 'foamBurst 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards'
+                                     }}
+                                />
+                            ))}
+                        </div>
+                        <Capsule isCracking={true} />
+                    </div>
+                )}
+
+                {/* 抽選結果表示画面 */}
+                {stage === 'result' && result && (
+                    <div className="flex flex-col items-center justify-center w-full h-full overflow-y-auto py-8 animate-[popZoom_0.6s_cubic-bezier(0.175,0.885,0.32,1.275)_forwards]">
+                        <div className="absolute w-[150vw] h-[150vw] md:w-[100vw] md:h-[100vw] sunburst animate-[shine_20s_linear_infinite] -z-10 opacity-40"></div>
+                        
+                        <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10 mb-6 relative">
+                            <div className={`w-32 h-32 md:w-40 md:h-40 rounded-full border-8 ${result.border} flex flex-col items-center justify-center bg-zinc-950/95 shadow-[0_10px_40px_rgba(0,0,0,0.8)] relative z-10`}>
+                                <span className={`text-4xl md:text-5xl font-black ${result.text} drop-shadow-lg`}>{result.rank}</span>
+                                {result.rank !== 'ハズレ' && (
+                                    <span className="absolute -top-6 text-6xl drop-shadow-xl animate-bounce">👑</span>
+                                )}
+                            </div>
+                            
+                            <div className="w-48 h-48 md:w-64 md:h-64 filter drop-shadow-[0_20px_30px_rgba(0,0,0,0.8)] relative z-10 bg-white/5 rounded-3xl p-4 backdrop-blur-sm border border-white/10">
+                                <BeerGlass rank={result.rank} />
+                                <div className="absolute inset-0 bg-yellow-400 mix-blend-overlay animate-pulse rounded-full blur-xl opacity-20 pointer-events-none"></div>
+                            </div>
+                        </div>
+
+                        {result.rank !== 'ハズレ' && (
+                            <h2 className={`text-5xl md:text-7xl font-black mb-6 drop-shadow-[0_5px_10px_rgba(0,0,0,0.9)] ${result.text} tracking-tight text-center`} style={{ WebkitTextStroke: '2px #000', paintOrder: 'stroke fill' }}>
+                                {result.name}
+                            </h2>
+                        )}
+                        
+                        <div className="bg-zinc-900/90 px-8 py-4 md:px-12 md:py-6 rounded-2xl border-2 border-amber-500/30 text-center mb-10 backdrop-blur-md shadow-[0_15px_30px_rgba(0,0,0,0.8)] relative z-10 max-w-xl">
+                            <div className="text-3xl md:text-4xl font-black drop-shadow-md text-yellow-400">
+                                {result.resultTitle}
+                            </div>
+                            {result.resultSub && (
+                                <div className="text-lg md:text-xl font-bold text-zinc-300 mt-2">
+                                    {result.resultSub}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* 当たりの場合のみ：ボタンではなく、やり直しができない「提示用プレミアムバッジ」を表示して完全終了 */}
+                        {result.rank !== 'ハズレ' && (
+                            <div className="bg-gradient-to-r from-green-600 via-green-500 to-green-600 border-2 border-green-400 text-white text-xl md:text-2xl font-black py-4 px-10 md:px-16 rounded-full shadow-[0_4px_20px_rgba(34,197,94,0.4)] flex items-center gap-3 relative z-10 max-w-xl text-center select-none animate-pulse">
+                                <span className="text-3xl">🍺</span>
+                                <span>店員に提示して特典ゲット！</span>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+        )}
+      </div>
+    </>
+  );
+}
