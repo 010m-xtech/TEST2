@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>間違い探し</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { overflow: hidden; touch-action: none; background: #000; font-family: sans-serif; }
+    #game-container {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+    #game-container canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1 !important;
+    }
+    #ui-layer {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 10;
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+      pointer-events: none;
+    }
+    #start-overlay, #result-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      pointer-events: auto;
+    }
+    button {
+      padding: 15px 40px;
+      font-size: 24px;
+      font-weight: bold;
+      color: white;
+      background: #ff4757;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      transition: transform 0.1s;
+    }
+    button:active {
+      transform: scale(0.95);
+    }
+    h1 {
+      color: white;
+      margin-bottom: 30px;
+      font-size: 36px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+  </style>
+  <script id="dc-ui-texts" type="application/json">
+  {
+    "sourceLang": "ja",
+    "texts": {
+      "ja": {
+        "ui.start": "スタート",
+        "hud.found": "みつけた！ {found} / {total}",
+        "result.clear": "ぜんぶみつけた！",
+        "result.timeup": "タイムアップ！",
+        "ui.retry": "もういちど"
+      },
+      "en": {
+        "ui.start": "Start",
+        "hud.found": "Found: {found} / {total}",
+        "result.clear": "All Found!",
+        "result.timeup": "Time's up!",
+        "ui.retry": "Retry"
+      },
+      "zh": {
+        "ui.start": "开始",
+        "hud.found": "找到: {found} / {total}",
+        "result.clear": "全部找到！",
+        "result.timeup": "时间到！",
+        "ui.retry": "重试"
+      },
+      "ko": {
+        "ui.start": "시작",
+        "hud.found": "찾았다: {found} / {total}",
+        "result.clear": "모두 찾음!",
+        "result.timeup": "시간 종료!",
+        "ui.retry": "다시하기"
+      },
+      "es": {
+        "ui.start": "Empezar",
+        "hud.found": "Encontrado: {found} / {total}",
+        "result.clear": "¡Todos encontrados!",
+        "result.timeup": "¡Se acabó el tiempo!",
+        "ui.retry": "Reintentar"
+      },
+      "pt": {
+        "ui.start": "Começar",
+        "hud.found": "Encontrado: {found} / {total}",
+        "result.clear": "Todos Encontrados!",
+        "result.timeup": "Tempo esgotado!",
+        "ui.retry": "Tentar novamente"
+      }
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="game-container">
+    <div id="ui-layer">
+    </div>
+  </div>
+
+  <div id="start-overlay">
+    <button id="start-btn" style="display:none;"></button>
+  </div>
+
+  <div id="result-overlay" style="display:none;">
+    <h1 id="result-title"></h1>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.0/p5.min.js"></script>
+  <script>
+    // Clean non-breaking spaces from text content before parsing to avoid JSON syntax errors
+    const rawJSONText = document.getElementById('dc-ui-texts').textContent;
+    const cleanJSONText = rawJSONText.replace(/\u00A0/g, ' ');
+    const uiPayload = JSON.parse(cleanJSONText);
+    
+    const sourceLang = uiPayload.sourceLang || 'en';
+    const uiTexts = uiPayload.texts || {};
+    const savedLang = (localStorage.getItem('dreamcore_lang') || '').slice(0, 2);
+    const browserLang = (navigator.language || '').slice(0, 2);
+    const currentLang = uiTexts[savedLang] ? savedLang : (uiTexts[browserLang] ? browserLang : sourceLang);
+    
+    function t(key, vars) {
+      let s = (uiTexts[currentLang] && uiTexts[currentLang][key]) || (uiTexts[sourceLang] && uiTexts[sourceLang][key]) || key;
+      if (vars) Object.keys(vars).forEach(k => { s = s.replaceAll('{' + k + '}', String(vars[k])); });
+      return s;
+    }
+
+    class SynthAudio {
+      constructor() { this.ctx = null; }
+      init() {
+        if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+      }
+      play(freq, endFreq, duration, type = 'square', vol = 0.2) {
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(endFreq, this.ctx.currentTime + duration);
+        gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+        osc.start();
+        osc.stop(this.ctx.currentTime + duration);
+      }
+      playTimeUp() {
+        this.play(600, 400, 0.3, 'square', 0.2);
+        setTimeout(() => this.play(600, 400, 0.8, 'square', 0.2), 400);
+      }
+    }
+    const audio = new SynthAudio();
+    document.addEventListener('pointerdown', () => audio.init(), { once: true });
+
+    const VIRTUAL_WIDTH = 390;
+    const VIRTUAL_HEIGHT = 844;
+
+    let gameState = 'WAITING';
+    let img1 = null;
+    let img2 = null;
+
+    // タイマー用変数
+    const TIME_LIMIT = 30;
+    let timeLeft = TIME_LIMIT;
+    let timerStartTime = 0;
+
+    const sketch = (p) => {
+      let scale = 1, offsetX = 0, offsetY = 0;
+      let img1Info = null, img2Info = null;
+
+      p.preload = () => {
+        // 別のプロキシ(codetabs)に変更して試してみます
+        const img1Url = 'https://github.com/user-attachments/assets/1fb177df-d022-4290-8b46-5c2397f6dd8d';
+        const proxyUrl1 = 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(img1Url);
+        img1 = p.loadImage(proxyUrl1, null, () => img1 = null);
+        
+        const img2Url = 'https://github.com/user-attachments/assets/87ed7e87-2a28-4558-a174-6ddb5e109aed';
+        const proxyUrl2 = 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(img2Url);
+        img2 = p.loadImage(proxyUrl2, null, () => img2 = null);
+      };
+
+      p.setup = () => {
+        const canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+        canvas.parent('game-container');
+        p.imageMode(p.CENTER);
+        calculateScale();
+
+        document.getElementById('start-btn').innerText = t('ui.start');
+        document.getElementById('start-btn').style.display = 'block';
+        
+        document.getElementById('start-btn').addEventListener('click', () => {
+            document.getElementById('start-overlay').style.display = 'none';
+            gameState = 'PLAYING';
+            timerStartTime = p.millis();
+            timeLeft = TIME_LIMIT;
+            audio.init();
+        });
+      };
+
+      function calculateScale() {
+        const scaleX = p.windowWidth / VIRTUAL_WIDTH;
+        const scaleY = p.windowHeight / VIRTUAL_HEIGHT;
+        scale = Math.min(scaleX, scaleY);
+        offsetX = (p.windowWidth - VIRTUAL_WIDTH * scale) / 2;
+        offsetY = (p.windowHeight - VIRTUAL_HEIGHT * scale) / 2;
+      }
+
+      p.windowResized = () => {
+        p.resizeCanvas(p.windowWidth, p.windowHeight);
+        calculateScale();
+      };
+
+      function drawImageContain(img, boxX, boxY, boxW, boxH) {
+        if (!img) return null;
+        const imgRatio = img.width / img.height;
+        const boxRatio = boxW / boxH;
+        let drawW, drawH;
+        if (imgRatio > boxRatio) {
+          drawW = boxW;
+          drawH = boxW / imgRatio;
+        } else {
+          drawH = boxH;
+          drawW = boxH * imgRatio;
+        }
+        const drawX = boxX + boxW / 2;
+        const drawY = boxY + boxH / 2;
+        p.image(img, drawX, drawY, drawW, drawH);
+        return { x: drawX - drawW / 2, y: drawY - drawH / 2, w: drawW, h: drawH };
+      }
+
+      p.draw = () => {
+        p.background(10);
+
+        p.push();
+        p.translate(offsetX, offsetY);
+        p.scale(scale);
+
+        p.fill(20);
+        p.noStroke();
+        p.rect(0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
+
+        // 上画像 (IMG_3393)
+        if (img1) {
+          img1Info = drawImageContain(img1, 0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT / 2);
+        } else {
+          img1Info = { x: 20, y: 20, w: VIRTUAL_WIDTH - 40, h: VIRTUAL_HEIGHT / 2 - 40 };
+          p.fill(50); p.rect(img1Info.x, img1Info.y, img1Info.w, img1Info.h);
+        }
+
+        // 下画像 (IMG_3392)
+        if (img2) {
+          img2Info = drawImageContain(img2, 0, VIRTUAL_HEIGHT / 2, VIRTUAL_WIDTH, VIRTUAL_HEIGHT / 2);
+        } else {
+          img2Info = { x: 20, y: VIRTUAL_HEIGHT / 2 + 20, w: VIRTUAL_WIDTH - 40, h: VIRTUAL_HEIGHT / 2 - 40 };
+          p.fill(50); p.rect(img2Info.x, img2Info.y, img2Info.w, img2Info.h);
+        }
+
+        // 区切り線
+        p.stroke(40);
+        p.strokeWeight(4);
+        p.line(0, VIRTUAL_HEIGHT / 2, VIRTUAL_WIDTH, VIRTUAL_HEIGHT / 2);
+
+        // タイマー処理と描画
+        if (gameState === 'PLAYING') {
+          let elapsed = (p.millis() - timerStartTime) / 1000;
+          timeLeft = Math.max(0, TIME_LIMIT - elapsed);
+          
+          // 時間切れ処理
+          if (timeLeft === 0) {
+            gameState = 'TIMEUP';
+            audio.playTimeUp();
+            setTimeout(() => {
+              document.getElementById('result-title').innerText = t('result.timeup');
+              document.getElementById('result-overlay').style.display = 'flex';
+            }, 1000);
+          }
+        }
+
+        // タイマーUI表示
+        if (gameState !== 'WAITING') {
+          p.push();
+          p.translate(VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT / 2);
+          p.fill(0, 0, 0, 180);
+          p.noStroke();
+          p.rectMode(p.CENTER);
+          p.rect(0, 0, 100, 50, 25);
+
+          p.fill(255);
+          p.textSize(32);
+          p.textAlign(p.CENTER, p.CENTER);
+          p.textStyle(p.BOLD);
+          
+          // 残り10秒以下で点滅
+          if (timeLeft <= 10 && timeLeft > 0 && gameState === 'PLAYING') {
+            if (Math.floor(p.millis() / 250) % 2 === 0) {
+              p.fill(255, 71, 87);
+            }
+          }
+          p.text(Math.ceil(timeLeft), 0, 2);
+          p.pop();
+        }
+
+        p.pop();
+      };
+    };
+
+    new p5(sketch);
+  </script>
+</body>
+</html>
