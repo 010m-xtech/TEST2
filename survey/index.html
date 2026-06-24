@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ゲームアンケート202607アプリ</title>
+    <style>
+        body { font-family: sans-serif; background: #fff8e1; text-align: center; padding: 20px; color: #333; }
+        .container { background: white; padding: 20px; border-radius: 15px; max-width: 450px; margin: 0 auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .hidden { display: none !important; }
+        .q-title { font-weight: bold; margin-top: 20px; display: block; text-align: left; }
+        label { display: block; text-align: left; margin: 8px 0; cursor: pointer; }
+        textarea, select, input[type="number"] { width: 100%; box-sizing: border-box; padding: 10px; margin-top: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 1em; background-color: #fff; }
+        textarea { height: 60px; }
+        
+        select:invalid { color: #777; }
+        select option { color: #333; }
+        select option[value=""] { color: #777; }
+
+        .submit-trigger-btn { width: 100%; padding: 15px; margin-top: 30px; background: #ffc107; border: none; border-radius: 30px; font-weight: bold; cursor: pointer; font-size: 1.1em; color: #333; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
+        .submit-trigger-btn:hover { background: #ffb300; }
+        
+        .game-link-btn { display: block; width: 100%; box-sizing: border-box; text-decoration: none; padding: 15px; margin-top: 15px; background: #ff9800; color: white; border-radius: 30px; font-weight: bold; font-size: 1.1em; text-align: center; transition: background 0.2s; border: none; cursor: pointer; font-family: sans-serif; }
+        .game-link-btn:hover { background: #e65100; }
+
+        .notice-text { font-size: 10px; color: #777; text-align: left; margin-top: 30px; line-height: 1.4; border-top: 1px dashed #ddd; padding-top: 10px; }
+        .loading-text { font-size: 1.1em; font-weight: bold; color: #ff9800; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="survey-fields-container">
+        <h2>今後の部屋改装の参考に<br>4つだけ教えてください</h2>
+
+        <span class="q-title">1. あなたの性別を教えてください</span>
+        <select id="gender" required>
+            <option value="" disabled selected hidden>性別を選択してください</option>
+            <option value="男性">男性</option>
+            <option value="女性">女性</option>
+        </select>
+
+        <span class="q-title">2. あなたの年代を教えてください</span>
+        <select id="age" required>
+            <option value="" disabled selected hidden>年代を選択してください</option>
+            <option value="10代・未満">10代・未満</option>
+            <option value="20代">20代</option>
+            <option value="30代">30代</option>
+            <option value="40代">40代</option>
+            <option value="50代">50代</option>
+            <option value="60代以上">60代以上</option>
+        </select>
+
+        <span class="q-title">3. 今一緒に食事（お酒）をしている人数を教えてください</span>
+        <select id="guests" required>
+            <option value="" disabled selected hidden>人数を選択してください</option>
+            <option value="1人（ソロ）">1人（ソロ）</option>
+            <option value="2人">2人</option>
+            <option value="3人以上">3人以上</option>
+        </select>
+
+        <span class="q-title">4. 普段ゲームに求めるものは何ですか？</span>
+        <select id="comment" required>
+            <option value="" disabled selected hidden>あてはまるものを選択してください</option>
+            <option value="自分のこだわりやセンスを表現したい">自分のこだわりやセンスを表現したい</option>
+            <option value="何も考えずに暇つぶしをしたい">何も考えずに暇つぶしをしたい</option>
+            <option value="他のプレイヤーとスコアを競いたい">他のプレイヤーとスコアを競いたい</option>
+            <option value="その他">その他</option>
+        </select>
+        
+        <button type="button" id="survey-submit-btn" class="submit-trigger-btn" onclick="submitSurveyAndShowGames()">アンケートに回答してゲームに挑戦</button>
+    </div>
+
+    <div id="loading-container" class="hidden">
+        <p class="loading-text">アンケートを送信しています...</p>
+    </div>
+
+    <div id="game-list-container" class="hidden">
+        <h2>ご協力ありがとうございました！<br>好きなゲームを選んでね</h2>
+        <button class="game-link-btn" style="background: #e73c84;" onclick="clickGameLog('深夜2時のカクテルダイアリー', 'https://010m-xtech.github.io/minigame/aishouranai/')">🍸 深夜2時のカクテルダイアリー</button>
+        <button class="game-link-btn" style="background: #00aa6e;" onclick="clickGameLog('背徳のギルティフロート', 'https://010m-xtech.github.io/minigame/aishouranai/')">🍦 背徳のギルティ・フロート</button>
+        <button class="game-link-btn" style="background: #ff9800;" onclick="clickGameLog('孤高のグルメ・トッピングギガ', 'https://010m-xtech.github.io/lab202607/slidingpuzzle/')">🍜 ラーメン・トッピング・ギガ</button>
+        <button class="game-link-btn" style="background: #00aa6e;" onclick="clickGameLog('AR撮影', 'https://010m-xtech.github.io/minigame/aishouranai/')">📸 AR撮影 トラックを持ち上げろ</button>
+    </div>
+
+    <div class="notice-text">
+        ※当システムではローカルストレージを使用しこのアプリ専用の識別番号を発行しています。個人を特定する情報は一切取得いたしません。
+    </div>
+</div>
+
+<script>
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxu3L57d4yrM1Slz9IhxXfLfCrnMw-vc1f3I_KVc19527c6cxiGczUusYz8crvhR8jy/exec"; 
+
+    let deviceId = ""; 
+
+    // ログ送信用
+    async function sendStepLog(stepName) {
+        try {
+            await fetch(GAS_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ type: "log", step: stepName, deviceId: deviceId })
+            });
+        } catch (e) { console.error(e); }
+    }
+
+    // アクセス時
+    window.onload = () => {
+        let savedId = localStorage.getItem('beer_app_device_id');
+        if (!savedId) {
+            savedId = 'dev_' + Date.now() + '_' + Math.random().toString(36).substring(2, 11);
+            localStorage.setItem('beer_app_device_id', savedId);
+        }
+        deviceId = savedId; 
+
+        sendStepLog("①URLアクセス");
+    };
+
+    // アンケート送信処理
+    async function submitSurveyAndShowGames() {
+        const gender = document.getElementById('gender').value;
+        const age = document.getElementById('age').value;
+        const guests = document.getElementById('guests').value;
+        const comment = document.getElementById('comment').value.trim();
+
+        if (!gender || !age || !guests || !comment) {
+            alert("未入力の項目があります。すべてのアンケートにお答えください。");
+            return;
+        }
+
+        document.getElementById('survey-submit-btn').disabled = true;
+        document.getElementById('survey-fields-container').classList.add('hidden');
+        document.getElementById('loading-container').classList.remove('hidden');
+
+        const surveyData = {
+            type: "survey", 
+            gender: gender,   
+            age: age,   
+            guests: guests,   
+            comment: comment,
+            deviceId: deviceId 
+        };
+        
+        try {
+            await fetch(GAS_URL, { 
+                method: "POST", 
+                mode: "no-cors", 
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(surveyData) 
+            });
+        } catch (e) { 
+            console.error(e); 
+        }
+
+        // 送信完了後に画面切り替え
+        document.getElementById('loading-container').classList.add('hidden');
+        document.getElementById('game-list-container').classList.remove('hidden');
+    }
+
+    // ゲームクリック時のログ送信と画面遷移
+    async function clickGameLog(gameName, targetUrl) {
+        // ログの消失を防ぐため、送信処理の完了を待つか、ごくわずかな遅延を挟みます
+        await sendStepLog(`②ゲーム選択(${gameName})`); 
+        
+        // 外部への通信がブラウザ側でリセットされるのを防ぐため、一瞬待ってから遷移
+        setTimeout(() => {
+            window.location.href = targetUrl;
+        }, 200);
+    }
+</script>
+</body>
+</html>
