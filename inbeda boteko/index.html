@@ -9,10 +9,16 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        body {
+        /* HTMLとBODY全体を画面に強制固定 */
+        html, body {
             margin: 0;
             padding: 0;
+            width: 100%;
+            height: 100%;
             overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
             background-color: #05050f; /* 深い宇宙の黒 */
             color: #e2e8f0;
             font-family: 'Rajdhani', sans-serif;
@@ -20,8 +26,6 @@
             letter-spacing: 2px;
             user-select: none;
             -webkit-user-select: none;
-            width: 100vw;
-            height: 100vh;
         }
         
         .panel {
@@ -75,21 +79,21 @@
         }
     </style>
 </head>
-<body class="bg-[#05050f] overflow-hidden m-0 p-0 w-full h-full relative">
+<body class="bg-[#05050f]">
 
-    <!-- キャンバス (絶対配置で背景に固定) -->
-    <canvas id="gameCanvas" style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; display: block;"></canvas>
+    <!-- キャンバス (画面に強制固定) -->
+    <canvas id="gameCanvas" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; display: block; background-color: #05050f;"></canvas>
     
-    <!-- ボスHPバー -->
-    <div id="bossHpContainer" style="position: absolute; top: 30px; left: 50%; transform: translateX(-50%); width: 60%; height: 12px; border: 1px solid #475569; background: rgba(0, 0, 0, 0.8); display: none; overflow: hidden; box-shadow: 0 0 15px rgba(239, 68, 68, 0.6); border-radius: 6px; z-index: 30;">
+    <!-- ボスHPバー (画面に強制固定) -->
+    <div id="bossHpContainer" style="position: fixed; top: 30px; left: 50%; transform: translateX(-50%); width: 60%; height: 12px; border: 1px solid #475569; background: rgba(0, 0, 0, 0.8); display: none; overflow: hidden; box-shadow: 0 0 15px rgba(239, 68, 68, 0.6); border-radius: 6px; z-index: 30;">
         <div id="bossHpBar" style="width: 100%; height: 100%; background: linear-gradient(90deg, #ef4444, #f87171); transition: width 0.1s linear;"></div>
     </div>
     
-    <!-- 警告メッセージ -->
-    <div id="warning" style="position: absolute; top: 35%; left: 0; width: 100%; text-align: center; font-size: 2.5rem; font-weight: bold; color: #ef4444; letter-spacing: 10px; text-shadow: 0 0 15px #ef4444, 0 0 30px #dc2626; animation: glitchBlink 0.3s infinite alternate; display: none; z-index: 30;">きけん：ボスがちかづいているぞ！</div>
+    <!-- 警告メッセージ (画面に強制固定) -->
+    <div id="warning" style="position: fixed; top: 35%; left: 0; width: 100%; text-align: center; font-size: 2.5rem; font-weight: bold; color: #ef4444; letter-spacing: 10px; text-shadow: 0 0 15px #ef4444, 0 0 30px #dc2626; animation: glitchBlink 0.3s infinite alternate; display: none; z-index: 30;">きけん：ボスがちかづいているぞ！</div>
 
-    <!-- UIレイヤー (絶対配置でキャンバスの上に被せる) -->
-    <div id="uiLayer" style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 20;">
+    <!-- UIレイヤー (画面に強制固定して中央揃え) -->
+    <div id="uiLayer" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 20;">
         
         <!-- スタート画面 -->
         <div id="startPanel" class="panel">
