@@ -89,11 +89,12 @@
 </div>
 
 <script>
+    // 【重要】ステップ3で取得するご自身のGASのURLに差し替えてください
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxu3L57d4yrM1Slz9IhxXfLfCrnMw-vc1f3I_KVc19527c6cxiGczUusYz8crvhR8jy/exec"; 
 
     let deviceId = ""; 
 
-    // ログ送信用
+    // ②アクセスログシートへの送信処理
     async function sendStepLog(stepName) {
         try {
             await fetch(GAS_URL, {
@@ -105,7 +106,7 @@
         } catch (e) { console.error(e); }
     }
 
-    // アクセス時
+    // アクセス時に端末IDを発行して、アクセスログに記録
     window.onload = () => {
         let savedId = localStorage.getItem('beer_app_device_id');
         if (!savedId) {
@@ -117,7 +118,7 @@
         sendStepLog("①URLアクセス");
     };
 
-    // アンケート送信処理
+    // アンケート回答時の送信処理（この時点ではゲームは未選択）
     async function submitSurveyAndShowGames() {
         const gender = document.getElementById('gender').value;
         const age = document.getElementById('age').value;
@@ -133,40 +134,55 @@
         document.getElementById('survey-fields-container').classList.add('hidden');
         document.getElementById('loading-container').classList.remove('hidden');
 
-        const surveyData = {
-            type: "survey", 
-            gender: gender,   
-            age: age,   
-            guests: guests,   
-            comment: comment,
-            deviceId: deviceId 
-        };
-        
-        try {
-            await fetch(GAS_URL, { 
-                method: "POST", 
-                mode: "no-cors", 
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(surveyData) 
-            });
-        } catch (e) { 
-            console.error(e); 
-        }
+        // 一時的にブラウザ（ローカルストレージ）にアンケート内容を保存（後でゲーム名と合体させるため）
+        const tempSurvey = { gender, age, guests, comment };
+        localStorage.setItem('temp_survey_data', JSON.stringify(tempSurvey));
 
-        // 送信完了後に画面切り替え
+        // アクセスログシートに「アンケート回答完了（ゲーム選択待ち）」を記録
+        await sendStepLog("②アンケート回答完了");
+
+        // 画面をゲーム一覧に切り替え
         document.getElementById('loading-container').classList.add('hidden');
         document.getElementById('game-list-container').classList.remove('hidden');
     }
 
-    // ゲームクリック時のログ送信と画面遷移
+    // ゲーム選択時の処理（①アンケートシートに完全なデータを送信 ＆ ②アクセスログを記録）
     async function clickGameLog(gameName, targetUrl) {
-        // ログの消失を防ぐため、送信処理の完了を待つか、ごくわずかな遅延を挟みます
-        await sendStepLog(`②ゲーム選択(${gameName})`); 
+        // ローカルストレージから先ほど回答したアンケートデータを取得
+        const tempSurveyStr = localStorage.getItem('temp_survey_data');
         
-        // 外部への通信がブラウザ側でリセットされるのを防ぐため、一瞬待ってから遷移
+        if (tempSurveyStr) {
+            const tempSurvey = JSON.parse(tempSurveyStr);
+            
+            // ①アンケートシートへ送るデータを作成
+            const surveyData = {
+                type: "survey", 
+                gender: tempSurvey.gender,   
+                age: tempSurvey.age,   
+                guests: tempSurvey.guests,   
+                comment: tempSurvey.comment,
+                game: gameName, // 選択されたゲーム名
+                deviceId: deviceId 
+            };
+
+            // ①アンケートシートへの送信を非同期で実行
+            try {
+                await fetch(GAS_URL, { 
+                    method: "POST", 
+                    mode: "no-cors", 
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(surveyData) 
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        // ②アクセスログシートへ「ゲーム選択」を記録
+        await sendStepLog(`③ゲーム選択(${gameName})`); 
+        
+        // データの送信損失を防ぐため、一瞬待ってからゲーム画面へ遷移
         setTimeout(() => {
             window.location.href = targetUrl;
-        }, 200);
+        }, 250);
     }
 </script>
 </body>
