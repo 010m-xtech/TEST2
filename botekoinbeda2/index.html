@@ -130,27 +130,17 @@
                 </span>
             </div>
         </div>
+
+        <!-- 不正操作エラー画面 -->
+        <div id="errorPanel" class="panel hidden">
+            <h1 class="text-3xl mb-4 text-red-500 font-bold tracking-widest" style="text-shadow: 0 0 10px rgba(239,68,68,0.5);">🚫不正な操作</h1>
+            <p class="text-sm text-slate-300 leading-relaxed">
+                戻るボタンなどの操作が検出されました。<br>複数回のプレイはできません。
+            </p>
+        </div>
     </div>
 
     <script>
-        // === プレイ履歴のチェックとリセット処理 ===
-        const ALLOWED_URL = "https://010m-xtech.github.io/TEST2/boteko/";
-        
-        // 指定のURLから遷移してきた（リファラが一致する）場合はプレイ履歴を消去
-        if (document.referrer.startsWith(ALLOWED_URL)) {
-            localStorage.removeItem('spaceSurvivorPlayed');
-        }
-
-        const startContent = document.getElementById('startContent');
-        const playedContent = document.getElementById('playedContent');
-
-        // プレイ済みかどうかでスタート画面の表示を切り替える
-        if (localStorage.getItem('spaceSurvivorPlayed') === 'true') {
-            startContent.classList.add('hidden');
-            playedContent.classList.remove('hidden');
-        }
-        // =====================================
-
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         
@@ -158,10 +148,76 @@
         const startPanel = document.getElementById('startPanel');
         const gameOverPanel = document.getElementById('gameOverPanel');
         const gameClearPanel = document.getElementById('gameClearPanel');
+        const errorPanel = document.getElementById('errorPanel');
         const startBtn = document.getElementById('startBtn');
         const bossHpContainer = document.getElementById('bossHpContainer');
         const bossHpBar = document.getElementById('bossHpBar');
         const warningDisplay = document.getElementById('warning');
+
+        let gameState = 'START';
+        let gamePhase = 1;
+        let gameTime = 0;
+        let lastTime = 0;
+        let animationId;
+
+        // === リセマラ防止・セキュリティロジック ===
+
+        function showCheatError() {
+            startPanel.classList.add('hidden');
+            gameOverPanel.classList.add('hidden');
+            gameClearPanel.classList.add('hidden');
+            bossHpContainer.style.display = 'none';
+            warningDisplay.style.display = 'none';
+            errorPanel.classList.remove('hidden');
+            
+            gameState = 'ERROR';
+            if (animationId) cancelAnimationFrame(animationId);
+        }
+
+        // 2-c) Performance APIチェック (戻る/進むでアクセスされたか)
+        const navEntries = performance.getEntriesByType("navigation");
+        if (navEntries.length > 0 && navEntries[0].type === 'back_forward') {
+            showCheatError();
+        }
+
+        // 2-a) history APIによる戻る検知
+        history.pushState(null, null, location.href);
+        window.addEventListener('popstate', function() {
+            showCheatError();
+        });
+
+        // 2-b) pageshow (BFCache) による戻る検知
+        window.addEventListener('pageshow', function(e) {
+            if (e.persisted) {
+                showCheatError();
+            }
+        });
+
+        // 3) 指定URLからのアクセス時のみリセット（セッション管理）
+        const TARGET_URL_PART = "010m-xtech.github.io/TEST2/boteko2";
+        const currentUrl = window.location.href;
+        const referrer = document.referrer;
+
+        if (currentUrl.includes(TARGET_URL_PART) || referrer.includes(TARGET_URL_PART)) {
+            if (!sessionStorage.getItem('hasResetThisSession')) {
+                localStorage.removeItem('spaceSurvivorResult');
+                sessionStorage.setItem('hasResetThisSession', 'true');
+            }
+        }
+
+        // 1) 結果の永続保存と復元
+        const savedResult = localStorage.getItem('spaceSurvivorResult');
+        if (savedResult && gameState !== 'ERROR') {
+            startPanel.classList.add('hidden');
+            if (savedResult === 'CLEAR') {
+                gameClearPanel.classList.remove('hidden');
+            } else {
+                // 'GAMEOVER' または 'PLAYING' (途中でリロード等) はゲームオーバー扱い
+                localStorage.setItem('spaceSurvivorResult', 'GAMEOVER');
+                gameOverPanel.classList.remove('hidden');
+            }
+        }
+        // =====================================
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
@@ -170,12 +226,6 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        let gameState = 'START';
-        let gamePhase = 1;
-        let gameTime = 0;
-        let lastTime = 0;
-        let animationId;
-        
         // アイテムと出現フラグの管理
         let shouldSpawnItem = false;
         let powerUpItem = null;
@@ -713,8 +763,8 @@
         }
 
         function initGame() {
-            // ゲーム開始時にプレイ済みのフラグを保存する
-            localStorage.setItem('spaceSurvivorPlayed', 'true');
+            // ゲーム開始時にプレイ状態を保存する（途中で逃げた場合もゲームオーバーにするため）
+            localStorage.setItem('spaceSurvivorResult', 'PLAYING');
 
             shouldSpawnItem = true; 
             
@@ -748,6 +798,7 @@
 
         function gameOver() {
             gameState = 'GAMEOVER';
+            localStorage.setItem('spaceSurvivorResult', 'GAMEOVER');
             createExplosion(player.x, player.y, '#38bdf8', 50); 
             
             setTimeout(() => {
@@ -759,6 +810,7 @@
         
         function gameClear() {
             gameState = 'CLEAR';
+            localStorage.setItem('spaceSurvivorResult', 'CLEAR');
             setTimeout(() => {
                 cancelAnimationFrame(animationId);
                 gameClearPanel.classList.remove('hidden');
@@ -778,6 +830,7 @@
         }
 
         function animate(timestamp) {
+            if (gameState === 'ERROR') return;
             if (gameState === 'GAMEOVER' && particles.length === 0) return;
             if (gameState === 'CLEAR' && particles.length === 0) return;
 
