@@ -15,6 +15,7 @@
 <body class="bg-black select-none" style="-webkit-tap-highlight-color: transparent;">
     <div id="root"></div>
 
+    <!-- data-type="module" を削除し、より安定して動作するように修正 -->
     <script type="text/babel" data-presets="react">
         const { useState, useMemo, useEffect } = React;
 
@@ -23,7 +24,7 @@
           { 
             id: 1, rank: '大当たり', name: '', desc: '', prob: 15, 
             bg: 'bg-gradient-to-r from-yellow-400 to-yellow-600', text: 'text-yellow-400', border: 'border-yellow-300',
-            resultTitle: '大当たり！！おめでとう！', resultSub: '今日はいいことありそうだね♪',
+            resultTitle: '大当たり！！\nおめでとう！', resultSub: '今日はいいことありそうだね♪',
             imgUrl: 'https://i.postimg.cc/zvKxRHM9/hua-xiang5.png'
           },
           { 
@@ -195,38 +196,41 @@
         };
 
         // --- アプリケーションのメイン ---
+        const STORAGE_KEY = 'beerGachaResult';
+
         const App = () => {
           const [stage, setStage] = useState('idle');
           const [result, setResult] = useState(null);
+          const [isAlreadyPlayed, setIsAlreadyPlayed] = useState(false);
 
-          // 初回ロード時にプレイ履歴とリセット条件を確認
           useEffect(() => {
-              const urlParams = new URLSearchParams(window.location.search);
-              const referrer = document.referrer;
-              
-              // 特定のURLから遷移してきたか、またはURLパラメータに ?reset=1 があるかを判定
-              const isReset = referrer.includes('010m-xtech.github.io/TEST2/boteko2/') || urlParams.get('reset') === '1';
+            const privilegedUrl = '010m-xtech.github.io/TEST2/boteko2';
+            const currentUrl = window.location.href;
+            const referrer = document.referrer;
+            
+            // 指定URL経由のアクセスで、かつ「#played」フラグが付いていない場合を新規アクセスとみなす
+            const isNewPrivilegedAccess = (currentUrl.includes(privilegedUrl) || referrer.includes(privilegedUrl)) 
+                                          && !currentUrl.includes('#played');
 
-              if (isReset) {
-                  // リセット条件を満たした場合は記録を消去して再度遊べるようにする
-                  localStorage.removeItem('beerGachaResult');
-                  // リロード時に再度リセットされないよう、URLパラメータを消去
-                  if (urlParams.get('reset')) {
-                      window.history.replaceState({}, document.title, window.location.pathname);
-                  }
-              } else {
-                  // 記録が残っている場合は、前回の結果を復元していきなり結果画面を表示する
-                  const savedResult = localStorage.getItem('beerGachaResult');
-                  if (savedResult) {
-                      try {
-                          const parsedResult = JSON.parse(savedResult);
-                          setResult(parsedResult);
-                          setStage('result');
-                      } catch (e) {
-                          localStorage.removeItem('beerGachaResult');
-                      }
-                  }
+            if (isNewPrivilegedAccess) {
+              // 新規アクセスの場合は過去のセーブデータを消去（再度遊べるようにする）
+              localStorage.removeItem(STORAGE_KEY);
+              // その後リロードした際に再度リセットされるのを防ぐため、URLの末尾に #played を付与
+              window.history.replaceState(null, '', currentUrl.split('#')[0] + '#played');
+            }
+
+            // 保存された結果があるかチェック
+            const savedResult = localStorage.getItem(STORAGE_KEY);
+            if (savedResult) {
+              try {
+                const parsedResult = JSON.parse(savedResult);
+                setResult(parsedResult);
+                setStage('result'); // プレイ済みならいきなり結果画面へ
+                setIsAlreadyPlayed(true);
+              } catch (e) {
+                console.error("結果の復元に失敗しました", e);
               }
+            }
           }, []);
 
           const bubbles = useMemo(() => {
@@ -264,12 +268,13 @@
           const handlePlay = () => {
             if (stage !== 'idle') return;
             
-            const drawnPrize = drawPrize();
-            setResult(drawnPrize);
-            setStage('shaking');
+            const drawnResult = drawPrize();
+            setResult(drawnResult);
+
+            // ガチャを引いたら結果を必ず保存する
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(drawnResult));
             
-            // 引いた結果をブラウザに保存する（再読み込み・戻るボタン対策）
-            localStorage.setItem('beerGachaResult', JSON.stringify(drawnPrize));
+            setStage('shaking');
             
             setTimeout(() => {
               setStage('cracking');
@@ -344,11 +349,16 @@
                         {/* 抽選結果表示画面 */}
                         {stage === 'result' && result && (
                             <div className="flex flex-col items-center justify-center w-full h-full overflow-y-auto py-8 animate-[popZoom_0.6s_cubic-bezier(0.175,0.885,0.32,1.275)_forwards]">
+                                {isAlreadyPlayed && (
+                                    <div className="absolute top-4 md:top-8 bg-zinc-800/90 text-white font-bold px-6 py-3 rounded-full shadow-lg z-50 border-2 border-red-500 animate-pulse text-sm md:text-base backdrop-blur-sm">
+                                        ⚠️ すでにプレイ済みです（前回の結果です）
+                                    </div>
+                                )}
                                 <div className="absolute w-[150vw] h-[150vw] md:w-[100vw] md:h-[100vw] sunburst animate-[shine_20s_linear_infinite] -z-10 opacity-40"></div>
                                 
                                 <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10 mb-6 relative">
-                                    <div className={`w-32 h-32 md:w-40 md:h-40 rounded-full border-8 ${result.border} flex flex-col items-center justify-center bg-zinc-950/95 shadow-[0_10px_40px_rgba(0,0,0,0.8)] relative z-10`}>
-                                        <span className={`text-3xl md:text-4xl font-black ${result.text} drop-shadow-lg`}>{result.rank}</span>
+                                    <div className={`w-36 h-36 md:w-40 md:h-40 shrink-0 rounded-full border-8 ${result.border} flex flex-col items-center justify-center bg-zinc-950/95 shadow-[0_10px_40px_rgba(0,0,0,0.8)] relative z-10`}>
+                                        <span className={`text-2xl md:text-3xl font-black ${result.text} drop-shadow-lg whitespace-nowrap`}>{result.rank}</span>
                                         {result.rank !== 'はずれ' && (
                                             <span className="absolute -top-6 text-6xl drop-shadow-xl animate-bounce">👑</span>
                                         )}
@@ -378,8 +388,8 @@
                                     </h2>
                                 )}
                                 
-                                <div className="bg-zinc-900/90 px-8 py-4 md:px-12 md:py-6 rounded-2xl border-2 border-amber-500/30 text-center mb-10 backdrop-blur-md shadow-[0_15px_30px_rgba(0,0,0,0.8)] relative z-10 max-w-xl">
-                                    <div className="text-3xl md:text-4xl font-black drop-shadow-md text-yellow-400">
+                                <div className="bg-zinc-900/90 px-6 py-4 md:px-12 md:py-6 rounded-2xl border-2 border-amber-500/30 text-center mb-10 backdrop-blur-md shadow-[0_15px_30px_rgba(0,0,0,0.8)] relative z-10 max-w-xl mx-4">
+                                    <div className="text-2xl md:text-4xl font-black drop-shadow-md text-yellow-400 whitespace-pre-wrap leading-snug">
                                         {result.resultTitle}
                                     </div>
                                     
@@ -406,6 +416,7 @@
           );
         };
 
+        // Reactコンポーネントを画面に描画する
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
