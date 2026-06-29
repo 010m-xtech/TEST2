@@ -78,7 +78,7 @@
         <span class="q-title">2. 飲んだ感想やお店へのメッセージを教えてください</span>
         <textarea id="comment" placeholder="感想をメッセージお聞かせください"></textarea>
         
-        <p class="survey-guide-text">アンケートに回答したらゲームに挑戦</p>
+        <p class="survey-guide-text" id="guide-text">アンケートに回答したらゲームに挑戦</p>
         
         <div>
             <button class="game-link-btn" disabled onclick="submitAndRedirect('速達生ガチャ', 'https://010m-xtech.github.io/TEST2/gachaboteko/')">速達生ガチャ</button>
@@ -98,9 +98,25 @@
     const GAS_URL = "https://script.google.com/macros/s/AKfycby3kedbIZhyhUTAFaLnl04ME9VmyjXRs6NgNXbFz2jxHrger9frn0u6AALvH2RzLFR2eA/exec"; 
 
     let deviceId = ""; 
+    let hasPlayed = false; // プレイ済みフラグ
 
     // 入力状態を監視してボタンの有効/無効を切り替える関数
     function checkFormValidity() {
+        const guideText = document.getElementById('guide-text');
+        const btns = document.querySelectorAll('.game-link-btn');
+
+        // プレイ済みの場合はボタンを無効化して終了
+        if (hasPlayed) {
+            guideText.innerText = "※すでにゲームをプレイ済みです。再度遊ぶことはできません。";
+            guideText.style.color = "red";
+            btns.forEach(btn => btn.disabled = true);
+            return;
+        }
+
+        // 未プレイの場合は通常の案内テキストに戻す
+        guideText.innerText = "アンケートに回答したらゲームに挑戦";
+        guideText.style.color = "#333";
+
         const genderValue = document.getElementById('gender').value;
         const ageValue = document.getElementById('age').value;
         const guestsValue = document.getElementById('guests').value;
@@ -112,11 +128,24 @@
         const isValid = genderValue && ageValue && guestsValue && relationValue && scoreValue && commentValue !== "";
 
         // 全てのゲームリンクボタンの状態を更新
-        const btns = document.querySelectorAll('.game-link-btn');
         btns.forEach(btn => {
             btn.disabled = !isValid;
         });
     }
+
+    // ページが表示されるたびに実行（「戻る」ボタンでキャッシュから復元された時も含む）
+    window.addEventListener('pageshow', function() {
+        // ローカルストレージからプレイ済みフラグを取得
+        hasPlayed = localStorage.getItem('beer_app_played') === 'true';
+
+        // 特定のURLから遷移してきた場合はフラグをリセットする
+        if (document.referrer.includes('010m-xtech.github.io/TEST2/boteko2/')) {
+            localStorage.removeItem('beer_app_played');
+            hasPlayed = false;
+        }
+
+        checkFormValidity();
+    });
 
     async function sendStepLog(stepName) {
         try {
@@ -150,6 +179,11 @@
     };
 
     async function submitAndRedirect(gameName, targetUrl) {
+        // ゲームに遷移する前にプレイ済みフラグを保存
+        localStorage.setItem('beer_app_played', 'true');
+        hasPlayed = true;
+        checkFormValidity(); // ボタンを即座に無効化
+
         const genderValue = document.getElementById('gender').value;
         const ageValue = document.getElementById('age').value;
         const guestsValue = document.getElementById('guests').value;
