@@ -231,6 +231,32 @@
                 console.error("結果の復元に失敗しました", e);
               }
             }
+
+            // --- ブラウザの「戻る」ボタン対策 ---
+            // 現在の履歴にダミーを追加し、戻る操作を検知できるようにする
+            window.history.pushState(null, null, window.location.href);
+
+            const handlePopState = () => {
+              // 戻る操作が行われたらエラー画面にする
+              setStage('error');
+              // さらに戻るのを防ぐために再度履歴を追加
+              window.history.pushState(null, null, window.location.href);
+            };
+
+            const handlePageShow = (e) => {
+              // BFCache (Safariなどで戻るボタンによりキャッシュから復元された場合) の対策
+              if (e.persisted) {
+                setStage('error');
+              }
+            };
+
+            window.addEventListener('popstate', handlePopState);
+            window.addEventListener('pageshow', handlePageShow);
+
+            return () => {
+              window.removeEventListener('popstate', handlePopState);
+              window.removeEventListener('pageshow', handlePageShow);
+            };
           }, []);
 
           const bubbles = useMemo(() => {
@@ -317,6 +343,19 @@
                 {stage !== 'idle' && (
                     <div className="fixed inset-0 bg-black/80 z-50 flex flex-col items-center justify-center p-4 backdrop-blur-md">
                         
+                        {stage === 'error' && (
+                            <div className="flex flex-col items-center justify-center w-full h-full py-8 animate-[popZoom_0.4s_ease-out_forwards]">
+                                <div className="bg-zinc-900/90 border-2 border-red-500 rounded-2xl p-8 max-w-sm w-full text-center shadow-[0_15px_30px_rgba(239,68,68,0.3)]">
+                                    <div className="text-6xl mb-4 animate-bounce">🚫</div>
+                                    <h2 className="text-2xl md:text-3xl font-black text-red-500 mb-4 drop-shadow-md">エラー</h2>
+                                    <p className="text-zinc-200 font-bold text-lg leading-relaxed">
+                                        不正な操作（戻るボタン等）が<br/>検出されました。<br />
+                                        最初からやり直してください。
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
                         {stage === 'shaking' && (
                             <div className="flex flex-col items-center">
                                 <div className="animate-[shake_0.4s_ease-in-out_infinite]">
