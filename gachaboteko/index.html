@@ -208,19 +208,32 @@
             const currentUrl = window.location.href;
             const referrer = document.referrer;
             
-            // 指定URL経由のアクセスで、かつ「#played」フラグが付いていない場合を新規アクセスとみなす
-            const isNewPrivilegedAccess = (currentUrl.includes(privilegedUrl) || referrer.includes(privilegedUrl)) 
-                                          && !currentUrl.includes('#played');
+            // 1. ブラウザの履歴ナビゲーションタイプを検知 (戻るボタン・スワイプ戻りの検出)
+            const navEntries = performance.getEntriesByType("navigation");
+            const isBackForward = navEntries.length > 0 && navEntries[0].type === 'back_forward';
+
+            // 2. 特権URL（boteko2）から来たかの判定
+            const hasPrivilege = currentUrl.includes(privilegedUrl) || referrer.includes(privilegedUrl);
+            
+            // 3. 特権リセット判定：特権URL経由で、かつ「ブラウザの戻る操作」ではなく、かつ「このタブセッションでまだリセットを行っていない」場合のみリセットを許可
+            const isNewPrivilegedAccess = hasPrivilege && !isBackForward && !sessionStorage.getItem('beerGachaResetDone');
 
             if (isNewPrivilegedAccess) {
-              // 新規アクセスの場合は過去のセーブデータを消去（再度遊べるようにする）
+              // 新しい意思でのアクセス（新規QR読み込み等）のみ過去データを初期化し、ガチャを引ける状態にする
               localStorage.removeItem(STORAGE_KEY);
-              // その後リロードした際に再度リセットされるのを防ぐため、URLの末尾に #played を付与
-              window.history.replaceState(null, '', currentUrl.split('#')[0] + '#played');
+              // 同一セッションでの二度目の自動リセットを防ぐフラグを立てる
+              sessionStorage.setItem('beerGachaResetDone', 'true');
             }
 
-            // 保存された結果があるかチェック
+            // 4. 保存された結果があるかチェック
             const savedResult = localStorage.getItem(STORAGE_KEY);
+
+            // 戻るボタンやスワイプ戻りでこのページに戻ってきた場合、結果が存在するなら強制的にエラー画面に遷移する
+            if (isBackForward && savedResult) {
+              setStage('error');
+              return;
+            }
+
             if (savedResult) {
               try {
                 const parsedResult = JSON.parse(savedResult);
@@ -237,7 +250,7 @@
             window.history.pushState(null, null, window.location.href);
 
             const handlePopState = () => {
-              // 戻る操作が行われたらエラー画面にする
+              // 戻る操作が行われたら即座にエラー画面にする
               setStage('error');
               // さらに戻るのを防ぐために再度履歴を追加
               window.history.pushState(null, null, window.location.href);
@@ -245,7 +258,7 @@
 
             const handlePageShow = (e) => {
               // BFCache (Safariなどで戻るボタンによりキャッシュから復元された場合) の対策
-              if (e.persisted) {
+              if (e.persisted || isBackForward) {
                 setStage('error');
               }
             };
@@ -345,12 +358,14 @@
                         
                         {stage === 'error' && (
                             <div className="flex flex-col items-center justify-center w-full h-full py-8 animate-[popZoom_0.4s_ease-out_forwards]">
-                                <div className="bg-zinc-900/90 border-2 border-red-500 rounded-2xl p-8 max-w-sm w-full text-center shadow-[0_15px_30px_rgba(239,68,68,0.3)]">
+                                <div className="bg-zinc-900/95 border-2 border-red-500 rounded-2xl p-8 max-w-sm w-full text-center shadow-[0_15px_30px_rgba(239,68,68,0.3)] mx-4">
                                     <div className="text-6xl mb-4 animate-bounce">🚫</div>
-                                    <h2 className="text-2xl md:text-3xl font-black text-red-500 mb-4 drop-shadow-md">エラー</h2>
-                                    <p className="text-zinc-200 font-bold text-lg leading-relaxed">
-                                        不正な操作（戻るボタン等）が<br/>検出されました。<br />
-                                        最初からやり直してください。
+                                    <h2 className="text-2xl md:text-3xl font-black text-red-500 mb-4 drop-shadow-md">不正な操作を検出</h2>
+                                    <p className="text-zinc-200 font-bold text-base leading-relaxed mb-4">
+                                        戻るボタン等による不正な操作が検出されました。複数回のガチャプレイはできません。
+                                    </p>
+                                    <p className="text-amber-500 font-black text-sm">
+                                        ※再度遊ぶ場合は、QRコードまたは案内用の公式リンクからアクセスし直してください。
                                     </p>
                                 </div>
                             </div>
@@ -389,7 +404,7 @@
                         {stage === 'result' && result && (
                             <div className="flex flex-col items-center justify-center w-full h-full overflow-y-auto py-8 animate-[popZoom_0.6s_cubic-bezier(0.175,0.885,0.32,1.275)_forwards]">
                                 {isAlreadyPlayed && (
-                                    <div className="absolute top-4 md:top-8 bg-zinc-800/90 text-white font-bold px-6 py-3 rounded-full shadow-lg z-50 border-2 border-red-500 animate-pulse text-sm md:text-base backdrop-blur-sm">
+                                    <div className="absolute top-4 md:top-8 bg-zinc-800/90 text-white font-bold px-6 py-3 rounded-full shadow-lg z-50 border-2 border-red-500 animate-pulse text-sm md:text-base backdrop-blur-sm mx-4">
                                         ⚠️ すでにプレイ済みです（前回の結果です）
                                     </div>
                                 )}
