@@ -3,476 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>速達生ビールガチャ</title>
-    <!-- React と ReactDOM の読み込み -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-    <!-- ブラウザ上でJSXを変換するためのBabel -->
-    <script src="https://unpkg.com/@babel/standalone@7.23.10/babel.min.js"></script>
-    <!-- Tailwind CSS の読み込み -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>ビール体験アプリ</title>
+    <style>
+        body { font-family: sans-serif; background: #fff8e1; text-align: center; padding: 20px; color: #333; }
+        .container { background: white; padding: 20px; border-radius: 15px; max-width: 450px; margin: 0 auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .hidden { display: none !important; }
+        .q-title { font-weight: bold; margin-top: 20px; display: block; text-align: left; }
+        label { display: block; text-align: left; margin: 8px 0; cursor: pointer; }
+        textarea, select, input[type="number"] { width: 100%; box-sizing: border-box; padding: 10px; margin-top: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 1em; }
+        textarea { height: 60px; }
+        button { width: 100%; padding: 15px; margin-top: 20px; background: #ffc107; border: none; border-radius: 30px; font-weight: bold; cursor: pointer; font-size: 1.1em; }
+        
+        /* ゲームリンクボタンのスタイル（縦並びテキスト） */
+        .game-link-btn { display: block; width: 100%; box-sizing: border-box; text-decoration: none; padding: 15px; margin-top: 15px; background: #ff9800; color: white; border-radius: 30px; font-weight: bold; font-size: 1.1em; text-align: center; transition: background 0.2s, opacity 0.2s; border: none; cursor: pointer; font-family: sans-serif; }
+        .game-link-btn:hover:not(:disabled) { background: #e65100; }
+        .game-link-btn:disabled { background: #ccc !important; color: #666; cursor: not-allowed; opacity: 0.8; }
+
+        /* 追加した案内テキスト用のスタイル */
+        .survey-guide-text { margin-top: 30px; margin-bottom: 15px; font-size: 1em; color: #333; font-weight: bold; }
+
+        /* 安心注記用のスタイル */
+        .notice-text { font-size: 10px; color: #777; text-align: left; margin-top: 30px; line-height: 1.4; border-top: 1px dashed #ddd; padding-top: 10px; }
+    </style>
 </head>
-<body class="bg-black select-none" style="-webkit-tap-highlight-color: transparent;">
-    <div id="root"></div>
+<body>
 
-    <!-- data-type="module" を削除し、より安定して動作するように修正 -->
-    <script type="text/babel" data-presets="react">
-        const { useState, useMemo, useEffect } = React;
+<div class="container">
+    <div id="step-survey">
+        <h2>🍺 生ビールアンケート</h2>
 
-        // --- 景品データ定義 ---
-        const PRIZES = [
-          { 
-            id: 1, rank: '大当たり', name: '', desc: '', prob: 15, 
-            bg: 'bg-gradient-to-r from-yellow-400 to-yellow-600', text: 'text-yellow-400', border: 'border-yellow-300',
-            resultTitle: '大当たり！！\nおめでとう！', resultSub: '今日はいいことありそうだね♪',
-            imgUrl: 'https://i.postimg.cc/zvKxRHM9/hua-xiang5.png'
-          },
-          { 
-            id: 2, rank: 'はずれ', name: '', desc: '', prob: 85, 
-            bg: 'bg-gradient-to-r from-zinc-800 to-zinc-950', text: 'text-zinc-500', border: 'border-zinc-700',
-            resultTitle: 'はずれ', resultSub: '残念、、、また挑戦してね',
-            imgUrl: null
-          }
-        ];
+        <span class="q-title">A. あなたの性別を教えてください</span>
+        <select id="gender">
+            <option value="">-- 性別を選択してください --</option>
+            <option value="男性">男性</option>
+            <option value="女性">女性</option>
+        </select>
 
-        // --- カスタムアニメーション用のCSS ---
-        const customStyles = `
-        @keyframes floatUp {
-          0% { transform: translateY(80px) scale(0.6); opacity: 0; }
-          100% { transform: translateY(0) scale(1); opacity: 1; }
-        }
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-8px) rotate(-5deg); }
-          75% { transform: translateX(8px) rotate(5deg); }
-        }
-        @keyframes popZoom {
-          0% { transform: scale(0.5); opacity: 0; }
-          70% { transform: scale(1.1); opacity: 1; }
-          100% { transform: scale(1); opacity: 1; }
-        }
-        @keyframes imagePop {
-          0% { transform: scale(0.1) translateY(100px) rotate(-10deg); opacity: 0; }
-          60% { transform: scale(1.1) translateY(-20px) rotate(5deg); opacity: 1; }
-          80% { transform: scale(0.95) translateY(10px) rotate(-2deg); }
-          100% { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; }
-        }
-        @keyframes shine {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        /* 泡が真っ直ぐ画面上部まで昇るアニメーション */
-        @keyframes riseUp {
-          0% { transform: translateY(100vh) scale(0.3); opacity: 0; }
-          10% { opacity: 0.8; }
-          90% { opacity: 0.8; }
-          100% { transform: translateY(-20vh) scale(1.5); opacity: 0; }
-        }
-        /* カプセルが開いた時の泡の飛び散り */
-        @keyframes foamBurst {
-          0% { transform: translate(0, 0) scale(0); opacity: 0; }
-          20% { transform: translate(calc(var(--tx) * 0.3), calc(var(--ty) * 0.3)) scale(1.2); opacity: 1; }
-          100% { transform: translate(var(--tx), calc(var(--ty) - 50px)) scale(0); opacity: 0; }
-        }
-        .sunburst {
-          background: repeating-conic-gradient(
-            from 0deg,
-            transparent 0deg,
-            transparent 10deg,
-            rgba(255, 255, 255, 0.4) 10deg,
-            rgba(255, 255, 255, 0.2) 20deg
-          );
-        }
-        .glass-highlight {
-          background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
-        }
-        `;
+        <span class="q-title">B. あなたの年齢を教えてください</span>
+        <select id="age">
+            <option value="">-- 年齢を選択してください --</option>
+            <option value="20代以下">20代以下</option>
+            <option value="30-40代">30-40代</option>
+            <option value="50-60代">50-60代</option>
+            <option value="70代以上">70代以上</option>
+        </select>
 
-        // --- ビールグラスを描画するSVGコンポーネント ---
-        const BeerGlass = ({ rank }) => {
-            const fillColors = {
-                '大当たり': ['#FEF08A', '#EAB308', '#A16207'],
-                'はずれ': ['#3f3f46', '#27272a', '#18181b'], 
-            };
-            const colors = fillColors[rank] || fillColors['大当たり'];
+        <span class="q-title">C. 本日のご来店人数を教えてください</span>
+        <select id="guests">
+            <option value="">-- 人数を選択してください --</option>
+            <option value="1人">1人</option>
+            <option value="2人">2人</option>
+            <option value="3人以上">3人以上</option>
+        </select>
 
-            return (
-                <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-xl overflow-visible">
-                    <defs>
-                        <linearGradient id={`grad-${rank}`} x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stopColor={colors[0]} />
-                            <stop offset="50%" stopColor={colors[1]} />
-                            <stop offset="100%" stopColor={colors[2]} />
-                        </linearGradient>
-                    </defs>
-                    <path d="M75 40 C 100 40, 100 75, 75 75" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="6" strokeLinecap="round" />
-                    <path d="M25 25 C 25 25, 20 85, 35 90 C 50 95, 60 95, 75 90 C 90 85, 85 25, 85 25 Z" fill={`url(#grad-${rank})`} stroke="rgba(255,255,255,0.6)" strokeWidth="3" />
-                    <path d="M35 30 Q 30 60 40 85" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="4" strokeLinecap="round" />
-                    {rank !== 'はずれ' ? (
-                        <React.Fragment>
-                            <path d="M20 25 Q 30 5 55 15 Q 75 5 90 25 Q 95 35 85 40 Q 55 45 25 40 Q 15 35 20 25 Z" fill="#FFFFFF" />
-                            <circle cx="35" cy="15" r="8" fill="#FFFFFF" />
-                            <circle cx="65" cy="12" r="10" fill="#FFFFFF" />
-                            <circle cx="50" cy="8" r="12" fill="#FFFFFF" />
-                            <path d="M 75 15 L 80 10 M 80 20 L 85 18 M 70 20 L 68 15" stroke="yellow" strokeWidth="2" strokeLinecap="round" />
-                        </React.Fragment>
-                    ) : (
-                        <React.Fragment>
-                            <path d="M30 38 Q 45 35 60 38 Q 75 35 80 39 Q 55 42 30 38 Z" fill="#71717a" opacity="0.2" />
-                        </React.Fragment>
-                    )}
-                </svg>
-            );
-        };
+        <span class="q-title">D. 一緒に来店された方とのご関係を教えてください</span>
+        <select id="relation">
+            <option value="">-- ご関係を選択してください --</option>
+            <option value="家族">家族</option>
+            <option value="友人">友人</option>
+            <option value="仕事仲間">仕事仲間</option>
+            <option value="他">他</option>
+        </select>
 
-        // --- ガチャマシンのコンポーネント ---
-        const GachaMachine = ({ onPlay }) => {
-            const [isImageLoaded, setIsImageLoaded] = useState(false);
+        <span class="q-title">1. 当店の生ビールは何点ですか？</span>
+        <select id="score">
+            <option value="">-- 点数を選択してください --</option>
+            <option value="5">5点（最高！）</option>
+            <option value="4">4点</option>
+            <option value="3">3点</option>
+            <option value="2">2点</option>
+            <option value="1">1点</option>
+        </select>
 
-            // セーフティ対策: 万が一画像が重い、または取得に失敗した場合でも3秒後に強制表示
-            useEffect(() => {
-                const timer = setTimeout(() => {
-                    setIsImageLoaded(true);
-                }, 3000);
-                return () => clearTimeout(timer);
-            }, []);
+        <span class="q-title">2. 飲んだ感想やお店へのメッセージを教えてください</span>
+        <textarea id="comment" placeholder="感想をメッセージお聞かせください"></textarea>
+        
+        <p class="survey-guide-text">アンケートに回答したらゲームに挑戦</p>
+        
+        <div>
+            <button class="game-link-btn" disabled onclick="submitAndRedirect('速達生ガチャ', 'https://010m-xtech.github.io/TEST2/gachaboteko/')">速達生ガチャ</button>
+            <button class="game-link-btn" disabled style="background: #e73c84;" onclick="submitAndRedirect('間違え探し', 'https://010m-xtech.github.io/TEST2/botekomatigai2/')">間違え探し</button>
+            <button class="game-link-btn" disabled style="background: #00aa6e;" onclick="submitAndRedirect('インベーダーゲーム', 'https://010m-xtech.github.io/TEST2/botekoinbeda2/')">インベーダーゲーム</button>
+        </div>
 
-            return (
-                <div 
-                    className="flex flex-col items-center justify-center cursor-pointer group w-full h-[100dvh] touch-manipulation select-none" 
-                    onClick={onPlay}
-                >
-                    <div className="relative w-full h-full transition-transform duration-300 active:scale-95 md:group-hover:scale-[1.02] flex items-center justify-center">
-                        
-                        {/* 画像読み込み中のローディング表示 */}
-                        {!isImageLoaded && (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center z-20 bg-zinc-900/50 backdrop-blur-sm">
-                                <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-4 shadow-[0_0_15px_rgba(245,158,11,0.5)]"></div>
-                                <p className="text-amber-400 font-bold animate-pulse drop-shadow-md">ガチャ準備中...</p>
-                            </div>
-                        )}
+        <div class="notice-text">
+            ※当システムではローカルストレージを使用しこのアプリ専用の識別番号を発行しています。個人を特定する情報は一切取得いたしません。
+        </div>
+    </div>
+</div>
 
-                        <img 
-                            src="https://github.com/user-attachments/assets/0e800afd-5d85-45c6-91c6-2a2f16466f31"
-                            alt="速達生ビールガチャ" 
-                            className={`w-full h-full max-h-[100dvh] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)] transition-opacity duration-700 ease-in-out ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
-                            onLoad={() => setIsImageLoaded(true)}
-                            onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src = "https://placehold.co/1080x1080/27272a/f59e0b?text=Tap+to+Start!%5Cn(Your+Image+Here)";
-                                setIsImageLoaded(true);
-                            }}
-                        />
-                        <div className="absolute inset-0 bg-white opacity-0 active:opacity-10 md:group-hover:opacity-10 transition-opacity duration-300 pointer-events-none"></div>
-                    </div>
-                </div>
-            );
-        };
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const shopName = urlParams.get('shop') || "不明な店舗";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycby3kedbIZhyhUTAFaLnl04ME9VmyjXRs6NgNXbFz2jxHrger9frn0u6AALvH2RzLFR2eA/exec"; 
 
-        // --- アニメーション用カプセルコンポーネント ---
-        const Capsule = ({ isCracking }) => {
-            return (
-                <div className="relative w-48 h-48 md:w-64 md:h-64 z-10 animate-[floatUp_0.5s_ease-out_forwards]">
-                    <div 
-                        className={`absolute inset-0 bg-gradient-to-br from-yellow-200 to-amber-500 rounded-full border-4 border-white shadow-[inset_0_0_30px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-700 ease-out ${isCracking ? '-translate-x-16 -rotate-45 opacity-0' : ''}`} 
-                        style={{ clipPath: 'polygon(0 0, 50% 0, 50% 100%, 0 100%)' }}
-                    >
-                        <div className="absolute top-0 w-full h-1/3 bg-white/80 filter blur-sm"></div>
-                    </div>
-                    <div 
-                        className={`absolute inset-0 bg-gradient-to-br from-yellow-200 to-amber-500 rounded-full border-4 border-white shadow-[inset_0_0_30px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-700 ease-out ${isCracking ? 'translate-x-16 rotate-45 opacity-0' : ''}`} 
-                        style={{ clipPath: 'polygon(50% 0, 100% 0, 100% 100%, 50% 100%)' }}
-                    >
-                        <div className="absolute top-0 w-full h-1/3 bg-white/80 filter blur-sm"></div>
-                    </div>
-                    
-                    {!isCracking && (
-                       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white text-amber-600 font-black text-4xl rounded-full w-16 h-16 flex items-center justify-center shadow-lg border-2 border-amber-300">
-                            ?
-                       </div>
-                    )}
-                </div>
-            );
-        };
+    let deviceId = ""; 
 
-        // --- アプリケーションのメイン ---
-        const STORAGE_KEY = 'beerGachaResult';
+    // 入力状態を監視してボタンの有効/無効を切り替える関数
+    function checkFormValidity() {
+        const genderValue = document.getElementById('gender').value;
+        const ageValue = document.getElementById('age').value;
+        const guestsValue = document.getElementById('guests').value;
+        const relationValue = document.getElementById('relation').value;
+        const scoreValue = document.getElementById('score').value;
+        const commentValue = document.getElementById('comment').value.trim();
 
-        const App = () => {
-          const [stage, setStage] = useState('idle');
-          const [result, setResult] = useState(null);
-          const [isAlreadyPlayed, setIsAlreadyPlayed] = useState(false);
+        // すべての項目が入力（選択）されているかチェック
+        const isValid = genderValue && ageValue && guestsValue && relationValue && scoreValue && commentValue !== "";
 
-          useEffect(() => {
-            const privilegedUrl = '010m-xtech.github.io/TEST2/boteko2';
-            const currentUrl = window.location.href;
-            const referrer = document.referrer;
-            
-            // 1. ブラウザの履歴ナビゲーションタイプを検知 (戻るボタン・スワイプ戻りの検出)
-            const navEntries = performance.getEntriesByType("navigation");
-            const isBackForward = navEntries.length > 0 && navEntries[0].type === 'back_forward';
+        // 全てのゲームリンクボタンの状態を更新
+        const btns = document.querySelectorAll('.game-link-btn');
+        btns.forEach(btn => {
+            btn.disabled = !isValid;
+        });
+    }
 
-            // 2. 特権URL（boteko2）から来たかの判定
-            const hasPrivilege = currentUrl.includes(privilegedUrl) || referrer.includes(privilegedUrl);
-            
-            // 3. 特権リセット判定：特権URL経由で、かつ「ブラウザの戻る操作」ではなく、かつ「このタブセッションでまだリセットを行っていない」場合のみリセットを許可
-            const isNewPrivilegedAccess = hasPrivilege && !isBackForward && !sessionStorage.getItem('beerGachaResetDone');
-
-            if (isNewPrivilegedAccess) {
-              // 新しい意思でのアクセス（新規QR読み込み等）のみ過去データを初期化し、ガチャを引ける状態にする
-              localStorage.removeItem(STORAGE_KEY);
-              // 同一セッションでの二度目の自動リセットを防ぐフラグを立てる
-              sessionStorage.setItem('beerGachaResetDone', 'true');
-            }
-
-            // 4. 保存された結果があるかチェック
-            const savedResult = localStorage.getItem(STORAGE_KEY);
-
-            // 戻るボタンやスワイプ戻りでこのページに戻ってきた場合、結果が存在するなら強制的にエラー画面に遷移する
-            if (isBackForward && savedResult) {
-              setStage('error');
-              return;
-            }
-
-            if (savedResult) {
-              try {
-                const parsedResult = JSON.parse(savedResult);
-                setResult(parsedResult);
-                setStage('result'); // プレイ済みならいきなり結果画面へ
-                setIsAlreadyPlayed(true);
-              } catch (e) {
-                console.error("結果の復元に失敗しました", e);
-              }
-            }
-
-            // --- ブラウザの「戻る」ボタン対策 ---
-            // 現在の履歴にダミーを追加し、戻る操作を検知できるようにする
-            window.history.pushState(null, null, window.location.href);
-
-            const handlePopState = () => {
-              // 戻る操作が行われたら即座にエラー画面にする
-              setStage('error');
-              // さらに戻るのを防ぐために再度履歴を追加
-              window.history.pushState(null, null, window.location.href);
-            };
-
-            const handlePageShow = (e) => {
-              // BFCache (Safariなどで戻るボタンによりキャッシュから復元された場合) の対策
-              if (e.persisted || isBackForward) {
-                setStage('error');
-              }
-            };
-
-            window.addEventListener('popstate', handlePopState);
-            window.addEventListener('pageshow', handlePageShow);
-
-            return () => {
-              window.removeEventListener('popstate', handlePopState);
-              window.removeEventListener('pageshow', handlePageShow);
-            };
-          }, []);
-
-          const bubbles = useMemo(() => {
-            return Array.from({ length: 400 }).map((_, i) => {
-                const size = Math.random() * 20 + 5; 
-                const left = Math.random() * 100;
-                const duration = Math.random() * 4 + 2; 
-                const delay = Math.random() * -10; 
-                return { size, left, duration, delay };
+    async function sendStepLog(stepName) {
+        try {
+            await fetch(GAS_URL, {
+                method: "POST",
+                mode: "no-cors",
+                body: JSON.stringify({ shop: shopName, step: stepName, deviceId: deviceId })
             });
-          }, []);
+        } catch (e) { console.error(e); }
+    }
 
-          const burstParticles = useMemo(() => {
-            return Array.from({ length: 40 }).map((_, i) => {
-                const angle = (Math.random() * 360) * (Math.PI / 180);
-                const distance = Math.random() * 200 + 80;
-                const tx = Math.cos(angle) * distance;
-                let ty = Math.sin(angle) * distance;
-                if (ty > 0) ty *= 0.4; 
-                const size = Math.random() * 30 + 10;
-                return { tx, ty, size };
-            });
-          }, []);
+    window.onload = () => {
+        let savedId = localStorage.getItem('beer_app_device_id');
+        if (!savedId) {
+            savedId = 'dev_' + Date.now() + '_' + Math.random().toString(36).substring(2, 11);
+            localStorage.setItem('beer_app_device_id', savedId);
+        }
+        deviceId = savedId; 
 
-          const drawPrize = () => {
-            const rand = Math.random() * 100;
-            let sum = 0;
-            for (const prize of PRIZES) {
-                sum += prize.prob;
-                if (rand <= sum) return prize;
-            }
-            return PRIZES[PRIZES.length - 1];
-          };
+        sendStepLog("①URLアクセス");
 
-          const handlePlay = () => {
-            if (stage !== 'idle') return;
-            
-            const drawnResult = drawPrize();
-            setResult(drawnResult);
+        // 各入力項目に変更があったらチェック処理を実行するよう設定
+        const inputIds = ['gender', 'age', 'guests', 'relation', 'score', 'comment'];
+        inputIds.forEach(id => {
+            document.getElementById(id).addEventListener('input', checkFormValidity);
+            document.getElementById(id).addEventListener('change', checkFormValidity);
+        });
+        
+        // 最初からすべて入力されている場合を考慮して一度チェック
+        checkFormValidity();
+    };
 
-            // ガチャを引いたら結果を必ず保存する
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(drawnResult));
-            
-            setStage('shaking');
-            
-            setTimeout(() => {
-              setStage('cracking');
-              
-              setTimeout(() => {
-                setStage('result');
-              }, 600);
-            }, 1500); 
-          };
+    async function submitAndRedirect(gameName, targetUrl) {
+        const genderValue = document.getElementById('gender').value;
+        const ageValue = document.getElementById('age').value;
+        const guestsValue = document.getElementById('guests').value;
+        const relationValue = document.getElementById('relation').value;
+        const scoreValue = document.getElementById('score').value;
+        const commentValue = document.getElementById('comment').value;
 
-          return (
-            <React.Fragment>
-              <style>{customStyles}</style>
-              
-              <div className="min-h-screen bg-gradient-to-b from-yellow-100 via-yellow-400 to-amber-600 font-sans overflow-x-hidden relative selection:bg-amber-800 selection:text-white">
-                
-                {/* 背景に浮かぶ生ビールの泡のエフェクト */}
-                <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-                    {bubbles.map((bubble, i) => (
-                        <div key={i}
-                             className="absolute bottom-0 bg-white/50 rounded-full border border-white/40 backdrop-blur-[2px] shadow-[0_0_8px_rgba(255,255,255,0.6)]"
-                             style={{
-                                 width: `${bubble.size}px`, height: `${bubble.size}px`, left: `${bubble.left}%`,
-                                 animation: `riseUp ${bubble.duration}s linear infinite ${bubble.delay}s`
-                             }}
-                        />
-                    ))}
-                    <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-white/60 rounded-full blur-[100px] mix-blend-overlay"></div>
-                    <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-orange-600/30 rounded-full blur-[120px] mix-blend-color-burn"></div>
-                </div>
-
-                {/* メインビューポート（画面いっぱいに画像を表示） */}
-                <div className="w-full mx-auto flex flex-col items-center justify-center min-h-[100dvh] relative z-10">
-                    <div className="w-full h-[100dvh] flex justify-center items-center">
-                        <GachaMachine onPlay={handlePlay} />
-                    </div>
-                </div>
-
-                {/* 演出用オーバーレイ */}
-                {stage !== 'idle' && (
-                    <div className="fixed inset-0 bg-black/80 z-50 flex flex-col items-center justify-center p-4 backdrop-blur-md">
-                        
-                        {stage === 'error' && (
-                            <div className="flex flex-col items-center justify-center w-full h-full py-8 animate-[popZoom_0.4s_ease-out_forwards]">
-                                <div className="bg-zinc-900/95 border-2 border-red-500 rounded-2xl p-8 max-w-sm w-full text-center shadow-[0_15px_30px_rgba(239,68,68,0.3)] mx-4">
-                                    <div className="text-6xl mb-4 animate-bounce">🚫</div>
-                                    <h2 className="text-2xl md:text-3xl font-black text-red-500 mb-4 drop-shadow-md">不正な操作を検出</h2>
-                                    <p className="text-zinc-200 font-bold text-base leading-relaxed mb-4">
-                                        戻るボタン等による不正な操作が検出されました。複数回のガチャプレイはできません。
-                                    </p>
-                                    <p className="text-amber-500 font-black text-sm">
-                                        ※再度遊ぶ場合は、QRコードまたは案内用の公式リンクからアクセスし直してください。
-                                    </p>
-                                </div>
-                            </div>
-                        )}
-
-                        {stage === 'shaking' && (
-                            <div className="flex flex-col items-center">
-                                <div className="animate-[shake_0.4s_ease-in-out_infinite]">
-                                    <Capsule isCracking={false} />
-                                </div>
-                                <div className="mt-12 text-3xl md:text-5xl font-black text-white tracking-wider drop-shadow-[0_4px_15px_rgba(0,0,0,0.8)] animate-pulse" style={{ WebkitTextStroke: '2px #b45309', paintOrder: 'stroke fill' }}>
-                                    何が出るかはお楽しみ！
-                                </div>
-                            </div>
-                        )}
-
-                        {stage === 'cracking' && (
-                            <div className="flex flex-col items-center relative">
-                                <div className="absolute top-1/2 left-1/2 w-full h-full z-20 pointer-events-none">
-                                    {burstParticles.map((particle, i) => (
-                                        <div key={`burst-${i}`}
-                                             className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 bg-white rounded-full shadow-sm"
-                                             style={{
-                                                 width: `${particle.size}px`, height: `${particle.size}px`,
-                                                 '--tx': `${particle.tx}px`, '--ty': `${particle.ty}px`,
-                                                 animation: 'foamBurst 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards'
-                                             }}
-                                        />
-                                    ))}
-                                </div>
-                                <Capsule isCracking={true} />
-                            </div>
-                        )}
-
-                        {/* 抽選結果表示画面 */}
-                        {stage === 'result' && result && (
-                            <div className="flex flex-col items-center justify-center w-full h-full overflow-y-auto py-8 animate-[popZoom_0.6s_cubic-bezier(0.175,0.885,0.32,1.275)_forwards]">
-                                {isAlreadyPlayed && (
-                                    <div className="absolute top-4 md:top-8 bg-zinc-800/90 text-white font-bold px-6 py-3 rounded-full shadow-lg z-50 border-2 border-red-500 animate-pulse text-sm md:text-base backdrop-blur-sm mx-4">
-                                        ⚠️ すでにプレイ済みです（前回の結果です）
-                                    </div>
-                                )}
-                                <div className="absolute w-[150vw] h-[150vw] md:w-[100vw] md:h-[100vw] sunburst animate-[shine_20s_linear_infinite] -z-10 opacity-40"></div>
-                                
-                                <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10 mb-6 relative">
-                                    <div className={`w-36 h-36 md:w-40 md:h-40 shrink-0 rounded-full border-8 ${result.border} flex flex-col items-center justify-center bg-zinc-950/95 shadow-[0_10px_40px_rgba(0,0,0,0.8)] relative z-10`}>
-                                        <span className={`text-2xl md:text-3xl font-black ${result.text} drop-shadow-lg whitespace-nowrap`}>{result.rank}</span>
-                                        {result.rank !== 'はずれ' && (
-                                            <span className="absolute -top-6 text-6xl drop-shadow-xl animate-bounce">👑</span>
-                                        )}
-                                    </div>
-                                    
-                                    <div className="relative z-10 flex items-center justify-center">
-                                        {result.imgUrl ? (
-                                            <img 
-                                                src={result.imgUrl} 
-                                                alt={result.rank} 
-                                                className="w-48 h-48 md:w-72 md:h-72 object-contain filter drop-shadow-[0_20px_30px_rgba(0,0,0,0.8)] animate-[imagePop_0.8s_cubic-bezier(0.175,0.885,0.32,1.275)_forwards]" 
-                                            />
-                                        ) : (
-                                            <div className="w-48 h-48 md:w-64 md:h-64 filter drop-shadow-[0_20px_30px_rgba(0,0,0,0.8)] bg-white/5 rounded-3xl p-4 backdrop-blur-sm border border-white/10 relative">
-                                                <BeerGlass rank={result.rank} />
-                                            </div>
-                                        )}
-                                        {result.rank !== 'はずれ' && (
-                                            <div className="absolute inset-0 bg-yellow-400 mix-blend-overlay animate-pulse rounded-full blur-2xl opacity-30 pointer-events-none"></div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {result.rank !== 'はずれ' && result.name && (
-                                    <h2 className={`text-5xl md:text-7xl font-black mb-6 drop-shadow-[0_5px_10px_rgba(0,0,0,0.9)] ${result.text} tracking-tight text-center`} style={{ WebkitTextStroke: '2px #000', paintOrder: 'stroke fill' }}>
-                                        {result.name}
-                                    </h2>
-                                )}
-                                
-                                <div className="bg-zinc-900/90 px-6 py-4 md:px-12 md:py-6 rounded-2xl border-2 border-amber-500/30 text-center mb-10 backdrop-blur-md shadow-[0_15px_30px_rgba(0,0,0,0.8)] relative z-10 max-w-xl mx-4">
-                                    <div className="text-2xl md:text-4xl font-black drop-shadow-md text-yellow-400 whitespace-pre-wrap leading-snug">
-                                        {result.resultTitle}
-                                    </div>
-                                    
-                                    {result.rank === '大当たり' && (
-                                        <div className="mt-4 py-3 px-6 bg-gradient-to-r from-green-500 to-green-600 rounded-xl border-2 border-green-300 animate-pulse shadow-[0_0_20px_rgba(34,197,94,0.5)]">
-                                            <p className="text-xl md:text-2xl font-black text-white drop-shadow-md">
-                                                スタッフにこの画面を見せてね♪
-                                            </p>
-                                        </div>
-                                    )}
-
-                                    {result.resultSub && (
-                                        <div className="text-lg md:text-xl font-bold text-zinc-300 mt-4">
-                                            {result.resultSub}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                )}
-              </div>
-            </React.Fragment>
-          );
+        sendStepLog(`③アンケート回答完了(${gameName})`); 
+        
+        const surveyData = {
+            shop: shopName,
+            gender: genderValue,   
+            age: ageValue,         
+            guests: guestsValue,   
+            relation: relationValue, 
+            score: scoreValue,
+            comment: commentValue,
+            gameResult: `遷移先：${gameName}`,
+            deviceId: deviceId 
         };
-
-        // Reactコンポーネントを画面に描画する
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
+        
+        try {
+            await fetch(GAS_URL, { 
+                method: "POST", 
+                mode: "no-cors", 
+                body: JSON.stringify(surveyData) 
+            });
+        } catch (e) { 
+            console.error(e); 
+        } finally {
+            window.location.href = targetUrl;
+        }
+    }
+</script>
 </body>
 </html>
