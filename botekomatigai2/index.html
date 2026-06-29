@@ -2,7 +2,8 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <!-- 誤操作によるズームを防ぐため maximum-scale=1.0 を追加 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>間違い探し</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -65,7 +66,35 @@
       white-space: pre-wrap;
       line-height: 1.5;
     }
+
+    /* クリア時のテキストを目立たせる装飾 */
+    #result-title {
+      color: #FFF500; /* 黄色で強調 */
+      font-weight: 900;
+      font-size: 38px;
+      text-shadow: 
+        2px 2px 0 #FF4757, 
+        -2px -2px 0 #FF4757, 
+        2px -2px 0 #FF4757, 
+        -2px 2px 0 #FF4757, 
+        0 8px 15px rgba(0,0,0,0.8); /* 赤い縁取りと濃い影 */
+      animation: pulse 1s infinite alternate ease-in-out;
+      padding: 0 10px;
+    }
+    
+    @keyframes pulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.08); }
+    }
+
+    /* スマホ用のフォントサイズ調整 */
+    @media (max-width: 600px) {
+      #result-title {
+        font-size: 26px;
+      }
+    }
   </style>
+  <!-- JSON内の改行文字はパースエラーを防ぐため \\n に修正 -->
   <script id="dc-ui-texts" type="application/json">
   {
     "sourceLang": "ja",
@@ -75,11 +104,10 @@
         "ui.instruction": "間違いは3つあるよ！見つけてね！",
         "ui.sub_instruction": "（下の写真で間違いと思う部分をタッチしてね）",
         "hud.found": "みつけた！ {found} / {total}",
-        "result.clear": "素晴らしい！全部見つけられたね！！\nスタッフにこの画面を見せてね♪",
-        "result.timeup": "タイムアップ！残念、、、\n答え合わせはボタンをクリック！",
+        "result.clear": "素晴らしい！全部見つけられたね！！\\nスタッフにこの画面を見せてね♪",
+        "result.timeup": "タイムアップ！残念、、、\\n答え合わせはボタンをクリック！",
         "ui.retry": "もういちど",
-        "ui.answer": "答え合わせ",
-        "ui.already_played": "すでにプレイ済みです！\nご参加ありがとうございました♪"
+        "ui.answer": "答え合わせ"
       },
       "en": {
         "ui.start": "Start",
@@ -87,10 +115,8 @@
         "ui.sub_instruction": "(Tap the differences on the bottom photo!)",
         "hud.found": "Found: {found} / {total}",
         "result.clear": "All Found!",
-        "result.timeup": "Time's up!\n(Ask staff for the answers♪)",
-        "ui.retry": "Retry",
-        "ui.answer": "Answer",
-        "ui.already_played": "You have already played!\nThank you for participating♪"
+        "result.timeup": "Time's up!\\n(Ask staff for the answers♪)",
+        "ui.retry": "Retry"
       },
       "zh": {
         "ui.start": "开始",
@@ -98,10 +124,8 @@
         "ui.sub_instruction": "（请点击下方照片中的不同之处）",
         "hud.found": "找到: {found} / {total}",
         "result.clear": "全部找到！",
-        "result.timeup": "时间到！\n（请向工作人员确认答案♪）",
-        "ui.retry": "重试",
-        "ui.answer": "答案",
-        "ui.already_played": "您已经玩过了！\n感谢您的参与♪"
+        "result.timeup": "时间到！\\n（请向工作人员确认答案♪）",
+        "ui.retry": "重试"
       },
       "ko": {
         "ui.start": "시작",
@@ -109,10 +133,8 @@
         "ui.sub_instruction": "(아래 사진에서 틀린 부분을 터치하세요)",
         "hud.found": "찾았다: {found} / {total}",
         "result.clear": "모두 찾음!",
-        "result.timeup": "시간 종료!\n(정답은 직원에게 확인해 주세요♪)",
-        "ui.retry": "다시하기",
-        "ui.answer": "정답 확인",
-        "ui.already_played": "이미 플레이하셨습니다!\n참여해 주셔서 감사합니다♪"
+        "result.timeup": "시간 종료!\\n(정답은 직원에게 확인해 주세요♪)",
+        "ui.retry": "다시하기"
       },
       "es": {
         "ui.start": "Empezar",
@@ -120,10 +142,8 @@
         "ui.sub_instruction": "(¡Toca las diferencias en la foto de abajo!)",
         "hud.found": "Encontrado: {found} / {total}",
         "result.clear": "¡Todos encontrados!",
-        "result.timeup": "¡Se acabó el tempo!\n(¡Pregunta al personal para las respuestas♪)",
-        "ui.retry": "Reintentar",
-        "ui.answer": "Respuesta",
-        "ui.already_played": "¡Ya has jugado!\n¡Gracias por participar♪"
+        "result.timeup": "¡Se acabó el tempo!\\n(¡Pregunta al personal para las respuestas♪)",
+        "ui.retry": "Reintentar"
       },
       "pt": {
         "ui.start": "Começar",
@@ -131,10 +151,9 @@
         "ui.sub_instruction": "(Toque nas diferenças na foto de baixo!)",
         "hud.found": "Encontrado: {found} / {total}",
         "result.clear": "Todos Encontrados!",
-        "result.timeup": "Tempo esgotado!\n(Pergunte à equipe pelas respostas♪)",
+        "result.timeup": "Tempo esgotado!\\n(Pergunte à equipe pelas respostas♪)",
         "ui.retry": "Tentar novamente",
-        "ui.answer": "Answer",
-        "ui.already_played": "Você já jogou!\nObrigado por participar♪"
+        "ui.answer": "Answer"
       }
     }
   }
@@ -159,10 +178,17 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.0/p5.min.js"></script>
   <script>
-    // JSON構文エラーを防ぐために非改行スペースを通常のスペースに置換してクリーンアップ
-    const rawJSONText = document.getElementById('dc-ui-texts').textContent;
-    const cleanJSONText = rawJSONText.replace(/\u00A0/g, ' ');
-    const uiPayload = JSON.parse(cleanJSONText);
+    // エラーハンドリングを追加してJSONパースを保護
+    let uiPayload = {};
+    try {
+      const rawJSONText = document.getElementById('dc-ui-texts').textContent;
+      const cleanJSONText = rawJSONText.replace(/\u00A0/g, ' ');
+      uiPayload = JSON.parse(cleanJSONText);
+    } catch (e) {
+      console.error("UI設定の読み込みに失敗しました:", e);
+      // パース失敗時のフォールバック
+      uiPayload = { sourceLang: 'ja', texts: { ja: { "ui.start": "スタート", "ui.instruction": "間違い探し", "ui.sub_instruction": "タッチしてね", "hud.found": "{found}/{total}", "result.clear": "クリア！", "result.timeup": "タイムアップ！", "ui.answer": "答え合わせ" } } };
+    }
     
     const sourceLang = uiPayload.sourceLang || 'en';
     const uiTexts = uiPayload.texts || {};
@@ -172,7 +198,10 @@
     
     function t(key, vars) {
       let s = (uiTexts[currentLang] && uiTexts[currentLang][key]) || (uiTexts[sourceLang] && uiTexts[sourceLang][key]) || key;
-      if (vars) Object.keys(vars).forEach(k => { s = s.replaceAll('{' + k + '}', String(vars[k])); });
+      // 古いブラウザ互換性のために replaceAll ではなく split.join を使用
+      if (vars) Object.keys(vars).forEach(k => { s = s.split('{' + k + '}').join(String(vars[k])); });
+      // \n という文字列表記を実際の改行に変換
+      s = s.split('\\n').join('\n');
       return s;
     }
 
@@ -181,6 +210,17 @@
       init() {
         if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
         if (this.ctx.state === 'suspended') this.ctx.resume();
+      }
+      // iOS向けに無音を再生してAudioContextの制限を解除する関数を追加
+      playUnlock() {
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        gain.gain.value = 0; // 無音
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.1);
       }
       play(freq, endFreq, duration, type = 'square', vol = 0.2) {
         this.init();
@@ -259,7 +299,7 @@
     let foundDiffs = [false, false, false];
 
     // タイマー用変数
-    const TIME_LIMIT = 30;
+    const TIME_LIMIT = 20;
     let timeLeft = TIME_LIMIT;
     let timerStartTime = 0;
 
@@ -269,8 +309,10 @@
         currentStage = stages[Math.floor(Math.random() * stages.length)];
 
         // 選ばれたパターンの画像を読み込む
-        img1 = p.loadImage(currentStage.img1Url, null, () => img1 = null);
-        img2 = p.loadImage(currentStage.img2Url, null, () => img2 = null);
+        // ※GitHub Pagesで画像が表示されない(CORSエラー)場合は、画像をダウンロードして
+        // リポジトリ内の同じフォルダに入れ、 './photo1.jpg' のように相対パスに変更してください。
+        img1 = p.loadImage(currentStage.img1Url, null, (err) => console.warn("画像1の読み込みエラー:", err));
+        img2 = p.loadImage(currentStage.img2Url, null, (err) => console.warn("画像2の読み込みエラー:", err));
       };
 
       p.setup = () => {
@@ -278,41 +320,22 @@
         canvas.parent('game-container');
         p.imageMode(p.CENTER);
 
-        const hasPlayed = localStorage.getItem('spot_diff_played');
-
-        if (hasPlayed) {
-          // プレイ済みの場合の画面
-          document.getElementById('start-instruction').innerText = t('ui.already_played');
-          document.getElementById('start-sub-instruction').style.display = 'none';
-          document.getElementById('start-btn').style.display = 'none';
-
-          // ★スタッフ向け：文字を5回連続でタップしたらリセットする隠し機能
-          let tapCount = 0;
-          document.getElementById('start-instruction').addEventListener('click', () => {
-            tapCount++;
-            if (tapCount >= 5) {
-              localStorage.removeItem('spot_diff_played');
-              location.reload();
-            }
-          });
-        } else {
-          // まだプレイしていない場合の画面
-          document.getElementById('start-instruction').innerText = t('ui.instruction');
-          document.getElementById('start-sub-instruction').innerText = t('ui.sub_instruction');
-          document.getElementById('start-btn').innerText = t('ui.start');
-          document.getElementById('start-btn').style.display = 'block';
-          
-          document.getElementById('start-btn').addEventListener('click', () => {
-              localStorage.setItem('spot_diff_played', 'true'); // ★プレイ済みフラグを保存
-              document.getElementById('start-overlay').style.display = 'none';
-              gameState = 'PLAYING';
-              timerStartTime = p.millis();
-              timeLeft = TIME_LIMIT;
-              foundDiffs = [false, false, false]; // 正解状況をリセット
-              updateUI(); // 見つけた数のUIを更新
-              audio.init();
-          });
-        }
+        document.getElementById('start-instruction').innerText = t('ui.instruction');
+        document.getElementById('start-sub-instruction').innerText = t('ui.sub_instruction');
+        document.getElementById('start-btn').innerText = t('ui.start');
+        document.getElementById('start-btn').style.display = 'block';
+        
+        document.getElementById('start-btn').addEventListener('click', () => {
+            document.getElementById('start-overlay').style.display = 'none';
+            gameState = 'PLAYING';
+            timerStartTime = p.millis();
+            timeLeft = TIME_LIMIT;
+            foundDiffs = [false, false, false]; // 正解状況をリセット
+            updateUI(); // 見つけた数のUIを更新
+            
+            // ユーザー操作時に音のロックを解除する
+            audio.playUnlock();
+        });
 
         // 答え合わせボタンを押した時の処理を追加
         document.getElementById('answer-btn').addEventListener('click', () => {
@@ -351,7 +374,7 @@
 
       // 画像の描画領域を計算する関数
       function calculateImageBounds(img, boxX, boxY, boxW, boxH) {
-        if (!img) return null;
+        if (!img || !img.width || !img.height) return null;
         const imgRatio = img.width / img.height;
         const boxRatio = boxW / boxH;
         let drawW, drawH;
@@ -422,6 +445,7 @@
         if (img1 && bounds1) {
           p.image(img1, bounds1.x + bounds1.w / 2, bounds1.y + bounds1.h / 2, bounds1.w, bounds1.h);
         } else {
+          // 読み込み中、またはエラー時のプレースホルダー
           p.fill(50);
           p.rect(box1.x + 20, box1.y + 20, box1.w - 40, box1.h - 40);
         }
