@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ビール体験アプリ</title>
+    <style>
+        body { font-family: sans-serif; background: #fff8e1; text-align: center; padding: 20px; color: #333; }
+        .container { background: white; padding: 20px; border-radius: 15px; max-width: 450px; margin: 0 auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .hidden { display: none !important; }
+        .q-title { font-weight: bold; margin-top: 20px; display: block; text-align: left; }
+        label { display: block; text-align: left; margin: 8px 0; cursor: pointer; }
+        textarea, select, input[type="number"] { width: 100%; box-sizing: border-box; padding: 10px; margin-top: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 1em; }
+        textarea { height: 60px; }
+        button { width: 100%; padding: 15px; margin-top: 20px; background: #ffc107; border: none; border-radius: 30px; font-weight: bold; cursor: pointer; font-size: 1.1em; }
+        
+        /* ゲームリンクボタンのスタイル（縦並びテキスト） */
+        .game-link-btn { display: block; width: 100%; box-sizing: border-box; text-decoration: none; padding: 15px; margin-top: 15px; background: #ff9800; color: white; border-radius: 30px; font-weight: bold; font-size: 1.1em; text-align: center; transition: background 0.2s, opacity 0.2s; border: none; cursor: pointer; font-family: sans-serif; }
+        .game-link-btn:hover:not(:disabled) { background: #e65100; }
+        .game-link-btn:disabled { background: #ccc !important; color: #666; cursor: not-allowed; opacity: 0.8; }
+
+        /* 追加した案内テキスト用のスタイル */
+        .survey-guide-text { margin-top: 30px; margin-bottom: 15px; font-size: 1em; color: #333; font-weight: bold; }
+
+        /* 安心注記用のスタイル */
+        .notice-text { font-size: 10px; color: #777; text-align: left; margin-top: 30px; line-height: 1.4; border-top: 1px dashed #ddd; padding-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="step-survey">
+        <h2>🍺 生ビールアンケート</h2>
+
+        <span class="q-title">A. あなたの性別を教えてください</span>
+        <select id="gender">
+            <option value="">-- 性別を選択してください --</option>
+            <option value="男性">男性</option>
+            <option value="女性">女性</option>
+        </select>
+
+        <span class="q-title">B. あなたの年齢を教えてください</span>
+        <select id="age">
+            <option value="">-- 年齢を選択してください --</option>
+            <option value="20代以下">20代以下</option>
+            <option value="30-40代">30-40代</option>
+            <option value="50-60代">50-60代</option>
+            <option value="70代以上">70代以上</option>
+        </select>
+
+        <span class="q-title">C. 本日のご来店人数を教えてください</span>
+        <select id="guests">
+            <option value="">-- 人数を選択してください --</option>
+            <option value="1人">1人</option>
+            <option value="2人">2人</option>
+            <option value="3人以上">3人以上</option>
+        </select>
+
+        <span class="q-title">D. 一緒に来店された方とのご関係を教えてください</span>
+        <select id="relation">
+            <option value="">-- ご関係を選択してください --</option>
+            <option value="家族">家族</option>
+            <option value="友人">友人</option>
+            <option value="仕事仲間">仕事仲間</option>
+            <option value="他">他</option>
+        </select>
+
+        <span class="q-title">1. 当店の生ビールは何点ですか？</span>
+        <select id="score">
+            <option value="">-- 点数を選択してください --</option>
+            <option value="5">5点（最高！）</option>
+            <option value="4">4点</option>
+            <option value="3">3点</option>
+            <option value="2">2点</option>
+            <option value="1">1点</option>
+        </select>
+
+        <span class="q-title">2. 飲んだ感想やお店へのメッセージを教えてください</span>
+        <textarea id="comment" placeholder="感想をメッセージお聞かせください"></textarea>
+        
+        <p class="survey-guide-text">アンケートに回答したらゲームに挑戦</p>
+        
+        <div>
+            <button class="game-link-btn" disabled onclick="submitAndRedirect('速達生ガチャ', 'https://010m-xtech.github.io/TEST2/gachaboteko/')">速達生ガチャ</button>
+            <button class="game-link-btn" disabled style="background: #e73c84;" onclick="submitAndRedirect('間違え探し', 'https://010m-xtech.github.io/TEST2/botekomatigai2/')">間違え探し</button>
+            <button class="game-link-btn" disabled style="background: #00aa6e;" onclick="submitAndRedirect('インベーダーゲーム', 'https://010m-xtech.github.io/TEST2/botekoinbeda2/')">インベーダーゲーム</button>
+        </div>
+
+        <div class="notice-text">
+            ※当システムではローカルストレージを使用しこのアプリ専用の識別番号を発行しています。個人を特定する情報は一切取得いたしません。
+        </div>
+    </div>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const shopName = urlParams.get('shop') || "不明な店舗";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycby3kedbIZhyhUTAFaLnl04ME9VmyjXRs6NgNXbFz2jxHrger9frn0u6AALvH2RzLFR2eA/exec"; 
+
+    let deviceId = ""; 
+
+    // 入力状態を監視してボタンの有効/無効を切り替える関数
+    function checkFormValidity() {
+        const genderValue = document.getElementById('gender').value;
+        const ageValue = document.getElementById('age').value;
+        const guestsValue = document.getElementById('guests').value;
+        const relationValue = document.getElementById('relation').value;
+        const scoreValue = document.getElementById('score').value;
+        const commentValue = document.getElementById('comment').value.trim();
+
+        // すべての項目が入力（選択）されているかチェック
+        const isValid = genderValue && ageValue && guestsValue && relationValue && scoreValue && commentValue !== "";
+
+        // 全てのゲームリンクボタンの状態を更新
+        const btns = document.querySelectorAll('.game-link-btn');
+        btns.forEach(btn => {
+            btn.disabled = !isValid;
+        });
+    }
+
+    async function sendStepLog(stepName) {
+        try {
+            await fetch(GAS_URL, {
+                method: "POST",
+                mode: "no-cors",
+                body: JSON.stringify({ shop: shopName, step: stepName, deviceId: deviceId })
+            });
+        } catch (e) { console.error(e); }
+    }
+
+    window.onload = () => {
+        let savedId = localStorage.getItem('beer_app_device_id');
+        if (!savedId) {
+            savedId = 'dev_' + Date.now() + '_' + Math.random().toString(36).substring(2, 11);
+            localStorage.setItem('beer_app_device_id', savedId);
+        }
+        deviceId = savedId; 
+
+        sendStepLog("①URLアクセス");
+
+        // 各入力項目に変更があったらチェック処理を実行するよう設定
+        const inputIds = ['gender', 'age', 'guests', 'relation', 'score', 'comment'];
+        inputIds.forEach(id => {
+            document.getElementById(id).addEventListener('input', checkFormValidity);
+            document.getElementById(id).addEventListener('change', checkFormValidity);
+        });
+        
+        // 最初からすべて入力されている場合を考慮して一度チェック
+        checkFormValidity();
+    };
+
+    async function submitAndRedirect(gameName, targetUrl) {
+        const genderValue = document.getElementById('gender').value;
+        const ageValue = document.getElementById('age').value;
+        const guestsValue = document.getElementById('guests').value;
+        const relationValue = document.getElementById('relation').value;
+        const scoreValue = document.getElementById('score').value;
+        const commentValue = document.getElementById('comment').value;
+
+        sendStepLog(`③アンケート回答完了(${gameName})`); 
+        
+        const surveyData = {
+            shop: shopName,
+            gender: genderValue,   
+            age: ageValue,         
+            guests: guestsValue,   
+            relation: relationValue, 
+            score: scoreValue,
+            comment: commentValue,
+            gameResult: `遷移先：${gameName}`,
+            deviceId: deviceId 
+        };
+        
+        try {
+            await fetch(GAS_URL, { 
+                method: "POST", 
+                mode: "no-cors", 
+                body: JSON.stringify(surveyData) 
+            });
+        } catch (e) { 
+            console.error(e); 
+        } finally {
+            window.location.href = targetUrl;
+        }
+    }
+</script>
+</body>
+</html>
