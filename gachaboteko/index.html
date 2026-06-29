@@ -15,7 +15,6 @@
 <body class="bg-black select-none" style="-webkit-tap-highlight-color: transparent;">
     <div id="root"></div>
 
-    <!-- data-type="module" を削除し、より安定して動作するように修正 -->
     <script type="text/babel" data-presets="react">
         const { useState, useMemo, useEffect } = React;
 
@@ -200,6 +199,36 @@
           const [stage, setStage] = useState('idle');
           const [result, setResult] = useState(null);
 
+          // 初回ロード時にプレイ履歴とリセット条件を確認
+          useEffect(() => {
+              const urlParams = new URLSearchParams(window.location.search);
+              const referrer = document.referrer;
+              
+              // 特定のURLから遷移してきたか、またはURLパラメータに ?reset=1 があるかを判定
+              const isReset = referrer.includes('010m-xtech.github.io/TEST2/boteko/') || urlParams.get('reset') === '1';
+
+              if (isReset) {
+                  // リセット条件を満たした場合は記録を消去して再度遊べるようにする
+                  localStorage.removeItem('beerGachaResult');
+                  // リロード時に再度リセットされないよう、URLパラメータを消去
+                  if (urlParams.get('reset')) {
+                      window.history.replaceState({}, document.title, window.location.pathname);
+                  }
+              } else {
+                  // 記録が残っている場合は、前回の結果を復元していきなり結果画面を表示する
+                  const savedResult = localStorage.getItem('beerGachaResult');
+                  if (savedResult) {
+                      try {
+                          const parsedResult = JSON.parse(savedResult);
+                          setResult(parsedResult);
+                          setStage('result');
+                      } catch (e) {
+                          localStorage.removeItem('beerGachaResult');
+                      }
+                  }
+              }
+          }, []);
+
           const bubbles = useMemo(() => {
             return Array.from({ length: 400 }).map((_, i) => {
                 const size = Math.random() * 20 + 5; 
@@ -235,8 +264,12 @@
           const handlePlay = () => {
             if (stage !== 'idle') return;
             
-            setResult(drawPrize());
+            const drawnPrize = drawPrize();
+            setResult(drawnPrize);
             setStage('shaking');
+            
+            // 引いた結果をブラウザに保存する（再読み込み・戻るボタン対策）
+            localStorage.setItem('beerGachaResult', JSON.stringify(drawnPrize));
             
             setTimeout(() => {
               setStage('cracking');
@@ -373,7 +406,6 @@
           );
         };
 
-        // Reactコンポーネントを画面に描画する
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
