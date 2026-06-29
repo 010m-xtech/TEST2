@@ -98,9 +98,19 @@
         <!-- スタート画面 -->
         <div id="startPanel" class="panel">
             <h1 class="text-4xl mb-6 text-sky-400 tracking-widest font-bold" style="text-shadow: 0 0 10px rgba(56,189,248,0.5);">スペースサバイバー</h1>
-            <p class="mb-2 text-lg text-slate-300">そうさ：マウスやタッチで さゆうにうごくよ</p>
-            <p class="mb-6 text-sm text-slate-400 leading-relaxed">たまは じどうで うつよ！<br>てきや いんせきを こわそう！<br>もくひょう：ボスを たおせ！<br><span class="text-yellow-400 font-bold mt-2 inline-block">お好み焼きアイテムをとったらつよくなるよ！！</span></p>
-            <button id="startBtn" class="btn">スタート！</button>
+            
+            <!-- 通常のスタート表示 -->
+            <div id="startContent">
+                <p class="mb-2 text-lg text-slate-300">そうさ：マウスやタッチで さゆうにうごくよ</p>
+                <p class="mb-6 text-sm text-slate-400 leading-relaxed">たまは じどうで うつよ！<br>てきや いんせきを こわそう！<br>もくひょう：ボスを たおせ！<br><span class="text-yellow-400 font-bold mt-2 inline-block">お好み焼きアイテムをとったらつよくなるよ！！</span></p>
+                <button id="startBtn" class="btn">スタート！</button>
+            </div>
+
+            <!-- プレイ済みの場合の表示 -->
+            <div id="playedContent" class="hidden">
+                <p class="text-red-400 text-2xl font-bold mt-4 mb-4" style="text-shadow: 0 0 10px rgba(239,68,68,0.5);">すでにプレイ済みです</p>
+                <p class="text-slate-400 text-sm">※もう一度遊ぶには、特定のページから<br>アクセスしてください。</p>
+            </div>
         </div>
 
         <!-- ゲームオーバー画面 -->
@@ -123,6 +133,24 @@
     </div>
 
     <script>
+        // === プレイ履歴のチェックとリセット処理 ===
+        const ALLOWED_URL = "https://010m-xtech.github.io/TEST2/boteko/";
+        
+        // 指定のURLから遷移してきた（リファラが一致する）場合はプレイ履歴を消去
+        if (document.referrer.startsWith(ALLOWED_URL)) {
+            localStorage.removeItem('spaceSurvivorPlayed');
+        }
+
+        const startContent = document.getElementById('startContent');
+        const playedContent = document.getElementById('playedContent');
+
+        // プレイ済みかどうかでスタート画面の表示を切り替える
+        if (localStorage.getItem('spaceSurvivorPlayed') === 'true') {
+            startContent.classList.add('hidden');
+            playedContent.classList.remove('hidden');
+        }
+        // =====================================
+
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         
@@ -685,6 +713,9 @@
         }
 
         function initGame() {
+            // ゲーム開始時にプレイ済みのフラグを保存する
+            localStorage.setItem('spaceSurvivorPlayed', 'true');
+
             shouldSpawnItem = true; 
             
             player.powerLevel = 1;
