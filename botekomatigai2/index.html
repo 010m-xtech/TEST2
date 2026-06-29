@@ -107,7 +107,8 @@
         "result.clear": "素晴らしい！全部見つけられたね！！\\nスタッフにこの画面を見せてね♪",
         "result.timeup": "タイムアップ！残念、、、\\n答え合わせはボタンをクリック！",
         "ui.retry": "もういちど",
-        "ui.answer": "答え合わせ"
+        "ui.answer": "答え合わせ",
+        "ui.already_played": "すでにプレイ済みです。\\n再度遊ぶには元のページからアクセスし直してください。"
       },
       "en": {
         "ui.start": "Start",
@@ -116,7 +117,8 @@
         "hud.found": "Found: {found} / {total}",
         "result.clear": "All Found!",
         "result.timeup": "Time's up!\\n(Ask staff for the answers♪)",
-        "ui.retry": "Retry"
+        "ui.retry": "Retry",
+        "ui.already_played": "Already played.\\nPlease access from the original page to play again."
       },
       "zh": {
         "ui.start": "开始",
@@ -125,7 +127,8 @@
         "hud.found": "找到: {found} / {total}",
         "result.clear": "全部找到！",
         "result.timeup": "时间到！\\n（请向工作人员确认答案♪）",
-        "ui.retry": "重试"
+        "ui.retry": "重试",
+        "ui.already_played": "已经玩过了。\\n请从原页面再次访问以重新开始。"
       },
       "ko": {
         "ui.start": "시작",
@@ -134,7 +137,8 @@
         "hud.found": "찾았다: {found} / {total}",
         "result.clear": "모두 찾음!",
         "result.timeup": "시간 종료!\\n(정답은 직원에게 확인해 주세요♪)",
-        "ui.retry": "다시하기"
+        "ui.retry": "다시하기",
+        "ui.already_played": "이미 플레이했습니다.\\n다시 플레이하려면 원래 페이지에서 다시 접속해 주세요."
       },
       "es": {
         "ui.start": "Empezar",
@@ -143,7 +147,8 @@
         "hud.found": "Encontrado: {found} / {total}",
         "result.clear": "¡Todos encontrados!",
         "result.timeup": "¡Se acabó el tempo!\\n(¡Pregunta al personal para las respuestas♪)",
-        "ui.retry": "Reintentar"
+        "ui.retry": "Reintentar",
+        "ui.already_played": "Ya jugado.\\nAccede desde la página original para jugar de nuevo."
       },
       "pt": {
         "ui.start": "Começar",
@@ -153,7 +158,8 @@
         "result.clear": "Todos Encontrados!",
         "result.timeup": "Tempo esgotado!\\n(Pergunte à equipe pelas respostas♪)",
         "ui.retry": "Tentar novamente",
-        "ui.answer": "Answer"
+        "ui.answer": "Answer",
+        "ui.already_played": "Já jogado.\\nAcesse pela página original para jogar novamente."
       }
     }
   }
@@ -187,7 +193,7 @@
     } catch (e) {
       console.error("UI設定の読み込みに失敗しました:", e);
       // パース失敗時のフォールバック
-      uiPayload = { sourceLang: 'ja', texts: { ja: { "ui.start": "スタート", "ui.instruction": "間違い探し", "ui.sub_instruction": "タッチしてね", "hud.found": "{found}/{total}", "result.clear": "クリア！", "result.timeup": "タイムアップ！", "ui.answer": "答え合わせ" } } };
+      uiPayload = { sourceLang: 'ja', texts: { ja: { "ui.start": "スタート", "ui.instruction": "間違い探し", "ui.sub_instruction": "タッチしてね", "hud.found": "{found}/{total}", "result.clear": "クリア！", "result.timeup": "タイムアップ！", "ui.answer": "答え合わせ", "ui.already_played": "すでにプレイ済みです" } } };
     }
     
     const sourceLang = uiPayload.sourceLang || 'en';
@@ -196,6 +202,14 @@
     const browserLang = (navigator.language || '').slice(0, 2);
     const currentLang = uiTexts[savedLang] ? savedLang : (uiTexts[browserLang] ? browserLang : sourceLang);
     
+    // リファラ（アクセス元）をチェックし、特定のURLからの遷移であればプレイ履歴をリセット
+    const targetReferrer = "https://010m-xtech.github.io/TEST2/boteko/";
+    if (document.referrer.includes(targetReferrer)) {
+        localStorage.removeItem('hasPlayedSpotTheDiff');
+    }
+    // プレイ済みかどうかのフラグを取得
+    const hasPlayed = localStorage.getItem('hasPlayedSpotTheDiff') === 'true';
+
     function t(key, vars) {
       let s = (uiTexts[currentLang] && uiTexts[currentLang][key]) || (uiTexts[sourceLang] && uiTexts[sourceLang][key]) || key;
       // 古いブラウザ互換性のために replaceAll ではなく split.join を使用
@@ -320,12 +334,22 @@
         canvas.parent('game-container');
         p.imageMode(p.CENTER);
 
-        document.getElementById('start-instruction').innerText = t('ui.instruction');
-        document.getElementById('start-sub-instruction').innerText = t('ui.sub_instruction');
-        document.getElementById('start-btn').innerText = t('ui.start');
-        document.getElementById('start-btn').style.display = 'block';
+        if (hasPlayed) {
+          // プレイ済みの場合はスタートボタンを隠してメッセージを表示
+          document.getElementById('start-instruction').innerText = t('ui.already_played');
+          document.getElementById('start-sub-instruction').innerText = '';
+          document.getElementById('start-btn').style.display = 'none';
+        } else {
+          document.getElementById('start-instruction').innerText = t('ui.instruction');
+          document.getElementById('start-sub-instruction').innerText = t('ui.sub_instruction');
+          document.getElementById('start-btn').innerText = t('ui.start');
+          document.getElementById('start-btn').style.display = 'block';
+        }
         
         document.getElementById('start-btn').addEventListener('click', () => {
+            // スタートボタンを押した時点でプレイ済みとして記録する
+            localStorage.setItem('hasPlayedSpotTheDiff', 'true');
+
             document.getElementById('start-overlay').style.display = 'none';
             gameState = 'PLAYING';
             timerStartTime = p.millis();
