@@ -122,7 +122,7 @@
         <!-- クリア画面 -->
         <div id="gameClearPanel" class="panel hidden">
             <h1 class="text-4xl md:text-5xl mb-6 text-emerald-400 tracking-widest font-bold leading-tight" style="text-shadow: 0 0 15px rgba(52,211,153,0.8);">
-                おめでとう！<br>ゲームクリア！！
+                おめでとう！ゲームクリア！
             </h1>
             <div class="mt-6 p-4 bg-yellow-400/20 border-2 border-yellow-400 rounded-lg animate-pulse shadow-[0_0_20px_rgba(250,204,21,0.5)]">
                 <span class="text-yellow-400 text-2xl sm:text-3xl font-bold block leading-relaxed" style="text-shadow: 0 0 10px rgba(250,204,21,0.8);">
@@ -231,7 +231,7 @@
         let powerUpItem = null;
         let itemSpawnedThisGame = false;
         
-        const BOSS_APPEAR_TIME = 15; // 15秒でボス出現
+        const BOSS_APPEAR_TIME = 20; // 20秒でボス出現
 
         // 画像の読み込み
         const playerImg = new Image();
@@ -536,7 +536,7 @@
                 this.y = -this.height;
                 this.targetY = 150;
                 this.speed = 2;
-                this.maxHp = 150;
+                this.maxHp = 100; // ボスのHPを150から100に減少
                 this.hp = this.maxHp;
                 this.moveTimer = 0;
                 this.lastShotTime = 0;
@@ -552,18 +552,16 @@
                 this.x = canvas.width / 2 + Math.sin(this.moveTimer) * (canvas.width / 2.5);
                 
                 const now = Date.now();
-                if (now - this.lastShotTime > 350) {
+                if (now - this.lastShotTime > 800) { // 発射間隔を600msから800msにさらに緩和
                     if (Math.random() < 0.6) {
-                        for(let i = -4; i <= 4; i++) {
-                            enemyBullets.push(new EnemyBullet(this.x, this.y + this.height/2 - 20, i * 2, 7 + Math.random() * 2));
+                        for(let i = -2; i <= 2; i++) { // 7WAY弾から5WAY弾にさらに減少
+                            enemyBullets.push(new EnemyBullet(this.x, this.y + this.height/2 - 20, i * 2, 6 + Math.random() * 2)); 
                         }
                     } else {
                         const dx = player.x - this.x;
                         const dy = player.y - (this.y + this.height/2);
                         const dist = Math.hypot(dx, dy) || 1;
-                        enemyBullets.push(new EnemyBullet(this.x, this.y + this.height/2, (dx/dist)*12, (dy/dist)*12));
-                        enemyBullets.push(new EnemyBullet(this.x - 30, this.y + this.height/2, (dx/dist)*10, (dy/dist)*10));
-                        enemyBullets.push(new EnemyBullet(this.x + 30, this.y + this.height/2, (dx/dist)*10, (dy/dist)*10));
+                        enemyBullets.push(new EnemyBullet(this.x, this.y + this.height/2, (dx/dist)*9, (dy/dist)*9)); // 狙い弾の速度をさらに少し緩和し、1発のみに変更
                     }
                     this.lastShotTime = now;
                 }
@@ -848,7 +846,7 @@
                     triggerBossPhase();
                 }
                 
-                if (shouldSpawnItem && !itemSpawnedThisGame && gameTime > 4) {
+                if (shouldSpawnItem && !itemSpawnedThisGame && gameTime > 5) { // 4秒後から5秒後に変更
                     powerUpItem = new PowerUp();
                     itemSpawnedThisGame = true;
                 }
