@@ -124,8 +124,8 @@
         "ui.instruction": "間違いは3つあるよ！見つけてね！",
         "ui.sub_instruction": "（下の写真で間違いと思う部分をタッチしてね）",
         "hud.found": "みつけた！ {found} / {total}",
-        "result.clear": "素晴らしい！全部見つけられたね！！\\nスタッフにこの画面を見せてね♪",
-        "result.timeup": "タイムアップ！残念、、、\\n答え合わせはボタンをクリック！",
+        "result.clear": "素晴らしい！全部見つけられたね！！\nスタッフにこの画面を見せてね♪",
+        "result.timeup": "タイムアップ！残念、、、\n答え合わせはボタンをクリック！",
         "ui.answer": "答え合わせ",
         "ui.already_played": "すでにプレイ済みです。"
       }
@@ -399,22 +399,24 @@
         return { x: boxX + (boxW - drawW) / 2, y: boxY + (boxH - drawH) / 2, w: drawW, h: drawH };
       }
 
-      p.mousePressed = () => {
+      // タッチとマウスの両方に対応するための共通判定関数
+      function handleInteraction(x, y) {
         if (gameState !== 'PLAYING') return;
 
         let box2 = { x: 0, y: p.windowHeight / 2, w: p.windowWidth, h: p.windowHeight / 2 };
         let bounds2 = calculateImageBounds(img2, box2.x, box2.y, box2.w, box2.h);
         if (!bounds2) return;
 
-        if (p.mouseX >= bounds2.x && p.mouseX <= bounds2.x + bounds2.w && p.mouseY >= bounds2.y && p.mouseY <= bounds2.y + bounds2.h) {
+        if (x >= bounds2.x && x <= bounds2.x + bounds2.w && y >= bounds2.y && y <= bounds2.y + bounds2.h) {
             for (let i = 0; i < currentStage.differences.length; i++) {
               if (foundDiffs[i]) continue;
               let diff = currentStage.differences[i];
               let targetX = bounds2.x + diff.x * bounds2.w;
               let targetY = bounds2.y + diff.y * bounds2.h;
+              
               let targetR = diff.r * Math.max(bounds2.w, bounds2.h);
 
-              if (p.dist(p.mouseX, p.mouseY, targetX, targetY) <= targetR) {
+              if (p.dist(x, y, targetX, targetY) <= targetR) {
                 foundDiffs[i] = true;
                 updateUI();
                 audio.playCorrect();
@@ -423,6 +425,20 @@
               }
             }
         }
+      }
+
+      p.mousePressed = () => {
+        handleInteraction(p.mouseX, p.mouseY);
+      };
+
+      p.touchStarted = () => {
+        // ★ スマホでは touchStarted の方がクリックよりも早く反応するため感度が向上する
+        if (p.touches && p.touches.length > 0) {
+          handleInteraction(p.touches[0].x, p.touches[0].y);
+        } else {
+          handleInteraction(p.mouseX, p.mouseY);
+        }
+        return false; // デフォルトのスクロールやダブルタップなどの挙動を防ぐ
       };
 
       p.draw = () => {
