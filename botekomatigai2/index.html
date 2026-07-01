@@ -431,7 +431,12 @@
         handleInteraction(p.mouseX, p.mouseY);
       };
 
-      p.touchStarted = () => {
+      p.touchStarted = (event) => {
+        // HTML要素（スタートボタン等）をタッチした場合はクリックイベントを阻害しない
+        if (event && event.target && event.target.tagName !== 'CANVAS') {
+          return;
+        }
+
         // ★ スマホでは touchStarted の方がクリックよりも早く反応するため感度が向上する
         if (p.touches && p.touches.length > 0) {
           handleInteraction(p.touches[0].x, p.touches[0].y);
