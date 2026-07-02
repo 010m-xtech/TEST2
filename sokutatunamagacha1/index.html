@@ -24,13 +24,17 @@
             id: 1, rank: '大当たり', name: '', desc: '', prob: 15, 
             bg: 'bg-gradient-to-r from-yellow-400 to-yellow-600', text: 'text-yellow-400', border: 'border-yellow-300',
             resultTitle: '大当たり！！おめでとう！', resultSub: '今日はいいことありそうだね♪',
-            imgUrl: 'https://i.postimg.cc/zvKxRHM9/hua-xiang5.png'
+            imgUrl: 'https://i.postimg.cc/zvKxRHM9/hua-xiang5.png',
+            // 盛り上がる効果音（仮のフリー音源URL）
+            soundUrl: 'https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3'
           },
           { 
             id: 2, rank: 'はずれ', name: '', desc: '', prob: 85, 
             bg: 'bg-gradient-to-r from-zinc-800 to-zinc-950', text: 'text-zinc-500', border: 'border-zinc-700',
             resultTitle: 'はずれ', resultSub: '残念、、、また挑戦してね',
-            imgUrl: null
+            imgUrl: null,
+            // 残念な雰囲気の効果音（仮のフリー音源URL）
+            soundUrl: 'https://assets.mixkit.co/active_storage/sfx/3148/3148-preview.mp3'
           }
         ];
 
@@ -194,8 +198,22 @@
             return PRIZES[PRIZES.length - 1];
           };
 
+          // 結果画面になったタイミングで効果音を再生する
+          useEffect(() => {
+            if (stage === 'result' && result && result.soundUrl) {
+                const audio = new Audio(result.soundUrl);
+                audio.play().catch(e => console.error("効果音の再生に失敗しました:", e));
+            }
+          }, [stage, result]);
+
           const handlePlay = () => {
             if (stage !== 'idle') return;
+
+            // スマホのバイブレーションを動作させる (対応ブラウザ/端末のみ)
+            if (navigator.vibrate) {
+                // 100ms振動 -> 50ms停止 -> 100ms振動 というパターン
+                navigator.vibrate([100, 50, 100]); 
+            }
             
             setResult(drawPrize());
             setStage('playing_video');
