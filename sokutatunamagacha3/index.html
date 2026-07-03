@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>速達生ビールガチャ</title>
+    <!-- React と ReactDOM の読み込み -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <!-- ブラウザ上でJSXを変換するためのBabel -->
+    <script src="https://unpkg.com/@babel/standalone@7.23.10/babel.min.js"></script>
+    <!-- Tailwind CSS の読み込み -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black select-none" style="-webkit-tap-highlight-color: transparent;">
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module" data-presets="react">
+        const { useState, useMemo, useEffect } = React;
+
+        // --- 景品データ定義 ---
+        const PRIZES = [
+          { 
+            id: 1, rank: '大当たり', name: '', desc: '', prob: 50, 
+            bg: 'bg-gradient-to-r from-yellow-400 to-yellow-600', text: 'text-yellow-400', border: 'border-yellow-300',
+            resultTitle: '大当たり！！おめでとう！', resultSub: '今日はいいことありそうだね♪',
+            imgUrl: 'https://i.postimg.cc/zvKxRHM9/hua-xiang5.png',
+            resultVideoUrl: 'https://github.com/user-attachments/assets/e4f532b3-8f8a-44db-b31e-b13436b557c3',
+            // 盛り上がる効果音（安定して読み込めるCDN上のフリー音源）
+            soundUrl: 'https://cdnjs.cloudflare.com/ajax/libs/ion-sound/3.0.7/sounds/bell_ring.mp3'
+          },
+          { 
+            id: 2, rank: 'はずれ', name: '', desc: '', prob: 50, 
+            bg: 'bg-gradient-to-r from-zinc-800 to-zinc-950', text: 'text-zinc-500', border: 'border-zinc-700',
+            resultTitle: 'はずれ', resultSub: '残念、、、また挑戦してね',
+            imgUrl: null,
+            resultVideoUrl: 'https://github.com/user-attachments/assets/1efa738a-316c-4365-a7f9-8fef18de71c3',
+            // 残念な雰囲気の効果音（安定して読み込めるCDN上のフリー音源）
+            soundUrl: 'https://cdnjs.cloudflare.com/ajax/libs/ion-sound/3.0.7/sounds/water_droplet.mp3'
+          }
+        ];
+
+        // --- カスタムアニメーション用のCSS ---
+        const customStyles = `
+        @keyframes floatUp {
+          0% { transform: translateY(80px) scale(0.6); opacity: 0; }
+          100% { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-8px) rotate(-5deg); }
+          75% { transform: translateX(8px) rotate(5deg); }
+        }
+        @keyframes popZoom {
+          0% { transform: scale(0.5); opacity: 0; }
+          70% { transform: scale(1.1); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes imagePop {
+          0% { transform: scale(0.1) translateY(100px) rotate(-10deg); opacity: 0; }
+          60% { transform: scale(1.1) translateY(-20px) rotate(5deg); opacity: 1; }
+          80% { transform: scale(0.95) translateY(10px) rotate(-2deg); }
+          100% { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; }
+        }
+        @keyframes shine {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        /* 泡が真っ直ぐ画面上部まで昇るアニメーション */
+        @keyframes riseUp {
+          0% { transform: translateY(100vh) scale(0.3); opacity: 0; }
+          10% { opacity: 0.8; }
+          90% { opacity: 0.8; }
+          100% { transform: translateY(-20vh) scale(1.5); opacity: 0; }
+        }
+        /* カプセルが開いた時の泡の飛び散り */
+        @keyframes foamBurst {
+          0% { transform: translate(0, 0) scale(0); opacity: 0; }
+          20% { transform: translate(calc(var(--tx) * 0.3), calc(var(--ty) * 0.3)) scale(1.2); opacity: 1; }
+          100% { transform: translate(var(--tx), calc(var(--ty) - 50px)) scale(0); opacity: 0; }
+        }
+        .sunburst {
+          background: repeating-conic-gradient(
+            from 0deg,
+            transparent 0deg,
+            transparent 10deg,
+            rgba(255, 255, 255, 0.4) 10deg,
+            rgba(255, 255, 255, 0.2) 20deg
+          );
+        }
+        .glass-highlight {
+          background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+        }
+        `;
+
+        // --- ビールグラスを描画するSVGコンポーネント ---
+        const BeerGlass = ({ rank }) => {
+            const fillColors = {
+                '大当たり': ['#FEF08A', '#EAB308', '#A16207'],
+                'はずれ': ['#3f3f46', '#27272a', '#18181b'], 
+            };
+            const colors = fillColors[rank] || fillColors['大当たり'];
+
+            return (
+                <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-xl overflow-visible">
+                    <defs>
+                        <linearGradient id={`grad-${rank}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor={colors[0]} />
+                            <stop offset="50%" stopColor={colors[1]} />
+                            <stop offset="100%" stopColor={colors[2]} />
+                        </linearGradient>
+                    </defs>
+                    <path d="M75 40 C 100 40, 100 75, 75 75" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="6" strokeLinecap="round" />
+                    <path d="M25 25 C 25 25, 20 85, 35 90 C 50 95, 60 95, 75 90 C 90 85, 85 25, 85 25 Z" fill={`url(#grad-${rank})`} stroke="rgba(255,255,255,0.6)" strokeWidth="3" />
+                    <path d="M35 30 Q 30 60 40 85" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="4" strokeLinecap="round" />
+                    {rank !== 'はずれ' ? (
+                        <React.Fragment>
+                            <path d="M20 25 Q 30 5 55 15 Q 75 5 90 25 Q 95 35 85 40 Q 55 45 25 40 Q 15 35 20 25 Z" fill="#FFFFFF" />
+                            <circle cx="35" cy="15" r="8" fill="#FFFFFF" />
+                            <circle cx="65" cy="12" r="10" fill="#FFFFFF" />
+                            <circle cx="50" cy="8" r="12" fill="#FFFFFF" />
+                            <path d="M 75 15 L 80 10 M 80 20 L 85 18 M 70 20 L 68 15" stroke="yellow" strokeWidth="2" strokeLinecap="round" />
+                        </React.Fragment>
+                    ) : (
+                        <React.Fragment>
+                            <path d="M30 38 Q 45 35 60 38 Q 75 35 80 39 Q 55 42 30 38 Z" fill="#71717a" opacity="0.2" />
+                        </React.Fragment>
+                    )}
+                </svg>
+            );
+        };
+
+        // --- ガチャマシンのコンポーネント ---
+        const GachaMachine = ({ onPlay }) => {
+            const [isImageLoaded, setIsImageLoaded] = useState(false);
+
+            // セーフティ対策: 万が一画像が重い、または取得に失敗した場合でも3秒後に強制表示
+            useEffect(() => {
+                const timer = setTimeout(() => {
+                    setIsImageLoaded(true);
+                }, 3000);
+                return () => clearTimeout(timer);
+            }, []);
+
+            return (
+                <div 
+                    className="flex flex-col items-center justify-center cursor-pointer group w-full h-[100dvh] touch-manipulation select-none" 
+                    onClick={onPlay}
+                >
+                    <div className="relative w-full h-full transition-transform duration-300 active:scale-95 md:group-hover:scale-[1.02] flex items-center justify-center">
+                        
+                        {/* 画像読み込み中のローディング表示 */}
+                        {!isImageLoaded && (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center z-20 bg-zinc-900/50 backdrop-blur-sm">
+                                <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-4 shadow-[0_0_15px_rgba(245,158,11,0.5)]"></div>
+                                <p className="text-amber-400 font-bold animate-pulse drop-shadow-md">ガチャ準備中...</p>
+                            </div>
+                        )}
+
+                        <img 
+                            src="https://github.com/user-attachments/assets/a3f56b5a-4215-4063-b622-80f7e6953db6"
+                            alt="速達生ビールガチャ" 
+                            className={`w-full h-full max-h-[100dvh] object-cover drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)] transition-opacity duration-700 ease-in-out ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                            onLoad={() => setIsImageLoaded(true)}
+                            onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = "https://placehold.co/1080x1080/27272a/f59e0b?text=Tap+to+Start!%5Cn(Your+Image+Here)";
+                                setIsImageLoaded(true);
+                            }}
+                        />
+                        <div className="absolute inset-0 bg-white opacity-0 active:opacity-10 md:group-hover:opacity-10 transition-opacity duration-300 pointer-events-none"></div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- アプリケーションのメイン ---
+        const App = () => {
+          const [stage, setStage] = useState('idle');
+          const [result, setResult] = useState(null);
+          const introVideoRef = React.useRef(null);
+          const resultVideoRef = React.useRef(null);
+
+          const bubbles = useMemo(() => {
+            return Array.from({ length: 400 }).map((_, i) => {
+                const size = Math.random() * 20 + 5; 
+                const left = Math.random() * 100;
+                const duration = Math.random() * 4 + 2; 
+                const delay = Math.random() * -10; 
+                return { size, left, duration, delay };
+            });
+          }, []);
+
+          const drawPrize = () => {
+            const rand = Math.random() * 100;
+            let sum = 0;
+            for (const prize of PRIZES) {
+                sum += prize.prob;
+                if (rand <= sum) return prize;
+            }
+            return PRIZES[PRIZES.length - 1];
+          };
+
+          // 結果画面になったタイミングで効果音を再生する
+          useEffect(() => {
+            if (stage === 'result' && result && result.soundUrl) {
+                const audio = new Audio(result.soundUrl);
+                audio.play().catch(e => console.error("効果音の再生に失敗しました:", e));
+            }
+          }, [stage, result]);
+
+          const handlePlay = () => {
+            if (stage !== 'idle') return;
+
+            // スマホのバイブレーションを動作させる (対応ブラウザ/端末のみ)
+            if (navigator.vibrate) {
+                // 100ms振動 -> 50ms停止 -> 100ms振動 というパターン
+                navigator.vibrate([100, 50, 100]); 
+            }
+            
+            const drawnPrize = drawPrize();
+            setResult(drawnPrize);
+            setStage('playing_intro_video');
+            
+            // タップアクションの直後に動画の再生を開始する
+            if (introVideoRef.current) {
+                introVideoRef.current.currentTime = 0;
+                introVideoRef.current.play().catch(e => console.error("共通動画の再生に失敗しました:", e));
+            }
+            
+            // iOSなどの自動再生制限を回避するため、タップ時のイベント内で次の動画もロードしておく
+            if (resultVideoRef.current) {
+                resultVideoRef.current.load();
+            }
+          };
+
+          const handleIntroEnded = () => {
+            setStage('playing_result_video');
+            if (resultVideoRef.current) {
+                resultVideoRef.current.currentTime = 0;
+                resultVideoRef.current.play().catch(e => console.error("結果動画の再生に失敗しました:", e));
+            }
+          };
+
+          const handleResultVideoEnded = () => {
+            setStage('result');
+          };
+
+          return (
+            <React.Fragment>
+              <style>{customStyles}</style>
+              
+              <div className="min-h-screen bg-gradient-to-b from-yellow-100 via-yellow-400 to-amber-600 font-sans overflow-x-hidden relative selection:bg-amber-800 selection:text-white">
+                
+                {/* 背景に浮かぶ生ビールの泡のエフェクト */}
+                <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+                    {bubbles.map((bubble, i) => (
+                        <div key={i}
+                             className="absolute bottom-0 bg-white/50 rounded-full border border-white/40 backdrop-blur-[2px] shadow-[0_0_8px_rgba(255,255,255,0.6)]"
+                             style={{
+                                 width: `${bubble.size}px`, height: `${bubble.size}px`, left: `${bubble.left}%`,
+                                 animation: `riseUp ${bubble.duration}s linear infinite ${bubble.delay}s`
+                             }}
+                        />
+                    ))}
+                    <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-white/60 rounded-full blur-[100px] mix-blend-overlay"></div>
+                    <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-orange-600/30 rounded-full blur-[120px] mix-blend-color-burn"></div>
+                </div>
+
+                {/* メインビューポート（画面いっぱいに画像を表示） */}
+                <div className="w-full mx-auto flex flex-col items-center justify-center min-h-[100dvh] relative z-10">
+                    <div className="w-full h-[100dvh] flex justify-center items-center">
+                        <GachaMachine onPlay={handlePlay} />
+                    </div>
+                </div>
+
+                {/* 演出用動画 (常にマウントしておき、再生時に表示する) */}
+                <div 
+                    className={`fixed inset-0 bg-black z-50 flex items-center justify-center transition-opacity duration-300 ${(stage === 'playing_intro_video' || stage === 'playing_result_video') ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+                    style={{ visibility: (stage === 'playing_intro_video' || stage === 'playing_result_video') ? 'visible' : 'hidden' }}
+                >
+                    {/* 共通の導入動画 */}
+                    <video 
+                        ref={introVideoRef}
+                        src="https://github.com/user-attachments/assets/37bb1e95-9a0b-4ef6-82c9-377239ccd7db"
+                        className={`w-full h-full object-contain absolute inset-0 ${stage === 'playing_intro_video' ? 'opacity-100 z-10' : 'opacity-0 -z-10'}`}
+                        playsInline
+                        onEnded={handleIntroEnded}
+                    ></video>
+                    
+                    {/* 結果に応じた動画 */}
+                    <video 
+                        ref={resultVideoRef}
+                        src={result?.resultVideoUrl || ""}
+                        className={`w-full h-full object-contain absolute inset-0 ${stage === 'playing_result_video' ? 'opacity-100 z-10' : 'opacity-0 -z-10'}`}
+                        playsInline
+                        onEnded={handleResultVideoEnded}
+                    ></video>
+                </div>
+
+                {/* 演出用オーバーレイ */}
+                {stage === 'result' && (
+                    <div className="fixed inset-0 bg-black/80 z-50 flex flex-col items-center justify-center p-4 backdrop-blur-md">
+                        
+                        {/* 抽選結果表示画面 */}
+                        {result && (
+                            <div className="flex flex-col items-center justify-center w-full h-full overflow-y-auto py-8 animate-[popZoom_0.6s_cubic-bezier(0.175,0.885,0.32,1.275)_forwards]">
+                                <div className="absolute w-[150vw] h-[150vw] md:w-[100vw] md:h-[100vw] sunburst animate-[shine_20s_linear_infinite] -z-10 opacity-40"></div>
+                                
+                                <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10 mb-6 relative">
+                                    <div className={`w-32 h-32 md:w-40 md:h-40 rounded-full border-8 ${result.border} flex flex-col items-center justify-center bg-zinc-950/95 shadow-[0_10px_40px_rgba(0,0,0,0.8)] relative z-10`}>
+                                        <span className={`text-3xl md:text-4xl font-black ${result.text} drop-shadow-lg`}>{result.rank}</span>
+                                        {result.rank !== 'はずれ' && (
+                                            <span className="absolute -top-6 text-6xl drop-shadow-xl animate-bounce">👑</span>
+                                        )}
+                                    </div>
+                                    
+                                    <div className="relative z-10 flex items-center justify-center">
+                                        {result.imgUrl ? (
+                                            <img 
+                                                src={result.imgUrl} 
+                                                alt={result.rank} 
+                                                className="w-48 h-48 md:w-72 md:h-72 object-contain filter drop-shadow-[0_20px_30px_rgba(0,0,0,0.8)] animate-[imagePop_0.8s_cubic-bezier(0.175,0.885,0.32,1.275)_forwards]" 
+                                            />
+                                        ) : (
+                                            <div className="w-48 h-48 md:w-64 md:h-64 filter drop-shadow-[0_20px_30px_rgba(0,0,0,0.8)] bg-white/5 rounded-3xl p-4 backdrop-blur-sm border border-white/10 relative">
+                                                <BeerGlass rank={result.rank} />
+                                            </div>
+                                        )}
+                                        {result.rank !== 'はずれ' && (
+                                            <div className="absolute inset-0 bg-yellow-400 mix-blend-overlay animate-pulse rounded-full blur-2xl opacity-30 pointer-events-none"></div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {result.rank !== 'はずれ' && result.name && (
+                                    <h2 className={`text-5xl md:text-7xl font-black mb-6 drop-shadow-[0_5px_10px_rgba(0,0,0,0.9)] ${result.text} tracking-tight text-center`} style={{ WebkitTextStroke: '2px #000', paintOrder: 'stroke fill' }}>
+                                        {result.name}
+                                    </h2>
+                                )}
+                                
+                                <div className="bg-zinc-900/90 px-8 py-4 md:px-12 md:py-6 rounded-2xl border-2 border-amber-500/30 text-center mb-10 backdrop-blur-md shadow-[0_15px_30px_rgba(0,0,0,0.8)] relative z-10 max-w-xl">
+                                    <div className="text-3xl md:text-4xl font-black drop-shadow-md text-yellow-400">
+                                        {result.resultTitle}
+                                    </div>
+                                    
+                                    {result.rank === '大当たり' && (
+                                        <div className="mt-4 py-3 px-6 bg-gradient-to-r from-green-500 to-green-600 rounded-xl border-2 border-green-300 animate-pulse shadow-[0_0_20px_rgba(34,197,94,0.5)]">
+                                            <p className="text-xl md:text-2xl font-black text-white drop-shadow-md">
+                                                スタッフにこの画面を見せてね♪
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {result.resultSub && (
+                                        <div className="text-lg md:text-xl font-bold text-zinc-300 mt-4">
+                                            {result.resultSub}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+              </div>
+            </React.Fragment>
+          );
+        };
+
+        // Reactコンポーネントを画面に描画する
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
