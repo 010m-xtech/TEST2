@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>速達生ビールガチャ</title>
+    <!-- React と ReactDOM の読み込み -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <!-- ブラウザ上でJSXを変換するためのBabel -->
+    <script src="https://unpkg.com/@babel/standalone@7.23.10/babel.min.js"></script>
+    <!-- Tailwind CSS の読み込み -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black select-none" style="-webkit-tap-highlight-color: transparent;">
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module" data-presets="react">
+        const { useState, useMemo, useEffect, useRef } = React;
+
+        // --- 景品データ定義 ---
+        const PRIZES = [
+          { 
+            id: 1, rank: '1等', name: '', desc: '', prob: 5, 
+            bg: 'bg-gradient-to-r from-yellow-400 to-yellow-600', text: 'text-yellow-400', border: 'border-yellow-300',
+            glow: 'shadow-[0_0_60px_rgba(250,204,21,0.8)]',
+            resultTitle: '素晴らしい！！おめでとう！', resultSub: 'アンケートに答えて景品ゲットしてね♪',
+            imgUrl: 'https://i.postimg.cc/zvKxRHM9/hua-xiang5.png',
+            soundType: 'fanfare'
+          },
+          { 
+            id: 2, rank: '2等', name: '', desc: '', prob: 15, 
+            bg: 'bg-gradient-to-r from-gray-300 to-gray-500', text: 'text-gray-300', border: 'border-gray-400',
+            glow: 'shadow-[0_0_60px_rgba(209,213,219,0.8)]',
+            resultTitle: 'すごい！！おめでとう！', resultSub: 'アンケートに答えて景品ゲットしてね♪',
+            imgUrl: null,
+            soundType: 'fanfare'
+          },
+          { 
+            id: 3, rank: '3等', name: '', desc: '', prob: 80, 
+            bg: 'bg-gradient-to-r from-amber-600 to-amber-800', text: 'text-amber-500', border: 'border-amber-600',
+            glow: 'shadow-[0_0_60px_rgba(245,158,11,0.8)]',
+            resultTitle: 'おめでとう！', resultSub: 'アンケートに答えて景品ゲットしてね♪',
+            imgUrl: null,
+            soundType: 'fanfare'
+          }
+        ];
+
+        // --- カスタムアニメーション用のCSS ---
+        const customStyles = `
+        @keyframes floatUp {
+          0% { transform: translateY(80px) scale(0.6); opacity: 0; }
+          100% { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-8px) rotate(-5deg); }
+          75% { transform: translateX(8px) rotate(5deg); }
+        }
+        @keyframes popZoom {
+          0% { transform: scale(0.5); opacity: 0; }
+          70% { transform: scale(1.1); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes imagePop {
+          0% { transform: scale(0.1) translateY(100px) rotate(-10deg); opacity: 0; }
+          60% { transform: scale(1.1) translateY(-20px) rotate(5deg); opacity: 1; }
+          80% { transform: scale(0.95) translateY(10px) rotate(-2deg); }
+          100% { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; }
+        }
+        @keyframes shine {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        /* 泡が真っ直ぐ画面上部まで昇るアニメーション */
+        @keyframes riseUp {
+          0% { transform: translateY(100vh) scale(0.3); opacity: 0; }
+          10% { opacity: 0.8; }
+          90% { opacity: 0.8; }
+          100% { transform: translateY(-20vh) scale(1.5); opacity: 0; }
+        }
+        /* カプセルが開いた時の泡の飛び散り */
+        @keyframes foamBurst {
+          0% { transform: translate(0, 0) scale(0); opacity: 0; }
+          20% { transform: translate(calc(var(--tx) * 0.3), calc(var(--ty) * 0.3)) scale(1.2); opacity: 1; }
+          100% { transform: translate(var(--tx), calc(var(--ty) - 50px)) scale(0); opacity: 0; }
+        }
+        .sunburst {
+          background: repeating-conic-gradient(
+            from 0deg,
+            transparent 0deg,
+            transparent 10deg,
+            rgba(255, 255, 255, 0.4) 10deg,
+            rgba(255, 255, 255, 0.2) 20deg
+          );
+        }
+        .glass-highlight {
+          background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+        }
+        `;
+
+        // --- ビールグラスを描画するSVGコンポーネント ---
+        const BeerGlass = ({ rank }) => {
+            const fillColors = {
+                '1等': ['#FEF08A', '#EAB308', '#A16207'],
+                '2等': ['#E5E7EB', '#9CA3AF', '#4B5563'],
+                '3等': ['#FCD34D', '#D97706', '#92400E'],
+                '大当たり': ['#FEF08A', '#EAB308', '#A16207'],
+                'はずれ': ['#3f3f46', '#27272a', '#18181b'], 
+            };
+            const colors = fillColors[rank] || fillColors['1等'];
+
+            return (
+                <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-xl overflow-visible">
+                    <defs>
+                        <linearGradient id={`grad-${rank}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor={colors[0]} />
+                            <stop offset="50%" stopColor={colors[1]} />
+                            <stop offset="100%" stopColor={colors[2]} />
+                        </linearGradient>
+                    </defs>
+                    <path d="M75 40 C 100 40, 100 75, 75 75" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="6" strokeLinecap="round" />
+                    <path d="M25 25 C 25 25, 20 85, 35 90 C 50 95, 60 95, 75 90 C 90 85, 85 25, 85 25 Z" fill={`url(#grad-${rank})`} stroke="rgba(255,255,255,0.6)" strokeWidth="3" />
+                    <path d="M35 30 Q 30 60 40 85" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="4" strokeLinecap="round" />
+                    {rank !== 'はずれ' ? (
+                        <React.Fragment>
+                            <path d="M20 25 Q 30 5 55 15 Q 75 5 90 25 Q 95 35 85 40 Q 55 45 25 40 Q 15 35 20 25 Z" fill="#FFFFFF" />
+                            <circle cx="35" cy="15" r="8" fill="#FFFFFF" />
+                            <circle cx="65" cy="12" r="10" fill="#FFFFFF" />
+                            <circle cx="50" cy="8" r="12" fill="#FFFFFF" />
+                            <path d="M 75 15 L 80 10 M 80 20 L 85 18 M 70 20 L 68 15" stroke="yellow" strokeWidth="2" strokeLinecap="round" />
+                        </React.Fragment>
+                    ) : (
+                        <React.Fragment>
+                            <path d="M30 38 Q 45 35 60 38 Q 75 35 80 39 Q 55 42 30 38 Z" fill="#71717a" opacity="0.2" />
+                        </React.Fragment>
+                    )}
+                </svg>
+            );
+        };
+
+        // --- ガチャマシンのコンポーネント ---
+        const GachaMachine = ({ onPlay }) => {
+            const [isImageLoaded, setIsImageLoaded] = useState(false);
+
+            useEffect(() => {
+                const timer = setTimeout(() => setIsImageLoaded(true), 3000);
+                return () => clearTimeout(timer);
+            }, []);
+
+            return (
+                <div 
+                    className="flex flex-col items-center justify-center cursor-pointer group w-full h-[100dvh] touch-manipulation select-none" 
+                    onClick={onPlay}
+                >
+                    <div className="relative w-full h-full transition-transform duration-300 active:scale-95 md:group-hover:scale-[1.02] flex items-center justify-center">
+                        {!isImageLoaded && (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center z-20 bg-zinc-900/50 backdrop-blur-sm">
+                                <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-4 shadow-[0_0_15px_rgba(245,158,11,0.5)]"></div>
+                                <p className="text-amber-400 font-bold animate-pulse drop-shadow-md">ガチャ準備中...</p>
+                            </div>
+                        )}
+
+                        <img 
+                            src="https://github.com/user-attachments/assets/a3f56b5a-4215-4063-b622-80f7e6953db6"
+                            alt="速達生ビールガチャ" 
+                            className={`w-full h-full max-h-[100dvh] object-cover drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)] transition-opacity duration-700 ease-in-out ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                            onLoad={() => setIsImageLoaded(true)}
+                            onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = "https://placehold.co/1080x1080/27272a/f59e0b?text=Tap+to+Start!%5Cn(Your+Image+Here)";
+                                setIsImageLoaded(true);
+                            }}
+                        />
+                        <div className="absolute inset-0 bg-white opacity-0 active:opacity-10 md:group-hover:opacity-10 transition-opacity duration-300 pointer-events-none"></div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- 詐欺対策用の現在時刻表示コンポーネント ---
+        const RealTimeClock = () => {
+            const [time, setTime] = useState(new Date());
+            useEffect(() => {
+                const timer = setInterval(() => setTime(new Date()), 1000);
+                return () => clearInterval(timer);
+            }, []);
+            
+            // YYYY/MM/DD HH:mm:ss 形式にフォーマット
+            const formattedTime = time.toLocaleString('ja-JP', { 
+                year: 'numeric', month: '2-digit', day: '2-digit', 
+                hour: '2-digit', minute: '2-digit', second: '2-digit' 
+            });
+
+            return (
+                <div 
+                    className="absolute bottom-4 left-0 w-full text-center text-white font-mono text-3xl md:text-5xl font-black z-[100] tracking-widest drop-shadow-[0_5px_10px_rgba(0,0,0,0.9)] pointer-events-none"
+                    style={{ WebkitTextStroke: '1.5px black', paintOrder: 'stroke fill' }}
+                >
+                    {formattedTime}
+                </div>
+            );
+        };
+
+        // --- アンケート画面コンポーネント ---
+        const SurveyScreen = ({ shopName, deviceId, gameResult, onComplete }) => {
+            const [gender, setGender] = useState('');
+            const [age, setAge] = useState('');
+            const [guests, setGuests] = useState('');
+            const [relation, setRelation] = useState('');
+            const [score, setScore] = useState('');
+            const [comment, setComment] = useState('');
+            const [isSubmitting, setIsSubmitting] = useState(false);
+            const [isCompleted, setIsCompleted] = useState(false);
+
+            const isValid = gender && age && guests && relation && score && comment.trim() !== '';
+            const GAS_URL = "https://script.google.com/macros/s/AKfycby3kedbIZhyhUTAFaLnl04ME9VmyjXRs6NgNXbFz2jxHrger9frn0u6AALvH2RzLFR2eA/exec";
+
+            // アンケート画面アクセス時のログ
+            useEffect(() => {
+                const sendStepLog = async () => {
+                    try {
+                        await fetch(GAS_URL, {
+                            method: "POST",
+                            mode: "no-cors",
+                            body: JSON.stringify({ shop: shopName, step: "①URLアクセス(アンケート単体)", deviceId: deviceId })
+                        });
+                    } catch (e) { console.error(e); }
+                };
+                sendStepLog();
+                // 画面上部へスクロール
+                window.scrollTo(0, 0);
+            }, [GAS_URL, shopName, deviceId]);
+
+            const submitSurvey = async () => {
+                setIsSubmitting(true);
+                
+                // 完了ステップ送信
+                try {
+                    await fetch(GAS_URL, {
+                        method: "POST",
+                        mode: "no-cors",
+                        body: JSON.stringify({ shop: shopName, step: "③アンケート回答完了(単体)", deviceId: deviceId })
+                    });
+                } catch (e) { console.error(e); }
+
+                // データ送信
+                const surveyData = {
+                    shop: shopName,
+                    gender: gender,   
+                    age: age,         
+                    guests: guests,   
+                    relation: relation, 
+                    score: score,
+                    comment: comment,
+                    gameResult: gameResult ? `ガチャ結果: ${gameResult}` : 'アンケート単体完了',
+                    deviceId: deviceId 
+                };
+                
+                try {
+                    await fetch(GAS_URL, { 
+                        method: "POST", 
+                        mode: "no-cors", 
+                        body: JSON.stringify(surveyData) 
+                    });
+                    setIsCompleted(true);
+                    
+                    // 1.5秒後に親コンポーネントに完了を通知して元の画面に戻る
+                    setTimeout(() => {
+                        if (onComplete) onComplete();
+                    }, 1500);
+                } catch (e) { 
+                    console.error(e); 
+                    setIsSubmitting(false);
+                }
+            };
+
+            return (
+                <div className="min-h-screen bg-[#fff8e1] p-5 text-[#333] font-sans flex flex-col items-center w-full">
+                    <div className="w-full max-w-[450px] bg-white p-5 md:p-8 rounded-2xl shadow-[0_4px_10px_rgba(0,0,0,0.1)] mx-auto text-left relative overflow-hidden">
+                        
+                        {/* 背景の装飾 */}
+                        <div className="absolute top-0 left-0 w-full h-2 bg-amber-400"></div>
+
+                        <h2 className="text-2xl font-bold text-center mb-6 text-amber-600">🍺 生ビールアンケート</h2>
+                        
+                        <label className="block font-bold mt-5 text-left text-sm md:text-base text-gray-700">A. あなたの性別を教えてください</label>
+                        <select className="w-full p-3 mt-2 rounded-lg border border-gray-300 text-base bg-white focus:outline-none focus:ring-2 focus:ring-amber-400" value={gender} onChange={e => setGender(e.target.value)} disabled={isCompleted || isSubmitting}>
+                            <option value="">-- 性別を選択してください --</option>
+                            <option value="男性">男性</option>
+                            <option value="女性">女性</option>
+                        </select>
+
+                        <label className="block font-bold mt-5 text-left text-sm md:text-base text-gray-700">B. あなたの年齢を教えてください</label>
+                        <select className="w-full p-3 mt-2 rounded-lg border border-gray-300 text-base bg-white focus:outline-none focus:ring-2 focus:ring-amber-400" value={age} onChange={e => setAge(e.target.value)} disabled={isCompleted || isSubmitting}>
+                            <option value="">-- 年齢を選択してください --</option>
+                            <option value="20代以下">20代以下</option>
+                            <option value="30-40代">30-40代</option>
+                            <option value="50-60代">50-60代</option>
+                            <option value="70代以上">70代以上</option>
+                        </select>
+
+                        <label className="block font-bold mt-5 text-left text-sm md:text-base text-gray-700">C. 本日のご来店人数を教えてください</label>
+                        <select className="w-full p-3 mt-2 rounded-lg border border-gray-300 text-base bg-white focus:outline-none focus:ring-2 focus:ring-amber-400" value={guests} onChange={e => setGuests(e.target.value)} disabled={isCompleted || isSubmitting}>
+                            <option value="">-- 人数を選択してください --</option>
+                            <option value="1人">1人</option>
+                            <option value="2人">2人</option>
+                            <option value="3人以上">3人以上</option>
+                        </select>
+
+                        <label className="block font-bold mt-5 text-left text-sm md:text-base text-gray-700">D. 一緒に来店された方とのご関係を教えてください</label>
+                        <select className="w-full p-3 mt-2 rounded-lg border border-gray-300 text-base bg-white focus:outline-none focus:ring-2 focus:ring-amber-400" value={relation} onChange={e => setRelation(e.target.value)} disabled={isCompleted || isSubmitting}>
+                            <option value="">-- ご関係を選択してください --</option>
+                            <option value="家族">家族</option>
+                            <option value="友人">友人</option>
+                            <option value="仕事仲間">仕事仲間</option>
+                            <option value="他">他</option>
+                        </select>
+
+                        <label className="block font-bold mt-5 text-left text-sm md:text-base text-gray-700">1. 当店の生ビールは何点ですか？</label>
+                        <select className="w-full p-3 mt-2 rounded-lg border border-gray-300 text-base bg-white focus:outline-none focus:ring-2 focus:ring-amber-400" value={score} onChange={e => setScore(e.target.value)} disabled={isCompleted || isSubmitting}>
+                            <option value="">-- 点数を選択してください --</option>
+                            <option value="5">5点（最高！）</option>
+                            <option value="4">4点</option>
+                            <option value="3">3点</option>
+                            <option value="2">2点</option>
+                            <option value="1">1点</option>
+                        </select>
+
+                        <label className="block font-bold mt-5 text-left text-sm md:text-base text-gray-700">2. 生ビールを飲んだ感想を教えてください</label>
+                        <textarea className="w-full p-3 mt-2 rounded-lg border border-gray-300 text-base h-[100px] resize-none focus:outline-none focus:ring-2 focus:ring-amber-400" placeholder="感想をメッセージお聞かせください" value={comment} onChange={e => setComment(e.target.value)} disabled={isCompleted || isSubmitting}></textarea>
+                        
+                        {!isCompleted ? (
+                            <button 
+                                onClick={submitSurvey} 
+                                disabled={!isValid || isSubmitting}
+                                className="w-full p-4 mt-8 bg-[#ffc107] text-[#333] rounded-full font-bold text-lg disabled:opacity-50 disabled:bg-[#ccc] disabled:cursor-not-allowed hover:bg-[#e0a800] transition-colors shadow-md"
+                            >
+                                {isSubmitting ? "送信中..." : "アンケートに答えたら景品ゲット♪"}
+                            </button>
+                        ) : (
+                            <div className="mt-8 p-4 bg-green-50 border border-green-200 rounded-lg text-[#00aa6e] font-bold text-center text-lg animate-[popZoom_0.4s_ease-out_forwards]">
+                                アンケートのご協力ありがとうございました！
+                            </div>
+                        )}
+
+                        <div className="text-[10px] text-[#777] text-left mt-8 leading-relaxed border-t border-dashed border-[#ddd] pt-4">
+                            ※当システムではローカルストレージを使用しこのアプリ専用の識別番号を発行しています。個人を特定する情報は一切取得いたしません。
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- アプリケーションのメイン ---
+        const App = () => {
+          const [view, setView] = useState('gacha'); // 'gacha' または 'survey'
+          const [stage, setStage] = useState('idle');
+          const [result, setResult] = useState(null);
+          const [isSurveyCompleted, setIsSurveyCompleted] = useState(false); // アンケート完了状態を追加
+          const [isLoaded, setIsLoaded] = useState(false); // 初期ロード状態を追加
+          
+          const [shopName, setShopName] = useState("不明な店舗");
+          const [deviceId, setDeviceId] = useState("");
+
+          const videoRef = useRef(null);
+          const audioCtxRef = useRef(null);
+
+          // URLパラメータとデバイスIDの初期化、および引き直し防止用データの復元
+          useEffect(() => {
+              const urlParams = new URLSearchParams(window.location.search);
+              
+              // 変更箇所: URLに ?action=reset がついていたら、過去のガチャ結果とアンケート状況をリセットして再度遊べるようにする
+              if (urlParams.get('action') === 'reset') {
+                  localStorage.removeItem('beer_app_gacha_result');
+                  localStorage.removeItem('beer_app_survey_completed');
+                  
+                  // URLの見た目を綺麗にする（?action=reset を消して shop パラメータだけ残す）
+                  const shopParam = urlParams.get('shop');
+                  const newUrl = window.location.pathname + (shopParam ? `?shop=${shopParam}` : '');
+                  window.history.replaceState({}, document.title, newUrl);
+              }
+
+              setShopName(urlParams.get('shop') || "不明な店舗");
+
+              let savedId = localStorage.getItem('beer_app_device_id');
+              if (!savedId) {
+                  savedId = 'dev_' + Date.now() + '_' + Math.random().toString(36).substring(2, 11);
+                  localStorage.setItem('beer_app_device_id', savedId);
+              }
+              setDeviceId(savedId); 
+
+              // ガチャ結果の復元（引き直し防止対策）
+              const savedResult = localStorage.getItem('beer_app_gacha_result');
+              const savedSurvey = localStorage.getItem('beer_app_survey_completed');
+              
+              if (savedResult) {
+                  setResult(JSON.parse(savedResult));
+                  setStage('result');
+              }
+              if (savedSurvey === 'true') {
+                  setIsSurveyCompleted(true);
+              }
+              
+              setIsLoaded(true);
+          }, []);
+
+          const bubbles = useMemo(() => {
+            return Array.from({ length: 400 }).map((_, i) => {
+                const size = Math.random() * 20 + 5; 
+                const left = Math.random() * 100;
+                const duration = Math.random() * 4 + 2; 
+                const delay = Math.random() * -10; 
+                return { size, left, duration, delay };
+            });
+          }, []);
+
+          const drawPrize = () => {
+            const rand = Math.random() * 100;
+            let sum = 0;
+            for (const prize of PRIZES) {
+                sum += prize.prob;
+                if (rand <= sum) return prize;
+            }
+            return PRIZES[PRIZES.length - 1];
+          };
+
+          // Web Audio APIを用いたファンファーレの生成関数
+          const playFanfare = (ctx) => {
+              if (!ctx) return;
+              try {
+                  const playNote = (freq, startTime, duration) => {
+                      const osc = ctx.createOscillator();
+                      const gain = ctx.createGain();
+                      osc.connect(gain);
+                      gain.connect(ctx.destination);
+                      osc.type = 'triangle'; 
+                      osc.frequency.value = freq;
+                      
+                      gain.gain.setValueAtTime(0, startTime);
+                      gain.gain.linearRampToValueAtTime(0.2, startTime + 0.05);
+                      gain.gain.setValueAtTime(0.2, startTime + duration - 0.05);
+                      gain.gain.linearRampToValueAtTime(0, startTime + duration);
+                      
+                      osc.start(startTime);
+                      osc.stop(startTime + duration);
+                  };
+                  
+                  const now = ctx.currentTime;
+                  // ド・ミ・ソ・ド (C5, E5, G5, C6) のファンファーレ
+                  playNote(523.25, now, 0.15);
+                  playNote(659.25, now + 0.15, 0.15);
+                  playNote(783.99, now + 0.30, 0.15);
+                  playNote(1046.50, now + 0.45, 0.5);
+              } catch (e) {
+                  console.error("Audio playback error:", e);
+              }
+          };
+
+          useEffect(() => {
+            if (stage === 'result' && result && result.soundType === 'fanfare') {
+                playFanfare(audioCtxRef.current);
+            }
+          }, [stage, result]);
+
+          const handlePlay = () => {
+            if (stage !== 'idle') return;
+
+            if (!audioCtxRef.current) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) {
+                    audioCtxRef.current = new AudioContext();
+                }
+            }
+            if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
+                audioCtxRef.current.resume();
+            }
+
+            if (navigator.vibrate) {
+                navigator.vibrate([100, 50, 100]); 
+            }
+            
+            const prize = drawPrize();
+            setResult(prize);
+            
+            // 引き直し防止のため、引いた瞬間に結果をローカルストレージに保存する
+            localStorage.setItem('beer_app_gacha_result', JSON.stringify(prize));
+            
+            setStage('playing_video');
+            
+            if (videoRef.current) {
+                videoRef.current.currentTime = 0;
+                videoRef.current.play().catch(e => console.error("動画の再生に失敗しました:", e));
+            }
+          };
+
+          // 初期ロードが終わるまでは何も表示しない（チラつき防止）
+          if (!isLoaded) return null;
+
+          // 画面が 'survey' の場合はアンケート画面を表示
+          if (view === 'survey') {
+              return <SurveyScreen 
+                  shopName={shopName} 
+                  deviceId={deviceId} 
+                  gameResult={result ? result.rank : ''} 
+                  onComplete={() => {
+                      setIsSurveyCompleted(true);
+                      localStorage.setItem('beer_app_survey_completed', 'true'); // アンケート完了も保存
+                      setView('gacha');
+                  }}
+              />;
+          }
+
+          // ガチャ画面
+          return (
+            <React.Fragment>
+              <style>{customStyles}</style>
+              
+              <div className="min-h-screen bg-gradient-to-b from-yellow-100 via-yellow-400 to-amber-600 font-sans overflow-x-hidden relative selection:bg-amber-800 selection:text-white">
+                
+                {/* 背景に浮かぶ生ビールの泡のエフェクト */}
+                <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+                    {bubbles.map((bubble, i) => (
+                        <div key={i}
+                             className="absolute bottom-0 bg-white/50 rounded-full border border-white/40 backdrop-blur-[2px] shadow-[0_0_8px_rgba(255,255,255,0.6)]"
+                             style={{
+                                 width: `${bubble.size}px`, height: `${bubble.size}px`, left: `${bubble.left}%`,
+                                 animation: `riseUp ${bubble.duration}s linear infinite ${bubble.delay}s`
+                             }}
+                        />
+                    ))}
+                    <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-white/60 rounded-full blur-[100px] mix-blend-overlay"></div>
+                    <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-orange-600/30 rounded-full blur-[120px] mix-blend-color-burn"></div>
+                </div>
+
+                {/* メインビューポート（画面いっぱいに画像を表示） */}
+                <div className="w-full mx-auto flex flex-col items-center justify-center min-h-[100dvh] relative z-10">
+                    <div className="w-full h-[100dvh] flex justify-center items-center">
+                        <GachaMachine onPlay={handlePlay} />
+                    </div>
+                </div>
+
+                {/* 演出用動画 (常にマウントしておき、再生時に表示する) */}
+                <div 
+                    className={`fixed inset-0 bg-black z-50 flex items-center justify-center transition-opacity duration-300 ${stage === 'playing_video' ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+                    style={{ visibility: stage === 'playing_video' ? 'visible' : 'hidden' }}
+                >
+                    <video 
+                        ref={videoRef}
+                        src="https://github.com/user-attachments/assets/e6cba716-a806-4e82-84cb-618aa012f1f2"
+                        className="w-full h-full object-contain"
+                        playsInline
+                        onEnded={() => setStage('result')}
+                    ></video>
+                </div>
+
+                {/* 演出用オーバーレイ */}
+                {stage === 'result' && (
+                    <div className="fixed inset-0 bg-black/80 z-50 flex flex-col items-center justify-center p-4 backdrop-blur-md">
+                        
+                        {/* 抽選結果表示画面 */}
+                        {result && (
+                            <div className="flex flex-col items-center justify-center w-full h-full overflow-y-auto py-8 animate-[popZoom_0.6s_cubic-bezier(0.175,0.885,0.32,1.275)_forwards]">
+                                <div className="absolute w-[150vw] h-[150vw] md:w-[100vw] md:h-[100vw] sunburst animate-[shine_20s_linear_infinite] -z-10 opacity-40"></div>
+                                
+                                <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10 mb-6 relative">
+                                    {/* 変更箇所: 等級表示の演出を派手にする */}
+                                    <div className={`w-36 h-36 md:w-48 md:h-48 rounded-full border-[10px] ${result.border} flex flex-col items-center justify-center bg-zinc-900/95 ${result.glow || 'shadow-[0_10px_40px_rgba(0,0,0,0.8)]'} relative z-10 animate-[popZoom_0.8s_cubic-bezier(0.175,0.885,0.32,1.275)_forwards]`}>
+                                        <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/20 to-transparent pointer-events-none"></div>
+                                        <span 
+                                            className={`text-5xl md:text-6xl font-black ${result.text} drop-shadow-[0_0_15px_rgba(255,255,255,0.4)] tracking-tighter`}
+                                            style={{ WebkitTextStroke: '2px #000', paintOrder: 'stroke fill' }}
+                                        >
+                                            {result.rank}
+                                        </span>
+                                        {result.rank !== 'はずれ' && (
+                                            <React.Fragment>
+                                                <span className="absolute -top-10 text-7xl md:text-8xl drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)] animate-bounce">👑</span>
+                                                <span className="absolute top-2 left-2 text-3xl animate-ping">✨</span>
+                                                <span className="absolute bottom-6 right-2 text-4xl animate-pulse">✨</span>
+                                                <span className="absolute top-1/2 -left-4 text-2xl animate-pulse" style={{ animationDelay: '0.5s' }}>✨</span>
+                                            </React.Fragment>
+                                        )}
+                                    </div>
+                                    
+                                    <div className="relative z-10 flex items-center justify-center">
+                                        {result.imgUrl ? (
+                                            <img 
+                                                src={result.imgUrl} 
+                                                alt={result.rank} 
+                                                className="w-48 h-48 md:w-72 md:h-72 object-contain filter drop-shadow-[0_20px_30px_rgba(0,0,0,0.8)] animate-[imagePop_0.8s_cubic-bezier(0.175,0.885,0.32,1.275)_forwards]" 
+                                            />
+                                        ) : (
+                                            <div className="w-48 h-48 md:w-64 md:h-64 filter drop-shadow-[0_20px_30px_rgba(0,0,0,0.8)] bg-white/5 rounded-3xl p-4 backdrop-blur-sm border border-white/10 relative">
+                                                <BeerGlass rank={result.rank} />
+                                            </div>
+                                        )}
+                                        {result.rank !== 'はずれ' && (
+                                            <div className="absolute inset-0 bg-yellow-400 mix-blend-overlay animate-pulse rounded-full blur-2xl opacity-30 pointer-events-none"></div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {result.rank !== 'はずれ' && result.name && (
+                                    <h2 className={`text-5xl md:text-7xl font-black mb-6 drop-shadow-[0_5px_10px_rgba(0,0,0,0.9)] ${result.text} tracking-tight text-center`} style={{ WebkitTextStroke: '2px #000', paintOrder: 'stroke fill' }}>
+                                        {result.name}
+                                    </h2>
+                                )}
+                                
+                                <div className="bg-zinc-900/90 px-8 py-6 md:px-12 md:py-8 rounded-2xl border-2 border-amber-500/30 text-center mb-10 backdrop-blur-md shadow-[0_15px_30px_rgba(0,0,0,0.8)] relative z-10 max-w-xl w-full">
+                                    <div className="text-3xl md:text-4xl font-black drop-shadow-md text-yellow-400">
+                                        {result.resultTitle}
+                                    </div>
+                                    
+                                    {/* 変更箇所: アンケート完了前と完了後で表示を切り替え */}
+                                    {isSurveyCompleted ? (
+                                        <div className="mt-8 flex flex-col gap-4">
+                                            <div className="py-5 px-4 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl border-4 border-green-300 animate-[popZoom_0.5s_ease-out_forwards] shadow-[0_0_30px_rgba(34,197,94,0.6)]">
+                                                <p className="text-2xl md:text-3xl font-black text-white drop-shadow-lg leading-snug">
+                                                    会計時にレジで<br className="md:hidden" />この画面を見せて<br/>景品をもらってね！
+                                                </p>
+                                            </div>
+                                            {/* 変更箇所: 「画面」の文字装飾を外し、シンプルなテキストに変更 */}
+                                            <p className="text-yellow-300 font-black text-xl md:text-2xl animate-pulse drop-shadow-[0_2px_5px_rgba(0,0,0,0.9)] mt-2 leading-relaxed">
+                                                ※スクショか写真を撮って<br />
+                                                後で画面を<br className="md:hidden" />
+                                                見せてください！
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        result.resultSub && (
+                                            <button 
+                                                onClick={() => setView('survey')}
+                                                className="mt-8 w-full py-4 px-6 bg-yellow-400 hover:bg-yellow-500 text-black font-black text-xl md:text-2xl rounded-full shadow-[0_0_25px_rgba(250,204,21,0.6)] transform transition active:scale-95 animate-pulse border-4 border-yellow-200"
+                                            >
+                                                {result.resultSub}
+                                                <span className="block text-sm md:text-base font-bold mt-1 text-black/70">＞ アンケート画面へ進む ＜</span>
+                                            </button>
+                                        )
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                        
+                        {/* 詐欺対策用の現在時刻表示 */}
+                        {result && <RealTimeClock />}
+                    </div>
+                )}
+              </div>
+            </React.Fragment>
+          );
+        };
+
+        // Reactコンポーネントを画面に描画する
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
