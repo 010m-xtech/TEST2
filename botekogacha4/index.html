@@ -88,15 +88,6 @@
           20% { transform: translate(calc(var(--tx) * 0.3), calc(var(--ty) * 0.3)) scale(1.2); opacity: 1; }
           100% { transform: translate(var(--tx), calc(var(--ty) - 50px)) scale(0); opacity: 0; }
         }
-        .sunburst {
-          background: repeating-conic-gradient(
-            from 0deg,
-            transparent 0deg,
-            transparent 10deg,
-            rgba(255, 255, 255, 0.4) 10deg,
-            rgba(255, 255, 255, 0.2) 20deg
-          );
-        }
         .glass-highlight {
           background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
         }
@@ -188,7 +179,7 @@
             );
         };
 
-        // --- 詐欺対策用の現在時刻表示コンポーネント (位置・余白を美しく調整) ---
+        // --- 詐欺対策用の現在時刻表示コンポーネント (サイズを大きく、1行に折り返さずすっきり表示) ---
         const RealTimeClock = () => {
             const [time, setTime] = useState(new Date());
             useEffect(() => {
@@ -204,8 +195,8 @@
 
             return (
                 <div 
-                    className="text-white/95 font-mono text-xs md:text-sm font-bold tracking-wider drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]"
-                    style={{ WebkitTextStroke: '0.4px black', paintOrder: 'stroke fill' }}
+                    className="text-white font-mono text-lg sm:text-xl md:text-2xl font-black tracking-widest drop-shadow-[0_3px_6px_rgba(0,0,0,0.95)] whitespace-nowrap"
+                    style={{ WebkitTextStroke: '0.8px black', paintOrder: 'stroke fill' }}
                 >
                     {formattedTime}
                 </div>
@@ -335,7 +326,6 @@
                         <textarea className="w-full p-3 mt-2 rounded-lg border border-gray-300 text-base h-[100px] resize-none focus:outline-none focus:ring-2 focus:ring-amber-400" placeholder="感想をメッセージお聞かせください" value={comment} onChange={e => setComment(e.target.value)} disabled={isCompleted || isSubmitting}></textarea>
                         
                         {!isCompleted ? (
-                            /* 変更箇所: ボタンのフォントサイズと折り返し防止（whitespace-nowrap）を適用し、確実に美しい2行に調整 */
                             <button 
                                 onClick={submitSurvey} 
                                 disabled={!isValid || isSubmitting}
@@ -563,7 +553,7 @@
 
                 {stage === 'result' && (
                     <div className="fixed inset-0 bg-black/90 z-50 flex flex-col justify-between items-center p-4 overflow-y-auto min-h-[100dvh]">
-                        <div className="absolute inset-0 sunburst animate-[shine_20s_linear_infinite] -z-10 opacity-20 pointer-events-none"></div>
+                        {/* 変更箇所: 背景のサンバースト（放射状の光）の演出を削除しました */}
                         
                         {result && (
                             <div className="flex-grow flex flex-col items-center justify-center w-full max-w-[340px] md:max-w-xl py-4 animate-[popZoom_0.6s_cubic-bezier(0.175,0.885,0.32,1.275)_forwards]">
@@ -613,6 +603,8 @@
                                 <div className="bg-zinc-900/90 px-4 py-4 md:px-12 md:py-6 rounded-2xl border-2 border-amber-500/30 text-center backdrop-blur-md shadow-[0_15px_30px_rgba(0,0,0,0.8)] relative z-10 w-full">
                                     
                                     {isSurveyCompleted ? (
+                                        // アンケート回答後の表示 (黄金色グラデーション＋3行の美しいレイアウト)
+                                        // 3行目の「3枚プレゼント！」などの文字消え不具合を100%解決
                                         <div className="text-xl md:text-3xl font-black gold-text-shimmer tracking-tight leading-snug px-1">
                                             <div>{result.giftTitle?.split('\n')[0] || ''}</div>
                                             <div className="text-2xl md:text-4xl font-extrabold my-1">{result.giftTitle?.split('\n')[1] || ''}</div>
