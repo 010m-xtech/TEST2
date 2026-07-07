@@ -56,7 +56,7 @@
           }
         ];
 
-        // --- カスタムアニメーション用のCSS ---
+        // --- 黄金に輝くテキスト用スタイル ---
         const customStyles = `
         @keyframes floatUp {
           0% { transform: translateY(80px) scale(0.6); opacity: 0; }
@@ -114,8 +114,6 @@
                 '1等': ['#FEF08A', '#EAB308', '#A16207'],
                 '2等': ['#E5E7EB', '#9CA3AF', '#4B5563'],
                 '3等': ['#FCD34D', '#D97706', '#92400E'],
-                '大当たり': ['#FEF08A', '#EAB308', '#A16207'],
-                'はずれ': ['#3f3f46', '#27272a', '#18181b'], 
             };
             const colors = fillColors[rank] || fillColors['1等'];
 
@@ -131,19 +129,13 @@
                     <path d="M75 40 C 100 40, 100 75, 75 75" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="6" strokeLinecap="round" />
                     <path d="M25 25 C 25 25, 20 85, 35 90 C 50 95, 60 95, 75 90 C 90 85, 85 25, 85 25 Z" fill={`url(#grad-${rank})`} stroke="rgba(255,255,255,0.6)" strokeWidth="3" />
                     <path d="M35 30 Q 30 60 40 85" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="4" strokeLinecap="round" />
-                    {rank !== 'はずれ' ? (
-                        <React.Fragment>
-                            <path d="M20 25 Q 30 5 55 15 Q 75 5 90 25 Q 95 35 85 40 Q 55 45 25 40 Q 15 35 20 25 Z" fill="#FFFFFF" />
-                            <circle cx="35" cy="15" r="8" fill="#FFFFFF" />
-                            <circle cx="65" cy="12" r="10" fill="#FFFFFF" />
-                            <circle cx="50" cy="8" r="12" fill="#FFFFFF" />
-                            <path d="M 75 15 L 80 10 M 80 20 L 85 18 M 70 20 L 68 15" stroke="yellow" strokeWidth="2" strokeLinecap="round" />
-                        </React.Fragment>
-                    ) : (
-                        <React.Fragment>
-                            <path d="M30 38 Q 45 35 60 38 Q 75 35 80 39 Q 55 42 30 38 Z" fill="#71717a" opacity="0.2" />
-                        </React.Fragment>
-                    )}
+                    <React.Fragment>
+                        <path d="M20 25 Q 30 5 55 15 Q 75 5 90 25 Q 95 35 85 40 Q 55 45 25 40 Q 15 35 20 25 Z" fill="#FFFFFF" />
+                        <circle cx="35" cy="15" r="8" fill="#FFFFFF" />
+                        <circle cx="65" cy="12" r="10" fill="#FFFFFF" />
+                        <circle cx="50" cy="8" r="12" fill="#FFFFFF" />
+                        <path d="M 75 15 L 80 10 M 80 20 L 85 18 M 70 20 L 68 15" stroke="yellow" strokeWidth="2" strokeLinecap="round" />
+                    </React.Fragment>
                 </svg>
             );
         };
@@ -590,13 +582,11 @@
                                         >
                                             {activePrize.rank}
                                         </span>
-                                        {activePrize.rank !== 'はずれ' && (
-                                            <React.Fragment>
-                                                <span className="absolute -top-6 md:-top-8 text-3xl md:text-6xl drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)] animate-bounce">👑</span>
-                                                <span className="absolute top-1 left-1 text-base animate-ping">✨</span>
-                                                <span className="absolute bottom-2 right-1 text-xl animate-pulse">✨</span>
-                                            </React.Fragment>
-                                        )}
+                                        <React.Fragment>
+                                            <span className="absolute -top-6 md:-top-8 text-3xl md:text-6xl drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)] animate-bounce">👑</span>
+                                            <span className="absolute top-1 left-1 text-base animate-ping">✨</span>
+                                            <span className="absolute bottom-2 right-1 text-xl animate-pulse">✨</span>
+                                        </React.Fragment>
                                     </div>
                                     
                                     <div className="relative z-10 flex items-center justify-center w-20 h-20 md:w-36 md:h-36">
@@ -611,10 +601,11 @@
                                                 <BeerGlass rank={activePrize.rank} />
                                             </div>
                                         )}
+                                        <div className="absolute inset-0 bg-yellow-400 mix-blend-overlay animate-pulse rounded-full blur-2xl opacity-20 pointer-events-none"></div>
                                     </div>
                                 </div>
 
-                                {activePrize.rank !== 'はずれ' && activePrize.name && (
+                                {activePrize.name && (
                                     <h2 className={`text-2xl md:text-4xl font-black mb-2 drop-shadow-[0_5px_10px_rgba(0,0,0,0.9)] ${activePrize.text} tracking-tight text-center`} style={{ WebkitTextStroke: '1.5px #000', paintOrder: 'stroke fill' }}>
                                         {activePrize.name}
                                     </h2>
