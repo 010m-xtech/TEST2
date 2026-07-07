@@ -15,35 +15,42 @@
     <script type="text/babel" data-type="module" data-presets="react">
         const { useState, useMemo, useEffect, useRef } = React;
 
-        // --- 景品データ定義 ---
+        // --- 景品データ定義 (V2 新構造) ---
+        // 文章を配列や改行コードに頼らず、プロパティとして完全に分離して文字消えを防ぐ
         const PRIZES = [
           { 
-            id: 1, rank: '1等', name: '', desc: '', prob: 5, 
-            bg: 'bg-gradient-to-r from-yellow-400 to-yellow-600', text: 'text-yellow-400', border: 'border-yellow-300',
-            glow: 'shadow-[0_0_60px_rgba(250,204,21,0.8)]',
-            resultTitle: '素晴らしい！！おめでとう！', // 動画直後に表示
-            giftTitleLines: ['次回使える', 'ビール半額券', '3枚プレゼント！'], // 配列化して文字消えを完全に防止
-            resultSubLines: ['アンケートに答えて', '景品ゲットしてね♪'], 
+            id: 1, rank: '1等', prob: 5, 
+            border: 'border-yellow-300', text: 'text-yellow-400',
+            resultTitle: '1等当選おめでとう！', 
+            giftLine1: '次回使える',
+            giftLine2: 'ビール半額券',
+            giftLine3: '3枚プレゼント！',
+            subLine1: 'アンケートに答えて',
+            subLine2: '景品ゲットしてね♪',
             imgUrl: 'https://i.postimg.cc/zvKxRHM9/hua-xiang5.png',
             soundType: 'fanfare'
           },
           { 
-            id: 2, rank: '2等', name: '', desc: '', prob: 15, 
-            bg: 'bg-gradient-to-r from-gray-300 to-gray-500', text: 'text-gray-300', border: 'border-gray-400',
-            glow: 'shadow-[0_0_60px_rgba(209,213,219,0.8)]',
-            resultTitle: 'すごい！！おめでとう！', // 動画直後に表示
-            giftTitleLines: ['次回使える', 'ビール半額券', '2枚プレゼント！'], // 配列化して文字消えを完全に防止
-            resultSubLines: ['アンケートに答えて', '景品ゲットしてね♪'], 
+            id: 2, rank: '2等', prob: 15, 
+            border: 'border-gray-400', text: 'text-gray-300',
+            resultTitle: '2等当選おめでとう！', 
+            giftLine1: '次回使える',
+            giftLine2: 'ビール半額券',
+            giftLine3: '2枚プレゼント！',
+            subLine1: 'アンケートに答えて',
+            subLine2: '景品ゲットしてね♪',
             imgUrl: null,
             soundType: 'fanfare'
           },
           { 
-            id: 3, rank: '3等', name: '', desc: '', prob: 80, 
-            bg: 'bg-gradient-to-r from-amber-600 to-amber-800', text: 'text-amber-500', border: 'border-amber-600',
-            glow: 'shadow-[0_0_60px_rgba(245,158,11,0.8)]',
-            resultTitle: 'おめでとう！', // 動画直後に表示
-            giftTitleLines: ['次回使える', 'ビール半額券', '1枚プレゼント！'], // 配列化して文字消えを完全に防止
-            resultSubLines: ['アンケートに答えて', '景品ゲットしてね♪'], 
+            id: 3, rank: '3等', prob: 80, 
+            border: 'border-amber-600', text: 'text-amber-500',
+            resultTitle: '3等当選おめでとう！', 
+            giftLine1: '次回使える',
+            giftLine2: 'ビール半額券',
+            giftLine3: '1枚プレゼント！',
+            subLine1: 'アンケートに答えて',
+            subLine2: '景品ゲットしてね♪',
             imgUrl: null,
             soundType: 'fanfare'
           }
@@ -71,11 +78,6 @@
           80% { transform: scale(0.95) translateY(10px) rotate(-2deg); }
           100% { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; }
         }
-        @keyframes shine {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        /* 泡が昇るアニメーション */
         @keyframes riseUp {
           0% { transform: translateY(100vh) scale(0.3); opacity: 0; }
           10% { opacity: 0.8; }
@@ -83,21 +85,21 @@
           100% { transform: translateY(-20vh) scale(1.5); opacity: 0; }
         }
         
-        /* 🌟 変更箇所：透明度を一切使わず、真っ黒と濃い琥珀色で完全に塗りつぶしたサンバースト背景 */
+        /* 🌟 変更箇所：透明度を使わず、直接濃い色で塗りつぶした完全な静止画サンバースト */
         .sunburst {
           background: repeating-conic-gradient(
             from 0deg,
-            #0a0a0a 0deg,
-            #0a0a0a 10deg,
-            #2d1b00 10deg,
-            #1a0f00 20deg
+            #000000 0deg,
+            #000000 10deg,
+            #3d2500 10deg,
+            #211400 20deg
           );
         }
         
         .glass-highlight {
           background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
         }
-        /* 黄金に輝くテキスト用スタイル */
+        
         .gold-text-shimmer {
           background: linear-gradient(to bottom, #fff 0%, #fede53 30%, #f1ad04 70%, #9a6500 100%);
           -webkit-background-clip: text;
@@ -361,7 +363,10 @@
         const App = () => {
           const [view, setView] = useState('gacha'); 
           const [stage, setStage] = useState('idle');
-          const [result, setResult] = useState(null);
+          
+          // 🌟 V2 新構造: resultオブジェクトではなく、引いたIDのみをステートで管理する
+          const [prizeId, setPrizeId] = useState(null);
+          
           const [isSurveyCompleted, setIsSurveyCompleted] = useState(false); 
           const [isLoaded, setIsLoaded] = useState(false); 
           
@@ -371,16 +376,19 @@
           const videoRef = useRef(null);
           const audioCtxRef = useRef(null);
 
+          // 🌟 常にメモリ上の最新のPRIZESマスタデータを直接参照する
           const activePrize = useMemo(() => {
-              if (!result) return null;
-              // ローカルストレージ内の古いデータを完全に無視し、IDまたはランクで最新のPRIZESを絶対参照する
-              return PRIZES.find(p => p.id === result.id) || PRIZES.find(p => p.rank === result.rank) || PRIZES[2];
-          }, [result]);
+              if (!prizeId) return null;
+              return PRIZES.find(p => p.id === prizeId) || PRIZES[2]; // 万が一見つからなければ3等をフォールバック
+          }, [prizeId]);
 
           useEffect(() => {
               const urlParams = new URLSearchParams(window.location.search);
               
               if (urlParams.get('action') === 'reset') {
+                  // V2用と旧システム用の両方のキャッシュをクリア
+                  localStorage.removeItem('beer_app_gacha_result_v2');
+                  localStorage.removeItem('beer_app_survey_completed_v2');
                   localStorage.removeItem('beer_app_gacha_result');
                   localStorage.removeItem('beer_app_survey_completed');
                   
@@ -399,17 +407,19 @@
               }
               setDeviceId(savedId); 
 
-              const savedResult = localStorage.getItem('beer_app_gacha_result');
-              const savedSurvey = localStorage.getItem('beer_app_survey_completed');
+              // 🌟 バグ根絶処理: 古いシステム(beer_app_gacha_result)のデータが残っていたら強制削除してバグを防ぐ
+              if (localStorage.getItem('beer_app_gacha_result')) {
+                  localStorage.removeItem('beer_app_gacha_result');
+                  localStorage.removeItem('beer_app_survey_completed');
+              }
+
+              // V2用の新しいキーからIDのみを読み込む
+              const savedPrizeId = localStorage.getItem('beer_app_gacha_result_v2');
+              const savedSurvey = localStorage.getItem('beer_app_survey_completed_v2');
               
-              if (savedResult) {
-                  try {
-                      const parsed = JSON.parse(savedResult);
-                      setResult(parsed); 
-                      setStage('result');
-                  } catch (e) {
-                      console.error("Failed to parse saved result:", e);
-                  }
+              if (savedPrizeId) {
+                  setPrizeId(parseInt(savedPrizeId, 10));
+                  setStage('result');
               }
               if (savedSurvey === 'true') {
                   setIsSurveyCompleted(true);
@@ -492,9 +502,10 @@
             }
             
             const prize = drawPrize();
-            setResult(prize);
+            setPrizeId(prize.id); // 🌟 V2: オブジェクトではなくIDだけをセットする
             
-            localStorage.setItem('beer_app_gacha_result', JSON.stringify(prize));
+            // 🌟 V2: 新しいキーでIDだけを保存する
+            localStorage.setItem('beer_app_gacha_result_v2', prize.id.toString());
             setStage('playing_video');
             
             if (videoRef.current) {
@@ -512,7 +523,7 @@
                   gameResult={activePrize ? activePrize.rank : ''} 
                   onComplete={() => {
                       setIsSurveyCompleted(true);
-                      localStorage.setItem('beer_app_survey_completed', 'true'); 
+                      localStorage.setItem('beer_app_survey_completed_v2', 'true'); // V2用キー
                       setView('gacha');
                   }}
               />;
@@ -558,12 +569,13 @@
                 </div>
 
                 {stage === 'result' && (
+                    /* 🌟 変更箇所: 背景を強制的に真っ黒で塗りつぶし、後ろの映像が透けるのを完全に防ぐ */
                     <div 
                         className="fixed inset-0 z-50 flex flex-col justify-between items-center p-4 overflow-y-auto min-h-[100dvh]"
-                        style={{ backgroundColor: '#000000' }} /* 🌟 ガチャ本体が絶対透けないように背景を黒で強制塗りつぶし */
+                        style={{ backgroundColor: '#000000' }} 
                     >
                         
-                        {/* 🌟 変更箇所: 背景の透過を完全になくすため、透明を使わず色で塗りつぶした静止画のサンバーストに変更 */}
+                        {/* 🌟 変更箇所: 透明度を使わない静止画の濃いサンバーストを配置 */}
                         <div className="absolute inset-0 sunburst -z-10 pointer-events-none"></div>
                         
                         {activePrize && (
@@ -599,9 +611,6 @@
                                                 <BeerGlass rank={activePrize.rank} />
                                             </div>
                                         )}
-                                        {activePrize.rank !== 'はずれ' && (
-                                            <div className="absolute inset-0 bg-yellow-400 mix-blend-overlay animate-pulse rounded-full blur-2xl opacity-20 pointer-events-none"></div>
-                                        )}
                                     </div>
                                 </div>
 
@@ -614,13 +623,12 @@
                                 <div className="bg-zinc-900/90 px-4 py-4 md:px-12 md:py-6 rounded-2xl border-2 border-amber-500/30 text-center backdrop-blur-md shadow-[0_15px_30px_rgba(0,0,0,0.8)] relative z-10 w-full">
                                     
                                     {isSurveyCompleted ? (
-                                        // アンケート回答後の表示 (黄金色グラデーション＋3行の美しいレイアウト)
-                                        // 🌟 iPhoneで文字が消えるバグを防ぐため、animate-pulse(点滅アニメ)を削除
+                                        // 🌟 変更箇所: 配列で完全分離したテキストを呼び出し、文字消えバグを100%根絶
                                         <div className="text-xl md:text-3xl font-black gold-text-shimmer tracking-tight leading-snug px-1">
-                                            <div>{activePrize.giftTitleLines[0]}</div>
-                                            <div className="text-2xl md:text-4xl font-extrabold my-1">{activePrize.giftTitleLines[1]}</div>
+                                            <div>{activePrize.giftLine1}</div>
+                                            <div className="text-2xl md:text-4xl font-extrabold my-1">{activePrize.giftLine2}</div>
                                             <div className="text-3xl md:text-5xl font-black mt-1">
-                                                {activePrize.giftTitleLines[2]}
+                                                {activePrize.giftLine3}
                                             </div>
                                         </div>
                                     ) : (
@@ -637,12 +645,36 @@
                                                     景品もらってね！
                                                 </p>
                                             </div>
-                                            <p className="text-yellow-300 font-black text-xs md:text-lg animate-pulse drop-shadow-[0_2px_5px_rgba(0,0,0,0.9)] whitespace-nowrap tracking-wide">
+                                            <p className="text-yellow-300 font-black text-xs md:text-lg drop-shadow-[0_2px_5px_rgba(0,0,0,0.9)] whitespace-nowrap tracking-wide">
                                                 ※スクショか写真を撮って後で見せてください
                                             </p>
                                         </div>
                                     ) : (
-                                        activePrize.resultSubLines && (
-                                            <button 
-                                                onClick={() => setView('survey')}
-                                                className="mt-4 w-full py-2.5 px-3 bg-yellow-400 hover:bg-yellow-500 text-black font-black text-sm md:text-xl rounded-full shadow-[0_0_15px_rgba(250,204,21,0.6)] transform transition active:scale-95 animate-pulse border-
+                                        <button 
+                                            onClick={() => setView('survey')}
+                                            className="mt-4 w-full py-2.5 px-3 bg-yellow-400 hover:bg-yellow-500 text-black font-black text-sm md:text-xl rounded-full shadow-[0_0_15px_rgba(250,204,21,0.6)] transform transition active:scale-95 border-4 border-yellow-200"
+                                        >
+                                            <div>{activePrize.subLine1}</div>
+                                            <div>{activePrize.subLine2}</div>
+                                            <span className="block text-[9px] md:text-xs font-bold mt-1 text-black/70">＞ ボタンを押してアンケートへ ＜</span>
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                        
+                        <div className="w-full text-center pb-2 z-50">
+                            {activePrize && <RealTimeClock />}
+                        </div>
+                    </div>
+                )}
+              </div>
+            </React.Fragment>
+          );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
