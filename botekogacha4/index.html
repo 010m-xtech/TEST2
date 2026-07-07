@@ -190,7 +190,6 @@
                 return () => clearInterval(timer);
             }, []);
             
-            // YYYY/MM/DD HH:mm:ss 形式にフォーマット
             const formattedTime = time.toLocaleString('ja-JP', { 
                 year: 'numeric', month: '2-digit', day: '2-digit', 
                 hour: '2-digit', minute: '2-digit', second: '2-digit' 
@@ -198,7 +197,7 @@
 
             return (
                 <div 
-                    className="text-white font-mono text-lg sm:text-xl md:text-2xl font-black tracking-widest drop-shadow-[0_3px_6px_rgba(0,0,0,0.95)] whitespace-nowrap"
+                    className="text-white font-mono text-xl sm:text-2xl md:text-3xl font-black tracking-wider drop-shadow-[0_3px_6px_rgba(0,0,0,0.95)] whitespace-nowrap"
                     style={{ WebkitTextStroke: '0.8px black', paintOrder: 'stroke fill' }}
                 >
                     {formattedTime}
@@ -374,8 +373,8 @@
               if (!result) return null;
               // メモリ上の result から id または rank を使って最新 of PRIZES からマスタデータを直接引っ張る
               const found = PRIZES.find(p => p.id === result.id) || PRIZES.find(p => p.rank === result.rank);
-              // ローカルストレージに保存されている古い文字列設定を「無視」して、最新の PRIZES 定義で強制的に上書きします
-              return found ? { ...result, ...found } : result;
+              // ローカルストレージに保存されている古い文字列設定を「完全に上書き」し、最新の PRIZES 定義で強制マージします
+              return found ? { ...result, ...found } : { ...result, ...PRIZES[2] };
           }, [result]);
 
           useEffect(() => {
@@ -561,7 +560,7 @@
                 {stage === 'result' && (
                     <div className="fixed inset-0 bg-black/90 z-50 flex flex-col justify-between items-center p-4 overflow-y-auto min-h-[100dvh]">
                         
-                        {/* 🌟 変更箇所: サンバースト背景をアニメーションなし（静止画）の状態で復活させました */}
+                        {/* 🌟 変更箇所: 動き（アニメーション演出）を完全に取り除いた、静止画のサンバースト（放射状の光）背景を適用 */}
                         <div className="absolute inset-0 sunburst -z-10 pointer-events-none opacity-20"></div>
                         
                         {activePrize && (
