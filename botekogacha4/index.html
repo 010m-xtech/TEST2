@@ -197,7 +197,7 @@
 
             return (
                 <div 
-                    className="text-white font-mono text-xl sm:text-2xl md:text-3xl font-black tracking-wider drop-shadow-[0_3px_6px_rgba(0,0,0,0.95)] whitespace-nowrap"
+                    className="text-white font-mono text-xl sm:text-2xl md:text-3xl font-black tracking-widest drop-shadow-[0_3px_6px_rgba(0,0,0,0.95)] whitespace-nowrap"
                     style={{ WebkitTextStroke: '0.8px black', paintOrder: 'stroke fill' }}
                 >
                     {formattedTime}
@@ -368,13 +368,20 @@
           const videoRef = useRef(null);
           const audioCtxRef = useRef(null);
 
-          // 🌟 解決策：マスタデータ(PRIZES)と現在保持している結果をマージした、常に最新のオブジェクトを返す
+          // 🌟 解決策：古いストレージ保存形式に頼らず、最新のマスタ定義（PRIZES配列の情報）を確実に結合して返す
+          // スプレッドの順序を { ...result, ...found } から { ...found, ...result } にして、さらに giftTitle についてはマスタ側（found.giftTitle）を「絶対最優先」で上書き・適用するように修正
           const activePrize = useMemo(() => {
               if (!result) return null;
-              // メモリ上の result から id または rank を使って最新 of PRIZES からマスタデータを直接引っ張る
-              const found = PRIZES.find(p => p.id === result.id) || PRIZES.find(p => p.rank === result.rank);
-              // ローカルストレージに保存されている古い文字列設定を「完全に上書き」し、最新の PRIZES 定義で強制マージします
-              return found ? { ...result, ...found } : { ...result, ...PRIZES[2] };
+              
+              // マスタデータから該当する等（1等〜3等）のデータを検索
+              const found = PRIZES.find(p => p.id === result.id) || PRIZES.find(p => p.rank === result.rank) || PRIZES[2];
+              
+              // 保存された result の中の古い giftTitle（2行のものや空のもの）を無視し、マスタデータの正しい giftTitle を強制上書き
+              return { 
+                  ...result, 
+                  ...found, 
+                  giftTitle: found.giftTitle // マスタ側の定義（3行）を絶対最優先する
+              };
           }, [result]);
 
           useEffect(() => {
