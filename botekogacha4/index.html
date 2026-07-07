@@ -82,15 +82,18 @@
           90% { opacity: 0.8; }
           100% { transform: translateY(-20vh) scale(1.5); opacity: 0; }
         }
+        
+        /* 🌟 変更箇所：透明度を一切使わず、真っ黒と濃い琥珀色で完全に塗りつぶしたサンバースト背景 */
         .sunburst {
           background: repeating-conic-gradient(
             from 0deg,
-            transparent 0deg,
-            transparent 10deg,
-            rgba(255, 255, 255, 0.4) 10deg,
-            rgba(255, 255, 255, 0.2) 20deg
+            #0a0a0a 0deg,
+            #0a0a0a 10deg,
+            #2d1b00 10deg,
+            #1a0f00 20deg
           );
         }
+        
         .glass-highlight {
           background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
         }
@@ -182,7 +185,7 @@
             );
         };
 
-        // --- 詐欺対策用の現在時刻表示コンポーネント (サイズを大きく、1行に折り返さずすっきり表示) ---
+        // --- 詐欺対策用の現在時刻表示コンポーネント ---
         const RealTimeClock = () => {
             const [time, setTime] = useState(new Date());
             useEffect(() => {
@@ -368,7 +371,6 @@
           const videoRef = useRef(null);
           const audioCtxRef = useRef(null);
 
-          // 🌟 解決策：マスタデータ(PRIZES)と現在保持している結果をマージした、常に最新のオブジェクトを返す
           const activePrize = useMemo(() => {
               if (!result) return null;
               // ローカルストレージ内の古いデータを完全に無視し、IDまたはランクで最新のPRIZESを絶対参照する
@@ -403,7 +405,7 @@
               if (savedResult) {
                   try {
                       const parsed = JSON.parse(savedResult);
-                      setResult(parsed); // いったん保存データをセット (activePrize側で最新のPRIZESマスタと自動結合されます)
+                      setResult(parsed); 
                       setStage('result');
                   } catch (e) {
                       console.error("Failed to parse saved result:", e);
@@ -556,10 +558,13 @@
                 </div>
 
                 {stage === 'result' && (
-                    <div className="fixed inset-0 bg-black z-50 flex flex-col justify-between items-center p-4 overflow-y-auto min-h-[100dvh]">
+                    <div 
+                        className="fixed inset-0 z-50 flex flex-col justify-between items-center p-4 overflow-y-auto min-h-[100dvh]"
+                        style={{ backgroundColor: '#000000' }} /* 🌟 ガチャ本体が絶対透けないように背景を黒で強制塗りつぶし */
+                    >
                         
-                        {/* 🌟 変更箇所: 背景の透過をなくし(bg-black)、サンバーストを静止画のまま濃く(opacity-40)表示 */}
-                        <div className="absolute inset-0 sunburst -z-10 pointer-events-none opacity-40"></div>
+                        {/* 🌟 変更箇所: 背景の透過を完全になくすため、透明を使わず色で塗りつぶした静止画のサンバーストに変更 */}
+                        <div className="absolute inset-0 sunburst -z-10 pointer-events-none"></div>
                         
                         {activePrize && (
                             <div className="flex-grow flex flex-col items-center justify-center w-full max-w-[340px] md:max-w-xl py-4 animate-[popZoom_0.6s_cubic-bezier(0.175,0.885,0.32,1.275)_forwards]">
@@ -610,11 +615,11 @@
                                     
                                     {isSurveyCompleted ? (
                                         // アンケート回答後の表示 (黄金色グラデーション＋3行の美しいレイアウト)
-                                        // 配列(Lines)から直接読み込むことで「何枚プレゼント！」の文字消えを100%防止
+                                        // 🌟 iPhoneで文字が消えるバグを防ぐため、animate-pulse(点滅アニメ)を削除
                                         <div className="text-xl md:text-3xl font-black gold-text-shimmer tracking-tight leading-snug px-1">
                                             <div>{activePrize.giftTitleLines[0]}</div>
                                             <div className="text-2xl md:text-4xl font-extrabold my-1">{activePrize.giftTitleLines[1]}</div>
-                                            <div className="text-3xl md:text-5xl font-black text-yellow-300 animate-pulse mt-1">
+                                            <div className="text-3xl md:text-5xl font-black mt-1">
                                                 {activePrize.giftTitleLines[2]}
                                             </div>
                                         </div>
@@ -640,31 +645,4 @@
                                         activePrize.resultSubLines && (
                                             <button 
                                                 onClick={() => setView('survey')}
-                                                className="mt-4 w-full py-2.5 px-3 bg-yellow-400 hover:bg-yellow-500 text-black font-black text-sm md:text-xl rounded-full shadow-[0_0_15px_rgba(250,204,21,0.6)] transform transition active:scale-95 animate-pulse border-4 border-yellow-200"
-                                            >
-                                                {activePrize.resultSubLines.map((line, idx) => (
-                                                    <div key={idx}>{line}</div>
-                                                ))}
-                                                <span className="block text-[9px] md:text-xs font-bold mt-1 text-black/70">＞ ボタンを押してアンケートへ ＜</span>
-                                            </button>
-                                        )
-                                    )}
-                                </div>
-                            </div>
-                        )}
-                        
-                        <div className="w-full text-center pb-2 z-50">
-                            {activePrize && <RealTimeClock />}
-                        </div>
-                    </div>
-                )}
-              </div>
-            </React.Fragment>
-          );
-        };
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
-</body>
-</html>
+                                                className="mt-4 w-full py-2.5 px-3 bg-yellow-400 hover:bg-yellow-500 text-black font-black text-sm md:text-xl rounded-full shadow-[0_0_15px_rgba(250,204,21,0.6)] transform transition active:scale-95 animate-pulse border-
