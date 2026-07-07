@@ -82,11 +82,25 @@
           90% { opacity: 0.8; }
           100% { transform: translateY(-20vh) scale(1.5); opacity: 0; }
         }
+        /* 鼓動（パルス）するようにじんわり明滅するサンバースト用の設定 */
+        @keyframes slowPulse {
+          0%, 100% { opacity: 0.18; transform: scale(1.0); }
+          50% { opacity: 0.38; transform: scale(1.08); }
+        }
         /* カプセルが開いた時の泡の飛び散り */
         @keyframes foamBurst {
           0% { transform: translate(0, 0) scale(0); opacity: 0; }
           20% { transform: translate(calc(var(--tx) * 0.3), calc(var(--ty) * 0.3)) scale(1.2); opacity: 1; }
           100% { transform: translate(var(--tx), calc(var(--ty) - 50px)) scale(0); opacity: 0; }
+        }
+        .sunburst {
+          background: repeating-conic-gradient(
+            from 0deg,
+            transparent 0deg,
+            transparent 10deg,
+            rgba(255, 255, 255, 0.4) 10deg,
+            rgba(255, 255, 255, 0.2) 20deg
+          );
         }
         .glass-highlight {
           background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
@@ -179,7 +193,7 @@
             );
         };
 
-        // --- 詐欺対策用の現在時刻表示コンポーネント (サイズを大きく、1行に折り返さずすっきり表示) ---
+        // --- 詐欺対策用の現在時刻表示コンポーネント (サイズを大きく太くし、1行に折り返さずすっきり表示) ---
         const RealTimeClock = () => {
             const [time, setTime] = useState(new Date());
             useEffect(() => {
@@ -394,11 +408,19 @@
               if (savedResult) {
                   try {
                       const parsed = JSON.parse(savedResult);
-                      const latestPrize = PRIZES.find(p => p.id === parsed.id);
+                      
+                      // 解決策：古いストレージ保存形式に頼らず、最新のPRIZES定義(3行のgiftTitle)を完全マージ・復元
+                      // idだけでなく、万が一無い場合はrank（1等〜3等）でも適合するものを確実に探します
+                      let latestPrize = PRIZES.find(p => p.id === parsed.id);
+                      if (!latestPrize && parsed.rank) {
+                          latestPrize = PRIZES.find(p => p.rank === parsed.rank);
+                      }
+                      
                       if (latestPrize) {
                           setResult({ ...parsed, ...latestPrize });
                       } else {
-                          setResult(parsed);
+                          // フォールバック（最悪の場合3等にする）
+                          setResult({ ...parsed, ...PRIZES[2] });
                       }
                       setStage('result');
                   } catch (e) {
@@ -553,7 +575,9 @@
 
                 {stage === 'result' && (
                     <div className="fixed inset-0 bg-black/90 z-50 flex flex-col justify-between items-center p-4 overflow-y-auto min-h-[100dvh]">
-                        {/* 変更箇所: 背景のサンバースト（放射状の光）の演出を削除しました */}
+                        
+                        {/* 変更箇所: 背景のサンバースト（放射状の光）の演出を、くるくる回さず「じんわり鼓動」するエフェクトで復活させました */}
+                        <div className="absolute inset-0 sunburst -z-10 pointer-events-none animate-[slowPulse_8s_ease-in-out_infinite] opacity-25"></div>
                         
                         {result && (
                             <div className="flex-grow flex flex-col items-center justify-center w-full max-w-[340px] md:max-w-xl py-4 animate-[popZoom_0.6s_cubic-bezier(0.175,0.885,0.32,1.275)_forwards]">
@@ -604,7 +628,7 @@
                                     
                                     {isSurveyCompleted ? (
                                         // アンケート回答後の表示 (黄金色グラデーション＋3行の美しいレイアウト)
-                                        // 3行目の「3枚プレゼント！」などの文字消え不具合を100%解決
+                                        // 自動マイグレーションにより、以前の古いキャッシュデータの不具合も完全に解決
                                         <div className="text-xl md:text-3xl font-black gold-text-shimmer tracking-tight leading-snug px-1">
                                             <div>{result.giftTitle?.split('\n')[0] || ''}</div>
                                             <div className="text-2xl md:text-4xl font-extrabold my-1">{result.giftTitle?.split('\n')[1] || ''}</div>
