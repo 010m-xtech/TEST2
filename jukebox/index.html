@@ -33,11 +33,27 @@
       top: 0; left: 0; width: 100%; height: 100%;
       background: url('https://github.com/user-attachments/assets/3e400fdc-4305-496b-8d9c-4e03fc62b576') no-repeat center center fixed;
       background-size: cover;
-      opacity: 0; /* 最初は透明 */
-      /* 2秒から4秒に延長し、暗闇からさらにゆっくりと出現するように変更 */
-      transition: opacity 4s ease-in-out; 
+      
+      /* 初期状態：透明、真ん中だけに絞る、少しぼかす、少し拡大 */
+      opacity: 0; 
+      -webkit-clip-path: circle(0% at 50% 50%);
+      clip-path: circle(0% at 50% 50%);
+      filter: blur(10px);
+      transform: scale(1.1);
+      
+      /* 真ん中からじわじわ広がるアニメーション設定 */
+      transition: opacity 4s ease-in-out, -webkit-clip-path 4.5s ease-in-out, clip-path 4.5s ease-in-out, filter 4s ease-in-out, transform 6s ease-out; 
       z-index: 1;
       display: none;
+    }
+    
+    /* クラス付与時の表示状態 */
+    #bgImage.show-bg {
+      opacity: 1;
+      -webkit-clip-path: circle(150% at 50% 50%);
+      clip-path: circle(150% at 50% 50%); /* 画面の四隅までしっかり覆うように150% */
+      filter: blur(0px);
+      transform: scale(1);
     }
 
     /* アンケート全体を覆うラッパー */
@@ -189,19 +205,19 @@
       setTimeout(() => {
         video.style.display = 'none'; // 裏で動画要素を非表示にする
         
-        // 2. 背景画像を表示状態にして、ふわっとフェードインさせる
+        // 2. 背景画像を表示状態にして、真ん中からじわじわ浮かび上がらせる
         bgImage.style.display = 'block';
         setTimeout(() => {
-          bgImage.style.opacity = '1';
+          bgImage.classList.add('show-bg');
         }, 50);
 
-        // 3. 画像がゆっくり現れるのに合わせて、4秒後にアンケート本体を表示する
+        // 3. 画像がゆっくり現れるのに合わせて、6秒後にアンケート本体を表示する
         setTimeout(() => {
           surveyWrapper.style.display = 'flex';
           setTimeout(() => {
             surveyWrapper.classList.add('show-survey');
           }, 50);
-        }, 4000); 
+        }, 6000); 
 
       }, 1000); // 1秒間だけ真っ黒（暗転）な時間を作る
     });
