@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>食の島 おみくじ＆メニュー診断</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', "Hiragino Maru Gothic ProN", "Yu Rounded", "Zen Maru Gothic", sans-serif;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* --- 背景・エフェクト関連 --- */
+        .bg-cave {
+            background-color: #1c1917;
+            background-image: 
+                radial-gradient(circle at 20% 30%, #292524 0%, transparent 45%),
+                radial-gradient(circle at 80% 60%, #292524 0%, transparent 45%),
+                radial-gradient(circle at 50% 50%, #44403c 0%, transparent 80%);
+            box-shadow: inset 0 0 80px rgba(0,0,0,0.9);
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 1; transform: scale(1) translateY(0); }
+            25% { opacity: 0.8; transform: scale(1.05) translateY(-1px); }
+            50% { opacity: 0.9; transform: scale(0.95) translateY(1px); }
+            75% { opacity: 0.85; transform: scale(1.02) translateY(0); }
+        }
+        .animate-flicker { animation: flicker 0.4s infinite alternate; }
+        .animate-flicker-slow { animation: flicker 2s infinite alternate; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        
+        .popup-enter {
+            transform: scale(0);
+            opacity: 0;
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.6s ease;
+        }
+        .popup-enter-active {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        /* 暗転オーバーレイ */
+        #black-overlay {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 2.0s ease-in-out; 
+        }
+        #black-overlay.is-active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* ★追加: ネオン風テキストエフェクト */
+        .neon-text-lucky {
+            color: #ffffff;
+            font-weight: 900;
+            text-shadow: 
+                0 0 5px #ffffff,
+                0 0 10px #ffffff,
+                0 0 20px #ff00de,
+                0 0 40px #ff00de,
+                0 0 80px #ff00de;
+            animation: neon-flicker 1.5s infinite alternate;
+        }
+        @keyframes neon-flicker {
+            0%, 100% {
+                text-shadow: 
+                    0 0 5px #fff,
+                    0 0 10px #fff,
+                    0 0 20px #ff00de,
+                    0 0 40px #ff00de,
+                    0 0 80px #ff00de;
+            }
+            50% {
+                text-shadow: 
+                    0 0 2px #fff,
+                    0 0 5px #fff,
+                    0 0 10px #ff00de,
+                    0 0 20px #ff00de,
+                    0 0 40px #ff00de;
+            }
+        }
+
+        /* ★追加: 回転する後光（サンバースト）エフェクト */
+        .sunburst-bg {
+            background: repeating-conic-gradient(
+                from 0deg,
+                transparent 0deg 15deg,
+                rgba(255, 215, 0, 0.2) 15deg 30deg
+            );
+            animation: rotate-sunburst 30s linear infinite;
+            pointer-events: none;
+            mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 20%, rgba(0,0,0,0) 80%);
+            -webkit-mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 20%, rgba(0,0,0,0) 80%);
+        }
+        @keyframes rotate-sunburst {
+            from { transform: rotate(0deg) scale(2); }
+            to { transform: rotate(360deg) scale(2); }
+        }
+    </style>
+</head>
+<body class="bg-stone-950 flex items-center justify-center min-h-screen overflow-hidden">
+
+    <div id="app-container" class="relative w-full max-w-md h-[100dvh] max-h-[950px] bg-stone-900 shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden sm:rounded-[2rem] sm:h-[90vh] sm:border-8 border-stone-800">
+        
+        <!-- フェーズ0: 導入オープニング動画 -->
+        <div id="intro-phase" class="absolute inset-0 bg-black z-50 flex flex-col items-center justify-center transition-opacity duration-[2500ms] ease-in-out">
+            <video id="intro-video" 
+                   src="https://github.com/user-attachments/assets/64c19cdf-8eda-4fbd-80e3-02353b2a6e4c" 
+                   autoplay muted playsinline 
+                   class="w-full h-full object-cover transition-opacity duration-1000">
+            </video>
+            <div id="intro-play-btn" class="absolute inset-0 items-center justify-center bg-black/80 hidden z-10 backdrop-blur-sm">
+                <button onclick="playIntro()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold py-4 px-10 rounded-full shadow-[0_0_30px_rgba(217,119,6,0.8)] animate-pulse border-2 border-amber-300 text-xl tracking-widest">
+                    TAP TO START
+                </button>
+            </div>
+        </div>
+
+        <!-- 演出用: 暗転オーバーレイ -->
+        <div id="black-overlay" class="absolute inset-0 bg-black z-[45]"></div>
+
+        <!-- フェーズ2: ワープ動画 -->
+        <div id="video-phase" class="absolute inset-0 bg-black z-40 flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-[1500ms] hidden">
+            <video id="warp-video" 
+                   src="https://github.com/user-attachments/assets/3fe7d553-1981-4237-b01d-16ba51d719cc" 
+                   playsinline 
+                   class="w-full h-full object-cover">
+            </video>
+        </div>
+
+        <!-- 背景レイヤー -->
+        <div class="absolute inset-0 bg-cave pointer-events-none z-0"></div>
+        <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-60 z-0" preserveAspectRatio="none">
+            <path d="M0,0 L100,20 L150,5 L200,30 L250,10 L300,25 L350,5 L400,0 Z" fill="#0c0a09" />
+            <path d="M0,0 L80,10 L130,2 L180,15 L220,5 L280,12 L320,2 L400,0 Z" fill="#1c1917" />
+            <path d="M0,1000 L0,950 L400,950 L400,1000 L350,970 L300,990 L250,960 L200,980 L150,950 L100,980 Z" fill="#0c0a09" transform="scale(1, 1.2) translate(0, -180)"/>
+        </svg>
+
+        <!-- 松明エフェクト -->
+        <div class="absolute top-[25%] left-[5%] pointer-events-none flex flex-col items-center z-0">
+            <div class="w-3 h-4 bg-orange-500 rounded-full animate-flicker blur-[2px] absolute"></div>
+            <div class="w-2 h-3 bg-yellow-200 rounded-full animate-flicker absolute top-1"></div>
+            <div class="w-2 h-8 bg-stone-900 mt-3 rounded-sm border-l border-stone-700"></div>
+            <div class="absolute top-0 w-32 h-32 bg-orange-500/15 rounded-full blur-2xl animate-flicker-slow"></div>
+        </div>
+        <div class="absolute top-[55%] right-[5%] pointer-events-none flex flex-col items-center z-0">
+            <div class="w-3 h-4 bg-orange-500 rounded-full animate-flicker blur-[2px] absolute" style="animation-delay: 0.1s;"></div>
+            <div class="w-2 h-3 bg-yellow-200 rounded-full animate-flicker absolute top-1" style="animation-delay: 0.1s;"></div>
+            <div class="w-2 h-8 bg-stone-900 mt-3 rounded-sm border-l border-stone-700"></div>
+            <div class="absolute top-0 w-32 h-32 bg-orange-500/15 rounded-full blur-2xl animate-flicker-slow" style="animation-delay: 0.3s;"></div>
+        </div>
+        <div class="absolute bottom-[20%] left-[8%] pointer-events-none flex flex-col items-center z-0">
+            <div class="w-3 h-4 bg-orange-500 rounded-full animate-flicker blur-[2px] absolute" style="animation-delay: 0.2s;"></div>
+            <div class="w-2 h-3 bg-yellow-200 rounded-full animate-flicker absolute top-1" style="animation-delay: 0.2s;"></div>
+            <div class="w-2 h-8 bg-stone-900 mt-3 rounded-sm border-l border-stone-700"></div>
+            <div class="absolute top-0 w-32 h-32 bg-orange-500/15 rounded-full blur-2xl animate-flicker-slow" style="animation-delay: 0.5s;"></div>
+        </div>
+
+        <!-- UI: コース選択ボタン -->
+        <div id="buttons-container" class="absolute top-[6%] w-full flex flex-col items-center px-3 z-10 transition-all duration-500">
+            <p class="text-amber-200 font-bold mb-3 text-sm sm:text-base drop-shadow-[0_2px_4px_rgba(0,0,0,1)] animate-pulse tracking-wider text-center leading-relaxed">
+                ～今から食の旅が始まります～<br>
+                A・B・Cからコースを選んでください ☟
+            </p>
+            <div class="flex justify-between w-full">
+                <button onclick="startGame(0)" class="flex-1 mx-1.5 bg-yellow-950/60 hover:bg-yellow-900/80 border-2 border-yellow-400 rounded-2xl py-4 text-base font-extrabold text-yellow-100 shadow-[0_0_15px_rgba(250,204,21,0.6),inset_0_0_10px_rgba(250,204,21,0.3)] active:shadow-[0_0_5px_rgba(250,204,21,0.8)] active:scale-95 transition-all flex flex-col items-center justify-center relative overflow-hidden backdrop-blur-sm">
+                    <span class="relative z-10 tracking-widest drop-shadow-[0_0_8px_rgba(250,204,21,1)]">Aコース</span>
+                </button>
+                <button onclick="startGame(1)" class="flex-1 mx-1.5 bg-cyan-950/60 hover:bg-cyan-900/80 border-2 border-cyan-400 rounded-2xl py-4 text-base font-extrabold text-cyan-100 shadow-[0_0_15px_rgba(34,211,238,0.6),inset_0_0_10px_rgba(34,211,238,0.3)] active:shadow-[0_0_5px_rgba(34,211,238,0.8)] active:scale-95 transition-all flex flex-col items-center justify-center relative overflow-hidden backdrop-blur-sm">
+                    <span class="relative z-10 tracking-widest drop-shadow-[0_0_8px_rgba(34,211,238,1)]">Bコース</span>
+                </button>
+                <button onclick="startGame(2)" class="flex-1 mx-1.5 bg-red-950/60 hover:bg-red-900/80 border-2 border-red-500 rounded-2xl py-4 text-base font-extrabold text-red-100 shadow-[0_0_15px_rgba(239,68,68,0.6),inset_0_0_10px_rgba(239,68,68,0.3)] active:shadow-[0_0_5px_rgba(239,68,68,0.8)] active:scale-95 transition-all flex flex-col items-center justify-center relative overflow-hidden backdrop-blur-sm">
+                    <span class="relative z-10 tracking-widest drop-shadow-[0_0_8px_rgba(239,68,68,1)]">Cコース</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- あみだくじ描画用Canvas -->
+        <canvas id="amida-canvas" class="absolute inset-0 w-full h-full z-0 block pointer-events-none"></canvas>
+
+        <!-- ========================================== -->
+        <!-- フェーズ4: 結果表示画面 (z-30) -->
+        <!-- ========================================== -->
+        <div id="result-phase" class="absolute inset-0 bg-stone-950/95 backdrop-blur-md z-30 flex-col items-center justify-center p-6 text-center opacity-0 pointer-events-none transition-opacity duration-500 hidden overflow-hidden">
+            
+            <!-- ★追加: 後光（サンバースト）エフェクト -->
+            <div class="sunburst-bg absolute inset-0 z-0"></div>
+            
+            <!-- ★追加: 紙吹雪用キャンバス -->
+            <canvas id="confetti-canvas" class="absolute inset-0 w-full h-full z-10 pointer-events-none"></canvas>
+
+            <!-- ネオン風テキスト（絵文字削除・強制1行・サイズ調整） -->
+            <h2 class="text-xl sm:text-3xl mb-6 animate-float neon-text-lucky tracking-wider relative z-20 whitespace-nowrap">本日のラッキーメニューは</h2>
+            
+            <div id="result-card" class="bg-gradient-to-br from-amber-50 to-orange-100 rounded-[2rem] p-4 shadow-[0_0_60px_rgba(255,215,0,0.6)] border-4 border-yellow-400 w-full max-w-sm mb-10 popup-enter relative overflow-hidden z-20">
+                <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/aged-paper.png')] opacity-30 mix-blend-overlay pointer-events-none"></div>
+                <img id="result-image" src="" alt="おすすめメニュー" class="w-full h-auto rounded-xl object-contain drop-shadow-[0_5px_15px_rgba(0,0,0,0.3)] mb-4 border-2 border-orange-200/50 relative z-10">
+                <!-- 結果テキスト表示エリア -->
+                <p id="result-text" class="text-lg sm:text-xl font-bold text-stone-800 leading-relaxed bg-white/90 p-4 rounded-xl shadow-inner backdrop-blur-sm border border-orange-200/50 relative z-10">
+                    <!-- ここにテキストが入ります -->
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 設定値・定数 ---
+        // 結果データ（画像とテキスト）
+        const RESULT_DATA = [
+            {
+                img: 'https://github.com/user-attachments/assets/a49504d8-69eb-4ffc-85ba-643a24530190',
+                text: '一口で食べられるお酒のお供！！<br>餃子チップス！'
+            },
+            {
+                img: 'https://github.com/user-attachments/assets/e91755b8-2221-43a1-98f8-4f2c14f7624c',
+                text: '工場出荷2日以内、<br>新鮮すぎる速達生ビール！！'
+            },
+            {
+                img: 'https://github.com/user-attachments/assets/18c13ddb-267d-4c88-bf10-523b72990ae1',
+                text: '名古屋のソウルフード<br>手羽先の唐揚げ！'
+            }
+        ];
+        const TRAIN_SPEED = 120; 
+
+        // --- 状態管理変数 ---
+        let state = 'INIT'; 
+        let canvas, ctx;
+        let logicalWidth, logicalHeight;
+        let colsX = [];
+        let startY, endY, holeY;
+        let rungs = []; 
+        let pathCoords = [];
+        let dists = [];
+        let totalDist = 0;
+        let holeDist = 0;
+        let currentDist = 0;
+        let lastTime = 0;
+        let animationFrameId = null;
+        let finalResultCol = 0;
+        let imagesLoaded = false;
+
+        // ★追加: 紙吹雪用変数
+        let confettiParticles = [];
+        let confettiFrameId = null;
+
+        // --- 画像プレロード ---
+        function preloadGoalImages() {
+            let loadedCount = 0;
+            RESULT_DATA.forEach(data => {
+                const img = new Image();
+                img.onload = () => {
+                    loadedCount++;
+                    if (loadedCount === RESULT_DATA.length) {
+                        imagesLoaded = true;
+                    }
+                };
+                img.src = data.img;
+            });
+        }
+
+        // --- 初期設定・レイアウト計算 ---
+        function setupLayout() {
+            canvas = document.getElementById('amida-canvas');
+            ctx = canvas.getContext('2d');
+            
+            const container = document.getElementById('app-container');
+            logicalWidth = container.clientWidth;
+            logicalHeight = container.clientHeight;
+            
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = logicalWidth * dpr;
+            canvas.height = logicalHeight * dpr;
+            ctx.scale(dpr, dpr);
+            
+            const spacing = logicalWidth / 4;
+            colsX = [spacing, spacing * 2, spacing * 3];
+            
+            startY = logicalHeight * 0.18; 
+            endY = logicalHeight * 0.85;
+            holeY = logicalHeight * 0.52; 
+        }
+
+        // --- あみだくじ（レール）の生成 ---
+        function generateRungs() {
+            rungs = [];
+            const rungSpacing = 40; 
+            const topRegionStart = startY + 40;
+            const topRegionEnd = holeY - 40;
+            const bottomRegionStart = holeY + 40;
+            const bottomRegionEnd = endY - 40;
+
+            const addRungsInRegion = (minY, maxY) => {
+                let currentY = minY;
+                while (currentY < maxY) {
+                    currentY += rungSpacing + Math.random() * 40;
+                    if (currentY >= maxY) break;
+                    
+                    const col = Math.random() > 0.5 ? 1 : 0;
+                    rungs.push({ leftCol: col, y: currentY });
+                }
+            };
+
+            addRungsInRegion(topRegionStart, topRegionEnd);
+            addRungsInRegion(bottomRegionStart, bottomRegionEnd);
+        }
+
+        // --- ルート計算ロジック ---
+        function calculatePath(startColIndex) {
+            pathCoords = [];
+            let currentCol = startColIndex;
+            let currentY = startY;
+            
+            pathCoords.push({ x: colsX[currentCol], y: currentY });
+            
+            const sortedRungs = [...rungs].sort((a, b) => a.y - b.y);
+            
+            for (const rung of sortedRungs) {
+                if (rung.leftCol === currentCol || rung.leftCol + 1 === currentCol) {
+                    pathCoords.push({ x: colsX[currentCol], y: rung.y });
+                    currentCol = (rung.leftCol === currentCol) ? currentCol + 1 : currentCol - 1;
+                    pathCoords.push({ x: colsX[currentCol], y: rung.y });
+                }
+            }
+            
+            pathCoords.push({ x: colsX[currentCol], y: endY });
+            finalResultCol = currentCol;
+            
+            dists = [0];
+            totalDist = 0;
+            holeDist = -1; 
+            
+            for (let i = 0; i < pathCoords.length - 1; i++) {
+                const p1 = pathCoords[i];
+                const p2 = pathCoords[i+1];
+                const d = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+                totalDist += d;
+                dists.push(totalDist);
+                
+                if (holeDist === -1 && p1.x === p2.x && p1.y <= holeY && holeY <= p2.y) { 
+                    holeDist = dists[i] + Math.abs(holeY - p1.y);
+                }
+            }
+            if (holeDist === -1) holeDist = totalDist * 0.5; 
+        }
+
+        function getTransformAtDist(dist) {
+            if (dist <= 0) {
+                const p1 = pathCoords[0], p2 = pathCoords[1];
+                return { x: p1.x, y: p1.y + dist, angle: Math.atan2(p2.y - p1.y, p2.x - p1.x) };
+            }
+            if (dist >= totalDist) {
+                const p1 = pathCoords[pathCoords.length - 2], p2 = pathCoords[pathCoords.length - 1];
+                const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+                return { x: p2.x + Math.cos(angle) * (dist - totalDist), y: p2.y + Math.sin(angle) * (dist - totalDist), angle };
+            }
+
+            for (let i = 0; i < dists.length - 1; i++) {
+                if (dist >= dists[i] && dist <= dists[i+1]) {
+                    const ratio = (dist - dists[i]) / (dists[i+1] - dists[i]);
+                    const p1 = pathCoords[i], p2 = pathCoords[i+1];
+                    return {
+                        x: p1.x + (p2.x - p1.x) * ratio,
+                        y: p1.y + (p2.y - p1.y) * ratio,
+                        angle: Math.atan2(p2.y - p1.y, p2.x - p1.x)
+                    };
+                }
+            }
+            return { x: pathCoords[pathCoords.length - 1].x, y: pathCoords[pathCoords.length - 1].y, angle: Math.PI/2 };
+        }
+
+        // --- 描画ユーティリティ ---
+        function fillRoundRect(ctx, x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        function strokeRoundRect(ctx, x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+            ctx.stroke();
+        }
+
+        // --- オブジェクト描画群 ---
+        function drawRollerCoasterTrack(ctx, x1, y1, x2, y2, isHighlighted) {
+            const dx = x2 - x1, dy = y2 - y1;
+            const len = Math.hypot(dx, dy);
+            const angle = Math.atan2(dy, dx);
+
+            ctx.save();
+            ctx.translate(x1, y1);
+            ctx.rotate(angle);
+
+            const trackWidth = 24;
+            const tieColor = isHighlighted ? '#b45309' : '#44403c'; 
+            const railBaseColor = isHighlighted ? '#f59e0b' : '#57534e'; 
+            const railTopColor = isHighlighted ? '#fef08a' : '#78716c'; 
+
+            ctx.fillStyle = tieColor;
+            for (let d = 0; d <= len; d += 16) ctx.fillRect(d - 3, -trackWidth/2 - 4, 6, trackWidth + 8);
+
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            ctx.strokeStyle = railBaseColor;
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.moveTo(0, -trackWidth/2); ctx.lineTo(len, -trackWidth/2);
+            ctx.moveTo(0, trackWidth/2); ctx.lineTo(len, trackWidth/2);
+            ctx.stroke();
+
+            ctx.strokeStyle = railTopColor;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, -trackWidth/2 - 1); ctx.lineTo(len, -trackWidth/2 - 1);
+            ctx.moveTo(0, trackWidth/2 - 1); ctx.lineTo(len, trackWidth/2 - 1);
+            ctx.stroke();
+
+            if (isHighlighted) {
+                ctx.strokeStyle = 'rgba(252, 211, 77, 0.4)'; 
+                ctx.lineWidth = trackWidth + 12;
+                ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(len, 0); ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        function drawBlackHole(ctx, cx, cy, time) {
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.scale(1, 0.6);
+            
+            const grad = ctx.createRadialGradient(0, 0, 5, 0, 0, 50);
+            grad.addColorStop(0, 'rgba(0, 0, 0, 1)');
+            grad.addColorStop(0.3, 'rgba(109, 40, 217, 0.9)');
+            grad.addColorStop(0.7, 'rgba(139, 92, 246, 0.6)');
+            grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            
+            ctx.fillStyle = grad;
+            ctx.beginPath(); ctx.arc(0, 0, 50, 0, Math.PI * 2); ctx.fill();
+
+            ctx.rotate(time * 0.003);
+            ctx.strokeStyle = 'rgba(196, 181, 253, 0.8)';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < 3; i++) {
+                ctx.beginPath(); ctx.arc(0, 0, 15 + i * 12, 0, Math.PI * 1.5); ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        function drawGoal(ctx, x, y) {
+            ctx.save();
+            ctx.translate(x, y);
+            
+            ctx.shadowColor = 'rgba(251, 191, 36, 0.8)'; 
+            ctx.shadowBlur = 20;
+            ctx.fillStyle = '#fffbeb'; 
+            ctx.strokeStyle = '#b45309'; 
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(0, 0, 24, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.shadowColor = 'transparent';
+            ctx.fillStyle = '#b45309';
+            ctx.font = 'bold 28px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('?', 0, 2);
+            
+            ctx.restore();
+        }
+
+        function drawBeerCar(ctx, x, y, angle, isEngine) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle - Math.PI/2); 
+            ctx.shadowColor = 'rgba(0,0,0,0.8)';
+            ctx.shadowBlur = 8;
+            ctx.shadowOffsetY = 6;
+
+            if (isEngine) {
+                const grad = ctx.createLinearGradient(-15, 0, 15, 0);
+                grad.addColorStop(0, '#b8860b'); grad.addColorStop(0.3, '#ffd700'); 
+                grad.addColorStop(0.5, '#fff8dc'); grad.addColorStop(0.7, '#ffd700'); grad.addColorStop(1, '#b8860b');
+                
+                ctx.fillStyle = grad;
+                ctx.beginPath(); ctx.moveTo(-16, -24); ctx.lineTo(16, -24); ctx.lineTo(16, 12); ctx.arc(0, 12, 16, 0, Math.PI); ctx.fill();
+                ctx.shadowColor = 'transparent';
+
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'; fillRoundRect(ctx, -8, 0, 16, 20, 2);
+                ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; strokeRoundRect(ctx, -8, 0, 16, 20, 2);
+
+                ctx.fillStyle = '#f59e0b'; ctx.fillRect(-7, 6, 14, 13);
+                ctx.fillStyle = '#fff';
+                ctx.beginPath(); ctx.arc(-4, 5, 4, 0, Math.PI*2); ctx.arc(4, 5, 4, 0, Math.PI*2); ctx.arc(0, 2, 5, 0, Math.PI*2); ctx.fill();
+
+                ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.arc(8, 10, 5, -Math.PI/2, Math.PI/2); ctx.stroke();
+
+                ctx.fillStyle = '#f3f4f6'; fillRoundRect(ctx, -14, -20, 28, 18, 2);
+                ctx.strokeStyle = '#4b5563'; ctx.lineWidth = 2; strokeRoundRect(ctx, -14, -20, 28, 18, 2);
+                ctx.strokeStyle = '#d4af37'; ctx.lineWidth = 1; ctx.strokeRect(-12, -18, 24, 14);
+
+                ctx.shadowColor = 'rgba(253, 224, 71, 0.6)'; ctx.shadowBlur = 15;
+                ctx.fillStyle = '#fef08a'; ctx.beginPath(); ctx.arc(0, 26, 4, 0, Math.PI*2); ctx.fill();
+                ctx.shadowColor = 'transparent';
+            } else {
+                const frameGrad = ctx.createLinearGradient(-16, 0, 16, 0);
+                frameGrad.addColorStop(0, '#b8860b'); frameGrad.addColorStop(0.5, '#ffd700'); frameGrad.addColorStop(1, '#b8860b');
+                ctx.fillStyle = frameGrad; fillRoundRect(ctx, -16, -22, 32, 44, 4);
+                ctx.shadowColor = 'transparent';
+
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'; fillRoundRect(ctx, -13, -19, 26, 38, 2);
+
+                const beerGrad = ctx.createLinearGradient(0, -19, 0, 19);
+                beerGrad.addColorStop(0, '#fef08a'); beerGrad.addColorStop(1, '#d97706');
+                ctx.fillStyle = beerGrad;
+                ctx.beginPath(); ctx.moveTo(-13, -5); ctx.lineTo(13, -5); ctx.lineTo(13, 17);
+                ctx.quadraticCurveTo(13, 19, 11, 19); ctx.lineTo(-11, 19); ctx.quadraticCurveTo(-13, 19, -13, 17);
+                ctx.closePath(); ctx.fill();
+
+                ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                for(let i = 0; i < 8; i++) {
+                    ctx.beginPath(); ctx.arc(-10 + Math.random()*20, -2 + Math.random()*20, 1 + Math.random()*2, 0, Math.PI*2); ctx.fill();
+                }
+
+                ctx.fillStyle = '#fff';
+                const bubbles = [{x: 0, y: -8, r: 9}, {x: -7, y: -5, r: 7}, {x: 7, y: -5, r: 7}, {x: -4, y: 0, r: 6}, {x: 5, y: 1, r: 5}, {x: 0, y: -14, r: 7}, {x: -8, y: -11, r: 6}, {x: 8, y: -11, r: 6}];
+                bubbles.forEach(b => { ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2); ctx.fill(); });
+                
+                ctx.fillStyle = 'rgba(0,0,0,0.05)';
+                ctx.beginPath(); ctx.arc(0, -5, 8, 0, Math.PI); ctx.fill();
+            }
+            ctx.restore();
+        }
+
+        function drawBeerTrain(ctx, dist) {
+            const SPACING = 48; 
+            const t3 = getTransformAtDist(dist - SPACING * 2); drawBeerCar(ctx, t3.x, t3.y, t3.angle, false);
+            const t2 = getTransformAtDist(dist - SPACING); drawBeerCar(ctx, t2.x, t2.y, t2.angle, false);
+            const t1 = getTransformAtDist(dist); drawBeerCar(ctx, t1.x, t1.y, t1.angle, true);
+        }
+
+        // --- メインループ ---
+        function gameLoop(timestamp) {
+            if (!lastTime) lastTime = timestamp;
+            const deltaTime = timestamp - lastTime;
+            lastTime = timestamp;
+
+            ctx.clearRect(0, 0, logicalWidth, logicalHeight);
+
+            for (let i = 0; i < 3; i++) drawRollerCoasterTrack(ctx, colsX[i], startY, colsX[i], endY, false);
+            for (const rung of rungs) drawRollerCoasterTrack(ctx, colsX[rung.leftCol], rung.y, colsX[rung.leftCol + 1], rung.y, false);
+
+            if (state !== 'INIT') {
+                const currentPos = getTransformAtDist(currentDist); 
+                let prevP = pathCoords[0];
+                for (let i = 1; i < pathCoords.length; i++) {
+                    if (dists[i] <= currentDist) {
+                        drawRollerCoasterTrack(ctx, prevP.x, prevP.y, pathCoords[i].x, pathCoords[i].y, true);
+                    } else {
+                        drawRollerCoasterTrack(ctx, prevP.x, prevP.y, currentPos.x, currentPos.y, true);
+                        break;
+                    }
+                    prevP = pathCoords[i];
+                }
+            }
+
+            if (state === 'PART1') {
+                currentDist += TRAIN_SPEED * (deltaTime / 1000);
+                if (currentDist >= holeDist) {
+                    currentDist = holeDist; 
+                    state = 'TRANSITION_TO_VIDEO'; 
+                    startVideoPhase(); 
+                }
+                drawBeerTrain(ctx, currentDist);
+                
+            } else if (state === 'TRANSITION_TO_VIDEO' || state === 'TRANSITION_TO_PART2') {
+                currentDist = holeDist;
+                drawBeerTrain(ctx, currentDist);
+                
+            } else if (state === 'PART2') {
+                currentDist += TRAIN_SPEED * (deltaTime / 1000);
+                if (currentDist >= totalDist) {
+                    currentDist = totalDist;
+                    state = 'TRANSITION_TO_RESULT'; 
+                    showResultPhase(); 
+                }
+                drawBeerTrain(ctx, currentDist);
+                
+            } else if (state === 'TRANSITION_TO_RESULT') {
+                drawBeerTrain(ctx, currentDist);
+            }
+
+            for (let i = 0; i < 3; i++) {
+                drawBlackHole(ctx, colsX[i], holeY, timestamp);
+                drawGoal(ctx, colsX[i], endY);
+            }
+
+            if (state !== 'RESULT') {
+                animationFrameId = requestAnimationFrame(gameLoop);
+            }
+        }
+
+        // --- ステート制御 ---
+        function startGame(laneIndex) {
+            if (state !== 'INIT') return;
+            if (!imagesLoaded) {
+                setTimeout(() => startGame(laneIndex), 100);
+                return;
+            }
+
+            document.getElementById('buttons-container').style.opacity = '0';
+            document.getElementById('buttons-container').style.pointerEvents = 'none';
+
+            const warpVideo = document.getElementById('warp-video');
+            warpVideo.load();
+            const playPromise = warpVideo.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => warpVideo.pause()).catch(() => {});
+            }
+
+            calculatePath(laneIndex);
+            state = 'PART1';
+            currentDist = 0;
+            lastTime = 0; 
+        }
+
+        function startVideoPhase() {
+            const overlay = document.getElementById('black-overlay');
+            overlay.classList.add('is-active');
+
+            setTimeout(() => {
+                state = 'VIDEO';
+                const videoPhaseEl = document.getElementById('video-phase');
+                const warpVideo = document.getElementById('warp-video');
+
+                videoPhaseEl.classList.remove('hidden');
+                videoPhaseEl.classList.add('flex');
+                videoPhaseEl.classList.remove('opacity-0', 'pointer-events-none');
+                videoPhaseEl.classList.add('opacity-100');
+
+                warpVideo.currentTime = 0;
+                const playPromise = warpVideo.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.error("動画再生エラー:", error);
+                        setTimeout(endVideoPhase, 3000);
+                    });
+                }
+
+                warpVideo.onplaying = () => {
+                    overlay.classList.remove('is-active');
+                    warpVideo.onplaying = null; 
+                };
+                
+                warpVideo.onended = () => endVideoPhase();
+
+            }, 2000); 
+        }
+
+        function endVideoPhase() {
+            if (state === 'TRANSITION_TO_PART2') return;
+            state = 'TRANSITION_TO_PART2';
+
+            const overlay = document.getElementById('black-overlay');
+            overlay.classList.add('is-active');
+
+            const videoPhaseEl = document.getElementById('video-phase');
+            
+            setTimeout(() => {
+                videoPhaseEl.classList.remove('opacity-100');
+                videoPhaseEl.classList.add('opacity-0', 'pointer-events-none');
+                videoPhaseEl.classList.remove('flex');
+                videoPhaseEl.classList.add('hidden');
+                
+                setTimeout(() => {
+                     overlay.classList.remove('is-active');
+                     
+                     state = 'PART2';
+                     lastTime = 0; 
+                }, 100);
+
+            }, 2000); 
+        }
+
+        // ★追加: 紙吹雪のアニメーションロジック
+        function initConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            confettiParticles = [];
+            
+            // キラキラしたパーティカラー
+            const colors = ['#fce18a', '#ffafcc', '#b9fbc0', '#a8e6cf', '#ff9a9e', '#ffd700'];
+            
+            for (let i = 0; i < 150; i++) {
+                confettiParticles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    w: Math.random() * 10 + 5,
+                    h: Math.random() * 10 + 5,
+                    dx: Math.random() * 3 - 1.5,
+                    dy: Math.random() * 3 + 2,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    tilt: Math.floor(Math.random() * 10) - 10,
+                    tiltAngleInc: (Math.random() * 0.07) + 0.05,
+                    tiltAngle: 0
+                });
+            }
+            
+            if (confettiFrameId) cancelAnimationFrame(confettiFrameId);
+            updateConfetti();
+        }
+
+        function updateConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            confettiParticles.forEach((p, index) => {
+                p.tiltAngle += p.tiltAngleInc;
+                p.y += p.dy;
+                p.x += Math.sin(p.tiltAngle) * 2 + p.dx;
+                
+                ctx.fillStyle = p.color;
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.tiltAngle);
+                ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+                ctx.restore();
+                
+                // 画面下部に消えたら上から再出現させる
+                if (p.y > canvas.height) {
+                    confettiParticles[index].x = Math.random() * canvas.width;
+                    confettiParticles[index].y = -20;
+                    confettiParticles[index].tiltAngle = 0;
+                }
+            });
+            confettiFrameId = requestAnimationFrame(updateConfetti);
+        }
+
+        function stopConfetti() {
+            if (confettiFrameId) {
+                cancelAnimationFrame(confettiFrameId);
+                confettiFrameId = null;
+            }
+        }
+
+        function showResultPhase() {
+            state = 'RESULT';
+            
+            const resultImg = document.getElementById('result-image');
+            const resultText = document.getElementById('result-text');
+            
+            const data = RESULT_DATA[finalResultCol];
+            resultImg.src = data.img;
+            resultText.innerHTML = data.text; 
+
+            const resultPhaseEl = document.getElementById('result-phase');
+            resultPhaseEl.classList.remove('hidden');
+            
+            setTimeout(() => {
+                resultPhaseEl.classList.remove('opacity-0', 'pointer-events-none');
+                resultPhaseEl.classList.add('flex', 'opacity-100');
+                document.getElementById('result-card').classList.add('popup-enter-active');
+
+                // ★追加: 当たり演出（紙吹雪）をスタート
+                setTimeout(() => {
+                    initConfetti();
+                }, 300); // カードがポップアップしてから少し遅らせて開始
+            }, 50);
+        }
+
+        function resetGame() {
+            try {
+                // ★追加: 紙吹雪をストップ
+                stopConfetti();
+
+                const resultPhaseEl = document.getElementById('result-phase');
+                resultPhaseEl.classList.remove('opacity-100');
+                resultPhaseEl.classList.add('opacity-0', 'pointer-events-none');
+                document.getElementById('result-card').classList.remove('popup-enter-active');
+
+                setTimeout(() => {
+                    resultPhaseEl.classList.remove('flex');
+                    resultPhaseEl.classList.add('hidden');
+                    document.getElementById('buttons-container').style.opacity = '1';
+                    document.getElementById('buttons-container').style.pointerEvents = 'auto';
+
+                    initGame();
+                }, 500);
+            } catch (e) { console.error("Reset Error:", e); }
+        }
+
+        function initGame() {
+            state = 'INIT';
+            currentDist = 0;
+            
+            setupLayout();
+            generateRungs();
+
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            lastTime = 0;
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        // --- 起動・初期化処理 ---
+        window.onload = () => {
+            preloadGoalImages(); 
+            setTimeout(initGame, 100);
+
+            const video = document.getElementById('intro-video');
+            const introPhase = document.getElementById('intro-phase');
+
+            video.addEventListener('ended', () => {
+                video.style.opacity = '0';
+                setTimeout(() => {
+                    introPhase.style.opacity = '0';
+                    setTimeout(() => introPhase.classList.add('hidden'), 2500);
+                }, 1000); 
+            });
+
+            const playPromise = video.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(() => {
+                    const playBtn = document.getElementById('intro-play-btn');
+                    playBtn.classList.remove('hidden');
+                    playBtn.classList.add('flex');
+                });
+            }
+        };
+
+        function playIntro() {
+            const playBtn = document.getElementById('intro-play-btn');
+            playBtn.classList.remove('flex');
+            playBtn.classList.add('hidden');
+            
+            const video = document.getElementById('intro-video');
+            video.muted = false; 
+            video.play();
+        }
+
+        window.addEventListener('resize', () => {
+            if (state === 'INIT') {
+                setupLayout();
+                generateRungs();
+            }
+        });
+    </script>
+</body>
+</html>
