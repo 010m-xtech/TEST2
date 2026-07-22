@@ -113,14 +113,75 @@
     .req-label { color: white; background: #e53935; padding: 2px 6px; border-radius: 4px; font-size: 0.7em; vertical-align: middle; margin-left: 5px; }
     .opt-label { color: #666; background: #e0e0e0; padding: 2px 6px; border-radius: 4px; font-size: 0.7em; vertical-align: middle; margin-left: 5px; }
     
+    .radio-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .radio-group label {
+        display: inline-flex;
+        align-items: center;
+        margin: 0;
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.7);
+        padding: 8px 12px;
+        border-radius: 20px;
+        border: 1px solid rgba(0,0,0,0.1);
+        transition: background 0.2s, border-color 0.2s;
+        font-size: 0.9em;
+    }
+
+    .radio-group label:hover {
+        background: rgba(255, 255, 255, 0.9);
+    }
+    
+    .radio-group input[type="radio"] {
+        margin-right: 8px;
+        accent-color: #8bc34a;
+    }
+
     label { display: block; text-align: left; margin: 8px 0; cursor: pointer; }
-    textarea, select, input[type="text"], input[type="number"] { width: 100%; box-sizing: border-box; padding: 10px; margin-top: 5px; border-radius: 5px; border: 1px solid #ccc; background: rgba(255, 255, 255, 0.95); font-size: 1em; color: #333; }
+    textarea, select, input[type="text"], input[type="number"] { width: 100%; box-sizing: border-box; padding: 12px; margin-top: 5px; border-radius: 8px; border: 1px solid #ccc; background: rgba(255, 255, 255, 0.95); font-size: 1em; color: #333; margin-bottom: 15px; }
     textarea:focus, input[type="text"]:focus { outline: none; background: #fff; border-color: #8bc34a; box-shadow: 0 0 8px rgba(139, 195, 74, 0.4); }
     textarea { height: 100px; resize: vertical; }
     
-    .submit-btn { display: block; width: 100%; box-sizing: border-box; text-decoration: none; padding: 15px; margin-top: 25px; background: linear-gradient(45deg, #66bb6a, #cddc39); color: white; border-radius: 30px; font-weight: bold; font-size: 1.1em; text-align: center; transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s; border: none; cursor: pointer; font-family: sans-serif; box-shadow: 0 4px 15px rgba(102, 187, 106, 0.4); }
-    .submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102, 187, 106, 0.6); }
-    .submit-btn:disabled { background: #ccc !important; box-shadow: none; color: #666; cursor: not-allowed; opacity: 0.8; transform: none; }
+    /* ▼ ボタンを大きく、目立つように変更 ▼ */
+    .submit-btn { 
+        display: block; 
+        width: 100%; 
+        box-sizing: border-box; 
+        text-decoration: none; 
+        padding: 20px; /* 余白を大きくしてタップしやすく */
+        margin-top: 30px; 
+        background: linear-gradient(45deg, #4caf50, #8bc34a); /* 鮮やかなグラデーション */
+        color: white; 
+        border-radius: 50px; /* より丸みのある形状に */
+        font-weight: 900; /* 文字を太く */
+        font-size: 1.3em; /* 文字サイズを大きく */
+        text-align: center; 
+        transition: transform 0.2s, box-shadow 0.2s, background 0.2s; 
+        border: none; 
+        cursor: pointer; 
+        font-family: sans-serif; 
+        box-shadow: 0 8px 20px rgba(76, 175, 80, 0.4); /* リッチな影で立体感を演出 */
+        letter-spacing: 1px;
+    }
+    .submit-btn:hover:not(:disabled) { 
+        transform: translateY(-3px) scale(1.02); 
+        box-shadow: 0 12px 25px rgba(76, 175, 80, 0.6); 
+    }
+    .submit-btn:disabled { 
+        background: #e0e0e0 !important; 
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); /* 押せない時は沈んだ見た目に */
+        color: #999; 
+        cursor: not-allowed; 
+        opacity: 0.9; 
+        transform: none; 
+    }
+    /* ▲ ここまで ▲ */
 
     .notice-text { font-size: 10px; color: #777; text-align: left; margin-top: 30px; line-height: 1.4; border-top: 1px dashed #ddd; padding-top: 10px; }
     
@@ -165,15 +226,38 @@
             <p class="note">※混雑時や内容によっては、リクエストにお応えできない場合がございますのでご了承ください。</p>
         </div>
 
-        <span class="q-title">1. 曲名 <span class="req-label">必須</span></span>
+        <span class="q-title">1. あなたの性別を教えてください <span class="req-label">必須</span></span>
+        <div class="radio-group" id="gender-group">
+            <label><input type="radio" name="gender" value="男性"> 男性</label>
+            <label><input type="radio" name="gender" value="女性"> 女性</label>
+            <label><input type="radio" name="gender" value="選択しない"> 選択しない</label>
+        </div>
+
+        <span class="q-title">2. あなたの年齢を教えてください <span class="req-label">必須</span></span>
+        <div class="radio-group" id="age-group">
+            <label><input type="radio" name="age" value="20代以下"> 20代以下</label>
+            <label><input type="radio" name="age" value="30-40代"> 30-40代</label>
+            <label><input type="radio" name="age" value="50-60代"> 50-60代</label>
+            <label><input type="radio" name="age" value="60代以上"> 60代以上</label>
+        </div>
+
+        <span class="q-title">3. 一緒に来店された方との関係性を教えてください <span class="req-label">必須</span></span>
+        <div class="radio-group" id="relation-group">
+            <label><input type="radio" name="relation" value="家族"> 家族</label>
+            <label><input type="radio" name="relation" value="友人"> 友人</label>
+            <label><input type="radio" name="relation" value="仕事仲間"> 仕事仲間</label>
+            <label><input type="radio" name="relation" value="他"> 他</label>
+        </div>
+
+        <span class="q-title">4. 曲名 <span class="req-label">必須</span></span>
         <span class="q-desc">曲のタイトルをご記入ください。</span>
         <input type="text" id="song-title">
 
-        <span class="q-title">2. アーティスト名 <span class="req-label">必須</span></span>
+        <span class="q-title">5. アーティスト名 <span class="req-label">必須</span></span>
         <span class="q-desc">その曲を歌っている・演奏しているアーティスト名をご記入ください。</span>
         <input type="text" id="artist-name">
 
-        <span class="q-title">3. 何かあれば自由に書いてください <span class="opt-label">任意</span></span>
+        <span class="q-title">6. 何かあれば自由に書いてください <span class="opt-label">任意</span></span>
         <span class="q-desc">この曲にまつわるエピソードや、お店へのメッセージなど、お気軽にどうぞ！</span>
         <textarea id="comment" placeholder="曲との思い出・当店の感想等をご記入ください"></textarea>
         
@@ -236,14 +320,23 @@
 
     const urlParams = new URLSearchParams(window.location.search);
     const shopName = urlParams.get('shop') || "不明な店舗";
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbyDVyNmL_t_FprKg5WHB2oBTMnl8saHMltT5ym9j9o0ULcIs0jl25RSRjjzTrd7_tvRBQ/exec"; 
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbziFuQR2fP0XaaV73kJpqEUrwhZrPfbVfx6iaG5VV6SrT4haeysQN41xB1BQaaLYX4c7w/exec"; 
 
     let deviceId = ""; 
 
     function checkFormValidity() {
+        const gender = document.querySelector('input[name="gender"]:checked');
+        const age = document.querySelector('input[name="age"]:checked');
+        const relation = document.querySelector('input[name="relation"]:checked');
         const songTitle = document.getElementById('song-title').value.trim();
         const artistName = document.getElementById('artist-name').value.trim();
-        const isValid = songTitle !== "" && artistName !== "";
+        
+        const isValid = gender !== null && 
+                        age !== null && 
+                        relation !== null && 
+                        songTitle !== "" && 
+                        artistName !== "";
+                        
         document.getElementById('submit-btn').disabled = !isValid;
     }
 
@@ -273,10 +366,26 @@
             document.getElementById(id).addEventListener('change', checkFormValidity);
         });
         
+        const radioNames = ['gender', 'age', 'relation'];
+        radioNames.forEach(name => {
+            const radios = document.querySelectorAll(`input[name="${name}"]`);
+            radios.forEach(radio => {
+                radio.addEventListener('change', checkFormValidity);
+            });
+        });
+        
         checkFormValidity();
     };
 
     async function submitRequest() {
+        const genderEl = document.querySelector('input[name="gender"]:checked');
+        const ageEl = document.querySelector('input[name="age"]:checked');
+        const relationEl = document.querySelector('input[name="relation"]:checked');
+        
+        const gender = genderEl ? genderEl.value : "";
+        const age = ageEl ? ageEl.value : "";
+        const relation = relationEl ? relationEl.value : "";
+        
         const songTitle = document.getElementById('song-title').value;
         const artistName = document.getElementById('artist-name').value;
         const commentValue = document.getElementById('comment').value;
@@ -289,6 +398,9 @@
         
         const requestData = {
             shop: shopName,
+            gender: gender,
+            age: age,
+            relation: relation,
             songTitle: songTitle,
             artistName: artistName,
             comment: commentValue,
