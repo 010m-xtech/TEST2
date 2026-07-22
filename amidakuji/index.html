@@ -168,7 +168,7 @@
         <!-- UI: コース選択ボタン -->
         <div id="buttons-container" class="absolute top-[6%] w-full flex flex-col items-center px-3 z-10 transition-all duration-500">
             <p class="text-amber-200 font-bold mb-3 text-sm sm:text-base drop-shadow-[0_2px_4px_rgba(0,0,0,1)] animate-pulse tracking-wider text-center leading-relaxed">
-                ～今から食の旅が始まります～<br>
+                ～今から食の運勢旅が始まります～<br>
                 A・B・Cからコースを選んでください ☟
             </p>
             <div class="flex justify-between w-full">
@@ -198,8 +198,8 @@
             <!-- ★追加: 紙吹雪用キャンバス -->
             <canvas id="confetti-canvas" class="absolute inset-0 w-full h-full z-10 pointer-events-none"></canvas>
 
-            <!-- ネオン風テキスト（絵文字削除・強制1行・サイズ調整） -->
-            <h2 class="text-xl sm:text-3xl mb-6 animate-float neon-text-lucky tracking-wider relative z-20 whitespace-nowrap">本日のラッキーメニューは</h2>
+            <!-- ネオン風テキスト（動的に変更するためIDを追加し、改行できるように修正） -->
+            <h2 id="result-heading" class="text-2xl sm:text-4xl mb-6 animate-float neon-text-lucky tracking-wider relative z-20 leading-snug drop-shadow-lg"></h2>
             
             <div id="result-card" class="bg-gradient-to-br from-amber-50 to-orange-100 rounded-[2rem] p-4 shadow-[0_0_60px_rgba(255,215,0,0.6)] border-4 border-yellow-400 w-full max-w-sm mb-10 popup-enter relative overflow-hidden z-20">
                 <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/aged-paper.png')] opacity-30 mix-blend-overlay pointer-events-none"></div>
@@ -783,10 +783,20 @@
             
             const resultImg = document.getElementById('result-image');
             const resultText = document.getElementById('result-text');
+            const resultHeading = document.getElementById('result-heading');
             
             const data = RESULT_DATA[finalResultCol];
             resultImg.src = data.img;
             resultText.innerHTML = data.text; 
+
+            // 到達したレーン(0:左, 1:中, 2:右)に応じて見出しテキストを変更
+            if (finalResultCol === 0) {
+                resultHeading.innerHTML = '大吉！！<br><span class="text-base sm:text-xl leading-relaxed mt-2 block">もっといい運勢にするには<br>下のメニューを食べてね！</span>';
+            } else if (finalResultCol === 1) {
+                resultHeading.innerHTML = '中吉！！<br><span class="text-base sm:text-xl leading-relaxed mt-2 block">もっといい運勢にするには<br>下のメニューを食べてね！</span>';
+            } else if (finalResultCol === 2) {
+                resultHeading.innerHTML = '小吉！！<br><span class="text-base sm:text-xl leading-relaxed mt-2 block">もっといい運勢にするには<br>下のメニューを食べてね！！</span>';
+            }
 
             const resultPhaseEl = document.getElementById('result-phase');
             resultPhaseEl.classList.remove('hidden');
