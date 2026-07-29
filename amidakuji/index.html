@@ -58,7 +58,7 @@
             pointer-events: auto;
         }
 
-        /* ★追加: ネオン風テキストエフェクト */
+        /* ネオン風テキストエフェクト */
         .neon-text-lucky {
             color: #ffffff;
             font-weight: 900;
@@ -89,7 +89,7 @@
             }
         }
 
-        /* ★追加: 回転する後光（サンバースト）エフェクト */
+        /* 回転する後光（サンバースト）エフェクト */
         .sunburst-bg {
             background: repeating-conic-gradient(
                 from 0deg,
@@ -187,23 +187,23 @@
         <!-- あみだくじ描画用Canvas -->
         <canvas id="amida-canvas" class="absolute inset-0 w-full h-full z-0 block pointer-events-none"></canvas>
 
-        <!-- ========================================== -->
         <!-- フェーズ4: 結果表示画面 (z-30) -->
-        <!-- ========================================== -->
         <div id="result-phase" class="absolute inset-0 bg-stone-950/95 backdrop-blur-md z-30 flex-col items-center justify-center p-6 text-center opacity-0 pointer-events-none transition-opacity duration-500 hidden overflow-hidden">
             
-            <!-- ★追加: 後光（サンバースト）エフェクト -->
+            <!-- 後光（サンバースト）エフェクト -->
             <div class="sunburst-bg absolute inset-0 z-0"></div>
             
-            <!-- ★追加: 紙吹雪用キャンバス -->
+            <!-- 紙吹雪用キャンバス -->
             <canvas id="confetti-canvas" class="absolute inset-0 w-full h-full z-10 pointer-events-none"></canvas>
 
-            <!-- ネオン風テキスト（動的に変更するためIDを追加し、改行できるように修正） -->
+            <!-- ネオン風テキスト -->
             <h2 id="result-heading" class="text-2xl sm:text-4xl mb-6 animate-float neon-text-lucky tracking-wider relative z-20 leading-snug drop-shadow-lg"></h2>
             
             <div id="result-card" class="bg-gradient-to-br from-amber-50 to-orange-100 rounded-[2rem] p-4 shadow-[0_0_60px_rgba(255,215,0,0.6)] border-4 border-yellow-400 w-full max-w-sm mb-10 popup-enter relative overflow-hidden z-20">
                 <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/aged-paper.png')] opacity-30 mix-blend-overlay pointer-events-none"></div>
-                <img id="result-image" src="" alt="おすすめメニュー" class="w-full h-auto rounded-xl object-contain drop-shadow-[0_5px_15px_rgba(0,0,0,0.3)] mb-4 border-2 border-orange-200/50 relative z-10">
+                <img id="result-image" src="" alt="おすすめメニュー" 
+                     onerror="this.onerror=null; this.src='https://placehold.co/400x300/d97706/ffffff?text=MENU+IMAGE';" 
+                     class="w-full h-auto rounded-xl object-contain drop-shadow-[0_5px_15px_rgba(0,0,0,0.3)] mb-4 border-2 border-orange-200/50 relative z-10">
                 <!-- 結果テキスト表示エリア -->
                 <p id="result-text" class="text-lg sm:text-xl font-bold text-stone-800 leading-relaxed bg-white/90 p-4 rounded-xl shadow-inner backdrop-blur-sm border border-orange-200/50 relative z-10">
                     <!-- ここにテキストが入ります -->
@@ -217,16 +217,16 @@
         // 結果データ（画像とテキスト）
         const RESULT_DATA = [
             {
-                img: 'https://github.com/user-attachments/assets/a49504d8-69eb-4ffc-85ba-643a24530190',
-                text: '一口で食べられるお酒のお供！！<br>餃子チップス！'
+                img: 'https://github.com/user-attachments/assets/da46e8c4-3582-430b-9b45-1469bc9cd7e0',
+                text: '名物　マーラーフライドチキン<br>10種類のオリジナルスパイスで味付けチューリップ唐揚げ'
             },
             {
-                img: 'https://github.com/user-attachments/assets/e91755b8-2221-43a1-98f8-4f2c14f7624c',
-                text: '工場出荷2日以内、<br>新鮮すぎる速達生ビール！！'
+                img: 'https://github.com/user-attachments/assets/318f6ab8-cba5-4776-b028-2040ec289e32',
+                text: '名物　マーラー麺<br>見てびっくり！食べてびっくり！'
             },
             {
-                img: 'https://github.com/user-attachments/assets/18c13ddb-267d-4c88-bf10-523b72990ae1',
-                text: '名古屋のソウルフード<br>手羽先の唐揚げ！'
+                img: 'https://github.com/user-attachments/assets/1840e458-cde3-4cbb-8c32-52e6295b21d9',
+                text: '速達生ビール<br>工場出荷2日以内新鮮なビール！'
             }
         ];
         const TRAIN_SPEED = 120; 
@@ -247,7 +247,6 @@
         let animationFrameId = null;
         let finalResultCol = 0;
         let imagesLoaded = false;
-
         // ★追加: 紙吹雪用変数
         let confettiParticles = [];
         let confettiFrameId = null;
@@ -255,16 +254,20 @@
         // --- 画像プレロード ---
         function preloadGoalImages() {
             let loadedCount = 0;
+            const checkDone = () => {
+                loadedCount++;
+                if (loadedCount >= RESULT_DATA.length) {
+                    imagesLoaded = true;
+                }
+            };
             RESULT_DATA.forEach(data => {
                 const img = new Image();
-                img.onload = () => {
-                    loadedCount++;
-                    if (loadedCount === RESULT_DATA.length) {
-                        imagesLoaded = true;
-                    }
-                };
+                img.onload = checkDone;
+                img.onerror = checkDone;
                 img.src = data.img;
             });
+            // 画像読み込みの遅延・エラー対策（1秒後に強制的に準備完了）
+            setTimeout(() => { imagesLoaded = true; }, 1000);
         }
 
         // --- 初期設定・レイアウト計算 ---
@@ -633,19 +636,19 @@
         // --- ステート制御 ---
         function startGame(laneIndex) {
             if (state !== 'INIT') return;
-            if (!imagesLoaded) {
-                setTimeout(() => startGame(laneIndex), 100);
-                return;
-            }
 
             document.getElementById('buttons-container').style.opacity = '0';
             document.getElementById('buttons-container').style.pointerEvents = 'none';
 
             const warpVideo = document.getElementById('warp-video');
-            warpVideo.load();
-            const playPromise = warpVideo.play();
-            if (playPromise !== undefined) {
-                playPromise.then(() => warpVideo.pause()).catch(() => {});
+            if (warpVideo) {
+                try {
+                    warpVideo.load();
+                    const playPromise = warpVideo.play();
+                    if (playPromise !== undefined) {
+                        playPromise.then(() => warpVideo.pause()).catch(() => {});
+                    }
+                } catch(e) {}
             }
 
             calculatePath(laneIndex);
@@ -712,7 +715,7 @@
             }, 2000); 
         }
 
-        // ★追加: 紙吹雪のアニメーションロジック
+        // 紙吹雪のアニメーションロジック
         function initConfetti() {
             const canvas = document.getElementById('confetti-canvas');
             if (!canvas) return;
@@ -806,7 +809,7 @@
                 resultPhaseEl.classList.add('flex', 'opacity-100');
                 document.getElementById('result-card').classList.add('popup-enter-active');
 
-                // ★追加: 当たり演出（紙吹雪）をスタート
+                // 当たり演出（紙吹雪）をスタート
                 setTimeout(() => {
                     initConfetti();
                 }, 300); // カードがポップアップしてから少し遅らせて開始
@@ -815,7 +818,7 @@
 
         function resetGame() {
             try {
-                // ★追加: 紙吹雪をストップ
+                // 紙吹雪をストップ
                 stopConfetti();
 
                 const resultPhaseEl = document.getElementById('result-phase');
@@ -846,6 +849,15 @@
             animationFrameId = requestAnimationFrame(gameLoop);
         }
 
+        function dismissIntro() {
+            const introPhase = document.getElementById('intro-phase');
+            if (introPhase && !introPhase.classList.contains('hidden')) {
+                introPhase.style.opacity = '0';
+                introPhase.style.pointerEvents = 'none';
+                setTimeout(() => introPhase.classList.add('hidden'), 1000);
+            }
+        }
+
         // --- 起動・初期化処理 ---
         window.onload = () => {
             preloadGoalImages(); 
@@ -854,32 +866,41 @@
             const video = document.getElementById('intro-video');
             const introPhase = document.getElementById('intro-phase');
 
+            // オープニング画面タップでスキップ可能にする
+            introPhase.addEventListener('click', dismissIntro);
+
+            // 4秒経過しても動画が終わらない場合は自動でスキップ
+            const introTimer = setTimeout(dismissIntro, 4000);
+
             video.addEventListener('ended', () => {
-                video.style.opacity = '0';
-                setTimeout(() => {
-                    introPhase.style.opacity = '0';
-                    setTimeout(() => introPhase.classList.add('hidden'), 2500);
-                }, 1000); 
+                clearTimeout(introTimer);
+                dismissIntro();
             });
 
             const playPromise = video.play();
             if (playPromise !== undefined) {
                 playPromise.catch(() => {
                     const playBtn = document.getElementById('intro-play-btn');
-                    playBtn.classList.remove('hidden');
-                    playBtn.classList.add('flex');
+                    if (playBtn) {
+                        playBtn.classList.remove('hidden');
+                        playBtn.classList.add('flex');
+                    }
                 });
             }
         };
 
         function playIntro() {
             const playBtn = document.getElementById('intro-play-btn');
-            playBtn.classList.remove('flex');
-            playBtn.classList.add('hidden');
+            if (playBtn) {
+                playBtn.classList.remove('flex');
+                playBtn.classList.add('hidden');
+            }
             
             const video = document.getElementById('intro-video');
-            video.muted = false; 
-            video.play();
+            if (video) {
+                video.muted = false; 
+                video.play();
+            }
         }
 
         window.addEventListener('resize', () => {
