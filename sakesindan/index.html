@@ -32,26 +32,26 @@
                 <div v-for="drink in drinks" :key="drink.id" 
                      @click="selectedDrink = drink.id"
                      class="cursor-pointer border-2 rounded-xl p-3 flex flex-col items-center transition-all duration-300"
-                     :class="selectedDrink === drink.id ? 'border-amber-500 bg-slate-800/80 shadow-[0_0_15px_rgba(245,158,11,0.3)]' : 'border-transparent bg-slate-800/40 hover:bg-slate-800/60'">
+                     :class="selectedDrink === drink.id ? 'border-lime-400 bg-slate-800/80 shadow-[0_0_15px_rgba(163,230,53,0.3)]' : 'border-transparent bg-slate-800/40 hover:bg-slate-800/60'">
                     <img :src="drink.img" :alt="drink.name" class="w-full h-24 object-contain mb-3 rounded" @error="handleImageError">
-                    <span class="text-sm font-bold tracking-wide" :class="selectedDrink === drink.id ? 'text-amber-500' : 'text-slate-300'">{{ drink.name }}</span>
+                    <span class="text-sm font-bold tracking-wide" :class="selectedDrink === drink.id ? 'text-lime-400' : 'text-slate-300'">{{ drink.name }}</span>
                 </div>
             </div>
             
             <button @click="startQuiz" :disabled="!selectedDrink"
                     class="w-full py-4 rounded-xl font-bold text-lg tracking-wider transition-all duration-300"
-                    :class="selectedDrink ? 'bg-gradient-to-r from-amber-600 to-orange-500 hover:from-amber-500 hover:to-orange-400 text-white shadow-lg' : 'bg-slate-700 text-slate-500 cursor-not-allowed'">
+                    :class="selectedDrink ? 'bg-gradient-to-r from-lime-500 to-emerald-500 hover:from-lime-400 hover:to-emerald-400 text-slate-950 shadow-lg' : 'bg-slate-700 text-slate-500 cursor-not-allowed'">
                 診断をスタートする →
             </button>
         </div>
 
         <!-- 2. 質問画面 -->
         <div v-else-if="step === 'quiz'" class="w-full max-w-lg mt-6 mb-8">
-            <!-- プログレスバー -->
+            <!-- プログレスバー（黄緑色に変更） -->
             <div class="mb-8">
-                <div class="text-amber-500 font-bold text-sm tracking-widest mb-3">Q{{ currentQuestionIndex + 1 }} / 6</div>
+                <div class="text-lime-400 font-bold text-sm tracking-widest mb-3">Q{{ currentQuestionIndex + 1 }} / 6</div>
                 <div class="w-full h-1.5 bg-slate-800/80 rounded-full overflow-hidden">
-                    <div class="h-full bg-amber-500 transition-all duration-500" :style="{ width: ((currentQuestionIndex + 1) / 6 * 100) + '%' }"></div>
+                    <div class="h-full bg-lime-400 transition-all duration-500" :style="{ width: ((currentQuestionIndex + 1) / 6 * 100) + '%' }"></div>
                 </div>
             </div>
 
@@ -64,16 +64,18 @@
             <div class="space-y-5">
                 <div v-for="(option, idx) in currentQuestion.options" :key="idx"
                      @click="answerQuestion(option.type)"
-                     class="bg-slate-900/70 backdrop-blur-md rounded-2xl overflow-hidden cursor-pointer hover:border-amber-500/80 hover:shadow-[0_0_20px_rgba(245,158,11,0.2)] transition-all duration-300 border border-slate-600/50">
+                     class="bg-slate-900/70 backdrop-blur-md rounded-2xl overflow-hidden cursor-pointer hover:border-lime-400/80 hover:shadow-[0_0_20px_rgba(163,230,53,0.2)] transition-all duration-300 border border-slate-600/50">
                     
-                    <!-- イラスト枠を高さを狭め(h-32)、画像を2.2倍に拡大(scale-220)して大きく表示 -->
-                    <div class="w-full h-32 flex items-center justify-center bg-white overflow-hidden relative">
-                        <img :src="option.img" class="w-full h-full object-contain transform scale-220" alt="Option Image" @error="handleImageError">
+                    <!-- イラスト枠の縦幅を広げ(h-48)、イラストがダイナミックに見えるように拡大 -->
+                    <div class="w-full h-48 flex items-center justify-center bg-white overflow-hidden relative">
+                        <img :src="option.img" class="w-full h-full object-contain transform scale-180" alt="Option Image" @error="handleImageError">
                     </div>
                     
-                    <div class="p-5 bg-slate-900/80 border-t border-slate-700/50">
-                        <div class="text-amber-500 text-xs font-bold mb-2 tracking-widest">OPTION {{ idx === 0 ? 'A' : 'B' }}</div>
-                        <div class="font-bold text-base text-slate-100 tracking-wide">{{ option.text }}</div>
+                    <!-- 本文エリア：OPTION表記を廃止し、A. B. を本文の横に配置 -->
+                    <div class="p-4 bg-slate-900/80 border-t border-slate-700/50 flex items-center">
+                        <div class="font-bold text-base text-slate-100 tracking-wide leading-snug">
+                            <span class="text-lime-400 font-extrabold mr-1.5">{{ idx === 0 ? 'A.' : 'B.' }}</span>{{ option.text }}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -81,15 +83,15 @@
 
         <!-- 3. 動的診断結果画面 -->
         <div v-else-if="step === 'result' && finalResult" class="w-full max-w-lg mt-12 p-8 bg-slate-900/60 backdrop-blur-md border border-white/10 rounded-2xl flex flex-col items-center text-center">
-            <div class="text-amber-500 font-bold mb-2 tracking-widest text-sm">DIAGNOSIS TYPE</div>
-            <h2 class="text-2xl font-bold text-amber-400 mb-4 leading-relaxed">{{ finalResult.title }}</h2>
+            <div class="text-lime-400 font-bold mb-2 tracking-widest text-sm">DIAGNOSIS TYPE</div>
+            <h2 class="text-2xl font-bold text-lime-400 mb-4 leading-relaxed">{{ finalResult.title }}</h2>
             <p class="text-sm text-slate-400 mb-8">あなたの回答傾向：{{ answersHistory.join('-') }}</p>
             
             <div class="w-full bg-slate-800/80 rounded-xl p-5 mb-8 border border-slate-700">
                 <div class="flex items-center justify-center gap-3 mb-4">
                     <span class="text-3xl">{{ finalResult.icon }}</span>
                     <div class="text-left">
-                        <div class="text-xs text-amber-500 font-bold bg-amber-500/20 px-2 py-1 rounded inline-block mb-1">RECOMMENDED</div>
+                        <div class="text-xs text-lime-400 font-bold bg-lime-400/20 px-2 py-1 rounded inline-block mb-1">RECOMMENDED</div>
                         <div class="font-bold text-lg text-slate-100">{{ finalResult.recommended }}</div>
                     </div>
                 </div>
@@ -110,10 +112,10 @@
 
     </div>
 
-    <!-- 画像をズームさせる独自のCSS -->
+    <!-- 画像倍率調整CSS -->
     <style>
-        .scale-220 {
-            transform: scale(2.2) !important;
+        .scale-180 {
+            transform: scale(1.8) !important;
         }
     </style>
 
@@ -134,7 +136,6 @@
                     { id: 'craft', name: 'クラフト酒', img: 'craft.jpg' }
                 ];
 
-                // ご提示いただいた本来の設問＆回答に修正
                 const questions = [
                     {
                         text: '今夜のあなたに一番近い気分は？',
