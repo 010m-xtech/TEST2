@@ -18,7 +18,7 @@
            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; opacity: 0.4; pointer-events: none;">
     </video>
 
-    <!-- ▼ メインコンテンツ：動画の上に乗せて、この中だけでスクロールさせる ▼ -->
+    <!-- ▼ メインコンテンツ ▼ -->
     <div id="app" class="relative z-10 w-full h-full overflow-y-auto flex flex-col items-center p-4 pb-20 text-slate-100 font-serif">
         
         <!-- 1. トップ画面 -->
@@ -33,7 +33,6 @@
                      @click="selectedDrink = drink.id"
                      class="cursor-pointer border-2 rounded-xl p-3 flex flex-col items-center transition-all duration-300"
                      :class="selectedDrink === drink.id ? 'border-amber-500 bg-slate-800/80 shadow-[0_0_15px_rgba(245,158,11,0.3)]' : 'border-transparent bg-slate-800/40 hover:bg-slate-800/60'">
-                    <!-- 画像の縦横比を保ちつつ全体を表示 -->
                     <img :src="drink.img" :alt="drink.name" class="w-full h-24 object-contain mb-3 rounded" @error="handleImageError">
                     <span class="text-sm font-bold tracking-wide" :class="selectedDrink === drink.id ? 'text-amber-500' : 'text-slate-300'">{{ drink.name }}</span>
                 </div>
@@ -64,11 +63,11 @@
             <!-- 選択肢 -->
             <div class="space-y-5">
                 <div v-for="(option, idx) in currentQuestion.options" :key="idx"
-                     @click="answerQuestion"
+                     @click="answerQuestion(option.type)"
                      class="bg-slate-900/70 backdrop-blur-md rounded-2xl overflow-hidden cursor-pointer hover:border-amber-500/80 hover:shadow-[0_0_20px_rgba(245,158,11,0.2)] transition-all duration-300 border border-slate-600/50">
                     
-                    <!-- イラストを絶対に切らさず枠内に収める設定 -->
-                    <div class="w-full h-52 flex items-center justify-center p-2 bg-transparent">
+                    <!-- イラスト背景（白） -->
+                    <div class="w-full h-52 flex items-center justify-center p-2 bg-white">
                         <img :src="option.img" class="max-w-full max-h-full object-contain" alt="Option Image" @error="handleImageError">
                     </div>
                     
@@ -80,20 +79,23 @@
             </div>
         </div>
 
-        <!-- 3. 診断完了画面（仮） -->
-        <div v-else-if="step === 'result'" class="w-full max-w-lg mt-12 p-8 bg-slate-900/60 backdrop-blur-md border border-white/10 rounded-2xl flex flex-col items-center text-center">
+        <!-- 3. 動的診断結果画面 -->
+        <div v-else-if="step === 'result' && finalResult" class="w-full max-w-lg mt-12 p-8 bg-slate-900/60 backdrop-blur-md border border-white/10 rounded-2xl flex flex-col items-center text-center">
             <div class="text-amber-500 font-bold mb-2 tracking-widest text-sm">DIAGNOSIS TYPE</div>
-            <h2 class="text-2xl font-bold text-amber-400 mb-4 leading-relaxed">新しい出会い！<br>「個性的＆リッチ」</h2>
-            <p class="text-sm text-slate-400 mb-8">あなたの回答傾向：B-A-B-B-B-B</p>
+            <h2 class="text-2xl font-bold text-amber-400 mb-4 leading-relaxed">{{ finalResult.title }}</h2>
+            <p class="text-sm text-slate-400 mb-8">あなたの回答傾向：{{ answersHistory.join('-') }}</p>
             
             <div class="w-full bg-slate-800/80 rounded-xl p-5 mb-8 border border-slate-700">
                 <div class="flex items-center justify-center gap-3 mb-4">
-                    <span class="text-3xl">🍊</span>
+                    <span class="text-3xl">{{ finalResult.icon }}</span>
                     <div class="text-left">
                         <div class="text-xs text-amber-500 font-bold bg-amber-500/20 px-2 py-1 rounded inline-block mb-1">RECOMMENDED</div>
-                        <div class="font-bold text-lg">オレンジワイン / 樽熟成シャルドネ</div>
+                        <div class="font-bold text-lg text-slate-100">{{ finalResult.recommended }}</div>
                     </div>
                 </div>
+                <p class="text-sm text-slate-300 mt-4 text-left leading-relaxed">
+                    {{ finalResult.description }}
+                </p>
             </div>
 
             <button @click="resetQuiz" class="w-full py-4 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-bold tracking-widest transition-all">
@@ -117,6 +119,7 @@
                 const step = ref('start'); 
                 const selectedDrink = ref('');
                 const currentQuestionIndex = ref(0);
+                const answersHistory = ref([]);
                 
                 const drinks = [
                     { id: 'wine', name: 'ワイン', img: 'wine.jpg' },
@@ -128,55 +131,113 @@
                     {
                         text: '今夜のあなたに一番近い気分は？',
                         options: [
-                            { text: 'スカッと弾けて、今日をリセットしたい！', img: '1-1.jpg' },
-                            { text: '静かにほっこり、今日を癒やしたい…', img: '1-2.jpg' }
+                            { text: 'スカッと弾けて、今日をリセットしたい！', img: '1-1.jpg', type: 'A' },
+                            { text: '静かにほっこり、今日を癒やしたい…', img: '1-2.jpg', type: 'B' }
                         ]
                     },
                     {
                         text: '今夜のお酒に合わせたい相棒は？',
                         options: [
-                            { text: 'ガッツリ濃厚なお肉や油もの', img: '2-2.jpg' }, 
-                            { text: 'さっぱりヘルシーなお刺身や野菜', img: '2-1.jpg' } 
+                            { text: 'ガッツリ濃厚なお肉や油もの', img: '2-2.jpg', type: 'A' }, 
+                            { text: 'さっぱりヘルシーなお刺身や野菜', img: '2-1.jpg', type: 'B' } 
                         ]
                     },
                     {
                         text: 'ふと嗅ぎたくなる、惹かれる香りは？',
                         options: [
-                            { text: 'みずみずしい柑橘やフルーティーな香り', img: '3-1.jpg' },
-                            { text: 'スパイシーなハーブや深みある木の香り', img: '3-2.jpg' }
+                            { text: 'みずみずしい柑橘やフルーティーな香り', img: '3-1.jpg', type: 'A' },
+                            { text: 'スパイシーなハーブや深みある木の香り', img: '3-2.jpg', type: 'B' }
                         ]
                     },
                     {
                         text: '休日の過ごし方で理想なのは？',
                         options: [
-                            { text: '外に出てアクティブにリフレッシュ', img: '4-1.jpg' },
-                            { text: 'お家で映画や読書をしながらのんびり', img: '4-2.jpg' }
+                            { text: '外に出てアクティブにリフレッシュ', img: '4-1.jpg', type: 'A' },
+                            { text: 'お家で映画や読書をしながらのんびり', img: '4-2.jpg', type: 'B' }
                         ]
                     },
                     {
                         text: '今日の疲れ具合は？',
                         options: [
-                            { text: 'まだまだ元気！これからが本番', img: '5-1.jpg' },
-                            { text: 'もうクタクタ…早くベッドにダイブしたい', img: '5-2.jpg' }
+                            { text: 'まだまだ元気！これからが本番', img: '5-1.jpg', type: 'A' },
+                            { text: 'もうクタクタ…早くベッドにダイブしたい', img: '5-2.jpg', type: 'B' }
                         ]
                     },
                     {
                         text: '飲むペースはどれくらいがいい？',
                         options: [
-                            { text: 'ゴクゴク爽快に飲みたい！', img: '6-1.jpg' },
-                            { text: 'ちびちび味わって飲みたい', img: '6-2.jpg' }
+                            { text: 'ゴクゴク爽快に飲みたい！', img: '6-1.jpg', type: 'A' },
+                            { text: 'ちびちび味わって飲みたい', img: '6-2.jpg', type: 'B' }
                         ]
                     }
                 ];
 
+                // 全6タイプの診断判定マスターデータ
+                const resultTypes = {
+                    type1: {
+                        title: '爽快＆リフレッシュ',
+                        icon: '🥂',
+                        recommended: 'スパークリングワイン / 生酒 / クラフトビール',
+                        description: '今日のモヤモヤを吹き飛ばす、弾ける爽快感とキレが今のあなたにぴったり。'
+                    },
+                    type2: {
+                        title: '個性的＆リッチ',
+                        icon: '🍊',
+                        recommended: 'オレンジワイン / 樽熟成シャルドネ / クラフトジン',
+                        description: '独自の製法による独特のアロマと複雑み。いつもと一味違う夜を楽しみたい方にぴったり。'
+                    },
+                    type3: {
+                        title: '王道＆バランス',
+                        icon: '🍷',
+                        recommended: 'カベルネ・ソーヴィニヨン / 特別純米酒 / ペールエール',
+                        description: 'どんな料理にも合わせやすい安定した味わい。リラックスしたひとときを約束します。'
+                    },
+                    type4: {
+                        title: 'マイルド＆包容力',
+                        icon: '🍶',
+                        recommended: 'メルロー / 濁り酒 / ヴァイツェン',
+                        description: '優しくまろやかな口当たりが、今日の疲れをじんわりと包み込んで癒やしてくれます。'
+                    },
+                    type5: {
+                        title: '深み＆じっくり',
+                        icon: '🥃',
+                        recommended: 'フルボディ赤ワイン / 古酒・熟成酒 / スタウト（黒ビール）',
+                        description: '時間をかけてじっくり味わいたい重厚感。静かな夜に思索に耽るお供に。'
+                    },
+                    type6: {
+                        title: 'プレミアム＆特別感',
+                        icon: '✨',
+                        recommended: 'ヴィンテージワイン / 貴醸酒 / バレルエイジドビール',
+                        description: '特別なご褒美タイム。上質な香りと余韻が、今日という一日を最高に締めくくります。'
+                    }
+                };
+
                 const currentQuestion = computed(() => questions[currentQuestionIndex.value]);
 
+                // 6タイプ分岐の計算ロジック
+                const finalResult = computed(() => {
+                    if (answersHistory.value.length < 6) return null;
+                    const countA = answersHistory.value.filter(a => a === 'A').length;
+                    
+                    if (countA >= 5) return resultTypes.type1;
+                    if (countA === 4) return resultTypes.type2;
+                    if (countA === 3) return resultTypes.type3;
+                    if (countA === 2) return resultTypes.type4;
+                    if (countA === 1) return resultTypes.type5;
+                    return resultTypes.type6;
+                });
+
                 const startQuiz = () => {
-                    if (selectedDrink.value) step.value = 'quiz';
+                    if (selectedDrink.value) {
+                        step.value = 'quiz';
+                        answersHistory.value = [];
+                        currentQuestionIndex.value = 0;
+                    }
                     document.getElementById('app').scrollTo({ top: 0 });
                 };
 
-                const answerQuestion = () => {
+                const answerQuestion = (type) => {
+                    answersHistory.value.push(type);
                     if (currentQuestionIndex.value < questions.length - 1) {
                         currentQuestionIndex.value++;
                         document.getElementById('app').scrollTo({ top: 0, behavior: 'smooth' });
@@ -190,6 +251,7 @@
                     step.value = 'start';
                     selectedDrink.value = '';
                     currentQuestionIndex.value = 0;
+                    answersHistory.value = [];
                     document.getElementById('app').scrollTo({ top: 0 });
                 };
 
@@ -199,7 +261,7 @@
 
                 return {
                     step, selectedDrink, drinks,
-                    currentQuestionIndex, currentQuestion,
+                    currentQuestionIndex, currentQuestion, answersHistory, finalResult,
                     startQuiz, answerQuestion, resetQuiz, handleImageError
                 }
             }
