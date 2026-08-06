@@ -66,9 +66,9 @@
                      @click="answerQuestion(option.type)"
                      class="bg-slate-900/70 backdrop-blur-md rounded-2xl overflow-hidden cursor-pointer hover:border-amber-500/80 hover:shadow-[0_0_20px_rgba(245,158,11,0.2)] transition-all duration-300 border border-slate-600/50">
                     
-                    <!-- イラスト自体を1.5倍〜1.8倍にズーム(scale-160)して余白をカット！ -->
-                    <div class="w-full h-40 flex items-center justify-center bg-white overflow-hidden relative">
-                        <img :src="option.img" class="w-full h-full object-contain transform scale-160 transition-transform duration-300 hover:scale-170" alt="Option Image" @error="handleImageError">
+                    <!-- 枠の高さを狭め(h-32)、画像を2.2倍に拡大(scale-220)して余白を強制カット！ -->
+                    <div class="w-full h-32 flex items-center justify-center bg-white overflow-hidden relative">
+                        <img :src="option.img" class="w-full h-full object-contain transform scale-220" alt="Option Image" @error="handleImageError">
                     </div>
                     
                     <div class="p-5 bg-slate-900/80 border-t border-slate-700/50">
@@ -110,13 +110,10 @@
 
     </div>
 
-    <!-- Custom Style for Image Zoom -->
+    <!-- 画像をズームさせる独自のCSS -->
     <style>
-        .scale-160 {
-            transform: scale(1.6);
-        }
-        .hover\:scale-170:hover {
-            transform: scale(1.7);
+        .scale-220 {
+            transform: scale(2.2) !important;
         }
     </style>
 
@@ -182,7 +179,6 @@
                     }
                 ];
 
-                // 全6タイプの診断判定マスターデータ
                 const resultTypes = {
                     type1: {
                         title: '爽快＆リフレッシュ',
@@ -224,7 +220,6 @@
 
                 const currentQuestion = computed(() => questions[currentQuestionIndex.value]);
 
-                // 6タイプ分岐の計算ロジック
                 const finalResult = computed(() => {
                     if (answersHistory.value.length < 6) return null;
                     const countA = answersHistory.value.filter(a => a === 'A').length;
