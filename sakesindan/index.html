@@ -45,7 +45,7 @@
 
             <!-- ▼ 1. トップ画面 ▼ -->
             <div v-else-if="step === 'start'" key="start" class="w-full max-w-lg mt-6 p-4 flex flex-col items-center text-center">
-                <h1 class="text-2xl sm:text-3xl text-white font-bold mb-4 tracking-widest drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">〜今夜のあなたに合う1杯を〜</h1>
+                <h1 class="text-2xl sm:text-3xl text-white font-bold mb-4 tracking-widest drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">今夜のあなたに合う1杯を</h1>
                 <p class="text-sm sm:text-base text-slate-100 mb-8 leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
                     <span class="text-lime-400 font-bold text-lg">8つ</span>の簡単な直感クエスチョンに答えるだけで、<br>今のあなたにぴったりの味覚と時間をご提案。
                 </p>
@@ -73,7 +73,7 @@
             </div>
 
             <!-- ▼ 2. 質問画面（全8問） ▼ -->
-            <div v-else-if="step === 'quiz'" key="quiz" class="w-full max-w-[310px] sm:max-w-xs mt-2 mb-4 mx-auto">
+            <div v-else-if="step === 'quiz'" key="quiz" class="w-full max-w-[280px] sm:max-w-[310px] mt-2 mb-4 mx-auto">
                 <!-- 質問文 -->
                 <h2 class="text-base sm:text-lg font-bold mb-3 text-center leading-relaxed tracking-wide text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] px-1">
                     Q{{ currentQuestionIndex + 1 }}. {{ currentQuestion.text }}
@@ -85,14 +85,14 @@
                          @click="answerQuestion(option.type)"
                          class="bg-slate-900/80 backdrop-blur-md rounded-2xl overflow-hidden cursor-pointer hover:border-lime-400 hover:shadow-[0_0_20px_rgba(163,230,53,0.4)] transition-all duration-300 border border-slate-600/50 group">
                         
-                        <!-- イラスト枠（正方形に近い比率でイラストを大きくはっきり表示） -->
-                        <div class="w-full aspect-[4/3] flex items-center justify-center bg-white overflow-hidden relative p-1.5">
+                        <!-- イラスト枠（正方形 1:1 で画像を大きく綺麗に表示） -->
+                        <div class="w-full aspect-square flex items-center justify-center bg-white overflow-hidden relative p-3">
                             <span class="text-slate-400 text-xs font-sans absolute">ILLUSTRATION</span>
                             <img :src="option.img" class="w-full h-full object-contain relative z-10 transition-transform duration-300 group-hover:scale-105" alt="Option Image" @error="handleImageError">
                         </div>
                         
                         <!-- テキスト（2行までに綺麗に収まるコンパクト調整） -->
-                        <div class="p-3 bg-slate-900/90 border-t border-slate-700/50 flex items-center justify-center text-center min-h-[3.5rem]">
+                        <div class="p-2.5 bg-slate-900/90 border-t border-slate-700/50 flex items-center justify-center text-center min-h-[3rem]">
                             <div class="font-bold text-xs sm:text-sm text-slate-100 tracking-wide leading-snug">
                                 <span class="text-lime-400 font-extrabold mr-1">{{ idx === 0 ? 'A.' : 'B.' }}</span>{{ option.text }}
                             </div>
@@ -315,8 +315,8 @@
                         
                         // お酒ごとの動画切り替え時間（ミリ秒）
                         const videoDurations = {
-                            wine: 7000,   // ワイン：7秒
-                            craft: 5000,  // クラフト酒：5秒
+                            wine: 8500,   // ワイン：8.5秒（7秒 → 8.5秒へ1.5秒延長）
+                            craft: 6500,  // クラフト酒：6.5秒（5秒 → 6.5秒へ1.5秒延長）
                             sake: 4000    // 日本酒：4秒
                         };
                         const duration = videoDurations[selectedDrink.value] || 4000;
