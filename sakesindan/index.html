@@ -59,7 +59,7 @@
                         <div class="w-full h-24 flex items-center justify-center bg-white rounded-lg mb-3 overflow-hidden relative border-2 transition-all duration-300"
                              :class="selectedDrink === drink.id ? 'border-lime-400 shadow-[0_0_15px_rgba(163,230,53,0.5)]' : 'border-slate-300 group-hover:border-lime-400/80 group-hover:shadow-[0_0_12px_rgba(163,230,53,0.4)]'">
                             <span class="text-slate-400 text-xs absolute">図</span>
-                            <img :src="drink.img" :alt="drink.name" class="w-full h-full object-contain relative z-10 rounded transition-transform duration-300 group-hover:scale-110" @error="handleImageError">
+                            <img :src="drink.img" :alt="drink.name" class="w-full h-full object-contain relative z-10 rounded" @error="handleImageError">
                         </div>
                         <span class="text-sm sm:text-base font-bold tracking-wide drop-shadow-md" :class="selectedDrink === drink.id ? 'text-lime-400' : 'text-slate-100'">{{ drink.name }}</span>
                     </div>
@@ -85,7 +85,7 @@
                          @click="answerQuestion(option.type)"
                          class="bg-slate-900/80 backdrop-blur-md rounded-2xl overflow-hidden cursor-pointer hover:border-lime-400 hover:shadow-[0_0_20px_rgba(163,230,53,0.4)] transition-all duration-300 border border-slate-600/50 group">
                         
-                        <!-- イラスト枠（切れずに枠いっぱいに最大表示） -->
+                        <!-- イラスト枠（白背景・固定1.5倍表示） -->
                         <div class="w-full h-44 sm:h-52 flex items-center justify-center bg-white overflow-hidden relative p-1.5">
                             <span class="text-slate-400 text-xs font-sans absolute">ILLUSTRATION</span>
                             <img :src="option.img" 
@@ -115,7 +115,7 @@
                 </div>
             </div>
 
-            <!-- ▼ 3. 動的診断結果画面 ▼ -->
+            <!-- ▼ 3. 動的診断結果画面 (タイプ1〜5) ▼ -->
             <div v-else-if="step === 'result' && finalResult" key="result" class="w-full max-w-lg mt-8 p-6 bg-slate-900/80 backdrop-blur-md border border-white/20 rounded-2xl flex flex-col items-center text-center shadow-2xl">
                 <div class="text-lime-400 font-bold mb-2 tracking-widest text-sm">DIAGNOSIS TYPE</div>
                 <h2 class="text-2xl font-bold text-lime-400 mb-4 leading-relaxed">{{ finalResult?.title }}</h2>
@@ -240,46 +240,40 @@
 
                 const resultTypes = {
                     type1: {
-                        title: '爽快＆リフレッシュ',
+                        title: '今日をリセット、軽やかになりたい夜に。',
                         icon: '🥂',
                         recommended: 'スパークリングワイン / 生酒 / クラフトビール',
                         description: '今日のモヤモヤを吹き飛ばす、弾ける爽快感とキレが今のあなたにぴったり。'
                     },
                     type2: {
-                        title: '個性的＆リッチ',
+                        title: '新しい風と、気ままなアクセント',
                         icon: '🍊',
                         recommended: 'オレンジワイン / 樽熟成シャルドネ / クラフトジン',
-                        description: '独自の製法による独特のアロマと複雑み。いつもと一味違う夜を楽しみたい方にぴったり。'
+                        description: '個性が光る豊かな風味。いつもと一味違う夜を楽しみたいあなたにぴったり。'
                     },
                     type3: {
-                        title: '王道＆バランス',
+                        title: '調和な風味と、穏やかな日常',
                         icon: '🍷',
                         recommended: 'カベルネ・ソーヴィニヨン / 特別純米酒 / ペールエール',
                         description: 'どんな料理にも合わせやすい安定した味わい。リラックスしたひとときを約束します。'
                     },
                     type4: {
-                        title: 'マイルド＆包容力',
+                        title: 'とろける甘みと、ほっとする安心感',
                         icon: '🍶',
                         recommended: 'メルロー / 濁り酒 / ヴァイツェン',
                         description: '優しくまろやかな口当たりが、今日の疲れをじんわりと包み込んで癒やしてくれます。'
                     },
                     type5: {
-                        title: '深み＆じっくり',
+                        title: '静かな深みと、贅沢なひととき',
                         icon: '🥃',
                         recommended: 'フルボディ赤ワイン / 古酒・熟成酒 / スタウト（黒ビール）',
-                        description: '時間をかけてじっくり味わいたい重厚感。静かな夜に思索に耽るお供に。'
-                    },
-                    type6: {
-                        title: 'プレミアム＆特別感',
-                        icon: '✨',
-                        recommended: '貴醸酒 / ヴィンテージワイン / バレルエイジドビール',
-                        description: '特別なご褒美タイム。上質な香りと余韻が、今日という一日を最高に締めくくります。'
+                        description: '時間をかけてじっくり味わいたい重厚感。日々の癒しのお供に。'
                     }
                 };
 
                 const currentQuestion = computed(() => questions[currentQuestionIndex.value]);
 
-                // 味覚・気分に関する質問（Q3〜Q8の6問）の回答から結果を算出
+                // 味覚・気分に関する質問（Q3〜Q8の6問）の回答から結果を算出 (Type 1 〜 5)
                 const finalResult = computed(() => {
                     if (answersHistory.value.length < 8) return null;
                     const tasteAnswers = answersHistory.value.slice(2); // Q1,Q2を除外した6問
@@ -289,8 +283,7 @@
                     if (countA === 4) return resultTypes.type2;
                     if (countA === 3) return resultTypes.type3;
                     if (countA === 2) return resultTypes.type4;
-                    if (countA === 1) return resultTypes.type5;
-                    return resultTypes.type6;
+                    return resultTypes.type5; // Aが1個以下（Bが多い傾向）はタイプ5へ割り当て
                 });
 
                 const startQuiz = () => {
@@ -317,7 +310,7 @@
                         
                         // お酒ごとの動画切り替え時間（ミリ秒）
                         const videoDurations = {
-                            wine: 6500,   // ワイン：6.5秒（7.0秒 → 6.5秒へ0.5秒短縮）
+                            wine: 6500,   // ワイン：6.5秒
                             craft: 6500,  // クラフト酒：6.5秒
                             sake: 4000    // 日本酒：4秒
                         };
