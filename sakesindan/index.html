@@ -44,56 +44,56 @@
             </div>
 
             <!-- ▼ 1. トップ画面 ▼ -->
-            <div v-else-if="step === 'start'" key="start" class="w-full max-w-lg mt-12 p-6 bg-slate-950/30 backdrop-blur-sm border border-white/20 rounded-2xl flex flex-col items-center text-center shadow-2xl">
-                <h1 class="text-2xl text-white font-bold mb-4 tracking-widest drop-shadow-md">〜今夜のあなたに合う1杯を〜</h1>
-                <p class="text-sm text-slate-200 mb-8 leading-relaxed drop-shadow">
-                    <span class="text-lime-400 font-bold text-base">8つ</span>の簡単な直感クエスチョンに答えるだけで、<br>今のあなたにぴったりの味覚と時間をご提案。
+            <div v-else-if="step === 'start'" key="start" class="w-full max-w-lg mt-6 p-4 flex flex-col items-center text-center">
+                <h1 class="text-2xl sm:text-3xl text-white font-bold mb-4 tracking-widest drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">〜今夜のあなたに合う1杯を〜</h1>
+                <p class="text-sm sm:text-base text-slate-100 mb-8 leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+                    <span class="text-lime-400 font-bold text-lg">8つ</span>の簡単な直感クエスチョンに答えるだけで、<br>今のあなたにぴったりの味覚と時間をご提案。
                 </p>
                 
-                <div class="grid grid-cols-3 gap-3 w-full mb-8">
+                <div class="grid grid-cols-3 gap-3.5 w-full mb-8">
                     <div v-for="drink in drinks" :key="drink.id" 
                          @click="selectedDrink = drink.id"
                          class="group cursor-pointer border-2 rounded-xl p-3 flex flex-col items-center transition-all duration-300 transform hover:-translate-y-1"
-                         :class="selectedDrink === drink.id ? 'border-lime-400 bg-slate-900/80 shadow-[0_0_25px_rgba(163,230,53,0.6)] scale-105' : 'border-white/20 bg-black/30 hover:border-lime-400/80 hover:bg-black/50 hover:shadow-[0_0_20px_rgba(163,230,53,0.4)]'">
+                         :class="selectedDrink === drink.id ? 'border-lime-400 bg-slate-900/80 shadow-[0_0_25px_rgba(163,230,53,0.6)] scale-105' : 'border-white/30 bg-black/40 hover:border-lime-400/80 hover:bg-black/60 hover:shadow-[0_0_20px_rgba(163,230,53,0.4)]'">
                         <!-- 画像エリア枠にもホバー・選択時に緑の枠線＆エフェクトを追加 -->
-                        <div class="w-full h-24 flex items-center justify-center bg-black/30 rounded-lg mb-3 overflow-hidden relative border-2 transition-all duration-300"
-                             :class="selectedDrink === drink.id ? 'border-lime-400 shadow-[0_0_15px_rgba(163,230,53,0.5)]' : 'border-white/10 group-hover:border-lime-400/80 group-hover:shadow-[0_0_12px_rgba(163,230,53,0.4)]'">
+                        <div class="w-full h-24 flex items-center justify-center bg-white rounded-lg mb-3 overflow-hidden relative border-2 transition-all duration-300"
+                             :class="selectedDrink === drink.id ? 'border-lime-400 shadow-[0_0_15px_rgba(163,230,53,0.5)]' : 'border-slate-300 group-hover:border-lime-400/80 group-hover:shadow-[0_0_12px_rgba(163,230,53,0.4)]'">
                             <span class="text-slate-400 text-xs absolute">図</span>
                             <img :src="drink.img" :alt="drink.name" class="w-full h-full object-contain relative z-10 rounded transition-transform duration-300 group-hover:scale-110" @error="handleImageError">
                         </div>
-                        <span class="text-sm font-bold tracking-wide" :class="selectedDrink === drink.id ? 'text-lime-400' : 'text-slate-200'">{{ drink.name }}</span>
+                        <span class="text-sm sm:text-base font-bold tracking-wide drop-shadow-md" :class="selectedDrink === drink.id ? 'text-lime-400' : 'text-slate-100'">{{ drink.name }}</span>
                     </div>
                 </div>
                 
                 <button @click="startQuiz" :disabled="!selectedDrink"
-                        class="w-full py-4 rounded-xl font-bold text-lg tracking-wider transition-all duration-300"
-                        :class="selectedDrink ? 'bg-gradient-to-r from-lime-500 to-emerald-500 hover:from-lime-400 hover:to-emerald-400 text-slate-950 shadow-lg' : 'bg-slate-800/80 text-slate-400 cursor-not-allowed border border-white/10'">
+                        class="w-full py-4 rounded-xl font-bold text-lg sm:text-xl tracking-wider transition-all duration-300"
+                        :class="selectedDrink ? 'bg-gradient-to-r from-lime-500 to-emerald-500 hover:from-lime-400 hover:to-emerald-400 text-slate-950 shadow-[0_0_20px_rgba(163,230,53,0.5)] active:scale-95' : 'bg-slate-800/80 text-slate-400 cursor-not-allowed border border-white/10'">
                     Click
                 </button>
             </div>
 
             <!-- ▼ 2. 質問画面（全8問） ▼ -->
-            <div v-else-if="step === 'quiz'" key="quiz" class="w-full max-w-lg mt-4 mb-8">
+            <div v-else-if="step === 'quiz'" key="quiz" class="w-full max-w-sm sm:max-w-md mt-2 mb-6">
                 <!-- 質問文 -->
-                <h2 class="text-xl md:text-2xl font-bold mb-6 text-center leading-relaxed tracking-wide text-white drop-shadow-md">
+                <h2 class="text-lg sm:text-xl font-bold mb-4 text-center leading-relaxed tracking-wide text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] px-2">
                     Q{{ currentQuestionIndex + 1 }}. {{ currentQuestion.text }}
                 </h2>
 
                 <!-- 選択肢 -->
-                <div class="space-y-5">
+                <div class="space-y-4">
                     <div v-for="(option, idx) in currentQuestion.options" :key="idx"
                          @click="answerQuestion(option.type)"
-                         class="bg-slate-900/70 backdrop-blur-md rounded-2xl overflow-hidden cursor-pointer hover:border-lime-400/80 hover:shadow-[0_0_20px_rgba(163,230,53,0.2)] transition-all duration-300 border border-slate-600/50">
+                         class="bg-slate-900/80 backdrop-blur-md rounded-2xl overflow-hidden cursor-pointer hover:border-lime-400 hover:shadow-[0_0_20px_rgba(163,230,53,0.4)] transition-all duration-300 border border-slate-600/50 group">
                         
-                        <!-- イラスト枠 -->
-                        <div class="w-full h-48 flex items-center justify-center bg-white overflow-hidden relative">
+                        <!-- イラスト枠（正方形寄りのコンパクトなサイズ＆全体を表示） -->
+                        <div class="w-full h-32 sm:h-36 flex items-center justify-center bg-white overflow-hidden relative p-3">
                             <span class="text-slate-400 text-xs font-sans absolute">ILLUSTRATION</span>
-                            <img :src="option.img" class="w-full h-full object-contain transform scale-180 relative z-10" alt="Option Image" @error="handleImageError">
+                            <img :src="option.img" class="w-full h-full object-contain relative z-10 transition-transform duration-300 group-hover:scale-105" alt="Option Image" @error="handleImageError">
                         </div>
                         
-                        <!-- テキスト -->
-                        <div class="p-4 bg-slate-900/80 border-t border-slate-700/50 flex items-center">
-                            <div class="font-bold text-base text-slate-100 tracking-wide leading-snug">
+                        <!-- テキスト（2行までに綺麗に収まるサイズ調整） -->
+                        <div class="p-3 sm:p-3.5 bg-slate-900/90 border-t border-slate-700/50 flex items-center justify-center text-center">
+                            <div class="font-bold text-sm sm:text-base text-slate-100 tracking-wide leading-snug">
                                 <span class="text-lime-400 font-extrabold mr-1.5">{{ idx === 0 ? 'A.' : 'B.' }}</span>{{ option.text }}
                             </div>
                         </div>
@@ -102,11 +102,11 @@
             </div>
 
             <!-- ▼ 2.5 注がれる演出画面 ▼ -->
-            <div v-else-if="step === 'pouring'" key="pouring" class="w-full max-w-lg mt-6 p-6 bg-slate-900/70 backdrop-blur-md border border-slate-600/50 rounded-2xl flex flex-col items-center text-center shadow-2xl">
-                <h2 class="text-2xl md:text-3xl font-bold text-white mb-2 tracking-wider">Please waiting...</h2>
-                <p class="text-sm text-lime-400 font-bold mb-6 animate-pulse tracking-wide">今夜のあなたの一杯を注いでいます...</p>
+            <div v-else-if="step === 'pouring'" key="pouring" class="w-full max-w-lg mt-6 p-6 flex flex-col items-center text-center">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-2 tracking-wider drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">Please waiting...</h2>
+                <p class="text-sm text-lime-400 font-bold mb-6 animate-pulse tracking-wide drop-shadow-md">今夜のあなたの一杯を注いでいます...</p>
                 
-                <div class="w-full h-64 rounded-xl overflow-hidden bg-black/50 border border-white/10 flex items-center justify-center shadow-inner relative">
+                <div class="w-full h-64 rounded-xl overflow-hidden bg-black/50 border border-white/20 flex items-center justify-center shadow-2xl relative">
                     <span class="text-slate-500 text-sm font-sans absolute">POURING VIDEO</span>
                     <video :src="currentPouringVideo" autoplay loop muted playsinline class="w-full h-full object-cover relative z-10">
                     </video>
@@ -114,7 +114,7 @@
             </div>
 
             <!-- ▼ 3. 動的診断結果画面 ▼ -->
-            <div v-else-if="step === 'result' && finalResult" key="result" class="w-full max-w-lg mt-12 p-8 bg-slate-900/60 backdrop-blur-md border border-white/10 rounded-2xl flex flex-col items-center text-center">
+            <div v-else-if="step === 'result' && finalResult" key="result" class="w-full max-w-lg mt-8 p-6 bg-slate-900/80 backdrop-blur-md border border-white/20 rounded-2xl flex flex-col items-center text-center shadow-2xl">
                 <div class="text-lime-400 font-bold mb-2 tracking-widest text-sm">DIAGNOSIS TYPE</div>
                 <h2 class="text-2xl font-bold text-lime-400 mb-4 leading-relaxed">{{ finalResult?.title }}</h2>
                 <p class="text-sm text-slate-400 mb-8">あなたの回答傾向：{{ answersHistory.join('-') }}</p>
@@ -137,11 +137,6 @@
                 </button>
             </div>
         </transition>
-
-        <!-- フッター -->
-        <div class="mt-auto pt-8 pb-4 text-center w-full">
-            <p class="text-xs text-slate-500 font-sans tracking-wider">&copy; 2026 Night Sommelier - Personal Drink Quiz</p>
-        </div>
 
     </div>
 
