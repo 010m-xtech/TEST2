@@ -24,30 +24,30 @@
     </style>
 </head>
 
-<!-- bodyで画面全体を完全固定（スクロール禁止） -->
+<!-- bodyで画面全体を完全固定 -->
 <body class="m-0 p-0 w-screen h-screen overflow-hidden bg-slate-950 relative">
 
-    <!-- ▼ 背景動画：絶対位置で最背面に強制固定 ▼ -->
+    <!-- ▼ 背景動画 ▼ -->
     <video src="haikei.mp4" autoplay loop muted playsinline 
-           style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; opacity: 0.5; pointer-events: none;">
+           style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; opacity: 0.4; pointer-events: none;">
     </video>
 
     <!-- ▼ メインコンテンツ ▼ -->
     <div id="app" class="relative z-10 w-full h-full overflow-y-auto flex flex-col items-center justify-center p-4 pb-20 text-slate-100 font-serif">
         
         <transition name="fade" mode="out-in">
-            <!-- ▼ 0. オープニング演出（背景動画＋テキストのみ・3秒間） ▼ -->
+            <!-- ▼ 0. オープニング演出（3秒間） ▼ -->
             <div v-if="step === 'opening'" key="opening" class="flex flex-col items-center justify-center text-center px-6 min-h-[60vh] my-auto">
                 <p class="text-2xl sm:text-3xl md:text-4xl text-white font-serif tracking-widest leading-relaxed drop-shadow-lg opacity-90">
                     今夜のお客様に<br>ちょうどいい一杯を。
                 </p>
             </div>
 
-            <!-- ▼ 1. トップ画面（オープニング後にフェードイン） ▼ -->
+            <!-- ▼ 1. トップ画面 ▼ -->
             <div v-else-if="step === 'start'" key="start" class="w-full max-w-lg mt-12 p-6 bg-slate-900/60 backdrop-blur-md border border-white/10 rounded-2xl flex flex-col items-center text-center shadow-2xl">
                 <h1 class="text-2xl text-white font-bold mb-4 tracking-widest drop-shadow-md">〜今夜のあなたに合う1杯を〜</h1>
                 <p class="text-sm text-slate-300 mb-8 leading-relaxed">
-                    <span class="text-lime-400 font-bold text-base">6つ</span>の簡単な直感クエスチョンに答えるだけで、<br>今のあなたにぴったりの味覚と時間をご提案。
+                    <span class="text-lime-400 font-bold text-base">8つ</span>の簡単な直感クエスチョンに答えるだけで、<br>今のあなたにぴったりの味覚と時間をご提案。
                 </p>
                 
                 <div class="grid grid-cols-3 gap-3 w-full mb-8">
@@ -55,7 +55,10 @@
                          @click="selectedDrink = drink.id"
                          class="cursor-pointer border-2 rounded-xl p-3 flex flex-col items-center transition-all duration-300"
                          :class="selectedDrink === drink.id ? 'border-lime-400 bg-slate-800/80 shadow-[0_0_15px_rgba(163,230,53,0.3)]' : 'border-transparent bg-slate-800/40 hover:bg-slate-800/60'">
-                        <img :src="drink.img" :alt="drink.name" class="w-full h-24 object-contain mb-3 rounded" @error="handleImageError">
+                        <div class="w-full h-24 flex items-center justify-center bg-slate-800/50 rounded mb-3 overflow-hidden relative">
+                            <span class="text-slate-500 text-xs absolute">図</span>
+                            <img :src="drink.img" :alt="drink.name" class="w-full h-full object-contain relative z-10 rounded" @error="handleImageError">
+                        </div>
                         <span class="text-sm font-bold tracking-wide" :class="selectedDrink === drink.id ? 'text-lime-400' : 'text-slate-300'">{{ drink.name }}</span>
                     </div>
                 </div>
@@ -67,9 +70,9 @@
                 </button>
             </div>
 
-            <!-- ▼ 2. 質問画面 ▼ -->
+            <!-- ▼ 2. 質問画面（全8問） ▼ -->
             <div v-else-if="step === 'quiz'" key="quiz" class="w-full max-w-lg mt-4 mb-8">
-                <!-- 質問文（プログレスバーを削除してすっきりしたデザイン） -->
+                <!-- 質問文 -->
                 <h2 class="text-xl md:text-2xl font-bold mb-6 text-center leading-relaxed tracking-wide text-white drop-shadow-md">
                     Q{{ currentQuestionIndex + 1 }}. {{ currentQuestion.text }}
                 </h2>
@@ -80,10 +83,13 @@
                          @click="answerQuestion(option.type)"
                          class="bg-slate-900/70 backdrop-blur-md rounded-2xl overflow-hidden cursor-pointer hover:border-lime-400/80 hover:shadow-[0_0_20px_rgba(163,230,53,0.2)] transition-all duration-300 border border-slate-600/50">
                         
-                        <div class="w-full h-48 flex items-center justify-center bg-white overflow-hidden relative">
-                            <img :src="option.img" class="w-full h-full object-contain transform scale-180" alt="Option Image" @error="handleImageError">
+                        <!-- イラスト枠 -->
+                        <div class="w-full h-48 flex items-center justify-center bg-slate-800/50 overflow-hidden relative">
+                            <span class="text-slate-500 text-xs font-sans absolute">ILLUSTRATION</span>
+                            <img :src="option.img" class="w-full h-full object-contain transform scale-180 relative z-10" alt="Option Image" @error="handleImageError">
                         </div>
                         
+                        <!-- テキスト -->
                         <div class="p-4 bg-slate-900/80 border-t border-slate-700/50 flex items-center">
                             <div class="font-bold text-base text-slate-100 tracking-wide leading-snug">
                                 <span class="text-lime-400 font-extrabold mr-1.5">{{ idx === 0 ? 'A.' : 'B.' }}</span>{{ option.text }}
@@ -99,7 +105,8 @@
                 <p class="text-sm text-lime-400 font-bold mb-6 animate-pulse tracking-wide">今夜のあなたの一杯を注いでいます...</p>
                 
                 <div class="w-full h-64 rounded-xl overflow-hidden bg-black/50 border border-white/10 flex items-center justify-center shadow-inner relative">
-                    <video :src="currentPouringVideo" autoplay loop muted playsinline class="w-full h-full object-cover">
+                    <span class="text-slate-500 text-sm font-sans absolute">POURING VIDEO</span>
+                    <video :src="currentPouringVideo" autoplay loop muted playsinline class="w-full h-full object-cover relative z-10">
                     </video>
                 </div>
             </div>
@@ -172,12 +179,27 @@
                     return pourVideos[selectedDrink.value] || 'wine.mp4';
                 });
 
+                // 全8問（Q1:性別, Q2:年齢, Q3〜Q8:味覚・気分）
                 const questions = [
+                    {
+                        text: 'あなたの性別をお聞かせください',
+                        options: [
+                            { text: '男性', img: 'seibetuotoko.jpg', type: 'A' },
+                            { text: '女性', img: 'seibetuonna.jpg', type: 'B' }
+                        ]
+                    },
+                    {
+                        text: 'あなたの年齢層をお聞かせください',
+                        options: [
+                            { text: '35歳未満', img: 'miman.jpg', type: 'A' },
+                            { text: '35歳以上', img: 'ijou.jpg', type: 'B' }
+                        ]
+                    },
                     {
                         text: '今夜のあなたに一番近い気分は？',
                         options: [
-                            { text: 'スカッと弾けて、今日をリセットしたい！', img: '1-1.jpg', type: 'A' },
-                            { text: '静かにほっこり、今日を癒やしたい…', img: '1-2.jpg', type: 'B' }
+                            { text: 'スカッと弾けて、今日をリセットしたい！', img: 'okiru.jpg', type: 'A' },
+                            { text: '静かにほっこり、今日を癒やしたい…', img: 'yasumu.jpg', type: 'B' }
                         ]
                     },
                     {
@@ -204,15 +226,15 @@
                     {
                         text: '喉を通るときの好みは？',
                         options: [
-                            { text: 'シュワっと弾ける爽快な泡', img: '5-1.jpg', type: 'A' },
-                            { text: 'すーっと通るなめらかな口当たり', img: '5-2.jpg', type: 'B' }
+                            { text: 'シュワっと弾ける爽快な泡', img: 'awa.jpg', type: 'A' },
+                            { text: 'すーっと通るなめらかな口当たり', img: 'nameraka.jpg', type: 'B' }
                         ]
                     },
                     {
                         text: '今夜のお酒選びのテーマは？',
                         options: [
-                            { text: '失敗したくない！王道・定番派', img: '6-1.jpg', type: 'A' },
-                            { text: '新しい発見がほしい！個性的・モダン派', img: '6-2.jpg', type: 'B' }
+                            { text: '失敗したくない！王道・定番派', img: 'ousama.jpg', type: 'A' },
+                            { text: '新しい発見がほしい！個性的・モダン派', img: 'bouken.jpg', type: 'B' }
                         ]
                     }
                 ];
@@ -251,16 +273,18 @@
                     type6: {
                         title: 'プレミアム＆特別感',
                         icon: '✨',
-                        recommended: 'ヴィンテージワイン / 貴醸酒 / バレルエイジドビール',
+                        recommended: '貴醸酒 / ヴィンテージワイン / バレルエイジドビール',
                         description: '特別なご褒美タイム。上質な香りと余韻が、今日という一日を最高に締めくくります。'
                     }
                 };
 
                 const currentQuestion = computed(() => questions[currentQuestionIndex.value]);
 
+                // 味覚・気分に関する質問（Q3〜Q8の6問）の回答から結果を算出
                 const finalResult = computed(() => {
-                    if (answersHistory.value.length < 6) return null;
-                    const countA = answersHistory.value.filter(a => a === 'A').length;
+                    if (answersHistory.value.length < 8) return null;
+                    const tasteAnswers = answersHistory.value.slice(2); // Q1,Q2を除外した6問
+                    const countA = tasteAnswers.filter(a => a === 'A').length;
                     
                     if (countA >= 5) return resultTypes.type1;
                     if (countA === 4) return resultTypes.type2;
@@ -287,7 +311,7 @@
                         const app = document.getElementById('app');
                         if (app) app.scrollTo({ top: 0, behavior: 'smooth' });
                     } else {
-                        // 設問6完了後に注ぎ動画演出へ遷移
+                        // 設問8完了後に注ぎ動画演出へ遷移
                         step.value = 'pouring';
                         const app = document.getElementById('app');
                         if (app) app.scrollTo({ top: 0 });
@@ -295,7 +319,7 @@
                         setTimeout(() => {
                             step.value = 'result';
                             if (app) app.scrollTo({ top: 0 });
-                        }, 3200);
+                        }, 4000);
                     }
                 };
 
