@@ -73,28 +73,28 @@
             </div>
 
             <!-- ▼ 2. 質問画面（全8問） ▼ -->
-            <div v-else-if="step === 'quiz'" key="quiz" class="w-full max-w-[260px] sm:max-w-[290px] my-auto py-2 mx-auto flex flex-col justify-center min-h-[80vh]">
+            <div v-else-if="step === 'quiz'" key="quiz" class="w-full max-w-[340px] sm:max-w-[380px] my-auto py-2 mx-auto flex flex-col justify-center min-h-[85vh]">
                 <!-- 質問文 -->
-                <h2 class="text-sm sm:text-base font-bold mb-2.5 text-center leading-snug tracking-wide text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] px-1">
+                <h2 class="text-lg sm:text-xl font-bold mb-4 text-center leading-snug tracking-wide text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] px-1">
                     Q{{ currentQuestionIndex + 1 }}. {{ currentQuestion.text }}
                 </h2>
 
                 <!-- 選択肢 -->
-                <div class="space-y-2.5">
+                <div class="space-y-4">
                     <div v-for="(option, idx) in currentQuestion.options" :key="idx"
                          @click="answerQuestion(option.type)"
-                         class="bg-slate-900/80 backdrop-blur-md rounded-xl overflow-hidden cursor-pointer hover:border-lime-400 hover:shadow-[0_0_20px_rgba(163,230,53,0.4)] transition-all duration-300 border border-slate-600/50 group">
+                         class="bg-slate-900/80 backdrop-blur-md rounded-2xl overflow-hidden cursor-pointer hover:border-lime-400 hover:shadow-[0_0_20px_rgba(163,230,53,0.4)] transition-all duration-300 border border-slate-600/50 group">
                         
-                        <!-- イラスト枠（スマホ画面1枠に収まる高さで画像自体は枠いっぱいに大きく表示） -->
-                        <div class="w-full h-28 sm:h-32 flex items-center justify-center bg-white overflow-hidden relative p-1.5">
+                        <!-- イラスト枠（枠高さをしっかり拡大し、画像をダイナミックに大きく表示） -->
+                        <div class="w-full h-44 sm:h-52 flex items-center justify-center bg-white overflow-hidden relative p-2">
                             <span class="text-slate-400 text-xs font-sans absolute">ILLUSTRATION</span>
-                            <img :src="option.img" class="w-full h-full object-contain relative z-10 transition-transform duration-300 group-hover:scale-105" alt="Option Image" @error="handleImageError">
+                            <img :src="option.img" class="w-full h-full object-contain scale-110 relative z-10 transition-transform duration-300 group-hover:scale-125" alt="Option Image" @error="handleImageError">
                         </div>
                         
-                        <!-- テキスト（スッキリ2行以内に収まるコンパクト設計） -->
-                        <div class="p-2 bg-slate-900/90 border-t border-slate-700/50 flex items-center justify-center text-center min-h-[2.5rem]">
-                            <div class="font-bold text-xs text-slate-100 tracking-wide leading-snug">
-                                <span class="text-lime-400 font-extrabold mr-1">{{ idx === 0 ? 'A.' : 'B.' }}</span>{{ option.text }}
+                        <!-- テキスト（フォントサイズアップ・読みやすく） -->
+                        <div class="p-3 bg-slate-900/90 border-t border-slate-700/50 flex items-center justify-center text-center min-h-[3rem]">
+                            <div class="font-bold text-sm sm:text-base text-slate-100 tracking-wide leading-snug">
+                                <span class="text-lime-400 font-extrabold mr-1.5 text-base sm:text-lg">{{ idx === 0 ? 'A.' : 'B.' }}</span>{{ option.text }}
                             </div>
                         </div>
                     </div>
@@ -186,28 +186,28 @@
                         ]
                     },
                     {
-                        text: 'あなたの年齢層をお聞かせください',
+                        text: 'あなたの年齢をお聞かせください',
                         options: [
                             { text: '35歳未満', img: 'miman.jpg', type: 'A' },
                             { text: '35歳以上', img: 'ijou.jpg', type: 'B' }
                         ]
                     },
                     {
-                        text: '今夜のあなたに一番近い気分は？',
+                        text: '今夜の気分は？',
                         options: [
-                            { text: 'スカッと弾けて、今日をリセットしたい！', img: 'okiru.jpg', type: 'A' },
-                            { text: '静かにほっこり、今日を癒やしたい…', img: 'yasumu.jpg', type: 'B' }
+                            { text: 'スカッと弾けて今日をリセットしたい！', img: 'okiru.jpg', type: 'A' },
+                            { text: '静かにほっこり今日を癒やしたい…', img: 'yasumu.jpg', type: 'B' }
                         ]
                     },
                     {
-                        text: '今夜のお酒に合わせたい相棒は？',
+                        text: 'お酒に合わせたい食事は？',
                         options: [
-                            { text: 'ガッツリ濃厚なお肉や揚げ物', img: '2-2.jpg', type: 'A' },
-                            { text: 'さっぱりヘルシーなお刺身や野菜', img: '2-1.jpg', type: 'B' }
+                            { text: 'ガッツリなお肉や揚げ物', img: '2-2.jpg', type: 'A' },
+                            { text: 'ヘルシーなお刺身や野菜', img: '2-1.jpg', type: 'B' }
                         ]
                     },
                     {
-                        text: 'ふと嗅ぎたくなる、惹かれる香りは？',
+                        text: 'ふと嗅ぎたくなる惹かれる香りは？',
                         options: [
                             { text: 'みずみずしい柑橘やフルーティーな香り', img: '3-1.jpg', type: 'A' },
                             { text: 'スパイシーな香辛料やハーブ・木の香り', img: '3-2.jpg', type: 'B' }
@@ -216,8 +216,8 @@
                     {
                         text: '今の口が一番求めているのは？',
                         options: [
-                            { text: 'やさしい甘み・フルーティーな甘酸っぱさ', img: '4-1.jpg', type: 'A' },
-                            { text: 'キリッとした苦み・ドライで控えめな甘さ', img: '4-2.jpg', type: 'B' }
+                            { text: 'やさしい甘みフルーティーな甘酸っぱさ', img: '4-1.jpg', type: 'A' },
+                            { text: 'キリッとした苦みドライで控えめな甘さ', img: '4-2.jpg', type: 'B' }
                         ]
                     },
                     {
@@ -230,8 +230,8 @@
                     {
                         text: '今夜のお酒選びのテーマは？',
                         options: [
-                            { text: '失敗したくない！王道・定番派', img: 'ousama.jpg', type: 'A' },
-                            { text: '新しい発見がほしい！個性的・モダン派', img: 'bouken.jpg', type: 'B' }
+                            { text: '失敗したくない！王道定番派', img: 'ousama.jpg', type: 'A' },
+                            { text: '新しい発見がほしい！個性的派', img: 'bouken.jpg', type: 'B' }
                         ]
                     }
                 ];
@@ -315,7 +315,7 @@
                         
                         // お酒ごとの動画切り替え時間（ミリ秒）
                         const videoDurations = {
-                            wine: 7500,   // ワイン：7.5秒（1秒短縮）
+                            wine: 7000,   // ワイン：7秒（0.5秒短縮）
                             craft: 6500,  // クラフト酒：6.5秒
                             sake: 4000    // 日本酒：4秒
                         };
