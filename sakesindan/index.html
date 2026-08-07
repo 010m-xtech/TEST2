@@ -73,27 +73,27 @@
             </div>
 
             <!-- ▼ 2. 質問画面（全8問） ▼ -->
-            <div v-else-if="step === 'quiz'" key="quiz" class="w-full max-w-[280px] sm:max-w-[310px] mt-2 mb-4 mx-auto">
+            <div v-else-if="step === 'quiz'" key="quiz" class="w-full max-w-[260px] sm:max-w-[290px] my-auto py-2 mx-auto flex flex-col justify-center min-h-[80vh]">
                 <!-- 質問文 -->
-                <h2 class="text-base sm:text-lg font-bold mb-3 text-center leading-relaxed tracking-wide text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] px-1">
+                <h2 class="text-sm sm:text-base font-bold mb-2.5 text-center leading-snug tracking-wide text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] px-1">
                     Q{{ currentQuestionIndex + 1 }}. {{ currentQuestion.text }}
                 </h2>
 
                 <!-- 選択肢 -->
-                <div class="space-y-4">
+                <div class="space-y-2.5">
                     <div v-for="(option, idx) in currentQuestion.options" :key="idx"
                          @click="answerQuestion(option.type)"
-                         class="bg-slate-900/80 backdrop-blur-md rounded-2xl overflow-hidden cursor-pointer hover:border-lime-400 hover:shadow-[0_0_20px_rgba(163,230,53,0.4)] transition-all duration-300 border border-slate-600/50 group">
+                         class="bg-slate-900/80 backdrop-blur-md rounded-xl overflow-hidden cursor-pointer hover:border-lime-400 hover:shadow-[0_0_20px_rgba(163,230,53,0.4)] transition-all duration-300 border border-slate-600/50 group">
                         
-                        <!-- イラスト枠（正方形 1:1 で画像を大きく綺麗に表示） -->
-                        <div class="w-full aspect-square flex items-center justify-center bg-white overflow-hidden relative p-3">
+                        <!-- イラスト枠（スマホ画面1枠に収まる高さで画像自体は枠いっぱいに大きく表示） -->
+                        <div class="w-full h-28 sm:h-32 flex items-center justify-center bg-white overflow-hidden relative p-1.5">
                             <span class="text-slate-400 text-xs font-sans absolute">ILLUSTRATION</span>
                             <img :src="option.img" class="w-full h-full object-contain relative z-10 transition-transform duration-300 group-hover:scale-105" alt="Option Image" @error="handleImageError">
                         </div>
                         
-                        <!-- テキスト（2行までに綺麗に収まるコンパクト調整） -->
-                        <div class="p-2.5 bg-slate-900/90 border-t border-slate-700/50 flex items-center justify-center text-center min-h-[3rem]">
-                            <div class="font-bold text-xs sm:text-sm text-slate-100 tracking-wide leading-snug">
+                        <!-- テキスト（スッキリ2行以内に収まるコンパクト設計） -->
+                        <div class="p-2 bg-slate-900/90 border-t border-slate-700/50 flex items-center justify-center text-center min-h-[2.5rem]">
+                            <div class="font-bold text-xs text-slate-100 tracking-wide leading-snug">
                                 <span class="text-lime-400 font-extrabold mr-1">{{ idx === 0 ? 'A.' : 'B.' }}</span>{{ option.text }}
                             </div>
                         </div>
@@ -315,8 +315,8 @@
                         
                         // お酒ごとの動画切り替え時間（ミリ秒）
                         const videoDurations = {
-                            wine: 8500,   // ワイン：8.5秒（7秒 → 8.5秒へ1.5秒延長）
-                            craft: 6500,  // クラフト酒：6.5秒（5秒 → 6.5秒へ1.5秒延長）
+                            wine: 7500,   // ワイン：7.5秒（1秒短縮）
+                            craft: 6500,  // クラフト酒：6.5秒
                             sake: 4000    // 日本酒：4秒
                         };
                         const duration = videoDurations[selectedDrink.value] || 4000;
