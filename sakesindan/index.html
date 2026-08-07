@@ -85,13 +85,13 @@
                          @click="answerQuestion(option.type)"
                          class="bg-slate-900/80 backdrop-blur-md rounded-2xl overflow-hidden cursor-pointer hover:border-lime-400 hover:shadow-[0_0_20px_rgba(163,230,53,0.4)] transition-all duration-300 border border-slate-600/50 group">
                         
-                        <!-- イラスト枠（枠高さをしっかり拡大し、画像をダイナミックに大きく表示） -->
-                        <div class="w-full h-44 sm:h-52 flex items-center justify-center bg-white overflow-hidden relative p-2">
+                        <!-- イラスト枠（画像を切れない限界の1.8倍まで拡大表示） -->
+                        <div class="w-full h-44 sm:h-52 flex items-center justify-center bg-white overflow-hidden relative p-1">
                             <span class="text-slate-400 text-xs font-sans absolute">ILLUSTRATION</span>
-                            <img :src="option.img" class="w-full h-full object-contain scale-110 relative z-10 transition-transform duration-300 group-hover:scale-125" alt="Option Image" @error="handleImageError">
+                            <img :src="option.img" class="w-full h-full object-contain scale-180 relative z-10 transition-transform duration-300 group-hover:scale-[1.95]" alt="Option Image" @error="handleImageError">
                         </div>
                         
-                        <!-- テキスト（フォントサイズアップ・読みやすく） -->
+                        <!-- テキスト -->
                         <div class="p-3 bg-slate-900/90 border-t border-slate-700/50 flex items-center justify-center text-center min-h-[3rem]">
                             <div class="font-bold text-sm sm:text-base text-slate-100 tracking-wide leading-snug">
                                 <span class="text-lime-400 font-extrabold mr-1.5 text-base sm:text-lg">{{ idx === 0 ? 'A.' : 'B.' }}</span>{{ option.text }}
@@ -207,7 +207,7 @@
                         ]
                     },
                     {
-                        text: 'ふと嗅ぎたくなる惹かれる香りは？',
+                        text: 'ふと嗅ぎたい惹かれる香りは？',
                         options: [
                             { text: 'みずみずしい柑橘やフルーティーな香り', img: '3-1.jpg', type: 'A' },
                             { text: 'スパイシーな香辛料やハーブ・木の香り', img: '3-2.jpg', type: 'B' }
@@ -315,7 +315,7 @@
                         
                         // お酒ごとの動画切り替え時間（ミリ秒）
                         const videoDurations = {
-                            wine: 7000,   // ワイン：7秒（0.5秒短縮）
+                            wine: 6500,   // ワイン：6.5秒（7.0秒 → 6.5秒へ0.5秒短縮）
                             craft: 6500,  // クラフト酒：6.5秒
                             sake: 4000    // 日本酒：4秒
                         };
