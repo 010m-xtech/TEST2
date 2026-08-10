@@ -111,7 +111,8 @@
                 
                 <div class="w-full h-64 rounded-xl overflow-hidden bg-black/50 border border-white/20 flex items-center justify-center shadow-2xl relative">
                     <span class="text-slate-500 text-sm font-sans absolute">POURING VIDEO</span>
-                    <video :src="currentPouringVideo" autoplay loop muted playsinline class="w-full h-full object-cover relative z-10">
+                    <!-- 追加: pointer-events-none を追加して触れないようにする -->
+                    <video :src="currentPouringVideo" autoplay loop muted playsinline class="w-full h-full object-cover relative z-10 pointer-events-none">
                     </video>
                 </div>
             </div>
@@ -170,6 +171,7 @@
                 const selectedDrink = ref('');
                 const currentQuestionIndex = ref(0);
                 const answersHistory = ref([]);
+                let retryInterval = null;
 
                 // 3秒間オープニングを表示した後にトップ画面へ移動
                 onMounted(() => {
@@ -282,7 +284,7 @@
                         description: '優しくまろやかな口当たりが、今日の疲れをじんわりと包み込んで癒やしてくれます。'
                     },
                     type5: {
-                        title: '静かな深みと贅沢なひととき',
+                        title: '静かな深みと、贅沢なひととき',
                         icon: '🥃',
                         recommended: 'フルボディ赤ワイン / 古酒・熟成酒 / スタウト（黒ビール）',
                         description: '時間をかけてじっくり味わいたい重厚感。日々の癒しのお供に。'
@@ -314,16 +316,34 @@
                     const q7 = answersHistory.value[6];
                     const q8 = answersHistory.value[7];
 
-                    // 初期値を1にして、変化の幅を大きくする
+                    // 初期値を低めに設定し、加算で差をつける
                     let sukkiri = 1, fruity = 1, shikkari = 1;
 
-                    if (q3 === 'A') { sukkiri += 2; } else { shikkari += 2; }
-                    if (q4 === 'A') { shikkari += 2; } else { sukkiri += 1; fruity += 1; }
-                    if (q5 === 'A') { fruity += 2; } else { shikkari += 1; sukkiri += 1; }
-                    if (q6 === 'A') { fruity += 2; } else { sukkiri += 2; }
-                    if (q7 === 'A') { sukkiri += 1; fruity += 1; } else { shikkari += 2; }
-                    if (q8 === 'A') { sukkiri += 1; shikkari += 1; } else { fruity += 2; }
+                    // Q3. 気分 (A:リセット -> すっきり特化, B:ほっこり -> しっかり特化)
+                    if (q3 === 'A') { sukkiri += 2; shikkari -= 1; } 
+                    else { shikkari += 2; sukkiri -= 1; }
 
+                    // Q4. 食事 (A:ガッツリ -> しっかり, B:ヘルシー -> すっきり)
+                    if (q4 === 'A') { shikkari += 2; } 
+                    else { sukkiri += 1.5; fruity += 0.5; }
+
+                    // Q5. 香り (A:柑橘系 -> フルーティー特化, B:スパイス・木 -> しっかり)
+                    if (q5 === 'A') { fruity += 2; shikkari -= 1; } 
+                    else { shikkari += 1.5; sukkiri += 0.5; }
+
+                    // Q6. 求める味 (A:甘酸っぱさ -> フルーティー, B:苦み・ドライ -> すっきり＆しっかり)
+                    if (q6 === 'A') { fruity += 2; sukkiri -= 0.5; } 
+                    else { sukkiri += 1; shikkari += 1; fruity -= 1; }
+
+                    // Q7. 喉越し (A:爽快な泡 -> すっきり, B:なめらか -> しっかり)
+                    if (q7 === 'A') { sukkiri += 2; shikkari -= 1; } 
+                    else { shikkari += 2; sukkiri -= 1; }
+
+                    // Q8. テーマ (A:王道 -> バランス, B:個性的 -> フルーティー特化)
+                    if (q8 === 'A') { sukkiri += 0.5; shikkari += 0.5; } 
+                    else { fruity += 2; sukkiri -= 0.5; shikkari -= 0.5; }
+
+                    // 値が1〜5の範囲に収まるように補正
                     const clamp = (val) => Math.min(Math.max(val, 1), 5);
                     return [clamp(sukkiri), clamp(fruity), clamp(shikkari)];
                 };
