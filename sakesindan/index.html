@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Vue.js -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Chart.js の追加 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .scale-180 {
             transform: scale(1.8) !important;
@@ -24,7 +26,6 @@
     </style>
 </head>
 
-<!-- bodyで画面全体を完全固定 -->
 <body class="m-0 p-0 w-screen h-screen overflow-hidden bg-slate-950 relative">
 
     <!-- ▼ 背景動画 ▼ -->
@@ -47,7 +48,7 @@
             <div v-else-if="step === 'start'" key="start" class="w-full max-w-lg mt-6 p-4 flex flex-col items-center text-center">
                 <h1 class="text-2xl sm:text-3xl text-white font-bold mb-4 tracking-widest drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">今夜のあなたに合う1杯を</h1>
                 <p class="text-sm sm:text-base text-slate-100 mb-8 leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
-                    <span class="text-lime-400 font-bold text-lg">8つ</span>の簡単な直感クエスチョンに答えるだけで、<br>今のあなたにぴったりの味覚と時間をご提案。
+                    <span class="text-lime-400 font-bold text-lg">8つ</span>の簡単な直感クエスチョンに答えるだけで、<br>今のあなたにぴったりのお酒をご提案。
                 </p>
                 
                 <div class="grid grid-cols-3 gap-3.5 w-full mb-8">
@@ -116,25 +117,42 @@
             </div>
 
             <!-- ▼ 3. 動的診断結果画面 ▼ -->
-            <div v-else-if="step === 'result' && finalResult" key="result" class="w-full max-w-lg mt-8 p-6 bg-slate-900/80 backdrop-blur-md border border-white/20 rounded-2xl flex flex-col items-center text-center shadow-2xl">
-                <!-- 削除: <div class="text-lime-400 font-bold mb-2 tracking-widest text-sm">DIAGNOSIS TYPE</div> -->
-                <h2 class="text-2xl font-bold text-lime-400 mb-4 leading-relaxed mt-2">{{ finalResult?.title }}</h2>
-                <!-- 削除: <p class="text-sm text-slate-400 mb-8">あなたの回答傾向：{{ answersHistory.join('-') }}</p> -->
+            <div v-else-if="step === 'result' && finalResult" key="result" class="w-full max-w-[500px] mt-6 p-5 bg-slate-900/90 backdrop-blur-md border border-slate-700 rounded-3xl flex flex-col items-center text-center shadow-2xl">
                 
-                <div class="w-full bg-slate-800/80 rounded-xl p-5 mb-8 border border-slate-700">
-                    <div class="flex items-center justify-center gap-3 mb-4">
+                <!-- 1. タイトル＆メニュー名 -->
+                <h2 class="text-xl md:text-2xl font-bold text-lime-400 mb-4 leading-relaxed mt-1 tracking-wide">{{ finalResult?.title }}</h2>
+                
+                <div class="w-full bg-slate-800/80 rounded-2xl p-4 mb-4 border border-slate-700 shadow-inner">
+                    <div class="flex items-center justify-center gap-3 mb-3">
                         <span class="text-3xl">{{ finalResult?.icon }}</span>
-                        <div class="text-left">
-                            <div class="text-xs text-lime-400 font-bold bg-lime-400/20 px-2 py-1 rounded inline-block mb-1">RECOMMENDED</div>
-                            <div class="font-bold text-lg text-slate-100">{{ finalResult?.recommended }}</div>
+                        <div class="text-left flex-1">
+                            <div class="text-[10px] text-lime-400 font-bold bg-lime-400/10 px-2 py-0.5 rounded inline-block mb-1 border border-lime-400/30">RECOMMENDED</div>
+                            <div class="font-bold text-base md:text-lg text-slate-100 leading-tight">{{ finalResult?.recommended }}</div>
                         </div>
                     </div>
-                    <p class="text-sm text-slate-300 mt-4 text-left leading-relaxed">
+                    <p class="text-xs md:text-sm text-slate-300 text-left leading-relaxed">
                         {{ finalResult?.description }}
                     </p>
                 </div>
 
-                <button @click="resetQuiz" class="w-full py-4 bg-lime-500 hover:bg-lime-400 text-slate-950 rounded-xl font-bold tracking-widest transition-all shadow-[0_0_15px_rgba(132,204,22,0.4)]">
+                <!-- 2 & 3. 写真 ＆ グラフ の分割レイアウト -->
+                <div class="flex flex-row w-full gap-4 mb-6 items-stretch justify-center">
+                    
+                    <!-- 2. 写真エリア (左側) -->
+                    <div class="w-1/2 h-44 sm:h-52 bg-slate-800/50 rounded-xl flex items-center justify-center border border-slate-700 overflow-hidden relative shadow-inner">
+                        <span class="text-slate-500 text-xs font-sans font-medium">DRINK PHOTO</span>
+                        <!-- 写真を追加する際は以下のimgタグのコメントアウトを外してください -->
+                        <!-- <img src="drink_result_photo.jpg" class="absolute inset-0 w-full h-full object-cover z-10" alt="Drink"> -->
+                    </div>
+
+                    <!-- 3. レーダーチャートエリア (右側 - 縮小版) -->
+                    <div class="w-1/2 h-44 sm:h-52 relative flex items-center justify-center">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+
+                </div>
+
+                <button @click="resetQuiz" class="w-full py-4 bg-lime-500 hover:bg-lime-400 text-slate-950 rounded-xl font-bold tracking-widest transition-all shadow-[0_0_15px_rgba(132,204,22,0.4)] mt-2">
                     Once more
                 </button>
             </div>
@@ -144,7 +162,7 @@
 
     <!-- Vue.js スクリプト -->
     <script>
-        const { createApp, ref, computed, onMounted } = Vue;
+        const { createApp, ref, computed, onMounted, watch, nextTick } = Vue;
 
         createApp({
             setup() {
@@ -178,7 +196,7 @@
                     return pourVideos[selectedDrink.value] || 'wine.mp4';
                 });
 
-                // 全8問（Q1:性別, Q2:年齢, Q3〜Q8:味覚・気分）
+                // 全8問
                 const questions = [
                     {
                         text: 'あなたの性別をお聞かせください',
@@ -240,31 +258,31 @@
 
                 const resultTypes = {
                     type1: {
-                        title: '今日をリセット、軽やかになりたい夜に。',
+                        title: '今日をリセット軽やかになりたい夜に。',
                         icon: '🥂',
                         recommended: 'スパークリングワイン / 生酒 / クラフトビール',
                         description: '今日のモヤモヤを吹き飛ばす、弾ける爽快感とキレが今のあなたにぴったり。'
                     },
                     type2: {
-                        title: '新しい風と、気ままなアクセント',
+                        title: '新しい風と気ままなアクセント',
                         icon: '🍊',
                         recommended: 'オレンジワイン / 樽熟成シャルドネ / クラフトジン',
                         description: '個性が光る豊かな風味。いつもと一味違う夜を楽しみたいあなたにぴったり。'
                     },
                     type3: {
-                        title: '調和な風味と、穏やかな日常',
+                        title: '調和な風味と穏やかな日常',
                         icon: '🍷',
                         recommended: 'カベルネ・ソーヴィニヨン / 特別純米酒 / ペールエール',
                         description: 'どんな料理にも合わせやすい安定した味わい。リラックスしたひとときを約束します。'
                     },
                     type4: {
-                        title: 'とろける甘みと、ほっとする安心感',
+                        title: 'とろける甘みとほっとする安心感',
                         icon: '🍶',
                         recommended: 'メルロー / 濁り酒 / ヴァイツェン',
                         description: '優しくまろやかな口当たりが、今日の疲れをじんわりと包み込んで癒やしてくれます。'
                     },
                     type5: {
-                        title: '静かな深みと、贅沢なひととき',
+                        title: '静かな深みと贅沢なひととき',
                         icon: '🥃',
                         recommended: 'フルボディ赤ワイン / 古酒・熟成酒 / スタウト（黒ビール）',
                         description: '時間をかけてじっくり味わいたい重厚感。日々の癒しのお供に。'
@@ -273,17 +291,117 @@
 
                 const currentQuestion = computed(() => questions[currentQuestionIndex.value]);
 
-                // 味覚・気分に関する質問（Q3〜Q8の6問）の回答から結果を算出 (Type 1 〜 5)
                 const finalResult = computed(() => {
                     if (answersHistory.value.length < 8) return null;
-                    const tasteAnswers = answersHistory.value.slice(2); // Q1,Q2を除外した6問
+                    const tasteAnswers = answersHistory.value.slice(2);
                     const countA = tasteAnswers.filter(a => a === 'A').length;
                     
                     if (countA >= 5) return resultTypes.type1;
                     if (countA === 4) return resultTypes.type2;
                     if (countA === 3) return resultTypes.type3;
                     if (countA === 2) return resultTypes.type4;
-                    return resultTypes.type5; // Aが1個以下（Bが多い傾向）はタイプ5へ割り当て
+                    return resultTypes.type5; 
+                });
+
+                // --- グラフ（3軸）用の計算ロジック ---
+                const getChartData = () => {
+                    if (answersHistory.value.length < 8) return [3, 3, 3];
+                    
+                    const q3 = answersHistory.value[2];
+                    const q4 = answersHistory.value[3];
+                    const q5 = answersHistory.value[4];
+                    const q6 = answersHistory.value[5];
+                    const q7 = answersHistory.value[6];
+                    const q8 = answersHistory.value[7];
+
+                    // 初期値を1にして、変化の幅を大きくする
+                    let sukkiri = 1, fruity = 1, shikkari = 1;
+
+                    if (q3 === 'A') { sukkiri += 2; } else { shikkari += 2; }
+                    if (q4 === 'A') { shikkari += 2; } else { sukkiri += 1; fruity += 1; }
+                    if (q5 === 'A') { fruity += 2; } else { shikkari += 1; sukkiri += 1; }
+                    if (q6 === 'A') { fruity += 2; } else { sukkiri += 2; }
+                    if (q7 === 'A') { sukkiri += 1; fruity += 1; } else { shikkari += 2; }
+                    if (q8 === 'A') { sukkiri += 1; shikkari += 1; } else { fruity += 2; }
+
+                    const clamp = (val) => Math.min(Math.max(val, 1), 5);
+                    return [clamp(sukkiri), clamp(fruity), clamp(shikkari)];
+                };
+
+                let chartInstance = null;
+
+                // グラフを描画する関数
+                const renderChart = () => {
+                    const canvas = document.getElementById('radarChart');
+                    if (!canvas || canvas.offsetParent === null) return; 
+
+                    if (chartInstance) {
+                        chartInstance.destroy();
+                    }
+
+                    const ctx = canvas.getContext('2d');
+                    
+                    const whiteBgColor = 'rgba(255, 255, 255, 0.15)'; 
+                    const gridColor = 'rgba(255, 255, 255, 0.35)'; // 目盛り線を少し濃くして鮮明に
+
+                    chartInstance = new Chart(ctx, {
+                        type: 'radar',
+                        data: {
+                            labels: ['すっきり', 'フルーティー', 'しっかり'],
+                            datasets: [{
+                                label: 'あなたの好み',
+                                data: getChartData(),
+                                backgroundColor: whiteBgColor, 
+                                borderColor: 'white', 
+                                borderWidth: 2,
+                                borderJoinStyle: 'round',
+                                pointBackgroundColor: 'white',
+                                pointBorderColor: 'white',
+                                pointBorderWidth: 1,
+                                pointRadius: 4, 
+                                pointHoverRadius: 4,
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: { enabled: false } 
+                            },
+                            scales: {
+                                r: {
+                                    min: 0, // ★中心を0にすることで、値が低くても必ず三角形になる
+                                    max: 5,
+                                    angleLines: { color: gridColor },
+                                    grid: { color: gridColor },
+                                    pointLabels: {
+                                        color: 'rgba(255, 255, 255, 0.95)',
+                                        font: { size: 11, weight: 'bold', family: 'serif' },
+                                        padding: 5
+                                    },
+                                    ticks: {
+                                        display: false,
+                                        stepSize: 1,
+                                        maxTicksLimit: 6 // 0~5の6段階の線を描画
+                                    }
+                                }
+                            }
+                        }
+                    });
+                };
+
+                // ★結果画面に遷移した際にグラフを描画する監視処理
+                watch(step, (newStep) => {
+                    if (newStep === 'result') {
+                        // 確実な描画のため、0.1秒ごとにCanvasの準備ができたかチェックする
+                        retryInterval = setInterval(renderChart, 100);
+                        
+                        // 万が一のためのフェイルセーフ（5秒後に監視を諦める）
+                        setTimeout(() => {
+                            if (retryInterval) clearInterval(retryInterval);
+                        }, 5000);
+                    }
                 });
 
                 const startQuiz = () => {
@@ -308,11 +426,10 @@
                         const app = document.getElementById('app');
                         if (app) app.scrollTo({ top: 0 });
                         
-                        // お酒ごとの動画切り替え時間（ミリ秒）
                         const videoDurations = {
-                            wine: 6500,   // ワイン：6.5秒
-                            craft: 6500,  // クラフト酒：6.5秒
-                            sake: 4000    // 日本酒：4秒
+                            wine: 6500,
+                            craft: 6500,
+                            sake: 4000
                         };
                         const duration = videoDurations[selectedDrink.value] || 4000;
 
@@ -328,6 +445,16 @@
                     selectedDrink.value = '';
                     currentQuestionIndex.value = 0;
                     answersHistory.value = [];
+                    
+                    if (retryInterval) {
+                        clearInterval(retryInterval);
+                        retryInterval = null;
+                    }
+                    if (chartInstance) {
+                        chartInstance.destroy();
+                        chartInstance = null;
+                    }
+
                     const app = document.getElementById('app');
                     if (app) app.scrollTo({ top: 0 });
                 };
