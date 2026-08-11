@@ -22,12 +22,15 @@
     </style>
 </head>
 
+<!-- bodyで画面全体を完全固定 -->
 <body class="m-0 p-0 w-screen h-screen overflow-hidden bg-slate-950 relative">
 
+    <!-- ▼ 背景動画 ▼ -->
     <video id="bgVideo" autoplay loop muted playsinline 
            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; opacity: 0.75; pointer-events: none;">
     </video>
 
+    <!-- ▼ メインコンテンツ ▼ -->
     <div id="app" class="relative z-10 w-full h-full overflow-y-auto flex flex-col items-center justify-center p-4 pb-20 text-slate-100 font-serif">
         
         <transition name="fade" mode="out-in">
@@ -50,6 +53,7 @@
                          @click="selectedDrink = drink.id"
                          class="group cursor-pointer border-2 rounded-xl p-3 flex flex-col items-center transition-all duration-300 transform hover:-translate-y-1"
                          :class="selectedDrink === drink.id ? 'border-lime-400 bg-slate-900/80 shadow-[0_0_25px_rgba(163,230,53,0.6)] scale-105' : 'border-white/30 bg-black/40 hover:border-lime-400/80 hover:bg-black/60 hover:shadow-[0_0_20px_rgba(163,230,53,0.4)]'">
+                        <!-- 画像エリア枠にもホバー・選択時に緑の枠線＆エフェクトを追加 -->
                         <div class="w-full h-24 flex items-center justify-center bg-white rounded-lg mb-3 overflow-hidden relative border-2 transition-all duration-300"
                              :class="selectedDrink === drink.id ? 'border-lime-400 shadow-[0_0_15px_rgba(163,230,53,0.5)]' : 'border-slate-300 group-hover:border-lime-400/80 group-hover:shadow-[0_0_12px_rgba(163,230,53,0.4)]'">
                             <span class="text-slate-400 text-xs absolute">図</span>
@@ -77,24 +81,26 @@
                 <div class="space-y-4">
                     <div v-for="(option, idx) in currentQuestion.options" :key="idx"
                          @click="answerQuestion(option.type)"
-                         class="bg-slate-900/80 backdrop-blur-md rounded-2xl overflow-hidden cursor-pointer hover:bg-slate-800 transition-all duration-300 border border-slate-600/50">
+                         class="bg-slate-900/80 backdrop-blur-md rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 border border-slate-600/50 group">
                         
-                        <!-- イラスト枠 -->
-                        <div class="w-full h-44 sm:h-52 flex items-center justify-center bg-white overflow-hidden relative p-1.5">
-                            <span v-if="currentQuestionIndex !== 1" class="text-slate-400 text-xs font-sans absolute">ILLUSTRATION</span>
+                        <!-- ▼ Q2の場合のみ背景を白にする ▼ -->
+                        <div class="w-full h-44 sm:h-52 flex items-center justify-center overflow-hidden relative p-1.5"
+                             :class="currentQuestionIndex === 1 ? 'bg-white' : 'bg-white'">
                             
-                            <!-- Q2(年齢)の場合のカスタムテキストオーバーレイ -->
-                            <div v-if="currentQuestionIndex === 1" 
-                                 class="absolute inset-0 z-20 flex items-center justify-center bg-white">
-                                <span class="text-3xl sm:text-4xl font-extrabold text-lime-500 tracking-wider drop-shadow-sm">
-                                    {{ idx === 0 ? 'UNDER35' : 'OVER35' }}
+                            <!-- Q2（年齢）の場合は画像を表示せず、テキストを大きく表示 -->
+                            <div v-if="currentQuestionIndex === 1" class="w-full h-full flex items-center justify-center bg-white relative z-10">
+                                <span class="text-3xl sm:text-4xl font-black text-lime-500 drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]" style="-webkit-text-stroke: 1px rgba(0,0,0,0.1);">
+                                    {{ option.text }}
                                 </span>
                             </div>
-
+                            
                             <!-- Q2以外は画像を表示 -->
-                            <img v-if="currentQuestionIndex !== 1" :src="option.img" 
-                                 class="w-full h-full object-contain relative z-10 scale-150" 
-                                 alt="Option Image" @error="handleImageError">
+                            <template v-else>
+                                <span class="text-slate-400 text-xs font-sans absolute">ILLUSTRATION</span>
+                                <img :src="option.img" 
+                                     class="w-full h-full object-contain relative z-10 scale-150" 
+                                     alt="Option Image" @error="handleImageError">
+                            </template>
                         </div>
                         
                         <!-- テキスト -->
@@ -125,43 +131,36 @@
                 <!-- タイトル -->
                 <h2 class="text-xl sm:text-2xl font-bold text-lime-400 mb-2 leading-relaxed">{{ finalResult?.title }}</h2>
                 
-                <!-- 領域1: グラフ (上部) -->
-                <div class="w-full flex items-center justify-center mb-6 h-60 sm:h-64">
-                    <div class="w-full h-full max-w-[260px] relative flex items-center justify-center">
+                <!-- グラフエリア (上部) キャンバスサイズを拡大 -->
+                <div class="w-full flex justify-center items-center mb-6 h-64 sm:h-72">
+                    <div class="w-full h-full max-w-[280px] max-h-[280px] relative">
                         <canvas id="radarChart" class="w-full h-full"></canvas>
                     </div>
                 </div>
-
-                <!-- 領域2と3の分割コンテナ (下部) -->
-                <div class="w-full flex gap-3 sm:gap-4 mb-6 min-h-[160px] sm:min-h-[180px]">
+                
+                <!-- 写真と説明エリア (下部) -->
+                <div class="w-full flex gap-2 sm:gap-4 mb-8 min-h-[14rem]">
+                    
                     <!-- 領域2: 写真 (左側) -->
-                    <div class="w-1/2 bg-slate-800/50 rounded-xl border border-slate-700 flex flex-col items-center justify-center relative overflow-hidden flex-shrink-0">
-                        <span class="text-slate-500 text-xs sm:text-sm font-bold font-sans text-center">DRINK<br>PHOTO</span>
+                    <div class="w-[45%] h-full min-h-[14rem] bg-slate-800/50 rounded-xl border border-slate-700 flex flex-col items-center justify-center relative overflow-hidden p-2">
+                        <span class="text-slate-500 text-xs sm:text-sm font-bold font-sans">DRINK<br>PHOTO</span>
                         <!-- ここに後日写真を追加します -->
                         <!-- <img src="menu-photo.jpg" alt="Menu Photo" class="w-full h-full object-cover absolute top-0 left-0"> -->
                     </div>
 
-                    <!-- 領域3: おすすめ商品情報と説明 (右側) -->
-                    <div class="w-1/2 bg-slate-800/80 rounded-xl p-3 sm:p-4 border border-slate-700 flex flex-col justify-start text-left">
-                        <!-- アイコン -->
-                        <div class="text-2xl sm:text-3xl mb-1 drop-shadow-md">{{ finalResult?.icon }}</div>
-                        <!-- RECOMMENDED ラベル -->
-                        <div>
-                            <span class="text-[10px] sm:text-xs text-lime-400 font-bold bg-lime-400/20 px-1.5 py-0.5 rounded inline-block mb-1">RECOMMENDED</span>
-                        </div>
-                        <!-- 商品名 -->
-                        <div class="font-bold text-sm sm:text-base text-slate-100 leading-snug mb-2">
-                            {{ finalResult?.recommended }}
-                        </div>
-                        <!-- 説明文 -->
-                        <p class="text-[11px] sm:text-xs text-slate-300 leading-relaxed mt-auto">
+                    <!-- 領域3: おすすめ商品と説明 (右側) -->
+                    <div class="w-[55%] h-full bg-slate-800/80 rounded-xl p-3 sm:p-4 border border-slate-700 flex flex-col items-start text-left">
+                        <span class="text-3xl sm:text-4xl mb-2 drop-shadow-md">{{ finalResult?.icon }}</span>
+                        <div class="text-[10px] text-lime-400 font-bold bg-lime-400/20 px-1.5 py-0.5 rounded inline-block mb-1">RECOMMENDED</div>
+                        <div class="font-bold text-sm sm:text-base text-slate-100 leading-snug mb-3">{{ finalResult?.recommended }}</div>
+                        
+                        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed w-full">
                             {{ finalResult?.description }}
                         </p>
                     </div>
                 </div>
 
-                <!-- 最下部: ボタン -->
-                <button @click="resetQuiz" class="w-full py-4 bg-lime-500 hover:bg-lime-400 text-slate-950 rounded-xl font-bold tracking-widest transition-all shadow-[0_0_15px_rgba(132,204,22,0.4)] mt-2">
+                <button @click="resetQuiz" class="w-full py-4 bg-lime-500 hover:bg-lime-400 text-slate-950 rounded-xl font-bold tracking-widest transition-all shadow-[0_0_15px_rgba(132,204,22,0.4)]">
                     Once more
                 </button>
             </div>
@@ -171,6 +170,34 @@
 
     <!-- Vue.js スクリプト -->
     <script>
+        // スプレッドシート連携用GASのURL
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbxOHrvgUYlPKeemzFOfhxggXXssC3L9Od0RbuhtxIPM-mLXVvpVKJJsFf8FlmOOA4Zj7Q/exec';
+
+        // スプレッドシートへデータを送信する関数
+        const sendToGoogleSheet = async (q1, q2, resultType) => {
+            const data = {
+                userAgent: navigator.userAgent,
+                q1Gender: q1,
+                q2Age: q2,
+                resultType: resultType
+            };
+
+            try {
+                // fetchでPOST送信（no-corsを使用してCORSエラーを回避）
+                await fetch(GAS_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                console.log('スプレッドシートへの送信リクエストを完了しました');
+            } catch (error) {
+                console.error('送信エラー:', error);
+            }
+        };
+
         // ▼ 背景動画を2パターンからランダムで設定 ▼
         const bgVideoElement = document.getElementById('bgVideo');
         if (bgVideoElement) {
@@ -187,6 +214,9 @@
                 const selectedDrink = ref('');
                 const currentQuestionIndex = ref(0);
                 const answersHistory = ref([]);
+                
+                // 二重送信防止用のフラグを追加
+                const isSubmitted = ref(false);
                 
                 let chartInstance = null;
 
@@ -225,8 +255,8 @@
                     {
                         text: 'あなたの年齢をお聞かせください',
                         options: [
-                            { text: '35歳未満', img: '', type: 'A' },
-                            { text: '35歳以上', img: '', type: 'B' }
+                            { text: 'UNDER 35', img: '', type: 'A' },
+                            { text: 'OVER 35', img: '', type: 'B' }
                         ]
                     },
                     {
@@ -290,7 +320,7 @@
                     },
                     type3: {
                         id: 'type3',
-                        title: '調和な風味と、穏やかな日常へ',
+                        title: '調和な風味と、穏やかな日常',
                         icon: '🍷',
                         recommended: 'カベルネ・ソーヴィニヨン / 特別純米酒 / ペールエール',
                         description: 'どんな料理にも合わせやすい安定した味わい。リラックスしたひとときを約束します。'
@@ -325,8 +355,9 @@
                     return resultTypes.type5; 
                 });
 
+                // チャート用のデータ計算
                 const getChartData = () => {
-                    if (answersHistory.value.length < 8) return [0, 0, 0];
+                    if (answersHistory.value.length < 8) return [1.5, 1.5, 1.5];
                     
                     const q3 = answersHistory.value[2]; // 気分
                     const q4 = answersHistory.value[3]; // 食事
@@ -356,7 +387,7 @@
 
                     if (q8 === 'B') { fruity += 1; }
 
-                    // ▼ 値が中心に偏って1本の線に潰れるのを防ぐため、最小値を1.5に底上げ ▼
+                    // 三角形が1本の線に潰れないよう、最小値を 1.5 に底上げ
                     const clamp = (val) => Math.min(Math.max(val, 1.5), 5);
 
                     return [
@@ -366,6 +397,7 @@
                     ];
                 };
 
+                // チャートを描画する関数
                 const renderChart = () => {
                     const canvas = document.getElementById('radarChart');
                     if (!canvas || canvas.offsetParent === null) {
@@ -381,7 +413,7 @@
                     
                     const whiteLineColor = 'rgba(255, 255, 255, 1)';
                     const whiteBgColor = 'rgba(255, 255, 255, 0.15)'; 
-                    const gridColor = 'rgba(255, 255, 255, 0.25)';
+                    const gridColor = 'rgba(255, 255, 255, 0.25)'; 
 
                     chartInstance = new Chart(ctx, {
                         type: 'radar',
@@ -404,6 +436,7 @@
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
+                            // グラフ本体を限界まで大きくしつつ、文字切れを防ぐための余白調整
                             layout: {
                                 padding: {
                                     top: 15,
@@ -418,8 +451,6 @@
                             },
                             scales: {
                                 r: {
-                                    min: 0, 
-                                    max: 5,
                                     angleLines: { color: gridColor },
                                     grid: { 
                                         color: gridColor,
@@ -427,12 +458,16 @@
                                     },
                                     pointLabels: {
                                         color: '#fff',
+                                        // グラフサイズ拡大に合わせてフォントと距離を微調整
                                         font: { size: 11, family: 'serif', weight: 'bold' },
                                         padding: 6
                                     },
                                     ticks: {
                                         display: false,
-                                        stepSize: 1
+                                        min: 0,
+                                        max: 5,
+                                        stepSize: 1, 
+                                        maxTicksLimit: 6 
                                     },
                                     borderJoinStyle: 'round' 
                                 }
@@ -452,12 +487,17 @@
                         step.value = 'quiz';
                         answersHistory.value = [];
                         currentQuestionIndex.value = 0;
+                        // クイズ開始時に送信フラグをリセット
+                        isSubmitted.value = false;
                     }
                     const app = document.getElementById('app');
                     if (app) app.scrollTo({ top: 0 });
                 };
 
                 const answerQuestion = (type) => {
+                    // 質問画面以外でのタップ反応を完全に無効化（連打防止）
+                    if (step.value !== 'quiz') return;
+
                     answersHistory.value.push(type);
                     if (currentQuestionIndex.value < questions.length - 1) {
                         currentQuestionIndex.value++;
@@ -479,12 +519,15 @@
                             step.value = 'result';
                             if (app) app.scrollTo({ top: 0 });
 
-                            // ▼ 結果が表示されたタイミングでGoogleスプレッドシート(GAS)に送信 ▼
-                            const q1Ans = answersHistory.value[0] === 'A' ? '男性' : '女性';
-                            const q2Ans = answersHistory.value[1] === 'A' ? '35歳未満' : '35歳以上';
-                            const typeId = finalResult.value.id;
-                            
-                            sendToGoogleSheet(q1Ans, q2Ans, typeId);
+                            // 結果が表示されたタイミングで、まだ送信されていなければGASへ送信
+                            if (!isSubmitted.value) {
+                                const q1Ans = answersHistory.value[0] === 'A' ? '男性' : '女性';
+                                const q2Ans = answersHistory.value[1] === 'A' ? '35歳未満' : '35歳以上';
+                                const typeId = finalResult.value?.id || 'unknown';
+                                
+                                sendToGoogleSheet(q1Ans, q2Ans, typeId);
+                                isSubmitted.value = true; // 送信完了としてロック
+                            }
 
                         }, duration);
                     }
@@ -505,33 +548,6 @@
 
                 const handleImageError = (e) => {
                     e.target.style.display = 'none';
-                };
-
-                // ▼ スプレッドシート送信用の関数 ▼
-                // 【手順1】で取得したウェブアプリのURLを下のシングルクォーテーション('')の中に貼り付けてください。
-                const GAS_URL = 'https://script.google.com/macros/s/AKfycbxOHrvgUYlPKeemzFOfhxggXXssC3L9Od0RbuhtxIPM-mLXVvpVKJJsFf8FlmOOA4Zj7Q/exec';
-
-                const sendToGoogleSheet = async (q1, q2, typeId) => {
-                    if (GAS_URL === 'ここにウェブアプリのURLを貼り付けてください') {
-                        console.log('スプレッドシートのURLが未設定のため、送信をスキップしました。');
-                        return;
-                    }
-                    const data = {
-                        userAgent: navigator.userAgent,
-                        q1Gender: q1,
-                        q2Age: q2,
-                        resultType: typeId
-                    };
-                    try {
-                        // GASのCORS制約を回避するため text/plain で送信
-                        fetch(GAS_URL, {
-                            method: 'POST',
-                            body: JSON.stringify(data),
-                            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-                        }).then(() => console.log('スプレッドシートへ送信完了'));
-                    } catch (error) {
-                        console.error('送信エラー:', error);
-                    }
                 };
 
                 return {
