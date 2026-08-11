@@ -174,12 +174,13 @@
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxOHrvgUYlPKeemzFOfhxggXXssC3L9Od0RbuhtxIPM-mLXVvpVKJJsFf8FlmOOA4Zj7Q/exec';
 
         // スプレッドシートへデータを送信する関数
-        const sendToGoogleSheet = async (q1, q2, resultType) => {
+        const sendToGoogleSheet = async (q1, q2, resultType, selectedDrinkName) => {
             const data = {
                 userAgent: navigator.userAgent,
                 q1Gender: q1,
                 q2Age: q2,
-                resultType: resultType
+                resultType: resultType,
+                selectedDrink: selectedDrinkName
             };
 
             try {
@@ -525,7 +526,13 @@
                                 const q2Ans = answersHistory.value[1] === 'A' ? '35歳未満' : '35歳以上';
                                 const typeId = finalResult.value?.id || 'unknown';
                                 
-                                sendToGoogleSheet(q1Ans, q2Ans, typeId);
+                                // 最初のお酒の選択を日本語テキスト化
+                                let drinkChoice = '不明';
+                                if (selectedDrink.value === 'wine') drinkChoice = 'ワイン';
+                                else if (selectedDrink.value === 'sake') drinkChoice = '日本酒';
+                                else if (selectedDrink.value === 'craft') drinkChoice = 'クラフト酒';
+                                
+                                sendToGoogleSheet(q1Ans, q2Ans, typeId, drinkChoice);
                                 isSubmitted.value = true; // 送信完了としてロック
                             }
 
