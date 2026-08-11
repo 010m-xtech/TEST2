@@ -77,15 +77,24 @@
                     Q{{ currentQuestionIndex + 1 }}. {{ currentQuestion.text }}
                 </h2>
 
-                <!-- 選択肢 -->
                 <div class="space-y-4">
                     <div v-for="(option, idx) in currentQuestion.options" :key="idx"
                          @click="answerQuestion(option.type)"
                          class="bg-slate-900/80 backdrop-blur-md rounded-2xl overflow-hidden cursor-pointer hover:border-lime-400 hover:shadow-[0_0_20px_rgba(163,230,53,0.4)] transition-all duration-300 border border-slate-600/50 group">
                         
-                        <!-- イラスト枠（白背景・固定1.5倍表示） -->
+                        <!-- イラスト枠（Q2のみ特別対応） -->
                         <div class="w-full h-44 sm:h-52 flex items-center justify-center bg-white overflow-hidden relative p-1.5">
                             <span class="text-slate-400 text-xs font-sans absolute">ILLUSTRATION</span>
+                            
+                            <!-- Q2(年齢)の場合のカスタムテキストオーバーレイ -->
+                            <div v-if="currentQuestionIndex === 1" 
+                                 class="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+                                <span class="text-3xl sm:text-4xl font-extrabold text-lime-400 tracking-wider" 
+                                      style="-webkit-text-stroke: 1px black; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">
+                                    {{ idx === 0 ? 'UNDER35' : 'OVER35' }}
+                                </span>
+                            </div>
+
                             <img :src="option.img" 
                                  class="w-full h-full object-contain relative z-10 scale-150" 
                                  alt="Option Image" @error="handleImageError">
@@ -116,43 +125,51 @@
 
             <!-- ▼ 3. 動的診断結果画面 ▼ -->
             <div v-else-if="step === 'result' && finalResult" key="result" class="w-full max-w-lg mt-4 sm:mt-8 p-4 sm:p-6 bg-slate-900/80 backdrop-blur-md border border-white/20 rounded-2xl flex flex-col items-center text-center shadow-2xl">
-                <!-- タイトル -->
-                <h2 class="text-xl sm:text-2xl font-bold text-lime-400 mb-6 leading-relaxed">{{ finalResult?.title }}</h2>
                 
-                <!-- RECOMMENDED エリア (上部) -->
-                <div class="w-full bg-slate-800/80 rounded-xl p-4 sm:p-5 mb-6 border border-slate-700 flex items-center gap-4">
-                    <span class="text-4xl sm:text-5xl drop-shadow-md">{{ finalResult?.icon }}</span>
-                    <div class="text-left flex-1">
-                        <div class="text-xs text-lime-400 font-bold bg-lime-400/20 px-2 py-1 rounded inline-block mb-1.5">RECOMMENDED</div>
-                        <div class="font-bold text-base sm:text-lg text-slate-100 leading-snug">{{ finalResult?.recommended }}</div>
+                <!-- 1. 上部: タイトル -->
+                <div class="w-full text-center mb-4">
+                    <h2 class="text-lg sm:text-xl font-bold text-lime-400 leading-relaxed">{{ finalResult?.title }}</h2>
+                </div>
+
+                <!-- 2. 上部/中央: 大きなレーダーチャート (ご要望に合わせてサイズを最大化) -->
+                <div class="w-full flex items-center justify-center mb-6 h-60 sm:h-72">
+                    <!-- コンテナサイズを広げ、余白を利用して大きく描画 -->
+                    <div class="w-full h-full max-w-[280px] sm:max-w-[320px] relative">
+                        <canvas id="radarChart" class="w-full h-full"></canvas>
                     </div>
                 </div>
 
-                <!-- 説明文 -->
-                <p class="text-sm text-slate-300 text-left leading-relaxed w-full mb-6 px-1">
-                    {{ finalResult?.description }}
-                </p>
-                
-                <!-- 写真とグラフの分割エリア (下部) -->
-                <div class="w-full flex gap-2 sm:gap-4 mb-8 h-44 sm:h-52">
+                <!-- 3. 下部: 写真(左)と商品情報(右)の2カラム -->
+                <div class="w-full flex items-stretch gap-3 sm:gap-4 mb-6 min-h-[160px] sm:min-h-[180px]">
                     
-                    <!-- 領域2: 写真 (左側) -->
-                    <div class="w-1/2 h-full bg-slate-800/50 rounded-xl border border-slate-700 flex items-center justify-center relative overflow-hidden">
-                        <span class="text-slate-500 text-xs sm:text-sm font-bold font-sans">DRINK PHOTO</span>
+                    <!-- 領域A: 写真 (左側) -->
+                    <div class="w-5/12 sm:w-1/2 bg-slate-800/50 rounded-xl border border-slate-700 flex items-center justify-center relative overflow-hidden flex-shrink-0">
+                        <span class="text-slate-500 text-xs sm:text-sm font-bold font-sans">DRINK<br>PHOTO</span>
                         <!-- ここに後日写真を追加します -->
                         <!-- <img src="menu-photo.jpg" alt="Menu Photo" class="w-full h-full object-cover absolute top-0 left-0"> -->
                     </div>
 
-                    <!-- 領域3: グラフ (右側) -->
-                    <div class="w-1/2 h-full flex items-center justify-center relative">
-                         <!-- Canvasコンテナ（少し小さめに設定） -->
-                        <div class="w-full h-full max-w-[220px] max-h-[220px] relative">
-                            <canvas id="radarChart" class="w-full h-full"></canvas>
+                    <!-- 領域B: おすすめ商品情報と説明 (右側) -->
+                    <div class="w-7/12 sm:w-1/2 bg-slate-800/80 rounded-xl p-3 sm:p-4 border border-slate-700 flex flex-col justify-start text-left overflow-y-auto">
+                        <!-- アイコン -->
+                        <div class="text-2xl sm:text-3xl mb-1 drop-shadow-md">{{ finalResult?.icon }}</div>
+                        <!-- RECOMMENDED ラベル -->
+                        <div>
+                            <span class="text-[10px] sm:text-xs text-lime-400 font-bold bg-lime-400/20 px-1.5 py-0.5 rounded inline-block mb-1">RECOMMENDED</span>
                         </div>
+                        <!-- 商品名 -->
+                        <div class="font-bold text-sm sm:text-base text-slate-100 leading-snug mb-2">
+                            {{ finalResult?.recommended }}
+                        </div>
+                        <!-- 説明文 -->
+                        <p class="text-[11px] sm:text-xs text-slate-300 leading-relaxed mt-auto">
+                            {{ finalResult?.description }}
+                        </p>
                     </div>
                 </div>
 
-                <button @click="resetQuiz" class="w-full py-4 bg-lime-500 hover:bg-lime-400 text-slate-950 rounded-xl font-bold tracking-widest transition-all shadow-[0_0_15px_rgba(132,204,22,0.4)]">
+                <!-- 4. 最下部: ボタン -->
+                <button @click="resetQuiz" class="w-full py-4 bg-lime-500 hover:bg-lime-400 text-slate-950 rounded-xl font-bold tracking-widest transition-all shadow-[0_0_15px_rgba(132,204,22,0.4)] mt-2">
                     Once more
                 </button>
             </div>
@@ -278,7 +295,7 @@
                         description: '個性が光る豊かな風味。いつもと一味違う夜を楽しみたいあなたにぴったり。'
                     },
                     type3: {
-                        title: '調和な風味と、穏やかな日常',
+                        title: '調和な風味と、穏やかな日常へ',
                         icon: '🍷',
                         recommended: 'カベルネ・ソーヴィニヨン / 特別純米酒 / ペールエール',
                         description: 'どんな料理にも合わせやすい安定した味わい。リラックスしたひとときを約束します。'
@@ -327,30 +344,24 @@
                     let fruity = 2;
                     let shikkari = 2;
 
-                    // Q3. 気分 (A:リセット -> すっきり+, B:ほっこり -> しっかり+)
                     if (q3 === 'A') { sukkiri += 1; shikkari -= 1; }
                     else { shikkari += 1; sukkiri -= 1; }
 
-                    // Q4. 食事 (A:ガッツリ -> しっかり+, B:ヘルシー -> すっきり+)
                     if (q4 === 'A') { shikkari += 1; sukkiri -= 1; }
                     else { sukkiri += 1; shikkari -= 1; }
 
-                    // Q5. 香り (A:柑橘系 -> フルーティー+, B:スパイス・木 -> しっかり+)
                     if (q5 === 'A') { fruity += 2; shikkari -= 0.5; }
                     else { shikkari += 1.5; fruity -= 1; }
 
-                    // Q6. 求める味 (A:甘酸っぱさ -> フルーティー+, B:苦み・ドライ -> すっきり+)
                     if (q6 === 'A') { fruity += 1; sukkiri -= 0.5; }
                     else { sukkiri += 1.5; fruity -= 1; }
 
-                    // Q7. 喉越し (A:爽快な泡 -> すっきり+, B:なめらか -> しっかり+)
                     if (q7 === 'A') { sukkiri += 1; shikkari -= 1; }
                     else { shikkari += 1; sukkiri -= 1; }
 
-                    // Q8. テーマ (A:王道 -> バランス維持, B:個性的 -> フルーティー+)
                     if (q8 === 'B') { fruity += 1; }
 
-                    // 値を1〜5の範囲に収める（中心0として面積が潰れるのを防ぐため最小値は1）
+                    // 値を1〜5の範囲に収める
                     const clamp = (val) => Math.min(Math.max(val, 1), 5);
 
                     return [
@@ -400,13 +411,13 @@
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
-                            // ▼ここを変更：左右の余白を広めに取り、文字切れを確実に防ぐ▼
+                            // ▼グラフ本体を限界まで大きくしつつ、文字切れを防ぐための余白調整▼
                             layout: {
                                 padding: {
-                                    top: 10,
-                                    bottom: 10,
-                                    left: 22,
-                                    right: 22
+                                    top: 15,
+                                    bottom: 15,
+                                    left: 25,
+                                    right: 25
                                 }
                             },
                             plugins: {
@@ -423,8 +434,9 @@
                                     },
                                     pointLabels: {
                                         color: '#fff',
-                                        // スマホ幅に合わせてフォントサイズを少し調整
-                                        font: { size: 10, family: 'serif', weight: 'bold' }
+                                        // グラフサイズ拡大に合わせてフォントと距離を微調整
+                                        font: { size: 11, family: 'serif', weight: 'bold' },
+                                        padding: 6
                                     },
                                     ticks: {
                                         display: false,
