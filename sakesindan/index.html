@@ -22,15 +22,12 @@
     </style>
 </head>
 
-<!-- bodyで画面全体を完全固定 -->
 <body class="m-0 p-0 w-screen h-screen overflow-hidden bg-slate-950 relative">
 
-    <!-- ▼ 背景動画 ▼ -->
     <video id="bgVideo" autoplay loop muted playsinline 
            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; opacity: 0.75; pointer-events: none;">
     </video>
 
-    <!-- ▼ メインコンテンツ ▼ -->
     <div id="app" class="relative z-10 w-full h-full overflow-y-auto flex flex-col items-center justify-center p-4 pb-20 text-slate-100 font-serif">
         
         <transition name="fade" mode="out-in">
@@ -53,7 +50,6 @@
                          @click="selectedDrink = drink.id"
                          class="group cursor-pointer border-2 rounded-xl p-3 flex flex-col items-center transition-all duration-300 transform hover:-translate-y-1"
                          :class="selectedDrink === drink.id ? 'border-lime-400 bg-slate-900/80 shadow-[0_0_25px_rgba(163,230,53,0.6)] scale-105' : 'border-white/30 bg-black/40 hover:border-lime-400/80 hover:bg-black/60 hover:shadow-[0_0_20px_rgba(163,230,53,0.4)]'">
-                        <!-- 画像エリア枠にもホバー・選択時に緑の枠線＆エフェクトを追加 -->
                         <div class="w-full h-24 flex items-center justify-center bg-white rounded-lg mb-3 overflow-hidden relative border-2 transition-all duration-300"
                              :class="selectedDrink === drink.id ? 'border-lime-400 shadow-[0_0_15px_rgba(163,230,53,0.5)]' : 'border-slate-300 group-hover:border-lime-400/80 group-hover:shadow-[0_0_12px_rgba(163,230,53,0.4)]'">
                             <span class="text-slate-400 text-xs absolute">図</span>
@@ -83,11 +79,11 @@
                          @click="answerQuestion(option.type)"
                          class="bg-slate-900/80 backdrop-blur-md rounded-2xl overflow-hidden cursor-pointer hover:bg-slate-800 transition-all duration-300 border border-slate-600/50">
                         
-                        <!-- イラスト枠（白背景・固定1.5倍表示） -->
+                        <!-- イラスト枠 -->
                         <div class="w-full h-44 sm:h-52 flex items-center justify-center bg-white overflow-hidden relative p-1.5">
                             <span v-if="currentQuestionIndex !== 1" class="text-slate-400 text-xs font-sans absolute">ILLUSTRATION</span>
                             
-                            <!-- Q2(年齢)の場合のカスタムテキストオーバーレイ (画像の代わり) -->
+                            <!-- Q2(年齢)の場合のカスタムテキストオーバーレイ -->
                             <div v-if="currentQuestionIndex === 1" 
                                  class="absolute inset-0 z-20 flex items-center justify-center bg-white">
                                 <span class="text-3xl sm:text-4xl font-extrabold text-lime-500 tracking-wider drop-shadow-sm">
@@ -129,10 +125,9 @@
                 <!-- タイトル -->
                 <h2 class="text-xl sm:text-2xl font-bold text-lime-400 mb-2 leading-relaxed">{{ finalResult?.title }}</h2>
                 
-                <!-- 領域1: グラフ (上部) - サイズを最大化 -->
-                <div class="w-full flex items-center justify-center mb-6 h-60 sm:h-72">
-                     <!-- Canvasコンテナをさらに大きく -->
-                    <div class="w-full h-full max-w-[280px] relative">
+                <!-- 領域1: グラフ (上部) -->
+                <div class="w-full flex items-center justify-center mb-6 h-60 sm:h-64">
+                    <div class="w-full h-full max-w-[260px] relative flex items-center justify-center">
                         <canvas id="radarChart" class="w-full h-full"></canvas>
                     </div>
                 </div>
@@ -229,7 +224,6 @@
                     },
                     {
                         text: 'あなたの年齢をお聞かせください',
-                        // Q2は画像を使用しないためimgプロパティを空にしました
                         options: [
                             { text: '35歳未満', img: '', type: 'A' },
                             { text: '35歳以上', img: '', type: 'B' }
@@ -266,7 +260,7 @@
                     {
                         text: '喉を通るときの好みは？',
                         options: [
-                            { text: 'きりっと程良い刺激', img: 'awa.jpg', type: 'A' },
+                            { text: 'キリッと締まる爽快なキレ', img: 'awa.jpg', type: 'A' },
                             { text: 'すーっと通るなめらかな口当たり', img: 'nameraka.jpg', type: 'B' }
                         ]
                     },
@@ -281,30 +275,35 @@
 
                 const resultTypes = {
                     type1: {
+                        id: 'type1',
                         title: '今日をリセット、軽やかになりたい夜に。',
                         icon: '🥂',
                         recommended: 'スパークリングワイン / 生酒 / クラフトビール',
                         description: '今日のモヤモヤを吹き飛ばす、弾ける爽快感とキレが今のあなたにぴったり。'
                     },
                     type2: {
+                        id: 'type2',
                         title: '新しい風と、気ままなアクセント',
                         icon: '🍊',
                         recommended: 'オレンジワイン / 樽熟成シャルドネ / クラフトジン',
                         description: '個性が光る豊かな風味。いつもと一味違う夜を楽しみたいあなたにぴったり。'
                     },
                     type3: {
+                        id: 'type3',
                         title: '調和な風味と、穏やかな日常へ',
                         icon: '🍷',
                         recommended: 'カベルネ・ソーヴィニヨン / 特別純米酒 / ペールエール',
                         description: 'どんな料理にも合わせやすい安定した味わい。リラックスしたひとときを約束します。'
                     },
                     type4: {
+                        id: 'type4',
                         title: 'とろける甘みと、ほっとする安心感',
                         icon: '🍶',
                         recommended: 'メルロー / 濁り酒 / ヴァイツェン',
                         description: '優しくまろやかな口当たりが、今日の疲れをじんわりと包み込んで癒やしてくれます。'
                     },
                     type5: {
+                        id: 'type5',
                         title: '静かな深みと、贅沢なひととき',
                         icon: '🥃',
                         recommended: 'フルボディ赤ワイン / 古酒・熟成酒 / スタウト（黒ビール）',
@@ -326,7 +325,6 @@
                     return resultTypes.type5; 
                 });
 
-                // チャート用のデータ計算
                 const getChartData = () => {
                     if (answersHistory.value.length < 8) return [0, 0, 0];
                     
@@ -351,10 +349,14 @@
                     else { shikkari += 1.5; fruity -= 1; }
 
                     if (q6 === 'A') { fruity += 1; sukkiri -= 0.5; }
-                    // Q8. テーマ (A:王道 -> バランス維持, B:個性的 -> フルーティー+)
+                    else { sukkiri += 1.5; fruity -= 1; }
+
+                    if (q7 === 'A') { sukkiri += 1; shikkari -= 1; }
+                    else { shikkari += 1; sukkiri -= 1; }
+
                     if (q8 === 'B') { fruity += 1; }
 
-                    // 値を1.5〜5の範囲に収める（中心0として面積が潰れて1本の線に見えるのを防ぐため最小値を底上げ）
+                    // ▼ 値が中心に偏って1本の線に潰れるのを防ぐため、最小値を1.5に底上げ ▼
                     const clamp = (val) => Math.min(Math.max(val, 1.5), 5);
 
                     return [
@@ -364,10 +366,8 @@
                     ];
                 };
 
-                // チャートを描画する関数（リトライ機能付き）
                 const renderChart = () => {
                     const canvas = document.getElementById('radarChart');
-                    // DOMに存在しない、または非表示の場合は少し待って再試行
                     if (!canvas || canvas.offsetParent === null) {
                         setTimeout(renderChart, 100);
                         return;
@@ -381,7 +381,7 @@
                     
                     const whiteLineColor = 'rgba(255, 255, 255, 1)';
                     const whiteBgColor = 'rgba(255, 255, 255, 0.15)'; 
-                    const gridColor = 'rgba(255, 255, 255, 0.25)'; // 少し濃くして見やすく
+                    const gridColor = 'rgba(255, 255, 255, 0.25)';
 
                     chartInstance = new Chart(ctx, {
                         type: 'radar',
@@ -404,7 +404,6 @@
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
-                            // ▼グラフ本体を限界まで大きくしつつ、文字切れを防ぐための余白調整▼
                             layout: {
                                 padding: {
                                     top: 15,
@@ -415,12 +414,11 @@
                             },
                             plugins: {
                                 legend: { display: false },
-                                // ツールチップを無効化
                                 tooltip: { enabled: false } 
                             },
                             scales: {
                                 r: {
-                                    min: 0, // ▼ ここにmin/maxを移動させて枠線の消失バグを防ぐ ▼
+                                    min: 0, 
                                     max: 5,
                                     angleLines: { color: gridColor },
                                     grid: { 
@@ -429,15 +427,13 @@
                                     },
                                     pointLabels: {
                                         color: '#fff',
-                                        // グラフサイズ拡大に合わせてフォントサイズや距離を微調整
                                         font: { size: 11, family: 'serif', weight: 'bold' },
                                         padding: 6
                                     },
                                     ticks: {
                                         display: false,
-                                        stepSize: 1 // 0,1,2,3,4,5の枠線を強制描画
+                                        stepSize: 1
                                     },
-                                    // 線の角を丸くして繋がりを良くする
                                     borderJoinStyle: 'round' 
                                 }
                             }
@@ -445,7 +441,6 @@
                     });
                 };
 
-                // stepが 'result' に変わったらチャートを描画
                 watch(step, (newStep) => {
                     if (newStep === 'result') {
                         setTimeout(renderChart, 800);
@@ -483,6 +478,14 @@
                         setTimeout(() => {
                             step.value = 'result';
                             if (app) app.scrollTo({ top: 0 });
+
+                            // ▼ 結果が表示されたタイミングでGoogleスプレッドシート(GAS)に送信 ▼
+                            const q1Ans = answersHistory.value[0] === 'A' ? '男性' : '女性';
+                            const q2Ans = answersHistory.value[1] === 'A' ? '35歳未満' : '35歳以上';
+                            const typeId = finalResult.value.id;
+                            
+                            sendToGoogleSheet(q1Ans, q2Ans, typeId);
+
                         }, duration);
                     }
                 };
@@ -502,6 +505,33 @@
 
                 const handleImageError = (e) => {
                     e.target.style.display = 'none';
+                };
+
+                // ▼ スプレッドシート送信用の関数 ▼
+                // 【手順1】で取得したウェブアプリのURLを下のシングルクォーテーション('')の中に貼り付けてください。
+                const GAS_URL = 'https://script.google.com/macros/s/AKfycbxOHrvgUYlPKeemzFOfhxggXXssC3L9Od0RbuhtxIPM-mLXVvpVKJJsFf8FlmOOA4Zj7Q/exec';
+
+                const sendToGoogleSheet = async (q1, q2, typeId) => {
+                    if (GAS_URL === 'ここにウェブアプリのURLを貼り付けてください') {
+                        console.log('スプレッドシートのURLが未設定のため、送信をスキップしました。');
+                        return;
+                    }
+                    const data = {
+                        userAgent: navigator.userAgent,
+                        q1Gender: q1,
+                        q2Age: q2,
+                        resultType: typeId
+                    };
+                    try {
+                        // GASのCORS制約を回避するため text/plain で送信
+                        fetch(GAS_URL, {
+                            method: 'POST',
+                            body: JSON.stringify(data),
+                            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                        }).then(() => console.log('スプレッドシートへ送信完了'));
+                    } catch (error) {
+                        console.error('送信エラー:', error);
+                    }
                 };
 
                 return {
