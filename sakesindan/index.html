@@ -81,7 +81,7 @@
                 <div class="space-y-4">
                     <div v-for="(option, idx) in currentQuestion.options" :key="idx"
                          @click="answerQuestion(option.type)"
-                         class="bg-slate-900/80 backdrop-blur-md rounded-2xl overflow-hidden cursor-pointer hover:border-lime-400 hover:shadow-[0_0_20px_rgba(163,230,53,0.4)] transition-all duration-300 border border-slate-600/50 group">
+                         class="bg-slate-900/80 backdrop-blur-md rounded-2xl overflow-hidden cursor-pointer hover:bg-slate-800 transition-all duration-300 border border-slate-600/50">
                         
                         <!-- イラスト枠（白背景・固定1.5倍表示） -->
                         <div class="w-full h-44 sm:h-52 flex items-center justify-center bg-white overflow-hidden relative p-1.5">
@@ -90,7 +90,7 @@
                             <!-- Q2(年齢)の場合のカスタムテキストオーバーレイ (画像の代わり) -->
                             <div v-if="currentQuestionIndex === 1" 
                                  class="absolute inset-0 z-20 flex items-center justify-center bg-white">
-                                <span class="text-3xl sm:text-4xl font-extrabold text-lime-500 tracking-wider drop-shadow-md">
+                                <span class="text-3xl sm:text-4xl font-extrabold text-lime-500 tracking-wider drop-shadow-sm">
                                     {{ idx === 0 ? 'UNDER35' : 'OVER35' }}
                                 </span>
                             </div>
@@ -266,7 +266,7 @@
                     {
                         text: '喉を通るときの好みは？',
                         options: [
-                            { text: 'シュワっと弾ける爽快な泡', img: 'awa.jpg', type: 'A' },
+                            { text: 'きりっと程良い刺激', img: 'awa.jpg', type: 'A' },
                             { text: 'すーっと通るなめらかな口当たり', img: 'nameraka.jpg', type: 'B' }
                         ]
                     },
@@ -351,14 +351,11 @@
                     else { shikkari += 1.5; fruity -= 1; }
 
                     if (q6 === 'A') { fruity += 1; sukkiri -= 0.5; }
-                    else { sukkiri += 1.5; fruity -= 1; }
-
-                    if (q7 === 'A') { sukkiri += 1; shikkari -= 1; }
-                    else { shikkari += 1; sukkiri -= 1; }
-
+                    // Q8. テーマ (A:王道 -> バランス維持, B:個性的 -> フルーティー+)
                     if (q8 === 'B') { fruity += 1; }
 
-                    const clamp = (val) => Math.min(Math.max(val, 1), 5);
+                    // 値を1.5〜5の範囲に収める（中心0として面積が潰れて1本の線に見えるのを防ぐため最小値を底上げ）
+                    const clamp = (val) => Math.min(Math.max(val, 1.5), 5);
 
                     return [
                         clamp(sukkiri), 
@@ -367,9 +364,10 @@
                     ];
                 };
 
-                // チャートを描画する関数
+                // チャートを描画する関数（リトライ機能付き）
                 const renderChart = () => {
                     const canvas = document.getElementById('radarChart');
+                    // DOMに存在しない、または非表示の場合は少し待って再試行
                     if (!canvas || canvas.offsetParent === null) {
                         setTimeout(renderChart, 100);
                         return;
@@ -383,7 +381,7 @@
                     
                     const whiteLineColor = 'rgba(255, 255, 255, 1)';
                     const whiteBgColor = 'rgba(255, 255, 255, 0.15)'; 
-                    const gridColor = 'rgba(255, 255, 255, 0.25)';
+                    const gridColor = 'rgba(255, 255, 255, 0.25)'; // 少し濃くして見やすく
 
                     chartInstance = new Chart(ctx, {
                         type: 'radar',
@@ -406,21 +404,24 @@
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
-                            // 余白を詰めてグラフ本体を最大化する設定
+                            // ▼グラフ本体を限界まで大きくしつつ、文字切れを防ぐための余白調整▼
                             layout: {
                                 padding: {
                                     top: 15,
                                     bottom: 15,
-                                    left: 20,
-                                    right: 20
+                                    left: 25,
+                                    right: 25
                                 }
                             },
                             plugins: {
                                 legend: { display: false },
+                                // ツールチップを無効化
                                 tooltip: { enabled: false } 
                             },
                             scales: {
                                 r: {
+                                    min: 0, // ▼ ここにmin/maxを移動させて枠線の消失バグを防ぐ ▼
+                                    max: 5,
                                     angleLines: { color: gridColor },
                                     grid: { 
                                         color: gridColor,
@@ -428,16 +429,15 @@
                                     },
                                     pointLabels: {
                                         color: '#fff',
+                                        // グラフサイズ拡大に合わせてフォントサイズや距離を微調整
                                         font: { size: 11, family: 'serif', weight: 'bold' },
-                                        padding: 8
+                                        padding: 6
                                     },
                                     ticks: {
                                         display: false,
-                                        min: 0,
-                                        max: 5,
-                                        stepSize: 1, 
-                                        maxTicksLimit: 6
+                                        stepSize: 1 // 0,1,2,3,4,5の枠線を強制描画
                                     },
+                                    // 線の角を丸くして繋がりを良くする
                                     borderJoinStyle: 'round' 
                                 }
                             }
