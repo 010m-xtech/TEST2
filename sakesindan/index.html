@@ -77,25 +77,26 @@
                     Q{{ currentQuestionIndex + 1 }}. {{ currentQuestion.text }}
                 </h2>
 
+                <!-- 選択肢 -->
                 <div class="space-y-4">
                     <div v-for="(option, idx) in currentQuestion.options" :key="idx"
                          @click="answerQuestion(option.type)"
                          class="bg-slate-900/80 backdrop-blur-md rounded-2xl overflow-hidden cursor-pointer hover:border-lime-400 hover:shadow-[0_0_20px_rgba(163,230,53,0.4)] transition-all duration-300 border border-slate-600/50 group">
                         
-                        <!-- イラスト枠（Q2のみ特別対応） -->
+                        <!-- イラスト枠（白背景・固定1.5倍表示） -->
                         <div class="w-full h-44 sm:h-52 flex items-center justify-center bg-white overflow-hidden relative p-1.5">
-                            <span class="text-slate-400 text-xs font-sans absolute">ILLUSTRATION</span>
+                            <span v-if="currentQuestionIndex !== 1" class="text-slate-400 text-xs font-sans absolute">ILLUSTRATION</span>
                             
-                            <!-- Q2(年齢)の場合のカスタムテキストオーバーレイ -->
+                            <!-- Q2(年齢)の場合のカスタムテキストオーバーレイ (画像の代わり) -->
                             <div v-if="currentQuestionIndex === 1" 
-                                 class="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
-                                <span class="text-3xl sm:text-4xl font-extrabold text-lime-400 tracking-wider" 
-                                      style="-webkit-text-stroke: 1px black; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">
+                                 class="absolute inset-0 z-20 flex items-center justify-center bg-white">
+                                <span class="text-3xl sm:text-4xl font-extrabold text-lime-500 tracking-wider drop-shadow-md">
                                     {{ idx === 0 ? 'UNDER35' : 'OVER35' }}
                                 </span>
                             </div>
 
-                            <img :src="option.img" 
+                            <!-- Q2以外は画像を表示 -->
+                            <img v-if="currentQuestionIndex !== 1" :src="option.img" 
                                  class="w-full h-full object-contain relative z-10 scale-150" 
                                  alt="Option Image" @error="handleImageError">
                         </div>
@@ -125,32 +126,28 @@
 
             <!-- ▼ 3. 動的診断結果画面 ▼ -->
             <div v-else-if="step === 'result' && finalResult" key="result" class="w-full max-w-lg mt-4 sm:mt-8 p-4 sm:p-6 bg-slate-900/80 backdrop-blur-md border border-white/20 rounded-2xl flex flex-col items-center text-center shadow-2xl">
+                <!-- タイトル -->
+                <h2 class="text-xl sm:text-2xl font-bold text-lime-400 mb-2 leading-relaxed">{{ finalResult?.title }}</h2>
                 
-                <!-- 1. 上部: タイトル -->
-                <div class="w-full text-center mb-4">
-                    <h2 class="text-lg sm:text-xl font-bold text-lime-400 leading-relaxed">{{ finalResult?.title }}</h2>
-                </div>
-
-                <!-- 2. 上部/中央: 大きなレーダーチャート (ご要望に合わせてサイズを最大化) -->
+                <!-- 領域1: グラフ (上部) - サイズを最大化 -->
                 <div class="w-full flex items-center justify-center mb-6 h-60 sm:h-72">
-                    <!-- コンテナサイズを広げ、余白を利用して大きく描画 -->
-                    <div class="w-full h-full max-w-[280px] sm:max-w-[320px] relative">
+                     <!-- Canvasコンテナをさらに大きく -->
+                    <div class="w-full h-full max-w-[280px] relative">
                         <canvas id="radarChart" class="w-full h-full"></canvas>
                     </div>
                 </div>
 
-                <!-- 3. 下部: 写真(左)と商品情報(右)の2カラム -->
-                <div class="w-full flex items-stretch gap-3 sm:gap-4 mb-6 min-h-[160px] sm:min-h-[180px]">
-                    
-                    <!-- 領域A: 写真 (左側) -->
-                    <div class="w-5/12 sm:w-1/2 bg-slate-800/50 rounded-xl border border-slate-700 flex items-center justify-center relative overflow-hidden flex-shrink-0">
-                        <span class="text-slate-500 text-xs sm:text-sm font-bold font-sans">DRINK<br>PHOTO</span>
+                <!-- 領域2と3の分割コンテナ (下部) -->
+                <div class="w-full flex gap-3 sm:gap-4 mb-6 min-h-[160px] sm:min-h-[180px]">
+                    <!-- 領域2: 写真 (左側) -->
+                    <div class="w-1/2 bg-slate-800/50 rounded-xl border border-slate-700 flex flex-col items-center justify-center relative overflow-hidden flex-shrink-0">
+                        <span class="text-slate-500 text-xs sm:text-sm font-bold font-sans text-center">DRINK<br>PHOTO</span>
                         <!-- ここに後日写真を追加します -->
                         <!-- <img src="menu-photo.jpg" alt="Menu Photo" class="w-full h-full object-cover absolute top-0 left-0"> -->
                     </div>
 
-                    <!-- 領域B: おすすめ商品情報と説明 (右側) -->
-                    <div class="w-7/12 sm:w-1/2 bg-slate-800/80 rounded-xl p-3 sm:p-4 border border-slate-700 flex flex-col justify-start text-left overflow-y-auto">
+                    <!-- 領域3: おすすめ商品情報と説明 (右側) -->
+                    <div class="w-1/2 bg-slate-800/80 rounded-xl p-3 sm:p-4 border border-slate-700 flex flex-col justify-start text-left">
                         <!-- アイコン -->
                         <div class="text-2xl sm:text-3xl mb-1 drop-shadow-md">{{ finalResult?.icon }}</div>
                         <!-- RECOMMENDED ラベル -->
@@ -168,7 +165,7 @@
                     </div>
                 </div>
 
-                <!-- 4. 最下部: ボタン -->
+                <!-- 最下部: ボタン -->
                 <button @click="resetQuiz" class="w-full py-4 bg-lime-500 hover:bg-lime-400 text-slate-950 rounded-xl font-bold tracking-widest transition-all shadow-[0_0_15px_rgba(132,204,22,0.4)] mt-2">
                     Once more
                 </button>
@@ -232,9 +229,10 @@
                     },
                     {
                         text: 'あなたの年齢をお聞かせください',
+                        // Q2は画像を使用しないためimgプロパティを空にしました
                         options: [
-                            { text: '35歳未満', img: 'miman.jpg', type: 'A' },
-                            { text: '35歳以上', img: 'ijou.jpg', type: 'B' }
+                            { text: '35歳未満', img: '', type: 'A' },
+                            { text: '35歳以上', img: '', type: 'B' }
                         ]
                     },
                     {
@@ -328,7 +326,7 @@
                     return resultTypes.type5; 
                 });
 
-                // チャート用のデータ計算（相反する要素が同時に最大にならないように調整）
+                // チャート用のデータ計算
                 const getChartData = () => {
                     if (answersHistory.value.length < 8) return [0, 0, 0];
                     
@@ -339,7 +337,6 @@
                     const q7 = answersHistory.value[6]; // 喉越し
                     const q8 = answersHistory.value[7]; // テーマ
 
-                    // 初期値を設定 (中心を0と仮定し、1〜5のスケールで計算)
                     let sukkiri = 2;
                     let fruity = 2;
                     let shikkari = 2;
@@ -361,7 +358,6 @@
 
                     if (q8 === 'B') { fruity += 1; }
 
-                    // 値を1〜5の範囲に収める
                     const clamp = (val) => Math.min(Math.max(val, 1), 5);
 
                     return [
@@ -371,10 +367,9 @@
                     ];
                 };
 
-                // チャートを描画する関数（リトライ機能付き）
+                // チャートを描画する関数
                 const renderChart = () => {
                     const canvas = document.getElementById('radarChart');
-                    // DOMに存在しない、または非表示の場合は少し待って再試行
                     if (!canvas || canvas.offsetParent === null) {
                         setTimeout(renderChart, 100);
                         return;
@@ -388,7 +383,7 @@
                     
                     const whiteLineColor = 'rgba(255, 255, 255, 1)';
                     const whiteBgColor = 'rgba(255, 255, 255, 0.15)'; 
-                    const gridColor = 'rgba(255, 255, 255, 0.25)'; // 少し濃くして見やすく
+                    const gridColor = 'rgba(255, 255, 255, 0.25)';
 
                     chartInstance = new Chart(ctx, {
                         type: 'radar',
@@ -411,18 +406,17 @@
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
-                            // ▼グラフ本体を限界まで大きくしつつ、文字切れを防ぐための余白調整▼
+                            // 余白を詰めてグラフ本体を最大化する設定
                             layout: {
                                 padding: {
                                     top: 15,
                                     bottom: 15,
-                                    left: 25,
-                                    right: 25
+                                    left: 20,
+                                    right: 20
                                 }
                             },
                             plugins: {
                                 legend: { display: false },
-                                // ツールチップを無効化
                                 tooltip: { enabled: false } 
                             },
                             scales: {
@@ -434,18 +428,16 @@
                                     },
                                     pointLabels: {
                                         color: '#fff',
-                                        // グラフサイズ拡大に合わせてフォントと距離を微調整
                                         font: { size: 11, family: 'serif', weight: 'bold' },
-                                        padding: 6
+                                        padding: 8
                                     },
                                     ticks: {
                                         display: false,
                                         min: 0,
                                         max: 5,
                                         stepSize: 1, 
-                                        maxTicksLimit: 6 // 0〜5までの線（合計5つのエリア）を強制描画
+                                        maxTicksLimit: 6
                                     },
-                                    // 線の角を丸くして繋がりを良くする
                                     borderJoinStyle: 'round' 
                                 }
                             }
@@ -453,7 +445,7 @@
                     });
                 };
 
-                // stepが 'result' に変わったらチャートを描画（アニメーションを待つため800ms遅延）
+                // stepが 'result' に変わったらチャートを描画
                 watch(step, (newStep) => {
                     if (newStep === 'result') {
                         setTimeout(renderChart, 800);
