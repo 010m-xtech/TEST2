@@ -52,10 +52,10 @@
                     <div v-for="drink in drinks" :key="drink.id" 
                          @click="selectedDrink = drink.id"
                          class="group cursor-pointer border-2 rounded-xl p-3 flex flex-col items-center transition-all duration-300 transform hover:-translate-y-1"
-                         :class="selectedDrink === drink.id ? 'border-lime-400 bg-slate-900/80 shadow-[0_0_25px_rgba(163,230,53,0.6)] scale-105' : 'border-white/30 bg-black/40 hover:border-lime-400/80 hover:bg-black/60 hover:shadow-[0_0_20px_rgba(163,230,53,0.4)]'">
-                        <!-- 画像エリア枠にもホバー・選択時に緑の枠線＆エフェクトを追加 -->
+                         :class="selectedDrink === drink.id ? 'border-lime-400 bg-slate-900/80 shadow-[0_0_25px_rgba(163,230,53,0.6)] scale-105' : 'border-white/30 bg-black/40'">
+                        <!-- 画像エリア -->
                         <div class="w-full h-24 flex items-center justify-center bg-white rounded-lg mb-3 overflow-hidden relative border-2 transition-all duration-300"
-                             :class="selectedDrink === drink.id ? 'border-lime-400 shadow-[0_0_15px_rgba(163,230,53,0.5)]' : 'border-slate-300 group-hover:border-lime-400/80 group-hover:shadow-[0_0_12px_rgba(163,230,53,0.4)]'">
+                             :class="selectedDrink === drink.id ? 'border-lime-400 shadow-[0_0_15px_rgba(163,230,53,0.5)]' : 'border-slate-300'">
                             <span class="text-slate-400 text-xs absolute">図</span>
                             <img :src="drink.img" :alt="drink.name" class="w-full h-full object-contain relative z-10 rounded" @error="handleImageError">
                         </div>
@@ -72,38 +72,24 @@
 
             <!-- ▼ 2. 質問画面（全8問） ▼ -->
             <div v-else-if="step === 'quiz'" key="quiz" class="w-full max-w-[340px] sm:max-w-[380px] my-auto py-2 mx-auto flex flex-col justify-center min-h-[85vh]">
-                <!-- 質問文 -->
                 <h2 class="text-lg sm:text-xl font-bold mb-4 text-center leading-snug tracking-wide text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] px-1">
                     Q{{ currentQuestionIndex + 1 }}. {{ currentQuestion.text }}
                 </h2>
 
-                <!-- 選択肢 -->
                 <div class="space-y-4">
                     <div v-for="(option, idx) in currentQuestion.options" :key="idx"
                          @click="answerQuestion(option.type)"
-                         class="bg-slate-900/80 backdrop-blur-md rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 border border-slate-600/50 group">
+                         class="bg-slate-900/80 backdrop-blur-md rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 border border-slate-600/50">
                         
-                        <!-- ▼ Q2の場合のみ背景を白にする ▼ -->
-                        <div class="w-full h-44 sm:h-52 flex items-center justify-center overflow-hidden relative p-1.5"
-                             :class="currentQuestionIndex === 1 ? 'bg-white' : 'bg-white'">
-                            
-                            <!-- Q2（年齢）の場合は画像を表示せず、テキストを大きく表示 -->
-                            <div v-if="currentQuestionIndex === 1" class="w-full h-full flex items-center justify-center bg-white relative z-10">
-                                <span class="text-3xl sm:text-4xl font-black text-lime-500 drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]" style="-webkit-text-stroke: 1px rgba(0,0,0,0.1);">
-                                    {{ option.text }}
-                                </span>
-                            </div>
-                            
-                            <!-- Q2以外は画像を表示 -->
-                            <template v-else>
-                                <span class="text-slate-400 text-xs font-sans absolute">ILLUSTRATION</span>
-                                <img :src="option.img" 
-                                     class="w-full h-full object-contain relative z-10 scale-150" 
-                                     alt="Option Image" @error="handleImageError">
-                            </template>
+                        <!-- Q2用のテキスト枠か、それ以外の画像枠かを出し分け -->
+                        <div v-if="currentQuestionIndex === 1" class="w-full h-44 sm:h-52 flex items-center justify-center bg-white overflow-hidden relative p-1.5">
+                            <span class="text-lime-500 font-extrabold text-3xl tracking-widest drop-shadow-sm">{{ option.imgText }}</span>
+                        </div>
+                        <div v-else class="w-full h-44 sm:h-52 flex items-center justify-center bg-white overflow-hidden relative p-1.5">
+                            <span class="text-slate-400 text-xs font-sans absolute">ILLUSTRATION</span>
+                            <img :src="option.img" class="w-full h-full object-contain relative z-10 scale-150" alt="Option Image" @error="handleImageError">
                         </div>
                         
-                        <!-- テキスト -->
                         <div class="p-3 bg-slate-900/90 border-t border-slate-700/50 flex items-center justify-center text-center min-h-[3rem]">
                             <div class="font-bold text-sm sm:text-base text-slate-100 tracking-wide leading-snug">
                                 <span class="text-lime-400 font-extrabold mr-1.5 text-base sm:text-lg">{{ idx === 0 ? 'A.' : 'B.' }}</span>{{ option.text }}
@@ -120,86 +106,53 @@
                 
                 <div class="w-full h-64 rounded-xl overflow-hidden bg-black/50 border border-white/20 flex items-center justify-center shadow-2xl relative">
                     <span class="text-slate-500 text-sm font-sans absolute">POURING VIDEO</span>
-                    <!-- ユーザーが動画を触れないように pointer-events-none を追加 -->
-                    <video :src="currentPouringVideo" autoplay loop muted playsinline class="w-full h-full object-cover relative z-10 pointer-events-none">
-                    </video>
+                    <video :src="currentPouringVideo" autoplay loop muted playsinline class="w-full h-full object-cover relative z-10 pointer-events-none"></video>
                 </div>
             </div>
 
             <!-- ▼ 3. 動的診断結果画面 ▼ -->
             <div v-else-if="step === 'result' && finalResult" key="result" class="w-full max-w-lg mt-4 sm:mt-8 p-4 sm:p-6 bg-slate-900/80 backdrop-blur-md border border-white/20 rounded-2xl flex flex-col items-center text-center shadow-2xl">
                 <!-- タイトル -->
-                <h2 class="text-xl sm:text-2xl font-bold text-lime-400 mb-2 leading-relaxed">{{ finalResult?.title }}</h2>
+                <h2 class="text-xl sm:text-2xl font-bold text-lime-400 mb-6 leading-relaxed">{{ finalResult.title }}</h2>
                 
-                <!-- グラフエリア (上部) キャンバスサイズを拡大 -->
-                <div class="w-full flex justify-center items-center mb-6 h-64 sm:h-72">
+                <!-- グラフエリア (上部) -->
+                <div class="w-full h-[240px] sm:h-[280px] flex items-center justify-center relative mb-6">
                     <div class="w-full h-full max-w-[280px] max-h-[280px] relative">
                         <canvas id="radarChart" class="w-full h-full"></canvas>
                     </div>
                 </div>
-                
-                <!-- 写真と説明エリア (下部) -->
-                <div class="w-full flex gap-2 sm:gap-4 mb-8 min-h-[14rem]">
-                    
-                    <!-- 領域2: 写真 (左側) -->
-                    <div class="w-[45%] h-full min-h-[14rem] bg-slate-800/50 rounded-xl border border-slate-700 flex flex-col items-center justify-center relative overflow-hidden p-2">
-                        <span class="text-slate-500 text-xs sm:text-sm font-bold font-sans">DRINK<br>PHOTO</span>
-                        <!-- ここに後日写真を追加します -->
-                        <!-- <img src="menu-photo.jpg" alt="Menu Photo" class="w-full h-full object-cover absolute top-0 left-0"> -->
+
+                <!-- 写真と説明エリア (中央・下部) -->
+                <div class="w-full flex gap-3 sm:gap-4 mb-8 min-h-[160px]">
+                    <!-- 左側: 写真 -->
+                    <div class="w-[45%] bg-slate-800/50 rounded-xl border border-slate-700 flex flex-col items-center justify-center relative overflow-hidden">
+                        <span class="text-slate-500 text-xs sm:text-sm font-bold font-sans">DRINK PHOTO</span>
                     </div>
 
-                    <!-- 領域3: おすすめ商品と説明 (右側) -->
-                    <div class="w-[55%] h-full bg-slate-800/80 rounded-xl p-3 sm:p-4 border border-slate-700 flex flex-col items-start text-left">
-                        <span class="text-3xl sm:text-4xl mb-2 drop-shadow-md">{{ finalResult?.icon }}</span>
-                        <div class="text-[10px] text-lime-400 font-bold bg-lime-400/20 px-1.5 py-0.5 rounded inline-block mb-1">RECOMMENDED</div>
-                        <div class="font-bold text-sm sm:text-base text-slate-100 leading-snug mb-3">{{ finalResult?.recommended }}</div>
-                        
-                        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed w-full">
-                            {{ finalResult?.description }}
+                    <!-- 右側: おすすめ商品＆説明文 -->
+                    <div class="w-[55%] flex flex-col justify-center text-left bg-slate-800/80 rounded-xl border border-slate-700 p-3 sm:p-4">
+                        <div class="text-3xl mb-2 drop-shadow-md">{{ finalResult.icon }}</div>
+                        <div class="text-[10px] sm:text-xs text-lime-400 font-bold bg-lime-400/20 px-2 py-0.5 rounded inline-block mb-1.5 self-start">RECOMMENDED</div>
+                        <div class="font-bold text-sm sm:text-base text-slate-100 leading-snug mb-3">
+                            {{ finalResult.recommendations[selectedDrink] }}
+                        </div>
+                        <p class="text-[11px] sm:text-xs text-slate-300 leading-relaxed">
+                            {{ finalResult.description }}
                         </p>
                     </div>
                 </div>
 
+                <!-- ボタン (最下部) -->
                 <button @click="resetQuiz" class="w-full py-4 bg-lime-500 hover:bg-lime-400 text-slate-950 rounded-xl font-bold tracking-widest transition-all shadow-[0_0_15px_rgba(132,204,22,0.4)]">
                     Once more
                 </button>
             </div>
         </transition>
-
     </div>
 
     <!-- Vue.js スクリプト -->
     <script>
-        // スプレッドシート連携用GASのURL
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycbxOHrvgUYlPKeemzFOfhxggXXssC3L9Od0RbuhtxIPM-mLXVvpVKJJsFf8FlmOOA4Zj7Q/exec';
-
-        // スプレッドシートへデータを送信する関数
-        const sendToGoogleSheet = async (q1, q2, resultType, selectedDrinkName) => {
-            const data = {
-                userAgent: navigator.userAgent,
-                q1Gender: q1,
-                q2Age: q2,
-                resultType: resultType,
-                selectedDrink: selectedDrinkName
-            };
-
-            try {
-                // fetchでPOST送信（no-corsを使用してCORSエラーを回避）
-                await fetch(GAS_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(data)
-                });
-                console.log('スプレッドシートへの送信リクエストを完了しました');
-            } catch (error) {
-                console.error('送信エラー:', error);
-            }
-        };
-
-        // ▼ 背景動画を2パターンからランダムで設定 ▼
+        // 背景動画の設定
         const bgVideoElement = document.getElementById('bgVideo');
         if (bgVideoElement) {
             const bgOptions = ['haikei.mp4', 'haikei2.mp4'];
@@ -207,7 +160,10 @@
             bgVideoElement.src = randomSrc;
         }
 
-        const { createApp, ref, computed, onMounted, nextTick, watch } = Vue;
+        // ▼ 【重要】ご指定いただいたGASのURL ▼
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbxOHrvgUYlPKeemzFOfhxggXXssC3L9Od0RbuhtxIPM-mLXVvpVKJJsFf8FlmOOA4Zj7Q/exec';
+
+        const { createApp, ref, computed, onMounted, watch } = Vue;
 
         createApp({
             setup() {
@@ -216,16 +172,13 @@
                 const currentQuestionIndex = ref(0);
                 const answersHistory = ref([]);
                 
-                // 二重送信防止用のフラグを追加
+                // 二重送信防止用フラグ
                 const isSubmitted = ref(false);
-                
                 let chartInstance = null;
 
                 onMounted(() => {
                     setTimeout(() => {
-                        if (step.value === 'opening') {
-                            step.value = 'start';
-                        }
+                        if (step.value === 'opening') step.value = 'start';
                     }, 3000);
                 });
                 
@@ -241,9 +194,7 @@
                     craft: 'kurahuto.mp4'
                 };
 
-                const currentPouringVideo = computed(() => {
-                    return pourVideos[selectedDrink.value] || 'wine.mp4';
-                });
+                const currentPouringVideo = computed(() => pourVideos[selectedDrink.value] || 'wine.mp4');
 
                 const questions = [
                     {
@@ -256,8 +207,8 @@
                     {
                         text: 'あなたの年齢をお聞かせください',
                         options: [
-                            { text: 'UNDER 35', img: '', type: 'A' },
-                            { text: 'OVER 35', img: '', type: 'B' }
+                            { text: '35歳未満', imgText: 'UNDER35', type: 'A' },
+                            { text: '35歳以上', imgText: 'OVER35', type: 'B' }
                         ]
                     },
                     {
@@ -307,58 +258,58 @@
                 const resultTypes = {
                     type1: {
                         id: 'type1',
-                        title: '今日をリセット、軽やかになりたい夜に。',
+                        title: '今日をリセット、弾ける爽快な夜に。',
                         icon: '🥂',
-                        recommended: 'スパークリングワイン / 生酒 / クラフトビール',
-                        description: '今日のモヤモヤを吹き飛ばす、弾ける爽快感とキレが今のあなたにぴったり。'
+                        recommendations: {
+                            wine: 'スパークリング全般 / スッキリとした辛口の白（ソーヴィニヨン・ブランなど）',
+                            sake: '淡麗辛口 / 生酒 / 本醸造（水のようにスッキリ飲める爽酒）',
+                            craft: 'ピルスナー / セッションIPA / シトラス系ジン'
+                        },
+                        description: '1日の疲れやモヤモヤをスッキリと洗い流してくれる、喉越しが良くクリアな味わいのお酒が今のあなたにぴったりです。'
                     },
                     type2: {
                         id: 'type2',
-                        title: '新しい風と、気ままなアクセント',
+                        title: '華やかな香りと、心躍るひととき',
                         icon: '🍊',
-                        recommended: 'オレンジワイン / 樽熟成シャルドネ / クラフトジン',
-                        description: '個性が光る豊かな風味。いつもと一味違う夜を楽しみたいあなたにぴったり。'
+                        recommendations: {
+                            wine: '樽熟成のリッチな白 / 香り高い白（ゲヴュルツトラミネール） / 華やかなロゼ',
+                            sake: '大吟醸 / 吟醸酒（メロンやリンゴのようなフルーティーな薫酒）',
+                            craft: 'フルーツエール / ヘイジーIPA / フローラル・ベリー系ジン'
+                        },
+                        description: '香りが高く、グラスを近づけただけで心がパッと明るくなるような、果実感や華やかさを持つお酒がおすすめです。'
                     },
                     type3: {
                         id: 'type3',
-                        title: '調和な風味と、穏やかな日常',
+                        title: '穏やかな調和と、ほっとする安心感',
                         icon: '🍷',
-                        recommended: 'カベルネ・ソーヴィニヨン / 特別純米酒 / ペールエール',
-                        description: 'どんな料理にも合わせやすい安定した味わい。リラックスしたひとときを約束します。'
+                        recommendations: {
+                            wine: '軽め〜ミディアムボディの赤（ピノ・ノワールなど） / オレンジワイン',
+                            sake: '純米酒 / 生酛 / 山廃（お米本来のふくよかな旨みと甘みを持つ醇酒）',
+                            craft: 'ペールエール / アンバーエール / お茶・ハーブ・スパイス系ジン'
+                        },
+                        description: '突飛な個性よりも、じんわりと心に沁みるような旨みがあり、毎日の食事に寄り添ってくれる優しいお酒がぴったりです。'
                     },
                     type4: {
                         id: 'type4',
-                        title: 'とろける甘みと、ほっとする安心感',
-                        icon: '🍶',
-                        recommended: 'メルロー / 濁り酒 / ヴァイツェン',
-                        description: '優しくまろやかな口当たりが、今日の疲れをじんわりと包み込んで癒やしてくれます。'
-                    },
-                    type5: {
-                        id: 'type5',
-                        title: '静かな深みと、贅沢なひととき',
+                        title: '静かな深みと、贅沢で重厚な夜',
                         icon: '🥃',
-                        recommended: 'フルボディ赤ワイン / 古酒・熟成酒 / スタウト（黒ビール）',
-                        description: '時間をかけてじっくり味わいたい重厚感。日々の癒しのお供に。'
+                        recommendations: {
+                            wine: 'フルボディの重厚な赤（カベルネ・ソーヴィニヨンなど） / 貴腐ワイン',
+                            sake: '古酒 / 長期熟成酒 / 貴醸酒（複雑な香りとカラメルのような深みを持つ熟酒）',
+                            craft: 'スタウト / バーレイワイン / 樽熟成・ウッディ系ジン'
+                        },
+                        description: '時間をかけて少しずつ舐めるように味わいたい、コクがしっかりとした大人の夜を締めくくるお酒がおすすめです。'
                     }
                 };
 
                 const currentQuestion = computed(() => questions[currentQuestionIndex.value]);
 
+                // ▼ 診断ロジックをポイント制にアップデート ▼
                 const finalResult = computed(() => {
                     if (answersHistory.value.length < 8) return null;
-                    const tasteAnswers = answersHistory.value.slice(2); 
-                    const countA = tasteAnswers.filter(a => a === 'A').length;
                     
-                    if (countA >= 5) return resultTypes.type1;
-                    if (countA === 4) return resultTypes.type2;
-                    if (countA === 3) return resultTypes.type3;
-                    if (countA === 2) return resultTypes.type4;
-                    return resultTypes.type5; 
-                });
-
-                // チャート用のデータ計算
-                const getChartData = () => {
-                    if (answersHistory.value.length < 8) return [1.5, 1.5, 1.5];
+                    // 各タイプの得点箱を用意
+                    const scores = { type1: 0, type2: 0, type3: 0, type4: 0 };
                     
                     const q3 = answersHistory.value[2]; // 気分
                     const q4 = answersHistory.value[3]; // 食事
@@ -367,54 +318,81 @@
                     const q7 = answersHistory.value[6]; // 喉越し
                     const q8 = answersHistory.value[7]; // テーマ
 
-                    let sukkiri = 2;
-                    let fruity = 2;
-                    let shikkari = 2;
+                    // Q3. 気分 (A:リセット -> 爽快T1, 華やかT2 / B:ほっこり -> 癒しT3, 重厚T4)
+                    if (q3 === 'A') { scores.type1 += 2; scores.type2 += 1; }
+                    else { scores.type3 += 2; scores.type4 += 1; }
 
-                    if (q3 === 'A') { sukkiri += 1; shikkari -= 1; }
-                    else { shikkari += 1; sukkiri -= 1; }
+                    // Q4. 食事 (A:肉・揚げ物 -> 炭酸流し込みT1, 重厚T4 / B:刺身・野菜 -> 華やかT2, 癒し和食T3)
+                    if (q4 === 'A') { scores.type1 += 1; scores.type4 += 2; }
+                    else { scores.type2 += 1; scores.type3 += 2; }
 
-                    if (q4 === 'A') { shikkari += 1; sukkiri -= 1; }
-                    else { sukkiri += 1; shikkari -= 1; }
+                    // Q5. 香り (A:柑橘フルーティー -> 華やかT2, 爽快T1 / B:スパイス木 -> 重厚T4, 癒しT3)
+                    if (q5 === 'A') { scores.type2 += 2; scores.type1 += 1; }
+                    else { scores.type4 += 2; scores.type3 += 1; }
 
-                    if (q5 === 'A') { fruity += 2; shikkari -= 0.5; }
-                    else { shikkari += 1.5; fruity -= 1; }
+                    // Q6. 味 (A:甘みフルーティー -> 華やかT2, 癒しT3 / B:ドライ苦味 -> 爽快T1, 重厚T4)
+                    if (q6 === 'A') { scores.type2 += 2; scores.type3 += 1; }
+                    else { scores.type1 += 2; scores.type4 += 1; }
 
-                    if (q6 === 'A') { fruity += 1; sukkiri -= 0.5; }
-                    else { sukkiri += 1.5; fruity -= 1; }
+                    // Q7. 喉越し (A:爽快キレ -> 爽快T1, 華やかT2 / B:なめらか -> 癒しT3, 重厚T4)
+                    if (q7 === 'A') { scores.type1 += 2; scores.type2 += 1; }
+                    else { scores.type3 += 2; scores.type4 += 2; }
 
-                    if (q7 === 'A') { sukkiri += 1; shikkari -= 1; }
-                    else { shikkari += 1; sukkiri -= 1; }
+                    // Q8. テーマ (A:王道定番 -> 癒しT3, 爽快T1 / B:個性的 -> 華やかT2, 重厚T4)
+                    if (q8 === 'A') { scores.type3 += 2; scores.type1 += 1; }
+                    else { scores.type2 += 2; scores.type4 += 2; }
 
-                    if (q8 === 'B') { fruity += 1; }
+                    // 一番スコアが高いタイプを見つける
+                    let maxScore = -1;
+                    let resultTypeId = 'type1';
+                    
+                    for (const [typeId, score] of Object.entries(scores)) {
+                        if (score > maxScore) {
+                            maxScore = score;
+                            resultTypeId = typeId;
+                        }
+                    }
 
-                    // 三角形が1本の線に潰れないよう、最小値を 1.5 に底上げ
+                    return resultTypes[resultTypeId]; 
+                });
+
+                // ▼ チャート用のデータ計算も新ロジックに合わせて微調整 ▼
+                const getChartData = () => {
+                    if (answersHistory.value.length < 8) return [0, 0, 0];
+                    
+                    // 最終的に導き出されたタイプに合わせてベースの形を作る
+                    const result = finalResult.value;
+                    let sukkiri = 2, fruity = 2, shikkari = 2;
+
+                    if (result.title.includes('リセット')) { sukkiri = 5; fruity = 2.5; shikkari = 1.5; } // Type1
+                    else if (result.title.includes('新しい風')) { sukkiri = 3; fruity = 5; shikkari = 2; } // Type2
+                    else if (result.title.includes('調和')) { sukkiri = 2.5; fruity = 2.5; shikkari = 3.5; } // Type3
+                    else { sukkiri = 1.5; fruity = 2; shikkari = 5; } // Type4
+
+                    // 値を1.5〜5の範囲に収める（1本の線に潰れないように）
                     const clamp = (val) => Math.min(Math.max(val, 1.5), 5);
 
-                    return [
-                        clamp(sukkiri), 
-                        clamp(fruity), 
-                        clamp(shikkari)
-                    ];
+                    return [ clamp(sukkiri), clamp(fruity), clamp(shikkari) ];
                 };
 
-                // チャートを描画する関数
+                // チャートを描画する関数（リトライ機能付き）
                 const renderChart = () => {
-                    const canvas = document.getElementById('radarChart');
-                    if (!canvas || canvas.offsetParent === null) {
+                    const ctxElement = document.getElementById('radarChart');
+                    if (!ctxElement) {
+                        // DOM要素がまだ生成されていない場合は少し待ってから再実行
                         setTimeout(renderChart, 100);
                         return;
                     }
-
+                    
+                    const ctx = ctxElement.getContext('2d');
                     if (chartInstance) {
-                        chartInstance.destroy();
+                        chartInstance.destroy(); // 既存のチャートを破棄
                     }
 
-                    const ctx = canvas.getContext('2d');
-                    
-                    const whiteLineColor = 'rgba(255, 255, 255, 1)';
-                    const whiteBgColor = 'rgba(255, 255, 255, 0.15)'; 
-                    const gridColor = 'rgba(255, 255, 255, 0.25)'; 
+                    // チャートの共通スタイル色
+                    const whiteLineColor = 'rgba(255, 255, 255, 0.8)';
+                    const whiteBgColor = 'rgba(255, 255, 255, 0.3)';
+                    const gridColor = 'rgba(255, 255, 255, 0.15)';
 
                     chartInstance = new Chart(ctx, {
                         type: 'radar',
@@ -437,14 +415,8 @@
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
-                            // グラフ本体を限界まで大きくしつつ、文字切れを防ぐための余白調整
                             layout: {
-                                padding: {
-                                    top: 15,
-                                    bottom: 15,
-                                    left: 25,
-                                    right: 25
-                                }
+                                padding: { top: 15, bottom: 15, left: 25, right: 25 }
                             },
                             plugins: {
                                 legend: { display: false },
@@ -452,6 +424,9 @@
                             },
                             scales: {
                                 r: {
+                                    // ▼ バグ修正：スケールの最大・最小をここに置くことで網目が消えるバグを解消
+                                    min: 0,
+                                    max: 5,
                                     angleLines: { color: gridColor },
                                     grid: { 
                                         color: gridColor,
@@ -459,16 +434,13 @@
                                     },
                                     pointLabels: {
                                         color: '#fff',
-                                        // グラフサイズ拡大に合わせてフォントと距離を微調整
                                         font: { size: 11, family: 'serif', weight: 'bold' },
                                         padding: 6
                                     },
                                     ticks: {
                                         display: false,
-                                        min: 0,
-                                        max: 5,
                                         stepSize: 1, 
-                                        maxTicksLimit: 6 
+                                        maxTicksLimit: 6
                                     },
                                     borderJoinStyle: 'round' 
                                 }
@@ -478,9 +450,7 @@
                 };
 
                 watch(step, (newStep) => {
-                    if (newStep === 'result') {
-                        setTimeout(renderChart, 800);
-                    }
+                    if (newStep === 'result') setTimeout(renderChart, 800);
                 });
 
                 const startQuiz = () => {
@@ -488,15 +458,33 @@
                         step.value = 'quiz';
                         answersHistory.value = [];
                         currentQuestionIndex.value = 0;
-                        // クイズ開始時に送信フラグをリセット
-                        isSubmitted.value = false;
+                        isSubmitted.value = false; // クイズ開始時にフラグをリセット
                     }
                     const app = document.getElementById('app');
                     if (app) app.scrollTo({ top: 0 });
                 };
 
+                // ▼ データを送信するための関数 ▼
+                const sendToGoogleSheet = (q1, q2, type, drink) => {
+                    if (!GAS_URL) return;
+                    try {
+                        console.log('Sending data to GAS:', { q1, q2, type, drink });
+                        // 実際の送信処理（有効化・CORS対策追加）
+                        fetch(GAS_URL, { 
+                            method: 'POST',
+                            mode: 'no-cors', // ブラウザのセキュリティブロックを回避するため
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ q1, q2, type, drink }) 
+                        });
+                    } catch (error) {
+                        console.error('Submission failed:', error);
+                    }
+                };
+
                 const answerQuestion = (type) => {
-                    // 質問画面以外でのタップ反応を完全に無効化（連打防止）
+                    // 連打防止: 質問画面以外での処理をブロック
                     if (step.value !== 'quiz') return;
 
                     answersHistory.value.push(type);
@@ -509,33 +497,26 @@
                         const app = document.getElementById('app');
                         if (app) app.scrollTo({ top: 0 });
                         
-                        const videoDurations = {
-                            wine: 6500,  
-                            craft: 6500, 
-                            sake: 4000   
-                        };
+                        const videoDurations = { wine: 6500, craft: 6500, sake: 4000 };
                         const duration = videoDurations[selectedDrink.value] || 4000;
 
                         setTimeout(() => {
                             step.value = 'result';
                             if (app) app.scrollTo({ top: 0 });
-
-                            // 結果が表示されたタイミングで、まだ送信されていなければGASへ送信
+                            
+                            // 結果が表示されたタイミングで送信処理（未送信の場合のみ）
                             if (!isSubmitted.value) {
                                 const q1Ans = answersHistory.value[0] === 'A' ? '男性' : '女性';
                                 const q2Ans = answersHistory.value[1] === 'A' ? '35歳未満' : '35歳以上';
-                                const typeId = finalResult.value?.id || 'unknown';
+                                const typeId = finalResult.value ? finalResult.value.id : 'unknown';
                                 
-                                // 最初のお酒の選択を日本語テキスト化
-                                let drinkChoice = '不明';
-                                if (selectedDrink.value === 'wine') drinkChoice = 'ワイン';
-                                else if (selectedDrink.value === 'sake') drinkChoice = '日本酒';
-                                else if (selectedDrink.value === 'craft') drinkChoice = 'クラフト酒';
-                                
-                                sendToGoogleSheet(q1Ans, q2Ans, typeId, drinkChoice);
-                                isSubmitted.value = true; // 送信完了としてロック
-                            }
+                                // お酒の種類名を取得（wine -> ワイン）
+                                const drinkTypeObj = drinks.find(d => d.id === selectedDrink.value);
+                                const drinkTypeName = drinkTypeObj ? drinkTypeObj.name : '不明';
 
+                                sendToGoogleSheet(q1Ans, q2Ans, typeId, drinkTypeName);
+                                isSubmitted.value = true; // 送信完了フラグを立てる
+                            }
                         }, duration);
                     }
                 };
@@ -545,6 +526,7 @@
                     selectedDrink.value = '';
                     currentQuestionIndex.value = 0;
                     answersHistory.value = [];
+                    isSubmitted.value = false;
                     if (chartInstance) {
                         chartInstance.destroy();
                         chartInstance = null;
@@ -561,7 +543,7 @@
                     step, selectedDrink, drinks, currentPouringVideo,
                     currentQuestionIndex, currentQuestion, answersHistory, finalResult,
                     startQuiz, answerQuestion, resetQuiz, handleImageError
-                }
+                };
             }
         }).mount('#app');
     </script>
