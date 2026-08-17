@@ -100,14 +100,12 @@
             </div>
 
             <!-- ▼ 2.5 注がれる演出画面 ▼ -->
-            <div v-else-if="step === 'pouring'" key="pouring" class="w-full max-w-lg mt-6 p-6 flex flex-col items-center text-center">
-                <h2 class="text-2xl md:text-3xl font-bold text-white mb-2 tracking-wider drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">Please waiting...</h2>
-                <p class="text-sm text-lime-400 font-bold mb-6 animate-pulse tracking-wide drop-shadow-md">今日のあなたの一杯を注いでいます...</p>
+            <div v-else-if="step === 'pouring'" key="pouring" class="w-full max-w-lg mt-6 p-6 flex flex-col items-center text-center min-h-[60vh] justify-center">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-2 tracking-wider drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">Please wait...</h2>
+                <p class="text-sm text-lime-400 font-bold mb-10 animate-pulse tracking-wide drop-shadow-md">今日のあなたの一杯を注いでいます...</p>
                 
-                <div class="w-full h-64 rounded-xl overflow-hidden bg-black/50 border border-white/20 flex items-center justify-center shadow-2xl relative">
-                    <span class="text-slate-500 text-sm font-sans absolute">POURING VIDEO</span>
-                    <video :src="currentPouringVideo" autoplay loop muted playsinline class="w-full h-full object-cover relative z-10 pointer-events-none"></video>
-                </div>
+                <!-- -->
+                <div class="w-20 h-20 rounded-full border-4 border-slate-700 border-t-lime-400 animate-spin shadow-[0_0_20px_rgba(163,230,53,0.3)]"></div>
             </div>
 
             <!-- ▼ 3. 動的診断結果画面 ▼ -->
@@ -133,7 +131,7 @@
                     <div class="w-[55%] flex flex-col justify-center text-left bg-slate-800/80 rounded-xl border border-slate-700 p-3 sm:p-4">
                         <div class="text-3xl mb-2 drop-shadow-md">{{ finalResult.icon }}</div>
                         <div class="text-[10px] sm:text-xs text-lime-400 font-bold bg-lime-400/20 px-2 py-0.5 rounded inline-block mb-1.5 self-start">RECOMMENDED</div>
-                        <div class="font-bold text-sm sm:text-base text-slate-100 leading-snug mb-3">
+                        <div class="font-bold text-sm sm:text-base text-slate-100 leading-snug mb-3 whitespace-pre-line">
                             {{ finalResult.recommendations[selectedDrink] }}
                         </div>
                         <p class="text-[11px] sm:text-xs text-slate-300 leading-relaxed">
@@ -187,14 +185,6 @@
                     { id: 'sake', name: '日本酒', img: 'nihonsyu.jpg' },
                     { id: 'craft', name: 'クラフト酒', img: 'craft.jpg' }
                 ];
-
-                const pourVideos = {
-                    wine: 'wine.mp4',
-                    sake: 'nihonsyu.mp4',
-                    craft: 'kurahuto.mp4'
-                };
-
-                const currentPouringVideo = computed(() => pourVideos[selectedDrink.value] || 'wine.mp4');
 
                 const questions = [
                     {
@@ -261,44 +251,44 @@
                         title: '今日をリセット、弾ける爽快な夜に。',
                         icon: '🥂',
                         recommendations: {
-                            wine: 'スパークリング全般 / スッキリとした辛口の白（ソーヴィニヨン・ブランなど）',
-                            sake: '淡麗辛口 / 生酒 / 本醸造（水のようにスッキリ飲める爽酒）',
-                            craft: 'ピルスナー / セッションIPA / シトラス系ジン'
+                            wine: 'スパークリングワイン全般\nスッキリとした辛口の白ワイン\n（ソーヴィニヨン・ブランやシャブリなど）',
+                            sake: '淡麗辛口、生酒、本醸造\n（水のようにスッキリ飲めるキレのある爽酒）',
+                            craft: '【ビール】ピルスナー、ラガー、セッションIPA\n【ジン】シトラス・柑橘系ジン'
                         },
-                        description: '1日の疲れやモヤモヤをスッキリと洗い流してくれる、喉越しが良くクリアな味わいのお酒が今のあなたにぴったりです。'
+                        description: '1日の疲れやモヤモヤをスッキリと洗い流してくれる、喉越しが良くクリアな味わいのお酒がここに入ります。'
                     },
                     type2: {
                         id: 'type2',
                         title: '華やかな香りと、心躍るひととき',
                         icon: '🍊',
                         recommendations: {
-                            wine: '樽熟成のリッチな白 / 香り高い白（ゲヴュルツトラミネール） / 華やかなロゼ',
-                            sake: '大吟醸 / 吟醸酒（メロンやリンゴのようなフルーティーな薫酒）',
-                            craft: 'フルーツエール / ヘイジーIPA / フローラル・ベリー系ジン'
+                            wine: '樽熟成のリッチな白ワイン（シャルドネなど）\n香り高い白（ゲヴュルツトラミネール）\n華やかなロゼワイン',
+                            sake: '大吟醸、吟醸酒\n（メロンやリンゴのようなフルーティーな薫酒）',
+                            craft: '【ビール】フルーツエール、ヘイジーIPA\n【ジン】フローラル系、ベリー系ジン'
                         },
-                        description: '香りが高く、グラスを近づけただけで心がパッと明るくなるような、果実感や華やかさを持つお酒がおすすめです。'
+                        description: '香りが高く、グラスを近づけただけで心がパッと明るくなるような、果実感や華やかさを持つお酒が該当します。'
                     },
                     type3: {
                         id: 'type3',
                         title: '穏やかな調和と、ほっとする安心感',
                         icon: '🍷',
                         recommendations: {
-                            wine: '軽め〜ミディアムボディの赤（ピノ・ノワールなど） / オレンジワイン',
-                            sake: '純米酒 / 生酛 / 山廃（お米本来のふくよかな旨みと甘みを持つ醇酒）',
-                            craft: 'ペールエール / アンバーエール / お茶・ハーブ・スパイス系ジン'
+                            wine: '軽め〜ミディアムボディの赤ワイン\n（ピノ・ノワールなど）\n食事に合わせやすいオレンジワイン',
+                            sake: '純米酒、生酛、山廃\n（お米本来のふくよかな旨みと甘みを持つ醇酒）',
+                            craft: '【ビール】ペールエール、アンバーエール\n【ジン】お茶・ハーブ・スパイス系ジン'
                         },
-                        description: '突飛な個性よりも、じんわりと心に沁みるような旨みがあり、毎日の食事に寄り添ってくれる優しいお酒がぴったりです。'
+                        description: '突飛な個性よりも、じんわりと心に沁みるような旨みがあり、毎日の食事に寄り添ってくれる優しいお酒が当てはまります。'
                     },
                     type4: {
                         id: 'type4',
                         title: '静かな深みと、贅沢で重厚な夜',
                         icon: '🥃',
                         recommendations: {
-                            wine: 'フルボディの重厚な赤（カベルネ・ソーヴィニヨンなど） / 貴腐ワイン',
-                            sake: '古酒 / 長期熟成酒 / 貴醸酒（複雑な香りとカラメルのような深みを持つ熟酒）',
-                            craft: 'スタウト / バーレイワイン / 樽熟成・ウッディ系ジン'
+                            wine: 'フルボディの重厚な赤ワイン\n（カベルネ・ソーヴィニヨンなど）\n極甘口の貴腐ワイン、ポートワイン',
+                            sake: '古酒、長期熟成酒、貴醸酒\n（熟成による複雑な香りと深みを持つ熟酒）',
+                            craft: '【ビール】スタウト、ポーター、バーレイワイン\n【ジン】樽熟成ジン、ウッディ系ジン'
                         },
-                        description: '時間をかけて少しずつ舐めるように味わいたい、コクがしっかりとした大人の夜を締めくくるお酒がおすすめです。'
+                        description: '時間をかけて少しずつ舐めるように味わいたい、アルコール度数やコクがしっかりとした、大人の夜を締めくくるお酒です。'
                     }
                 };
 
@@ -458,7 +448,7 @@
                         step.value = 'quiz';
                         answersHistory.value = [];
                         currentQuestionIndex.value = 0;
-                        isSubmitted.value = false; // クイズ開始時にフラグをリセット
+                        isSubmitted.value = false;
                     }
                     const app = document.getElementById('app');
                     if (app) app.scrollTo({ top: 0 });
@@ -468,15 +458,26 @@
                 const sendToGoogleSheet = (q1, q2, type, drink) => {
                     if (!GAS_URL) return;
                     try {
-                        console.log('Sending data to GAS:', { q1, q2, type, drink });
-                        // 実際の送信処理（有効化・CORS対策追加）
+                        const ua = navigator.userAgent;
+                        
+                        // 【超重要】GAS側のプログラムの変数名と完全に一致させます
+                        const payload = {
+                            userAgent: ua,
+                            q1Gender: q1,
+                            q2Age: q2,
+                            selectedDrink: drink,
+                            resultType: type
+                        };
+                        
+                        console.log('Sending payload:', payload);
+
                         fetch(GAS_URL, { 
                             method: 'POST',
-                            mode: 'no-cors', // ブラウザのセキュリティブロックを回避するため
+                            mode: 'no-cors', // ブラウザのセキュリティブロックを回避
                             headers: {
-                                'Content-Type': 'application/json'
+                                'Content-Type': 'text/plain' // セキュリティ回避のためtext/plainとしてJSONを送る
                             },
-                            body: JSON.stringify({ q1, q2, type, drink }) 
+                            body: JSON.stringify(payload)
                         });
                     } catch (error) {
                         console.error('Submission failed:', error);
@@ -497,8 +498,7 @@
                         const app = document.getElementById('app');
                         if (app) app.scrollTo({ top: 0 });
                         
-                        const videoDurations = { wine: 6500, craft: 6500, sake: 4000 };
-                        const duration = videoDurations[selectedDrink.value] || 4000;
+                        const duration = 3500;
 
                         setTimeout(() => {
                             step.value = 'result';
@@ -540,7 +540,7 @@
                 };
 
                 return {
-                    step, selectedDrink, drinks, currentPouringVideo,
+                    step, selectedDrink, drinks, 
                     currentQuestionIndex, currentQuestion, answersHistory, finalResult,
                     startQuiz, answerQuestion, resetQuiz, handleImageError
                 };
