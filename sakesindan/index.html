@@ -12,13 +12,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
-        .scale-180 { transform: scale(1.8) !important; }
         .fade-enter-active { transition: opacity 1.5s ease; }
         .fade-leave-active { transition: opacity 0.8s ease; }
         .fade-enter-from, .fade-leave-to { opacity: 0; }
-        
-        /* チャートのツールチップを非表示にするためのCSS的アプローチ（念のため） */
-        #chartjs-tooltip { display: none !important; }
     </style>
 </head>
 
@@ -173,6 +169,12 @@
                 // 二重送信防止用フラグ
                 const isSubmitted = ref(false);
                 let chartInstance = null;
+
+                // ▼ 改善ポイント: 画面トップへスクロールする処理を1つにまとめる（DRY原則） ▼
+                const scrollToTop = (smooth = false) => {
+                    const app = document.getElementById('app');
+                    if (app) app.scrollTo({ top: 0, behavior: smooth ? 'smooth' : 'auto' });
+                };
 
                 onMounted(() => {
                     setTimeout(() => {
@@ -450,8 +452,7 @@
                         currentQuestionIndex.value = 0;
                         isSubmitted.value = false;
                     }
-                    const app = document.getElementById('app');
-                    if (app) app.scrollTo({ top: 0 });
+                    scrollToTop(); // スクロール関数を呼び出すだけ！
                 };
 
                 // ▼ データを送信するための関数 ▼
@@ -491,18 +492,16 @@
                     answersHistory.value.push(type);
                     if (currentQuestionIndex.value < questions.length - 1) {
                         currentQuestionIndex.value++;
-                        const app = document.getElementById('app');
-                        if (app) app.scrollTo({ top: 0, behavior: 'smooth' });
+                        scrollToTop(true); // スムーズスクロール
                     } else {
                         step.value = 'pouring';
-                        const app = document.getElementById('app');
-                        if (app) app.scrollTo({ top: 0 });
+                        scrollToTop();
                         
                         const duration = 3500;
 
                         setTimeout(() => {
                             step.value = 'result';
-                            if (app) app.scrollTo({ top: 0 });
+                            scrollToTop();
                             
                             // 結果が表示されたタイミングで送信処理（未送信の場合のみ）
                             if (!isSubmitted.value) {
@@ -531,8 +530,7 @@
                         chartInstance.destroy();
                         chartInstance = null;
                     }
-                    const app = document.getElementById('app');
-                    if (app) app.scrollTo({ top: 0 });
+                    scrollToTop();
                 };
 
                 const handleImageError = (e) => {
