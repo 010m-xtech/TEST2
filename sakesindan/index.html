@@ -111,49 +111,61 @@
                 <h2 class="text-2xl md:text-3xl font-bold text-white mb-2 tracking-wider drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">Please wait...</h2>
                 <p class="text-sm text-lime-400 font-bold mb-10 animate-pulse tracking-wide drop-shadow-md">今日のあなたの一杯を注いでいます...</p>
                 
-                <!-- -->
                 <div class="w-20 h-20 rounded-full border-4 border-slate-700 border-t-lime-400 animate-spin shadow-[0_0_20px_rgba(163,230,53,0.3)]"></div>
             </div>
 
             <!-- ▼ 3. 動的診断結果画面 ▼ -->
-            <div v-else-if="step === 'result' && finalResult" key="result" class="w-full max-w-lg mt-2 sm:mt-4 p-4 sm:p-5 bg-slate-900/80 backdrop-blur-md border border-white/20 rounded-2xl flex flex-col items-center text-center shadow-2xl">
-                <!-- タイトル -->
-                <div class="flex items-end justify-center mb-4 flex-wrap w-full">
-                    <span class="text-sm sm:text-base text-slate-200 tracking-widest font-serif font-bold pb-1 sm:pb-1.5 mr-2">あなたは</span>
-                    <ruby class="font-cursive text-3xl sm:text-4xl text-lime-400 font-bold tracking-widest drop-shadow-md mr-2">
-                        {{ finalResult.titleRomaji }}
-                        <rt class="text-[10px] sm:text-xs font-sans tracking-widest text-lime-300 opacity-90">{{ finalResult.titleRuby }}</rt>
-                    </ruby>
-                    <span class="text-sm sm:text-base text-slate-200 tracking-widest font-serif font-bold pb-1 sm:pb-1.5">タイプ</span>
+            <div v-else-if="step === 'result' && finalResult" key="result" class="w-full max-w-[95%] sm:max-w-lg my-auto p-3 sm:p-5 bg-slate-900/80 backdrop-blur-md border border-white/20 rounded-2xl flex flex-col items-center text-center shadow-2xl min-h-fit max-h-[95vh] justify-between">
+                <!-- 上部: タイトルと説明 -->
+                <div class="w-full flex flex-col items-center justify-center shrink-0">
+                    <div class="flex items-end justify-center mb-1 flex-wrap w-full mt-1">
+                        <span class="text-[11px] sm:text-base text-slate-200 tracking-widest font-serif font-bold pb-0.5 sm:pb-1.5 mr-1 sm:mr-2">あなたは</span>
+                        <ruby class="font-cursive text-2xl sm:text-4xl text-lime-400 font-bold tracking-widest drop-shadow-md mr-1 sm:mr-2">
+                            {{ finalResult.titleRomaji }}
+                            <rt class="text-[9px] sm:text-xs font-sans tracking-widest text-lime-300 opacity-90">{{ finalResult.titleRuby }}</rt>
+                        </ruby>
+                        <span class="text-[11px] sm:text-base text-slate-200 tracking-widest font-serif font-bold pb-0.5 sm:pb-1.5">タイプ</span>
+                    </div>
+                    
+                    <p class="text-[10px] sm:text-sm text-lime-300/80 mb-2 sm:mb-4 font-bold tracking-wide text-center px-2">
+                        {{ finalResult.shortDescription }}
+                    </p>
                 </div>
-                
-                <!-- グラフエリア (上部) -->
-                <div class="w-full h-[180px] sm:h-[220px] flex items-center justify-center relative mb-4">
-                    <div class="w-full h-full max-w-[220px] max-h-[220px] relative">
+
+                <!-- グラフエリア (中央上) -->
+                <div class="w-full h-[140px] sm:h-[200px] flex items-center justify-center relative shrink-0 mb-2">
+                    <div class="w-full h-full max-w-[200px] max-h-[200px] relative">
                         <canvas id="radarChart" class="w-full h-full"></canvas>
                     </div>
                 </div>
 
-                <!-- 写真と説明エリア (中央・下部) -->
-                <div class="w-full flex gap-3 sm:gap-4 mb-5 min-h-[160px] sm:min-h-[180px]">
-                    <!-- 左側: 写真 -->
-                    <div class="w-[45%] bg-slate-800/50 rounded-xl border border-slate-700 flex flex-col items-center justify-center relative overflow-hidden">
-                        <span class="text-slate-500 text-sm sm:text-base font-bold font-sans tracking-wide">DRINK PHOTO</span>
+                <!-- 写真と右側エリア (中央下部) -->
+                <div class="w-full flex gap-2 sm:gap-4 flex-grow min-h-[140px] sm:min-h-[180px]">
+                    <!-- 左側: 写真 (青枠部分) - 縦横比を保ちつつ大きく -->
+                    <div class="w-1/2 bg-slate-800/50 rounded-xl border border-slate-700 flex flex-col items-center justify-center relative overflow-hidden">
+                        <span class="text-slate-500 text-xs sm:text-base font-bold font-sans tracking-wide px-2 text-center">DRINK<br>PHOTO</span>
                     </div>
 
-                    <!-- 右側: おすすめ商品＆説明文 -->
-                    <div class="w-[55%] flex flex-col justify-center text-left bg-slate-800/80 rounded-xl border border-slate-700 p-3 sm:p-4">
-                        <h3 class="text-base sm:text-lg font-bold text-white mb-2 sm:mb-3 tracking-wide">【商品名】</h3>
-                        <p class="text-[11px] sm:text-xs text-slate-300 leading-relaxed whitespace-pre-line">
-                            {{ finalResult.description }}
-                        </p>
+                    <!-- 右側: おすすめ商品＆説明文 ＋ ボタン (赤枠部分) -->
+                    <div class="w-1/2 flex flex-col justify-between gap-2 sm:gap-3">
+                        <!-- 説明文エリア - 高さをなるべく取る -->
+                        <div class="flex-grow flex flex-col justify-start text-left bg-slate-800/80 rounded-xl border border-slate-700 p-2.5 sm:p-3 overflow-y-auto">
+                            <h3 class="text-[11px] sm:text-sm font-bold text-lime-400 mb-0.5 tracking-wide">【商品名】</h3>
+                            <p class="text-[10px] sm:text-xs text-slate-200 mb-2 leading-snug">仮のテキスト</p>
+
+                            <h3 class="text-[11px] sm:text-sm font-bold text-lime-400 mb-0.5 tracking-wide">【産地】</h3>
+                            <p class="text-[10px] sm:text-xs text-slate-200 mb-2 leading-snug">仮のテキスト</p>
+
+                            <h3 class="text-[11px] sm:text-sm font-bold text-lime-400 mb-0.5 tracking-wide">【おすすめの飲み方/合うメニュー等】</h3>
+                            <p class="text-[10px] sm:text-xs text-slate-200 leading-snug whitespace-pre-line">仮のテキスト</p>
+                        </div>
+                        
+                        <!-- ボタン -->
+                        <button @click="resetQuiz" class="w-full py-2.5 sm:py-3.5 bg-lime-500 hover:bg-lime-400 text-slate-950 rounded-xl font-bold text-sm sm:text-base tracking-widest transition-all shadow-[0_0_15px_rgba(132,204,22,0.4)] shrink-0">
+                            もう一度
+                        </button>
                     </div>
                 </div>
-
-                <!-- ボタン (最下部) -->
-                <button @click="resetQuiz" class="w-full py-3.5 sm:py-4 bg-lime-500 hover:bg-lime-400 text-slate-950 rounded-xl font-bold tracking-widest transition-all shadow-[0_0_15px_rgba(132,204,22,0.4)]">
-                    Once more
-                </button>
             </div>
         </transition>
     </div>
@@ -267,6 +279,7 @@
                         titleRuby: 'サラサラ',
                         titleRomaji: 'Sara Sara',
                         icon: '🥂',
+                        shortDescription: '1日の疲れをさらっと洗い流す爽快な一杯。',
                         recommendations: {
                             wine: 'スパークリングワイン全般\nスッキリとした辛口の白ワイン\n（ソーヴィニヨン・ブランやシャブリなど）',
                             sake: '淡麗辛口、生酒、本醸造\n（水のようにスッキリ飲めるキレのある爽酒）',
@@ -279,6 +292,7 @@
                         titleRuby: 'ウルウル',
                         titleRomaji: 'Uru Uru',
                         icon: '🍊',
+                        shortDescription: 'ひと口でうるっと心潤う、華やかな一杯。',
                         recommendations: {
                             wine: '樽熟成のリッチな白ワイン（シャルドネなど）\n香り高い白（ゲヴュルツトラミネール）\n華やかなロゼワイン',
                             sake: '大吟醸、吟醸酒\n（メロンやリンゴのようなフルーティーな薫酒）',
@@ -291,6 +305,7 @@
                         titleRuby: 'トロトロ',
                         titleRomaji: 'Toro Toro',
                         icon: '🍷',
+                        shortDescription: '口の中でとろっとほどけ、日常の緊張を癒やす一杯。',
                         recommendations: {
                             wine: '軽め〜ミディアムボディの赤ワイン\n（ピノ・ノワールなど）\n食事に合わせやすいオレンジワイン',
                             sake: '純米酒、生酛、山廃\n（お米本来のふくよかな旨みと甘みを持つ醇酒）',
@@ -303,6 +318,7 @@
                         titleRuby: 'ウトウト',
                         titleRomaji: 'Uto Uto',
                         icon: '🥃',
+                        shortDescription: '深い味わいにうとうと夢見心地になる、大人の贅沢な一杯。',
                         recommendations: {
                             wine: 'フルボディの重厚な赤ワイン\n（カベルネ・ソーヴィニヨンなど）\n極甘口の貴腐ワイン、ポートワイン',
                             sake: '古酒、長期熟成酒、貴醸酒\n（熟成による複雑な香りと深みを持つ熟酒）',
