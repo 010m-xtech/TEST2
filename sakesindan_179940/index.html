@@ -23,6 +23,16 @@
         .fade-enter-active { transition: opacity 1.5s ease; }
         .fade-leave-active { transition: opacity 0.8s ease; }
         .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+        /* 背景動画フェードイン用 */
+        @keyframes fadeInBlur {
+            0% { opacity: 0; }
+            100% { opacity: 0.3; }
+        }
+        @keyframes fadeInMain {
+            0% { opacity: 0; }
+            100% { opacity: 0.8; }
+        }
     </style>
 </head>
 
@@ -31,18 +41,18 @@
 
     <!-- ▼ ぼかし背景動画（画面の上下の隙間を違和感なく埋める用） ▼ -->
     <video id="bgVideoBlur" autoplay loop muted playsinline 
-           style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; opacity: 0.3; filter: blur(20px); pointer-events: none;">
+           style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; opacity: 0; filter: blur(20px); pointer-events: none; animation: fadeInBlur 1.5s ease forwards;">
     </video>
 
     <!-- ▼ メイン背景動画（引きで全体を見せる用） ▼ -->
     <video id="bgVideo" autoplay loop muted playsinline 
-           style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 100%; object-fit: contain; z-index: 0; opacity: 0.8; pointer-events: none;">
+           style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 100%; object-fit: contain; z-index: 0; opacity: 0; pointer-events: none; animation: fadeInMain 1.5s ease forwards;">
     </video>
 
     <!-- ▼ メインコンテンツ ▼ -->
     <div id="app" class="relative z-10 w-full h-full overflow-y-auto flex flex-col items-center justify-center p-2 pb-6 sm:p-4 text-slate-100 font-serif">
         
-        <transition name="fade" mode="out-in">
+        <transition name="fade" mode="out-in" appear>
             <!-- ▼ 0. オープニング演出（3秒間） ▼ -->
             <div v-if="step === 'opening'" key="opening" class="flex flex-col items-center justify-center text-center px-6 min-h-[60vh] my-auto">
                 <p class="text-2xl sm:text-3xl md:text-4xl text-white font-serif tracking-widest leading-relaxed drop-shadow-lg opacity-90 mb-8">
@@ -217,7 +227,7 @@
                 onMounted(() => {
                     setTimeout(() => {
                         if (step.value === 'opening') step.value = 'start';
-                    }, 3000);
+                    }, 3500); // 3000から3500(+0.5秒)に変更
                 });
                 
                 const drinks = [
