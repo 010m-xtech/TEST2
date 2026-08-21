@@ -96,8 +96,33 @@
 
             <!-- ▼ 2. 質問画面（全8問） ▼ -->
             <div v-else-if="step === 'quiz'" key="quiz" class="w-full max-w-[340px] sm:max-w-[380px] my-auto py-2 mx-auto flex flex-col justify-center min-h-[85vh]">
+                
+                <!-- ▼ 進捗バー＆戻るボタン ▼ -->
+                <div class="w-full mb-6">
+                    <div class="flex items-center justify-between mb-2 px-1">
+                        <!-- 戻るボタン -->
+                        <button v-if="currentQuestionIndex > 0" @click="prevQuestion" class="flex items-center text-sm font-bold text-slate-300 hover:text-amber-300 transition-colors drop-shadow-md">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+                            </svg>
+                            BACK
+                        </button>
+                        <div v-else class="w-16"></div> <!-- 1問目のプレースホルダー -->
+                        
+                        <div class="text-xs sm:text-sm font-bold text-slate-400 tracking-widest drop-shadow-md">
+                            <span class="text-amber-300 text-sm sm:text-base">{{ currentQuestionIndex + 1 }}</span> / {{ questions.length }}
+                        </div>
+                    </div>
+                    <!-- バー本体 -->
+                    <div class="w-full h-1.5 sm:h-2 bg-slate-800 rounded-full overflow-hidden border border-slate-700/50 shadow-inner">
+                        <div class="h-full bg-gradient-to-r from-amber-400 to-orange-400 transition-all duration-500 ease-out rounded-full shadow-[0_0_10px_rgba(252,211,77,0.5)]" 
+                             :style="{ width: ((currentQuestionIndex + 1) / questions.length * 100) + '%' }">
+                        </div>
+                    </div>
+                </div>
+
                 <h2 class="text-lg sm:text-xl font-bold mb-4 text-center leading-snug tracking-wide text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] px-1">
-                    Q{{ currentQuestionIndex + 1 }}. {{ currentQuestion.text }}
+                    <span class="text-amber-300">Q{{ currentQuestionIndex + 1 }}.</span> {{ currentQuestion.text }}
                 </h2>
 
                 <div class="space-y-4">
@@ -540,6 +565,15 @@
                     }
                 };
 
+                // ▼ 1つ前の質問に戻る関数 ▼
+                const prevQuestion = () => {
+                    if (currentQuestionIndex.value > 0) {
+                        currentQuestionIndex.value--;
+                        answersHistory.value.pop(); // 直前の回答を履歴から削除
+                        scrollToTop(true);
+                    }
+                };
+
                 const answerQuestion = (type) => {
                     // 連打防止: 質問画面以外での処理をブロック
                     if (step.value !== 'quiz') return;
@@ -593,9 +627,9 @@
                 };
 
                 return {
-                    step, selectedDrink, drinks, 
+                    step, selectedDrink, drinks, questions,
                     currentQuestionIndex, currentQuestion, answersHistory, finalResult,
-                    startQuiz, answerQuestion, resetQuiz, handleImageError
+                    startQuiz, answerQuestion, prevQuestion, resetQuiz, handleImageError
                 };
             }
         }).mount('#app');
