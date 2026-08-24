@@ -159,22 +159,24 @@
                     </div>
                 </div>
                 
-                <!-- 中央：レーダーチャート (約 35%) -->
-                <div class="w-full flex-1 min-h-[150px] max-h-[250px] flex items-center justify-center relative mb-4 sm:mb-6">
-                    <div class="w-[200px] h-[200px] sm:w-[240px] sm:h-[240px] relative">
-                        <canvas id="radarChart" class="w-full h-full absolute inset-0"></canvas>
-                    </div>
-                </div>
-
-                <!-- 下部：左に写真、右にテキストとボタン (約 45%) -->
-                <div class="w-full h-[40%] min-h-[220px] max-h-[350px] flex items-stretch gap-3 sm:gap-4 shrink-0 px-2 sm:px-4">
-                    
-                    <!-- 左側：写真エリア (幅 45%) -->
-                    <div class="w-[45%] h-full bg-slate-900/60 rounded-xl border border-slate-700/50 flex flex-col items-center justify-center relative overflow-hidden shadow-inner">
+                <!-- 中央：写真エリア (約 35%) -->
+                <div class="w-full flex-1 min-h-[150px] max-h-[250px] flex items-center justify-center relative mb-4 sm:mb-6 px-4">
+                    <div class="w-full max-w-[280px] h-full bg-slate-900/60 rounded-xl border border-slate-700/50 flex flex-col items-center justify-center relative overflow-hidden shadow-inner">
                         <span class="text-slate-500 text-sm font-bold font-sans tracking-widest text-center leading-tight">
                             FOOD<br>PHOTO
                         </span>
                         <!-- 実際の画像をいれる場合はここに img タグを追加してください -->
+                    </div>
+                </div>
+
+                <!-- 下部：左にレーダーチャート、右にテキストとボタン (約 45%) -->
+                <div class="w-full h-[40%] min-h-[220px] max-h-[350px] flex items-stretch gap-3 sm:gap-4 shrink-0 px-2 sm:px-4">
+                    
+                    <!-- 左側：レーダーチャートエリア (幅 45%) -->
+                    <div class="w-[45%] h-full flex flex-col items-center justify-center relative">
+                        <div class="w-full aspect-square relative flex items-center justify-center">
+                            <canvas id="radarChart" class="w-full h-full absolute inset-0"></canvas>
+                        </div>
                     </div>
 
                     <!-- 右側：テキストとボタンエリア (幅 55%) -->
@@ -241,8 +243,8 @@
                     { text: 'あなたの年齢をお聞かせください', options: [{ text: '35歳未満', imgText: 'UNDER35', type: 'A' }, { text: '35歳以上', imgText: 'OVER35', type: 'B' }] },
                     { text: '今のお腹の空き具合は？', options: [{ text: 'ガッツリ満たされたい', type: 'A' }, { text: '少しずつつまみたい', type: 'B' }] },
                     { text: '今の食事のペースは？', options: [{ text: 'テンポよくサクッと楽しみたい', type: 'A' }, { text: 'ゆっくりじっくり楽しみたい', type: 'B' }] },
-                    { text: 'どんな風に美味しさを感じたい？', options: [{ text: 'ひと口目からパッと広がる美味しさ', type: 'A' }, { text: '噛み締めるほどにじんわり続く旨み', type: 'B' }] },
-                    { text: '惹かれる「味の濃さ」は？', options: [{ text: 'しっかりした味わい', type: 'A' }, { text: '繊細で優しい味', type: 'B' }] },
+                    { text: 'どのように美味しさを感じたい？', options: [{ text: '口の中でパッと広がる美味しさ', type: 'A' }, { text: '味わいながらじんわり感じる旨み', type: 'B' }] },
+                    { text: '今惹かれる味は？', options: [{ text: 'しっかりした味わい', type: 'A' }, { text: '繊細で優しい味わい', type: 'B' }] },
                     { text: '一緒に合わせたい飲み物のイメージは？', options: [{ text: '冷えたビールや炭酸で爽快に', type: 'A' }, { text: 'ワインや日本酒などを香りとともに', type: 'B' }] },
                     { text: '今の気分は？', options: [{ text: '明るく気分を発散したい', type: 'A' }, { text: '静かに心身をリセットしたい', type: 'B' }] }
                 ];
@@ -342,7 +344,7 @@
                     chartInstance = new Chart(ctx, {
                         type: 'radar',
                         data: {
-                            labels: ['ボリューム', '軽快さ', '癒やし'],
+                            labels: ['ボリューム', '軽快さ', '深み'],
                             datasets: [{
                                 data: getChartData(),
                                 backgroundColor: whiteBgColor,
@@ -357,13 +359,13 @@
                         },
                         options: {
                             responsive: true, maintainAspectRatio: false,
-                            layout: { padding: { top: 10, bottom: 10, left: 10, right: 10 } },
+                            layout: { padding: { top: 8, bottom: 8, left: 8, right: 8 } },
                             plugins: { legend: { display: false }, tooltip: { enabled: false } },
                             scales: {
                                 r: {
                                     min: 0, max: 5, angleLines: { color: gridColor },
                                     grid: { color: gridColor, circular: false },
-                                    pointLabels: { color: '#fff', font: { size: 9, family: 'serif', weight: 'bold' }, padding: 3 },
+                                    pointLabels: { color: '#fff', font: { size: 8, family: 'serif', weight: 'bold' }, padding: 2 },
                                     ticks: { display: false, stepSize: 1, maxTicksLimit: 6 },
                                     borderJoinStyle: 'round'
                                 }
