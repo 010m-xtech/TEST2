@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -320,14 +321,24 @@
                     const q7 = answersHistory.value[6]; 
                     const q8 = answersHistory.value[7]; 
 
-                    if (q3 === 'A') { scores.type1 += 2; scores.type3 += 2; } else { scores.type2 += 2; scores.type4 += 2; }
-                    if (q6 === 'A') { scores.type1 += 2; scores.type3 += 2; } else { scores.type2 += 2; scores.type4 += 2; }
+                    // 新しい MAX9点 加点ロジック
+                    // Q3. ガッツリ: トロ(+2) サク(+1) / 少しずつ: ウル(+1) ツヤ(+2)
+                    if (q3 === 'A') { scores.type1 += 2; scores.type3 += 1; } else { scores.type2 += 1; scores.type4 += 2; }
                     
-                    if (q4 === 'A') { scores.type3 += 2; scores.type4 += 2; } else { scores.type1 += 2; scores.type2 += 2; }
-                    if (q5 === 'A') { scores.type3 += 2; scores.type4 += 2; } else { scores.type1 += 2; scores.type2 += 2; }
+                    // Q4. テンポよく: サク(+2) ツヤ(+1) / ゆっくり: トロ(+1) ウル(+2)
+                    if (q4 === 'A') { scores.type3 += 2; scores.type4 += 1; } else { scores.type1 += 1; scores.type2 += 2; }
                     
+                    // Q5. パッと: サク(+1) ツヤ(+2) / じんわり: トロ(+2) ウル(+1)
+                    if (q5 === 'A') { scores.type3 += 1; scores.type4 += 2; } else { scores.type1 += 2; scores.type2 += 1; }
+                    
+                    // Q6. しっかり: トロ(+2) サク(+1) / 繊細: ウル(+2) ツヤ(+1)
+                    if (q6 === 'A') { scores.type1 += 2; scores.type3 += 1; } else { scores.type2 += 2; scores.type4 += 1; }
+                    
+                    // Q7. 爽快に: サク(+2) ツヤ(+1) / 香りとともに: トロ(+1) ウル(+2)
                     if (q7 === 'A') { scores.type3 += 2; scores.type4 += 1; } else { scores.type1 += 1; scores.type2 += 2; }
-                    if (q8 === 'A') { scores.type1 += 1; scores.type3 += 2; } else { scores.type2 += 2; scores.type4 += 1; }
+                    
+                    // Q8. 発散: トロ(+1) サク(+2) / リセット: ウル(+1) ツヤ(+2)
+                    if (q8 === 'A') { scores.type1 += 1; scores.type3 += 2; } else { scores.type2 += 1; scores.type4 += 2; }
 
                     let maxScore = -1, resultTypeId = 'type1';
                     for (const [typeId, score] of Object.entries(scores)) {
@@ -338,16 +349,35 @@
 
                 const getChartData = () => {
                     if (answersHistory.value.length < 8) return [0, 0, 0];
-                    const result = finalResult.value;
-                    let volume = 2, tempo = 2, immersion = 2;
+                    
+                    const q3 = answersHistory.value[2];
+                    const q4 = answersHistory.value[3];
+                    const q5 = answersHistory.value[4];
+                    const q6 = answersHistory.value[5];
+                    const q7 = answersHistory.value[6];
+                    const q8 = answersHistory.value[7];
 
-                    if (result.id === 'type1') { volume = 5; tempo = 1.5; immersion = 4.5; } 
-                    else if (result.id === 'type2') { volume = 2; tempo = 2; immersion = 5; } 
-                    else if (result.id === 'type3') { volume = 4.5; tempo = 5; immersion = 1.5; } 
-                    else if (result.id === 'type4') { volume = 1.5; tempo = 4.5; immersion = 3.5; } 
+                    // 回答結果に基づき、レーダーチャートの3軸を動的に計算 (Base 1.5, Max 5.0)
+                    let volume = 1.5;
+                    let tempo = 1.5;
+                    let healing = 1.5;
+
+                    // ボリューム (Q3, Q6がAなら加点)
+                    if (q3 === 'A') volume += 1.75;
+                    if (q6 === 'A') volume += 1.75;
+
+                    // 軽快さ (Q4, Q5, Q7がAなら加点)
+                    if (q4 === 'A') tempo += 1.2;
+                    if (q5 === 'A') tempo += 1.0;
+                    if (q7 === 'A') tempo += 1.3;
+
+                    // 癒やし (Q4, Q5, Q8がBなら加点)
+                    if (q4 === 'B') healing += 1.0;
+                    if (q5 === 'B') healing += 1.2;
+                    if (q8 === 'B') healing += 1.3;
 
                     const clamp = (val) => Math.min(Math.max(val, 1.5), 5);
-                    return [ clamp(volume), clamp(tempo), clamp(immersion) ];
+                    return [ clamp(volume), clamp(tempo), clamp(healing) ];
                 };
 
                 const renderChart = () => {
@@ -363,7 +393,7 @@
                     chartInstance = new Chart(ctx, {
                         type: 'radar',
                         data: {
-                            labels: ['ボリューム', '軽快さ', '癒やし'],
+                            labels: ['ボリューム', '軽快さ', '深み'],
                             datasets: [{
                                 data: getChartData(),
                                 backgroundColor: whiteBgColor,
