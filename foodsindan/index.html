@@ -55,8 +55,8 @@
     <video autoplay loop muted playsinline class="absolute inset-0 w-full h-full object-cover z-0">
         <source src="video_02.mp4" type="video/mp4">
     </video>
-    <!-- テキスト視認性向上のためのオーバーレイ -->
-    <div class="absolute inset-0 bg-slate-950/70 z-0"></div>
+    <!-- テキスト視認性向上のためのオーバーレイ（暗さを軽減して動画を明るく表示） -->
+    <div class="absolute inset-0 bg-slate-950/40 z-0"></div>
 
     <div id="app" class="relative z-10 w-full h-full overflow-y-auto flex flex-col items-center justify-center p-4 pb-12 text-slate-100">
         
@@ -118,8 +118,9 @@
                         <div v-if="option.imgText" class="w-full h-44 sm:h-52 flex items-center justify-center bg-white overflow-hidden relative p-1.5">
                             <span class="text-amber-500 font-extrabold text-3xl tracking-widest drop-shadow-sm font-sans">{{ option.imgText }}</span>
                         </div>
-                        <div v-else-if="option.img" class="w-full h-44 sm:h-52 flex items-center justify-center bg-slate-800 overflow-hidden relative">
-                            <img :src="option.img" class="w-full h-full object-cover relative z-10" alt="Option Image">
+                        <!-- 画像が切れないように object-contain を指定し、パディングを追加して引きの表示にする -->
+                        <div v-else-if="option.img" class="w-full h-44 sm:h-52 flex items-center justify-center bg-slate-800 overflow-hidden relative p-3">
+                            <img :src="option.img" class="w-full h-full object-contain relative z-10" alt="Option Image">
                         </div>
                         <div v-else class="w-full h-44 sm:h-52 flex items-center justify-center bg-white overflow-hidden relative p-1.5">
                             <span class="text-slate-400 text-xs font-sans absolute">ILLUSTRATION</span>
@@ -148,8 +149,8 @@
             <!-- 3. 動的診断結果画面（1画面フィット設計） -->
             <div v-else-if="step === 'result' && finalResult" key="result" class="w-full flex-1 max-w-lg mx-auto flex flex-col justify-between pt-6 pb-4 sm:pt-8 sm:pb-6 relative h-full max-h-[900px]">
                 
-                <!-- 上部：タイトルと説明文 (約 20%) -->
-                <div class="w-full flex flex-col items-center justify-center shrink-0 mb-4 sm:mb-6">
+                <!-- 上部：タイトルと説明文にグレーの背景パネルを敷いて視認性を向上 -->
+                <div class="w-full flex flex-col items-center justify-center shrink-0 mb-4 sm:mb-6 bg-slate-800/80 p-4 rounded-2xl backdrop-blur-md border border-slate-600/50 shadow-lg">
                     <div class="flex flex-col items-center justify-center relative mb-3">
                         <div class="absolute -top-4 sm:-top-5 w-full flex justify-around px-2">
                             <span v-for="(char, idx) in finalResult.jaTitle" :key="idx" class="text-[10px] sm:text-xs text-amber-400 font-bold tracking-widest">{{ char }}</span>
