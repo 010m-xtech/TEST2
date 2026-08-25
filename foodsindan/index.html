@@ -52,12 +52,20 @@
 
 <body class="m-0 p-0 w-screen h-screen overflow-hidden bg-slate-950 relative">
 
+    <video autoplay loop muted playsinline class="absolute inset-0 w-full h-full object-cover z-0">
+        <source src="video_02.mp4" type="video/mp4">
+    </video>
+    <!-- テキスト視認性向上のためのオーバーレイ -->
+    <div class="absolute inset-0 bg-slate-950/70 z-0"></div>
+
     <div id="app" class="relative z-10 w-full h-full overflow-y-auto flex flex-col items-center justify-center p-4 pb-12 text-slate-100">
         
         <transition name="fade" mode="out-in">
             <!-- 0. エモいイントロ画面 -->
-            <div v-if="step === 'intro'" key="intro" class="w-full h-full flex flex-col items-center justify-center absolute inset-0 bg-slate-950 z-50 cursor-pointer" @click="skipIntro">
-                <h1 class="text-3xl sm:text-4xl text-white font-light intro-fade text-center leading-relaxed drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+            <div v-if="step === 'intro'" key="intro" class="w-full h-full flex flex-col items-center justify-center absolute inset-0 z-50 cursor-pointer bg-cover bg-center" style="background-image: url('img_gl45.jpg');" @click="skipIntro">
+                <!-- 文字を際立たせるためのオーバーレイ -->
+                <div class="absolute inset-0 bg-slate-950/40 z-0"></div>
+                <h1 class="text-3xl sm:text-4xl text-white font-light intro-fade text-center leading-relaxed drop-shadow-[0_0_15px_rgba(255,255,255,0.8)] relative z-10">
                     あなたに合うこだわりの一皿を
                 </h1>
             </div>
@@ -69,11 +77,9 @@
                     <span class="text-amber-400 font-bold text-lg">8つ</span>の簡単な直感質問に答えるだけで、<br>今のあなたに合う料理をご提案。<br>当店のこだわりを知ってください。
                 </p>
                 
-                <!-- 大きな画像エリア（プレースホルダー） -->
-                <div class="w-full max-w-[320px] aspect-video flex items-center justify-center bg-slate-900 rounded-xl mb-8 overflow-hidden relative border border-amber-400/30 shadow-[0_0_20px_rgba(251,191,36,0.15)] group">
-                    <span class="text-slate-500 text-sm font-sans tracking-widest absolute z-20">SIGNATURE DISH</span>
-                    <!-- 実際の画像を入れる場合はここに img タグを追加してください -->
-                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent z-10"></div>
+                <!-- トップのスタート箇所画像 -->
+                <div class="w-full max-w-[320px] aspect-video flex items-center justify-center mb-8 relative group">
+                    <img src="logo-footer.png" alt="Logo" class="w-full h-full object-contain relative z-20 drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]">
                 </div>
                 
                 <button @click="startQuiz"
@@ -109,8 +115,11 @@
                          @click="answerQuestion(option.type)"
                          class="bg-slate-900/80 backdrop-blur-md rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 border border-slate-600/50 hover:border-amber-400/50 hover:shadow-[0_0_15px_rgba(251,191,36,0.2)]">
                         
-                        <div v-if="currentQuestionIndex === 1" class="w-full h-44 sm:h-52 flex items-center justify-center bg-white overflow-hidden relative p-1.5">
+                        <div v-if="option.imgText" class="w-full h-44 sm:h-52 flex items-center justify-center bg-white overflow-hidden relative p-1.5">
                             <span class="text-amber-500 font-extrabold text-3xl tracking-widest drop-shadow-sm font-sans">{{ option.imgText }}</span>
+                        </div>
+                        <div v-else-if="option.img" class="w-full h-44 sm:h-52 flex items-center justify-center bg-slate-800 overflow-hidden relative">
+                            <img :src="option.img" class="w-full h-full object-cover relative z-10" alt="Option Image">
                         </div>
                         <div v-else class="w-full h-44 sm:h-52 flex items-center justify-center bg-white overflow-hidden relative p-1.5">
                             <span class="text-slate-400 text-xs font-sans absolute">ILLUSTRATION</span>
@@ -239,14 +248,14 @@
                 };
 
                 const questions = [
-                    { text: 'あなたの性別をお聞かせください', options: [{ text: '男性', type: 'A' }, { text: '女性', type: 'B' }] },
+                    { text: 'あなたの性別をお聞かせください', options: [{ text: '男性', type: 'A', img: '1-1seibetuotoko.jpg' }, { text: '女性', type: 'B', img: '1-2seibetuonna.jpg' }] },
                     { text: 'あなたの年齢をお聞かせください', options: [{ text: '35歳未満', imgText: 'UNDER35', type: 'A' }, { text: '35歳以上', imgText: 'OVER35', type: 'B' }] },
-                    { text: '今のお腹の空き具合は？', options: [{ text: 'ガッツリ満たされたい', type: 'A' }, { text: '少しずつつまみたい', type: 'B' }] },
-                    { text: '今の食事のペースは？', options: [{ text: 'テンポよくサクッと楽しみたい', type: 'A' }, { text: 'ゆっくりじっくり楽しみたい', type: 'B' }] },
-                    { text: 'どのように美味しさを感じたい？', options: [{ text: '口の中でパッと広がる美味しさ', type: 'A' }, { text: '味わいながらじんわり感じる旨み', type: 'B' }] },
-                    { text: '今惹かれる味は？', options: [{ text: 'しっかりした味わい', type: 'A' }, { text: '繊細で優しい味わい', type: 'B' }] },
-                    { text: '一緒に合わせたい飲み物のイメージは？', options: [{ text: '冷えたビールや炭酸で爽快に', type: 'A' }, { text: 'ワインや日本酒などを香りとともに', type: 'B' }] },
-                    { text: '今の気分は？', options: [{ text: '明るく気分を発散したい', type: 'A' }, { text: '静かに心身をリセットしたい', type: 'B' }] }
+                    { text: '今のお腹の空き具合は？', options: [{ text: 'ガッツリ満たされたい', type: 'A', img: '3-1.jpg' }, { text: '少しずつつまみたい', type: 'B', img: '3-2.jpg' }] },
+                    { text: '今の食事のペースは？', options: [{ text: 'テンポよくサクッと楽しみたい', type: 'A', img: '4-1.jpg' }, { text: 'ゆっくりじっくり楽しみたい', type: 'B', img: '4-2.jpg' }] },
+                    { text: 'どのように美味しさを感じたい？', options: [{ text: '口の中でパッと広がる美味しさ', type: 'A', img: '5-1.jpg' }, { text: '味わいながらじんわり感じる旨み', type: 'B', img: '5-2.jpg' }] },
+                    { text: '今惹かれる味は？', options: [{ text: 'しっかりした味わい', type: 'A', img: '6-1.jpg' }, { text: '繊細で優しい味わい', type: 'B', img: '6-2.jpg' }] },
+                    { text: '一緒に合わせたい飲み物のイメージは？', options: [{ text: '冷えたビールや炭酸で爽快に', type: 'A', img: '7-1craft.jpg' }, { text: 'ワインや日本酒などを香りとともに', type: 'B', img: '7-2wine.jpg' }] },
+                    { text: '今の気分は？', options: [{ text: '明るく気分を発散したい', type: 'A', img: '8-1okiru.jpg' }, { text: '静かに心身をリセットしたい', type: 'B', img: '8-2yasumu.jpg' }] }
                 ];
 
                 const resultTypes = {
@@ -401,7 +410,7 @@
                         const params = new URLSearchParams();
                         params.append('q1', q1); params.append('q2', q2);
                         params.append('type', type); params.append('category', category);
-                        params.append('gender', q1); params.append('age', q2);    
+                        params.append('gender', q1); params.append('age', q2);  
                         params.append('result', type); params.append('ua', ua);
 
                         fetch(GAS_URL, { 
