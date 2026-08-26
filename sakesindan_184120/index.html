@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Night Sommelier</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vue.js -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Google Fonts (筆記体用に追加) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* 筆記体クラス */
+        .font-cursive { font-family: 'Dancing Script', cursive; }
+        
+        .fade-enter-active { transition: opacity 1.5s ease; }
+        .fade-leave-active { transition: opacity 0.8s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+        /* 背景動画フェードイン用 */
+        @keyframes fadeInBlur {
+            0% { opacity: 0; }
+            100% { opacity: 0.3; }
+        }
+        @keyframes fadeInMain {
+            0% { opacity: 0; }
+            100% { opacity: 0.8; }
+        }
+    </style>
+</head>
+
+<!-- bodyで画面全体を完全固定 -->
+<body class="m-0 p-0 w-screen h-screen overflow-hidden bg-slate-950 relative">
+
+    <!-- ▼ ぼかし背景動画（画面の上下の隙間を違和感なく埋める用） ▼ -->
+    <video id="bgVideoBlur" autoplay loop muted playsinline 
+           style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; opacity: 0; filter: blur(20px); pointer-events: none; animation: fadeInBlur 1.5s ease forwards;">
+    </video>
+
+    <!-- ▼ メイン背景動画（引きで全体を見せる用） ▼ -->
+    <video id="bgVideo" autoplay loop muted playsinline 
+           style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 100%; object-fit: contain; z-index: 0; opacity: 0; pointer-events: none; animation: fadeInMain 1.5s ease forwards;">
+    </video>
+
+    <!-- ▼ メインコンテンツ ▼ -->
+    <div id="app" class="relative z-10 w-full h-full overflow-y-auto flex flex-col items-center justify-center p-2 pb-6 sm:p-4 text-slate-100 font-serif">
+        
+        <transition name="fade" mode="out-in" appear>
+            <!-- ▼ 0. オープニング演出（3秒間） ▼ -->
+            <div v-if="step === 'opening'" key="opening" class="flex flex-col items-center justify-center text-center px-6 min-h-[60vh] my-auto">
+                <p class="text-2xl sm:text-3xl md:text-4xl text-white font-serif tracking-widest leading-relaxed drop-shadow-lg opacity-90 mb-8">
+                    今日のお客様に<br>ちょうどいい一杯を。
+                </p>
+                <!-- ▼ ロゴ画像の追加 ▼ -->
+                <div class="w-32 sm:w-40 md:w-48 opacity-80 transition-opacity duration-1000">
+                    <img src="logo_w.png" alt="かごや ロゴ" class="w-full h-auto object-contain drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]" @error="handleImageError">
+                </div>
+            </div>
+
+            <!-- ▼ 1. トップ画面 ▼ -->
+            <div v-else-if="step === 'start'" key="start" class="w-full max-w-lg mt-4 sm:mt-6 p-5 sm:p-8 bg-slate-900/80 backdrop-blur-md border border-white/20 rounded-2xl flex flex-col items-center text-center shadow-2xl">
+                <h1 class="text-xl sm:text-3xl text-white font-bold mb-6 tracking-widest drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">今日のあなたに合う1杯を</h1>
+
+                <p class="text-sm sm:text-base text-slate-100 mb-8 leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+                    <span class="text-white font-bold text-lg">8つ</span>の簡単な質問に答えるだけで、<br>あなたにぴったりのお酒を<br><span class="text-amber-300 font-bold text-lg">〝まごころ〟</span>込めてご提案。
+                </p>
+                
+                <div class="grid grid-cols-2 gap-3 sm:gap-3.5 w-full mb-8 max-w-sm mx-auto">
+                    <div v-for="drink in drinks" :key="drink.id" 
+                         @click="selectedDrink = drink.id"
+                         class="group cursor-pointer border-2 rounded-xl p-2 sm:p-3 flex flex-col items-center transition-all duration-300 transform hover:-translate-y-1"
+                         :class="selectedDrink === drink.id ? 'border-amber-300 bg-slate-900/80 shadow-[0_0_25px_rgba(252,211,77,0.3)] scale-105' : 'border-white/30 bg-black/40'">
+                        <!-- 画像エリア -->
+                        <div class="w-full h-20 sm:h-24 flex items-center justify-center bg-white rounded-lg mb-2 sm:mb-3 overflow-hidden relative border-2 transition-all duration-300"
+                             :class="selectedDrink === drink.id ? 'border-amber-300 shadow-[0_0_15px_rgba(252,211,77,0.4)]' : 'border-slate-300'">
+                            <span class="text-slate-400 text-[10px] sm:text-xs absolute">図</span>
+                            <img :src="drink.img" :alt="drink.name" class="w-full h-full object-contain relative z-10 rounded" @error="handleImageError">
+                        </div>
+                        <span class="text-[11px] sm:text-sm font-bold tracking-wide drop-shadow-md" :class="selectedDrink === drink.id ? 'text-amber-300' : 'text-slate-100'">{{ drink.name }}</span>
+                    </div>
+                </div>
+                
+                <button @click="startQuiz" :disabled="!selectedDrink"
+                        class="w-full py-3.5 sm:py-4 rounded-xl font-bold text-base sm:text-xl tracking-wider transition-all duration-300"
+                        :class="selectedDrink ? 'bg-gradient-to-r from-amber-300 to-orange-300 hover:from-amber-200 hover:to-orange-200 text-slate-900 shadow-[0_0_20px_rgba(252,211,77,0.4)] active:scale-95' : 'bg-slate-800/80 text-slate-400 cursor-not-allowed border border-white/10'">
+                    Click
+                </button>
+            </div>
+
+            <!-- ▼ 2. 質問画面（全8問） ▼ -->
+            <div v-else-if="step === 'quiz'" key="quiz" class="w-full max-w-[340px] sm:max-w-[380px] my-auto py-2 mx-auto flex flex-col justify-center min-h-[85vh]">
+                
+                <!-- ▼ 進捗バー＆戻るボタン ▼ -->
+                <div class="w-full mb-6">
+                    <div class="flex items-center justify-between mb-2 px-1">
+                        <!-- 戻るボタン -->
+                        <button v-if="currentQuestionIndex > 0" @click="prevQuestion" class="flex items-center text-sm font-bold text-slate-300 hover:text-amber-300 transition-colors drop-shadow-md">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+                            </svg>
+                            BACK
+                        </button>
+                        <div v-else class="w-16"></div> <!-- 1問目のプレースホルダー -->
+                        
+                        <div class="text-xs sm:text-sm font-bold text-slate-400 tracking-widest drop-shadow-md">
+                            <span class="text-amber-300 text-sm sm:text-base">{{ currentQuestionIndex + 1 }}</span> / {{ questions.length }}
+                        </div>
+                    </div>
+                    <!-- バー本体 -->
+                    <div class="w-full h-1.5 sm:h-2 bg-slate-800 rounded-full overflow-hidden border border-slate-700/50 shadow-inner">
+                        <div class="h-full bg-gradient-to-r from-amber-400 to-orange-400 transition-all duration-500 ease-out rounded-full shadow-[0_0_10px_rgba(252,211,77,0.5)]" 
+                             :style="{ width: ((currentQuestionIndex + 1) / questions.length * 100) + '%' }">
+                        </div>
+                    </div>
+                </div>
+
+                <h2 class="text-lg sm:text-xl font-bold mb-4 text-center leading-snug tracking-wide text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] px-1">
+                    <span class="text-amber-300">Q{{ currentQuestionIndex + 1 }}.</span> {{ currentQuestion.text }}
+                </h2>
+
+                <div class="space-y-4">
+                    <div v-for="(option, idx) in currentQuestion.options" :key="idx"
+                         @click="answerQuestion(option.type)"
+                         class="bg-slate-900/80 backdrop-blur-md rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 border border-slate-600/50">
+                        
+                        <!-- Q2用のテキスト枠か、それ以外の画像枠かを出し分け -->
+                        <div v-if="currentQuestionIndex === 1" class="w-full h-44 sm:h-52 flex items-center justify-center bg-white overflow-hidden relative p-1.5">
+                            <span class="text-amber-400 font-extrabold text-3xl tracking-widest drop-shadow-sm">{{ option.imgText }}</span>
+                        </div>
+                        <div v-else class="w-full h-44 sm:h-52 flex items-center justify-center bg-white overflow-hidden relative p-1.5">
+                            <span class="text-slate-400 text-xs font-sans absolute">ILLUSTRATION</span>
+                            <img :src="option.img" class="w-full h-full object-contain relative z-10 scale-150" alt="Option Image" @error="handleImageError">
+                        </div>
+                        
+                        <div class="p-3 bg-slate-900/90 border-t border-slate-700/50 flex items-center justify-center text-center min-h-[3rem]">
+                            <div class="font-bold text-sm sm:text-base text-slate-100 tracking-wide leading-snug">
+                                <span class="text-amber-300 font-extrabold mr-1.5 text-base sm:text-lg">{{ idx === 0 ? 'A.' : 'B.' }}</span>{{ option.text }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ▼ 2.5 注がれる演出画面 ▼ -->
+            <div v-else-if="step === 'pouring'" key="pouring" class="w-full max-w-lg mt-6 p-6 flex flex-col items-center text-center min-h-[60vh] justify-center">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-2 tracking-wider drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">Please wait...</h2>
+                <p class="text-sm text-amber-300 font-bold mb-10 animate-pulse tracking-wide drop-shadow-md">今日のあなたの一杯を注いでいます...</p>
+                
+                <div class="w-20 h-20 rounded-full border-4 border-slate-700 border-t-amber-300 animate-spin shadow-[0_0_20px_rgba(252,211,77,0.3)]"></div>
+            </div>
+
+            <!-- ▼ 3. 動的診断結果画面 ▼ -->
+            <div v-else-if="step === 'result' && finalResult" key="result" class="w-full h-full max-w-[98%] sm:max-w-lg my-1 p-3 sm:p-5 bg-slate-900/80 backdrop-blur-md border border-white/20 rounded-2xl flex flex-col items-center text-center shadow-2xl justify-between">
+                <!-- 上部: タイトルと説明 -->
+                <div class="w-full flex flex-col items-center justify-center shrink-0">
+                    <div class="flex items-end justify-center mb-1 flex-wrap w-full mt-1">
+                        <span class="text-[11px] sm:text-base text-slate-200 tracking-widest font-serif font-bold pb-0.5 sm:pb-1.5 mr-1 sm:mr-2">あなたは</span>
+                        <ruby class="font-cursive text-3xl sm:text-4xl text-amber-300 font-bold tracking-widest drop-shadow-md mr-1 sm:mr-2">
+                            {{ finalResult.titleRomaji }}
+                            <rt class="text-[9px] sm:text-xs font-sans tracking-widest text-amber-200 opacity-90">{{ finalResult.titleRuby }}</rt>
+                        </ruby>
+                        <span class="text-[11px] sm:text-base text-slate-200 tracking-widest font-serif font-bold pb-0.5 sm:pb-1.5">タイプ</span>
+                    </div>
+                    
+                    <p class="text-[10px] sm:text-sm text-amber-200/90 mb-2 sm:mb-4 font-bold tracking-wide text-center px-2">
+                        {{ finalResult.shortDescription }}
+                    </p>
+                </div>
+
+                <!-- グラフエリア (中央上) -->
+                <div class="w-full flex-grow flex items-center justify-center relative min-h-[150px] mb-2">
+                    <div class="w-full h-full max-w-[240px] max-h-[240px] relative">
+                        <canvas id="radarChart" class="w-full h-full"></canvas>
+                    </div>
+                </div>
+
+                <!-- 写真と右側エリア (中央下部) -->
+                <div class="w-full flex gap-2 sm:gap-4 flex-grow min-h-[180px]">
+                    <!-- 左側: 写真 (青枠部分) -->
+                    <div class="w-1/2 bg-slate-800/50 rounded-xl border border-slate-700 flex flex-col items-center justify-center relative overflow-hidden">
+                        <span class="text-slate-500 text-xs sm:text-base font-bold font-sans tracking-wide px-2 text-center">DRINK<br>PHOTO</span>
+                    </div>
+
+                    <!-- 右側: おすすめ商品＆説明文 ＋ ボタン (赤枠部分) -->
+                    <div class="w-1/2 flex flex-col justify-between gap-2 sm:gap-3">
+                        <!-- 説明文エリア - 高さをなるべく取る -->
+                        <div class="flex-grow flex flex-col justify-start text-left bg-slate-800/80 rounded-xl border border-slate-700 p-2.5 sm:p-3 overflow-y-auto">
+                            <h3 class="text-[11px] sm:text-sm font-bold text-amber-300 mb-0.5 tracking-wide">【商品名】</h3>
+                            <p class="text-[10px] sm:text-xs text-slate-200 mb-2 leading-snug">仮のテキスト</p>
+
+                            <h3 class="text-[11px] sm:text-sm font-bold text-amber-300 mb-0.5 tracking-wide">【産地】</h3>
+                            <p class="text-[10px] sm:text-xs text-slate-200 mb-2 leading-snug">仮のテキスト</p>
+
+                            <h3 class="text-[11px] sm:text-sm font-bold text-amber-300 mb-0.5 tracking-wide">【おすすめの飲み方/合うメニュー等】</h3>
+                            <p class="text-[10px] sm:text-xs text-slate-200 leading-snug whitespace-pre-line">仮のテキスト</p>
+                        </div>
+                        
+                        <!-- ボタン -->
+                        <button @click="resetQuiz" class="w-full py-2.5 sm:py-3.5 bg-amber-300 hover:bg-amber-200 text-slate-900 rounded-xl font-bold text-sm sm:text-base tracking-widest transition-all shadow-[0_0_15px_rgba(252,211,77,0.4)] shrink-0">
+                            One more
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </transition>
+    </div>
+
+    <!-- Vue.js スクリプト -->
+    <script>
+        const videoFiles = ['haikei1.mp4', 'haikei2.mp4'];
+        const randomVideoIndex = Math.floor(Math.random() * videoFiles.length);
+        const videoSrc = videoFiles[randomVideoIndex];
+
+        const bgVideoElement = document.getElementById('bgVideo');
+        if (bgVideoElement) {
+            bgVideoElement.src = videoSrc;
+        }
+
+        const bgVideoBlurElement = document.getElementById('bgVideoBlur');
+        if (bgVideoBlurElement) {
+            bgVideoBlurElement.src = videoSrc;
+        }
+
+        // ▼ 【重要】ご指定いただいたGASのURL ▼
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbxOHrvgUYlPKeemzFOfhxggXXssC3L9Od0RbuhtxIPM-mLXVvpVKJJsFf8FlmOOA4Zj7Q/exec';
+
+        const { createApp, ref, computed, onMounted, watch } = Vue;
+
+        createApp({
+            setup() {
+                const step = ref('opening'); 
+                const selectedDrink = ref('');
+                const currentQuestionIndex = ref(0);
+                const answersHistory = ref([]);
+                
+                // 二重送信防止用フラグ
+                const isSubmitted = ref(false);
+                let chartInstance = null;
+
+                // ▼ 改善ポイント: 画面トップへスクロールする処理を1つにまとめる（DRY原則） ▼
+                const scrollToTop = (smooth = false) => {
+                    const app = document.getElementById('app');
+                    if (app) app.scrollTo({ top: 0, behavior: smooth ? 'smooth' : 'auto' });
+                };
+
+                onMounted(() => {
+                    setTimeout(() => {
+                        if (step.value === 'opening') step.value = 'start';
+                    }, 3500); // 3000から3500(+0.5秒)に変更
+                });
+                
+                const drinks = [
+                    { id: 'sake', name: '日本酒', img: 'nihonsyu.jpg' },
+                    { id: 'craft', name: 'クラフトジン', img: 'craft.jpg' }
+                ];
+
+                const questions = [
+                    {
+                        text: 'あなたの性別をお聞かせください',
+                        options: [
+                            { text: '男性', img: 'seibetuotoko.jpg', type: 'A' },
+                            { text: '女性', img: 'seibetuonna.jpg', type: 'B' }
+                        ]
+                    },
+                    {
+                        text: 'あなたの年齢をお聞かせください',
+                        options: [
+                            { text: '35歳未満', imgText: 'UNDER35', type: 'A' },
+                            { text: '35歳以上', imgText: 'OVER35', type: 'B' }
+                        ]
+                    },
+                    {
+                        text: '今日の気分は？',
+                        options: [
+                            { text: 'スカッと弾けて今日をリセットしたい！', img: 'okiru.jpg', type: 'A' },
+                            { text: '静かにほっこり今日を癒やしたい…', img: 'yasumu.jpg', type: 'B' }
+                        ]
+                    },
+                    {
+                        text: 'お酒に合わせたい食事は？',
+                        options: [
+                            { text: 'ガッツリなお肉や揚げ物', img: '2-2.jpg', type: 'A' },
+                            { text: 'ヘルシーなお刺身や野菜', img: '2-1.jpg', type: 'B' }
+                        ]
+                    },
+                    {
+                        text: 'ふと嗅ぎたい惹かれる香りは？',
+                        options: [
+                            { text: 'みずみずしい柑橘やフルーティーな香り', img: '3-1.jpg', type: 'A' },
+                            { text: 'スパイシーな香辛料やハーブ・木の香り', img: '3-2.jpg', type: 'B' }
+                        ]
+                    },
+                    {
+                        text: '今の口が一番求めているのは？',
+                        options: [
+                            { text: 'やさしい甘みフルーティーな甘酸っぱさ', img: '4-1.jpg', type: 'A' },
+                            { text: 'キリッとした苦みドライで控えめな甘さ', img: '4-2.jpg', type: 'B' }
+                        ]
+                    },
+                    {
+                        text: '喉を通るときの好みは？',
+                        options: [
+                            { text: 'キリッと締まる爽快なキレ', img: 'awa.jpg', type: 'A' },
+                            { text: 'すーっと通るなめらかな口当たり', img: 'nameraka.jpg', type: 'B' }
+                        ]
+                    },
+                    {
+                        text: '今日のお酒選びのテーマは？',
+                        options: [
+                            { text: '失敗したくない！王道定番派', img: 'ousama.jpg', type: 'A' },
+                            { text: '新しい発見がほしい！個性的派', img: 'bouken.jpg', type: 'B' }
+                        ]
+                    }
+                ];
+
+                const resultTypes = {
+                    type1: {
+                        id: 'type1',
+                        titleRuby: 'サラサラ',
+                        titleRomaji: 'Sara Sara',
+                        icon: '🥂',
+                        shortDescription: '1日の疲れをさらっと洗い流す爽快な一杯。',
+                        recommendations: {
+                            wine: 'スパークリングワイン全般\nスッキリとした辛口の白ワイン\n（ソーヴィニヨン・ブランやシャブリなど）',
+                            sake: '淡麗辛口、生酒、本醸造\n（水のようにスッキリ飲めるキレのある爽酒）',
+                            craft: '【ビール】ピルスナー、ラガー、セッションIPA\n【ジン】シトラス・柑橘系ジン'
+                        },
+                        description: '1日の疲れやモヤモヤをスッキリと洗い流してくれる、淀みなくクリアな味わい。喉を潤す爽快感が今日を新しくリセットしてくれる一杯です。'
+                    },
+                    type2: {
+                        id: 'type2',
+                        titleRuby: 'ウルウル',
+                        titleRomaji: 'Uru Uru',
+                        icon: '🍊',
+                        shortDescription: 'ひと口でうるっと心潤う、華やかな一杯。',
+                        recommendations: {
+                            wine: '樽熟成のリッチな白ワイン（シャルドネなど）\n香り高い白（ゲヴュルツトラミネール）\n華やかなロゼワイン',
+                            sake: '大吟醸、吟醸酒\n（メロンやリンゴのようなフルーティーな薫酒）',
+                            craft: '【ビール】フルーツエール、ヘイジーIPA\n【ジン】フローラル系、ベリー系ジン'
+                        },
+                        description: '果実やボタニカルの豊かな香りが、心と体をたっぷりと潤すリッチな味わい。ひと口飲むと気分がパッと明るくなるような一杯です。'
+                    },
+                    type3: {
+                        id: 'type3',
+                        titleRuby: 'トロトロ',
+                        titleRomaji: 'Toro Toro',
+                        icon: '🍷',
+                        shortDescription: '口の中でとろっとほどけ、日常の緊張を癒やす一杯。',
+                        recommendations: {
+                            wine: '軽め〜ミディアムボディの赤ワイン\n（ピノ・ノワールなど）\n食事に合わせやすいオレンジワイン',
+                            sake: '純米酒、生酛、山廃\n（お米本来のふくよかな旨みと甘みを持つ醇酒）',
+                            craft: '【ビール】ペールエール、アンバーエール\n【ジン】お茶・ハーブ・スパイス系ジン'
+                        },
+                        description: '口の中で優しくとろけるような繊細で穏やかな味わい。緊張をゆるやかにほどき、日常にホッと安心をくれる優しい一杯です。'
+                    },
+                    type4: {
+                        id: 'type4',
+                        titleRuby: 'ウトウト',
+                        titleRomaji: 'Uto Uto',
+                        icon: '🥃',
+                        shortDescription: '深い味わいにうとうと夢見心地になる、大人の贅沢な一杯。',
+                        recommendations: {
+                            wine: 'フルボディの重厚な赤ワイン\n（カベルネ・ソーヴィニヨンなど）\n極甘口の貴腐ワイン、ポートワイン',
+                            sake: '古酒、長期熟成酒、貴醸酒\n（熟成による複雑な香りと深みを持つ熟酒）',
+                            craft: '【ビール】スタウト、ポーター、バーレイワイン\n【ジン】樽熟成ジン、ウッディ系ジン'
+                        },
+                        description: '時間を忘れて少しずつ味わいたい、深みとコクのある味わい。癒しの時間を彷彿させる大人の一杯です。'
+                    }
+                };
+
+                const currentQuestion = computed(() => questions[currentQuestionIndex.value]);
+
+                // ▼ 診断ロジックをポイント制にアップデート ▼
+                const finalResult = computed(() => {
+                    if (answersHistory.value.length < 8) return null;
+                    
+                    // 各タイプの得点箱を用意
+                    const scores = { type1: 0, type2: 0, type3: 0, type4: 0 };
+                    
+                    const q3 = answersHistory.value[2]; // 気分
+                    const q4 = answersHistory.value[3]; // 食事
+                    const q5 = answersHistory.value[4]; // 香り
+                    const q6 = answersHistory.value[5]; // 味
+                    const q7 = answersHistory.value[6]; // 喉越し
+                    const q8 = answersHistory.value[7]; // テーマ
+
+                    // Q3. 気分 (A:リセット -> 爽快T1, 華やかT2 / B:ほっこり -> 癒しT3, 重厚T4)
+                    if (q3 === 'A') { scores.type1 += 1; scores.type2 += 1; }
+                    else { scores.type3 += 1; scores.type4 += 2; }
+
+                    // Q4. 食事 (A:肉・揚げ物 -> 重厚T4, 癒しT3 / B:刺身・野菜 -> 爽快T1, 華やかT2)
+                    if (q4 === 'A') { scores.type4 += 2; scores.type3 += 1; }
+                    else { scores.type1 += 2; scores.type2 += 1; }
+
+                    // Q5. 香り (A:柑橘フルーティー -> 華やかT2, 爽快T1 / B:スパイス木 -> 重厚T4, 癒しT3)
+                    if (q5 === 'A') { scores.type2 += 2; scores.type1 += 1; }
+                    else { scores.type4 += 2; scores.type3 += 1; }
+
+                    // Q6. 味 (A:甘みフルーティー -> 華やかT2, 癒しT3 / B:ドライ苦味 -> 爽快T1, 重厚T4)
+                    if (q6 === 'A') { scores.type2 += 2; scores.type3 += 2; }
+                    else { scores.type1 += 2; scores.type4 += 1; }
+
+                    // Q7. 喉越し (A:爽快キレ -> 爽快T1, 華やかT2 / B:なめらか -> 癒しT3, 重厚T4)
+                    if (q7 === 'A') { scores.type1 += 2; scores.type2 += 1; }
+                    else { scores.type3 += 2; scores.type4 += 1; }
+
+                    // Q8. テーマ (A:王道定番 -> 癒しT3, 爽快T1 / B:個性的 -> 華やかT2, 重厚T4)
+                    if (q8 === 'A') { scores.type3 += 2; scores.type1 += 1; }
+                    else { scores.type2 += 2; scores.type4 += 1; }
+
+                    // 一番スコアが高いタイプを見つける
+                    let maxScore = -1;
+                    let resultTypeId = 'type1';
+                    
+                    for (const [typeId, score] of Object.entries(scores)) {
+                        if (score > maxScore) {
+                            maxScore = score;
+                            resultTypeId = typeId;
+                        }
+                    }
+
+                    return resultTypes[resultTypeId]; 
+                });
+
+                // ▼ チャート用のデータ計算も新ロジックに合わせて微調整 ▼
+                const getChartData = () => {
+                    if (answersHistory.value.length < 8) return [0, 0, 0];
+                    
+                    // 最終的に導き出されたタイプに合わせてベースの形を作る
+                    const result = finalResult.value;
+                    let sukkiri = 2, fruity = 2, shikkari = 2;
+
+                    if (result.id === 'type1') { sukkiri = 5; fruity = 2.5; shikkari = 1.5; } // Type1 (Sara Sara)
+                    else if (result.id === 'type2') { sukkiri = 3; fruity = 5; shikkari = 2; } // Type2 (Uru Uru)
+                    else if (result.id === 'type3') { sukkiri = 2.5; fruity = 2.5; shikkari = 3.5; } // Type3 (Toro Toro)
+                    else { sukkiri = 1.5; fruity = 2; shikkari = 5; } // Type4 (Uto Uto)
+
+                    // 値を1.5〜5の範囲に収める（1本の線に潰れないように）
+                    const clamp = (val) => Math.min(Math.max(val, 1.5), 5);
+
+                    return [ clamp(sukkiri), clamp(fruity), clamp(shikkari) ];
+                };
+
+                // チャートを描画する関数（リトライ機能付き）
+                const renderChart = () => {
+                    const ctxElement = document.getElementById('radarChart');
+                    if (!ctxElement) {
+                        // DOM要素がまだ生成されていない場合は少し待ってから再実行
+                        setTimeout(renderChart, 100);
+                        return;
+                    }
+                    
+                    const ctx = ctxElement.getContext('2d');
+                    if (chartInstance) {
+                        chartInstance.destroy(); // 既存のチャートを破棄
+                    }
+
+                    // チャートの共通スタイル色
+                    const whiteLineColor = 'rgba(255, 255, 255, 0.8)';
+                    const whiteBgColor = 'rgba(255, 255, 255, 0.3)';
+                    const gridColor = 'rgba(255, 255, 255, 0.15)';
+
+                    chartInstance = new Chart(ctx, {
+                        type: 'radar',
+                        data: {
+                            labels: ['すっきり', 'フルーティー', 'しっかり'],
+                            datasets: [{
+                                label: 'Tasting Profile',
+                                data: getChartData(),
+                                backgroundColor: whiteBgColor,
+                                borderColor: whiteLineColor,
+                                borderWidth: 2,
+                                pointBackgroundColor: '#fff',
+                                pointBorderColor: whiteLineColor,
+                                pointHoverBackgroundColor: '#fff',
+                                pointHoverBorderColor: whiteLineColor,
+                                pointRadius: 4, 
+                                pointHoverRadius: 5
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            layout: {
+                                padding: { top: 15, bottom: 15, left: 25, right: 25 }
+                            },
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: { enabled: false } 
+                            },
+                            scales: {
+                                r: {
+                                    // ▼ バグ修正：スケールの最大・最小をここに置くことで網目が消えるバグを解消
+                                    min: 0,
+                                    max: 5,
+                                    angleLines: { color: gridColor },
+                                    grid: { 
+                                        color: gridColor,
+                                        circular: false 
+                                    },
+                                    pointLabels: {
+                                        color: '#fff',
+                                        font: { size: 11, family: 'serif', weight: 'bold' },
+                                        padding: 6
+                                    },
+                                    ticks: {
+                                        display: false,
+                                        stepSize: 1, 
+                                        maxTicksLimit: 6
+                                    },
+                                    borderJoinStyle: 'round' 
+                                }
+                            }
+                        }
+                    });
+                };
+
+                watch(step, (newStep) => {
+                    if (newStep === 'result') setTimeout(renderChart, 800);
+                });
+
+                const startQuiz = () => {
+                    if (selectedDrink.value) {
+                        step.value = 'quiz';
+                        answersHistory.value = [];
+                        currentQuestionIndex.value = 0;
+                        isSubmitted.value = false;
+                    }
+                    scrollToTop(); // スクロール関数を呼び出すだけ！
+                };
+
+                // ▼ データを送信するための関数 ▼
+                const sendToGoogleSheet = (q1, q2, type, drink) => {
+                    if (!GAS_URL) return;
+                    try {
+                        const ua = navigator.userAgent;
+                        
+                        // 【超重要】GAS側のプログラムの変数名と完全に一致させます
+                        const payload = {
+                            userAgent: ua,
+                            q1Gender: q1,
+                            q2Age: q2,
+                            selectedDrink: drink,
+                            resultType: type
+                        };
+                        
+                        console.log('Sending payload:', payload);
+
+                        fetch(GAS_URL, { 
+                            method: 'POST',
+                            mode: 'no-cors', // ブラウザのセキュリティブロックを回避
+                            headers: {
+                                'Content-Type': 'text/plain' // セキュリティ回避のためtext/plainとしてJSONを送る
+                            },
+                            body: JSON.stringify(payload)
+                        });
+                    } catch (error) {
+                        console.error('Submission failed:', error);
+                    }
+                };
+
+                // ▼ 1つ前の質問に戻る関数 ▼
+                const prevQuestion = () => {
+                    if (currentQuestionIndex.value > 0) {
+                        currentQuestionIndex.value--;
+                        answersHistory.value.pop(); // 直前の回答を履歴から削除
+                        scrollToTop(true);
+                    }
+                };
+
+                const answerQuestion = (type) => {
+                    // 連打防止: 質問画面以外での処理をブロック
+                    if (step.value !== 'quiz') return;
+
+                    answersHistory.value.push(type);
+                    if (currentQuestionIndex.value < questions.length - 1) {
+                        currentQuestionIndex.value++;
+                        scrollToTop(true); // スムーズスクロール
+                    } else {
+                        step.value = 'pouring';
+                        scrollToTop();
+                        
+                        const duration = 3500;
+
+                        setTimeout(() => {
+                            step.value = 'result';
+                            scrollToTop();
+                            
+                            // 結果が表示されたタイミングで送信処理（未送信の場合のみ）
+                            if (!isSubmitted.value) {
+                                const q1Ans = answersHistory.value[0] === 'A' ? '男性' : '女性';
+                                const q2Ans = answersHistory.value[1] === 'A' ? '35歳未満' : '35歳以上';
+                                const typeId = finalResult.value ? finalResult.value.id : 'unknown';
+                                
+                                // お酒の種類名を取得（wine -> ワイン）
+                                const drinkTypeObj = drinks.find(d => d.id === selectedDrink.value);
+                                const drinkTypeName = drinkTypeObj ? drinkTypeObj.name : '不明';
+
+                                sendToGoogleSheet(q1Ans, q2Ans, typeId, drinkTypeName);
+                                isSubmitted.value = true; // 送信完了フラグを立てる
+                            }
+                        }, duration);
+                    }
+                };
+
+                const resetQuiz = () => {
+                    step.value = 'start';
+                    selectedDrink.value = '';
+                    currentQuestionIndex.value = 0;
+                    answersHistory.value = [];
+                    isSubmitted.value = false;
+                    if (chartInstance) {
+                        chartInstance.destroy();
+                        chartInstance = null;
+                    }
+                    scrollToTop();
+                };
+
+                const handleImageError = (e) => {
+                    e.target.style.display = 'none';
+                };
+
+                return {
+                    step, selectedDrink, drinks, questions,
+                    currentQuestionIndex, currentQuestion, answersHistory, finalResult,
+                    startQuiz, answerQuestion, prevQuestion, resetQuiz, handleImageError
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
