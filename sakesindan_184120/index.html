@@ -33,21 +33,64 @@
             0% { opacity: 0; }
             100% { opacity: 0.8; }
         }
+        
+        /* 背景画像スライドショー用 */
+        .bg-slideshow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+        .bg-slideshow img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            animation: slideshow 10.5s infinite; /* 3枚 × 3.5秒 = 10.5秒 */
+        }
+        .bg-slideshow img:nth-child(1) { animation-delay: 0s; }
+        .bg-slideshow img:nth-child(2) { animation-delay: 3.5s; }
+        .bg-slideshow img:nth-child(3) { animation-delay: 7s; }
+
+        .blur-slideshow img {
+            object-fit: cover;
+            filter: blur(20px);
+        }
+        .main-slideshow img {
+            object-fit: contain;
+        }
+
+        @keyframes slideshow {
+            0% { opacity: 0; }
+            9.5% { opacity: 1; }   /* 約1秒でフェードイン */
+            33.3% { opacity: 1; }  /* 3.5秒時点まで表示維持 */
+            42.8% { opacity: 0; }  /* 約1秒かけてフェードアウト */
+            100% { opacity: 0; }
+        }
     </style>
 </head>
 
 <!-- bodyで画面全体を完全固定 -->
 <body class="m-0 p-0 w-screen h-screen overflow-hidden bg-slate-950 relative">
 
-    <!-- ▼ ぼかし背景動画（画面の上下の隙間を違和感なく埋める用） ▼ -->
-    <video id="bgVideoBlur" autoplay loop muted playsinline 
-           style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; opacity: 0; filter: blur(20px); pointer-events: none; animation: fadeInBlur 1.5s ease forwards;">
-    </video>
+    <!-- ▼ ぼかし背景スライドショー（画面の上下の隙間を違和感なく埋める用） ▼ -->
+    <div id="bgContainerBlur" class="absolute top-0 left-0 w-full h-full z-0 pointer-events-none" style="opacity: 0; animation: fadeInBlur 1.5s ease forwards;">
+        <div class="bg-slideshow blur-slideshow">
+            <img src="haikei1.webp" alt="">
+            <img src="haikei2.webp" alt="">
+            <img src="haikei3.webp" alt="">
+        </div>
+    </div>
 
-    <!-- ▼ メイン背景動画（引きで全体を見せる用） ▼ -->
-    <video id="bgVideo" autoplay loop muted playsinline 
-           style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 100%; object-fit: contain; z-index: 0; opacity: 0; pointer-events: none; animation: fadeInMain 1.5s ease forwards;">
-    </video>
+    <!-- ▼ メイン背景スライドショー（引きで全体を見せる用） ▼ -->
+    <div id="bgContainerMain" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full z-0 pointer-events-none" style="opacity: 0; animation: fadeInMain 1.5s ease forwards;">
+        <div class="bg-slideshow main-slideshow">
+            <img src="haikei1.webp" alt="">
+            <img src="haikei2.webp" alt="">
+            <img src="haikei3.webp" alt="">
+        </div>
+    </div>
 
     <!-- ▼ メインコンテンツ ▼ -->
     <div id="app" class="relative z-10 w-full h-full overflow-y-auto flex flex-col items-center justify-center p-2 pb-6 sm:p-4 text-slate-100 font-serif">
@@ -58,10 +101,6 @@
                 <p class="text-2xl sm:text-3xl md:text-4xl text-white font-serif tracking-widest leading-relaxed drop-shadow-lg opacity-90 mb-8">
                     今日のお客様に<br>ちょうどいい一杯を。
                 </p>
-                <!-- ▼ ロゴ画像の追加 ▼ -->
-                <div class="w-32 sm:w-40 md:w-48 opacity-80 transition-opacity duration-1000">
-                    <img src="logo_w.png" alt="かごや ロゴ" class="w-full h-auto object-contain drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]" @error="handleImageError">
-                </div>
             </div>
 
             <!-- ▼ 1. トップ画面 ▼ -->
@@ -69,7 +108,7 @@
                 <h1 class="text-xl sm:text-3xl text-white font-bold mb-6 tracking-widest drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">今日のあなたに合う1杯を</h1>
 
                 <p class="text-sm sm:text-base text-slate-100 mb-8 leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
-                    <span class="text-white font-bold text-lg">8つ</span>の簡単な質問に答えるだけで、<br>あなたにぴったりのお酒を<br><span class="text-amber-300 font-bold text-lg">〝まごころ〟</span>込めてご提案。
+                    <span class="text-white font-bold text-lg">8つ</span>の簡単な質問に答えるだけで、<br>あなたにぴったりのお酒をご提案。
                 </p>
                 
                 <div class="grid grid-cols-2 gap-3 sm:gap-3.5 w-full mb-8 max-w-sm mx-auto">
@@ -214,20 +253,6 @@
 
     <!-- Vue.js スクリプト -->
     <script>
-        const videoFiles = ['haikei1.mp4', 'haikei2.mp4'];
-        const randomVideoIndex = Math.floor(Math.random() * videoFiles.length);
-        const videoSrc = videoFiles[randomVideoIndex];
-
-        const bgVideoElement = document.getElementById('bgVideo');
-        if (bgVideoElement) {
-            bgVideoElement.src = videoSrc;
-        }
-
-        const bgVideoBlurElement = document.getElementById('bgVideoBlur');
-        if (bgVideoBlurElement) {
-            bgVideoBlurElement.src = videoSrc;
-        }
-
         // ▼ 【重要】ご指定いただいたGASのURL ▼
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxOHrvgUYlPKeemzFOfhxggXXssC3L9Od0RbuhtxIPM-mLXVvpVKJJsFf8FlmOOA4Zj7Q/exec';
 
@@ -257,8 +282,8 @@
                 });
                 
                 const drinks = [
-                    { id: 'sake', name: '日本酒', img: 'nihonsyu.jpg' },
-                    { id: 'craft', name: 'クラフトジン', img: 'craft.jpg' }
+                    { id: 'sake', name: 'クラフトビール', img: 'kurahutobi-ru.webp' },
+                    { id: 'craft', name: 'クラフトジン', img: 'kurahutojin.webp' }
                 ];
 
                 const questions = [
