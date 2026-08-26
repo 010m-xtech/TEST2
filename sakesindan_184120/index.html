@@ -111,7 +111,7 @@
                     <span class="text-white font-bold text-lg">8つ</span>の簡単な質問に答えるだけで、<br>あなたにぴったりのお酒をご提案。
                 </p>
                 
-                <div class="grid grid-cols-2 gap-3 sm:gap-3.5 w-full mb-8 max-w-sm mx-auto">
+                <div class="grid grid-cols-2 gap-3 sm:gap-3.5 w-full mb-4 max-w-sm mx-auto">
                     <div v-for="drink in drinks" :key="drink.id" 
                          @click="selectedDrink = drink.id"
                          class="group cursor-pointer border-2 rounded-xl p-2 sm:p-3 flex flex-col items-center transition-all duration-300 transform hover:-translate-y-1"
@@ -126,10 +126,16 @@
                     </div>
                 </div>
                 
+                <!-- ▼ 注釈テキストを追加 ▼ -->
+                <p class="text-xs sm:text-sm font-bold tracking-wide mb-3 transition-opacity duration-300" 
+                   :class="selectedDrink ? 'opacity-0' : 'text-amber-300 opacity-90 animate-pulse'">
+                    ※どちらかを選んでStartを押してください
+                </p>
+
                 <button @click="startQuiz" :disabled="!selectedDrink"
                         class="w-full py-3.5 sm:py-4 rounded-xl font-bold text-base sm:text-xl tracking-wider transition-all duration-300"
                         :class="selectedDrink ? 'bg-gradient-to-r from-amber-300 to-orange-300 hover:from-amber-200 hover:to-orange-200 text-slate-900 shadow-[0_0_20px_rgba(252,211,77,0.4)] active:scale-95' : 'bg-slate-800/80 text-slate-400 cursor-not-allowed border border-white/10'">
-                    Click
+                    Start
                 </button>
             </div>
 
@@ -253,8 +259,13 @@
 
     <!-- Vue.js スクリプト -->
     <script>
+        const bgVideoBlurElement = document.getElementById('bgVideoBlur');
+        if (bgVideoBlurElement) {
+            bgVideoBlurElement.src = videoSrc;
+        }
+
         // ▼ 【重要】ご指定いただいたGASのURL ▼
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycbxOHrvgUYlPKeemzFOfhxggXXssC3L9Od0RbuhtxIPM-mLXVvpVKJJsFf8FlmOOA4Zj7Q/exec';
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbyFnsZRoXSwOisQKn44jmWdNAAXpjEcxYaXySXw8i4YRiQRyoiaXYMRHAEp1abX2_0Y5g/exec';
 
         const { createApp, ref, computed, onMounted, watch } = Vue;
 
