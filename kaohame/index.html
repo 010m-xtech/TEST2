@@ -332,18 +332,8 @@
                     playingScreen.style.backgroundImage = `url("${backgroundImages[currentBgIndex]}")`;
                 }
 
-                // --- ★躍動感を出すための「回転（傾き）」処理★ ---
-                let rotation = 0;
-                if (isGrounded) {
-                    // 走っている時は、左右にペコペコ傾く（サイン波という波の計算を使用）
-                    rotation = Math.sin(x * 0.15) * 12; // -12度 〜 +12度の間を揺れる
-                } else {
-                    // ジャンプ中は、上がっている時は上を向き(-15度)、落ちている時は下を向く(15度)
-                    rotation = velocityY < 0 ? -15 : 15; 
-                }
-
-                // キャラクターの位置(translate)と、傾き(rotate)を画面に反映
-                character.style.transform = `translate(${x}px, ${y}px) rotate(${rotation}deg)`;
+                // ★回転処理を削除し、純粋な位置移動のみに戻しました
+                character.style.transform = `translate(${x}px, ${y}px)`;
 
                 // 次のコマを予約
                 animationId = requestAnimationFrame(update);
