@@ -75,10 +75,11 @@
             position: absolute;
             top: 0;
             left: 0;
-            /* 背景画像はJavaScriptで設定するため、ここでは初期値を消します */
-            background-size: cover; /* 画面全体に広げる */
+            /* 背景画像を「引き」で全体表示（見切れなく）する設定 */
+            background-size: contain; /* ★ここを cover から contain に変更 */
             background-position: bottom center; /* 画像の下部を基準に表示 */
             background-repeat: no-repeat;
+            background-color: #87ceeb; /* ★画像が収まって隙間ができた時用の背景色（空色） */
             /* 背景が切り替わるときにフワッと変わるアニメーション（お好みで） */
             transition: background-image 0.5s ease-in-out;
         }
@@ -303,14 +304,17 @@
                 velocityY += gravity;
                 y += velocityY;
 
+                let isGrounded = false; // 地面に足がついているかの判定
+
                 // 床に着地したかどうかの判定
                 if (y + currentHeight >= groundY) {
                     y = groundY - currentHeight; // 床にめり込まないように補正
                     velocityY = 0; // 落下ストップ
+                    isGrounded = true; // 「地面にいる」状態にする
                 }
 
                 // --- 横の動き（自動で右へ進む） ---
-                x += 3.5; // ここを増やすと走るスピードがアップします
+                x += 4.5; // スピードを少し上げて躍動感をアップ（3.5 -> 4.5）
                 
                 // 画面の右端を通り過ぎたら、左端から再登場し、背景を切り替える
                 if (x > window.innerWidth) {
@@ -328,8 +332,18 @@
                     playingScreen.style.backgroundImage = `url("${backgroundImages[currentBgIndex]}")`;
                 }
 
-                // キャラクターの位置を画面に反映
-                character.style.transform = `translate(${x}px, ${y}px)`;
+                // --- ★躍動感を出すための「回転（傾き）」処理★ ---
+                let rotation = 0;
+                if (isGrounded) {
+                    // 走っている時は、左右にペコペコ傾く（サイン波という波の計算を使用）
+                    rotation = Math.sin(x * 0.15) * 12; // -12度 〜 +12度の間を揺れる
+                } else {
+                    // ジャンプ中は、上がっている時は上を向き(-15度)、落ちている時は下を向く(15度)
+                    rotation = velocityY < 0 ? -15 : 15; 
+                }
+
+                // キャラクターの位置(translate)と、傾き(rotate)を画面に反映
+                character.style.transform = `translate(${x}px, ${y}px) rotate(${rotation}deg)`;
 
                 // 次のコマを予約
                 animationId = requestAnimationFrame(update);
