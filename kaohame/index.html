@@ -578,6 +578,7 @@
         let catchTimerId, catchSpawnerId, catchAnimationId;
         let fallingItems = [];
         let charX = 0;
+        let targetCharX = 0; /* 追加：指の目標地点 */
 
         function startCatchGame() {
             catchScore = 0;
@@ -589,6 +590,7 @@
             document.getElementById('catch-time').innerText = catchTime;
             
             charX = window.innerWidth / 2 - (character.offsetWidth * gameScale) / 2;
+            targetCharX = charX; /* 初期位置セット */
             const charY = window.innerHeight - (character.offsetHeight * gameScale) - 20;
             character.style.transform = `translate(${charX}px, ${charY}px) scale(${gameScale})`;
 
@@ -633,6 +635,11 @@
         }
 
         function catchLoop() {
+            /* 滑らかに追従させる処理を追加（現在地から目標地点へ少しずつ近づく） */
+            charX += (targetCharX - charX) * 0.3;
+            const charY = window.innerHeight - (character.offsetHeight * gameScale) - 20;
+            character.style.transform = `translate(${charX}px, ${charY}px) scale(${gameScale})`;
+
             const charRect = character.getBoundingClientRect();
 
             for (let i = fallingItems.length - 1; i >= 0; i--) {
@@ -664,19 +671,26 @@
             catchAnimationId = requestAnimationFrame(catchLoop);
         }
 
-        catchScreen.addEventListener('touchmove', (e) => {
+        /* 新しい滑らかな移動入力処理 */
+        function onCatchMove(e) {
             if (catchTime <= 0) return;
             e.preventDefault();
-            const touchX = e.touches[0].clientX;
-            charX = touchX - (character.offsetWidth * gameScale) / 2;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             
+            let newX = clientX - (character.offsetWidth * gameScale) / 2;
             const maxRight = window.innerWidth - (character.offsetWidth * gameScale);
-            if (charX < 0) charX = 0;
-            if (charX > maxRight) charX = maxRight;
             
-            const charY = window.innerHeight - (character.offsetHeight * gameScale) - 20;
-            character.style.transform = `translate(${charX}px, ${charY}px) scale(${gameScale})`;
-        }, {passive: false});
+            if (newX < 0) newX = 0;
+            if (newX > maxRight) newX = maxRight;
+            
+            targetCharX = newX;
+        }
+
+        /* タッチとマウス両方に対応 */
+        catchScreen.addEventListener('touchmove', onCatchMove, {passive: false});
+        catchScreen.addEventListener('mousemove', onCatchMove);
+        catchScreen.addEventListener('touchstart', onCatchMove, {passive: false});
+        catchScreen.addEventListener('mousedown', onCatchMove);
 
         // --- 4. ゲーム2: モグラたたき風ゲーム ---
         document.getElementById('btn-play-whack').addEventListener('click', () => {
@@ -817,7 +831,7 @@
             if (isCharacter) {
                 hole.charMole.classList.remove('hidden');
             } else {
-                hole.foodMole.innerText = goodFoods[Math.floor(Math.random() * goodFoods.length)];
+                hole.foodMole.innerHTML = goodFoods[Math.floor(Math.random() * goodFoods.length)]; // innerHTMLに変更
                 hole.foodMole.classList.remove('hidden');
             }
             
