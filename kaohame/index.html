@@ -2,23 +2,22 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <!-- スマホで適切なサイズで表示するための超重要タグ -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>顔はめゲーム</title>
+    <title>顔はめゲーム - アクション</title>
     <style>
-        /* 画面全体のデザイン */
+        /* 画面全体のデザイン（飲食店向けの温かい色合い） */
         body {
             margin: 0;
-            overflow: hidden; /* スクロールバーを消す */
-            background-color: #2c3e50; /* 背景色 */
-            color: white;
-            font-family: sans-serif;
+            overflow: hidden; 
+            background-color: #ffedd6; /* 温かいクリーム色 */
+            color: #5c3a21; /* こげ茶色 */
+            font-family: 'Hiragino Maru Gothic ProN', 'Rounded M+ 1c', sans-serif; /* 丸みのあるフォント */
             -webkit-tap-highlight-color: transparent; 
             width: 100vw;
             height: 100vh;
         }
 
-        /* --- 1. 撮影画面（ステップ1） --- */
+        /* --- 1. 撮影画面 --- */
         #shooting-screen {
             display: flex;
             flex-direction: column;
@@ -30,122 +29,161 @@
             top: 0;
             left: 0;
             z-index: 100;
-            background-color: rgba(44, 62, 80, 1); /* 背景色をしっかりつける */
+            background-color: #ffedd6; 
         }
 
-        /* 撮影時のカメラ枠（大きく表示） */
         #camera-wrapper {
-            width: 250px; /* スマホ画面に合わせてかなり大きく */
+            width: 250px; 
             height: 250px;
-            border-radius: 50%; /* 丸く切り抜く */
-            border: 6px solid #fff;
+            border-radius: 50%; 
+            border: 6px solid #ff9800; /* オレンジ色の枠 */
             overflow: hidden;
             position: relative;
             background-color: #000;
             margin-bottom: 40px;
-            box-shadow: 0 0 20px rgba(255,255,255,0.3);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
         }
 
         #webcam {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* 枠いっぱいに映像を広げる */
-            transform: scaleX(-1); /* 鏡のように左右反転 */
+            object-fit: cover; 
+            transform: scaleX(-1); 
         }
 
-        /* 撮影・やり直しボタンのデザイン */
         .btn {
             padding: 15px 50px;
             font-size: 1.5rem;
             font-weight: bold;
-            color: #2c3e50;
-            background-color: #f1c40f;
+            color: white;
+            background-color: #ff9800; /* 美味しそうなオレンジ */
             border: none;
             border-radius: 40px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.4);
             cursor: pointer;
             transition: transform 0.1s;
         }
         .btn:active {
-            transform: scale(0.95); /* 押した時に少し凹むアニメーション */
+            transform: scale(0.95);
         }
 
-        /* --- 2. プレイ画面（ステップ2） --- */
+        /* --- 2. プレイ画面 --- */
         #playing-screen {
-            display: none; /* 最初は隠しておく */
+            display: none; 
             width: 100%;
             height: 100%;
             position: absolute;
             top: 0;
             left: 0;
+            /* 背景画像はJavaScriptで設定するため、ここでは初期値を消します */
+            background-size: cover; /* 画面全体に広げる */
+            background-position: bottom center; /* 画像の下部を基準に表示 */
+            background-repeat: no-repeat;
+            /* 背景が切り替わるときにフワッと変わるアニメーション（お好みで） */
+            transition: background-image 0.5s ease-in-out;
         }
 
-        /* キャラクター全体 */
+        /* テーブルクロス柄の地面は削除し、背景画像に任せるか、必要に応じて透明にする */
+        #ground {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 80px; /* キャラクターが着地する基準の高さ（画像に合わせて調整） */
+            background-color: transparent; /* 透明にして見えない床にする */
+            z-index: 5;
+        }
+        @keyframes scrollBg {
+            from { background-position: 0 0; }
+            to { background-position: -120px 0; }
+        }
+
+        /* テーブルクロス柄の地面 */
+        #ground {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background-color: #fff;
+            /* 赤白チェック柄のCSSグラデーション */
+            background-image: 
+                linear-gradient(45deg, #ff9999 25%, transparent 25%, transparent 75%, #ff9999 75%, #ff9999), 
+                linear-gradient(45deg, #ff9999 25%, transparent 25%, transparent 75%, #ff9999 75%, #ff9999);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            z-index: 5;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+            /* 地面も左に流す */
+            animation: scrollGround 1.5s linear infinite;
+        }
+        @keyframes scrollGround {
+            from { background-position: 0 0, 20px 20px; }
+            to { background-position: -40px 0, -20px 20px; }
+        }
+
+        /* キャラクター */
         #character {
             position: absolute;
-            /* widthとheightを削除。サイズは中の要素で決まるようにします */
-            /* アニメーション中はタップイベントを無視 */
             pointer-events: none;
+            z-index: 10; /* 地面より前に表示 */
         }
 
-        /* キャラクターの体（画像を表示するように変更） */
-        #body-part {
-            width: 200px; /* 体の横幅を基準にします */
-            height: auto;
-            position: relative; /* 顔を配置する基準位置にします */
-            z-index: 1;
-            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5));
-        }
-
-        /* 動くキャラクターの顔枠 */
         #face-frame {
             width: 150px;
             height: 150px;
             border-radius: 50%;
-            border: 6px solid #fff;
+            border: 6px solid #ff9800; /* 顔の枠もオレンジに */
             overflow: hidden;
-            position: absolute; /* 絶対配置に変更 */
+            position: absolute; 
             z-index: 2;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            
-            /* --- 重要な位置調整部分 --- */
-            /* 体(body-part)の左上を基準に、顔をどこに置くか決めます */
-            /* top: 上からの位置, left: 左からの位置 */
-            top: -40px;  /* マイナスにすると体より上に飛び出します */
-            left: 50%;   /* 横幅の中央に配置 */
-            transform: translateX(-50%); /* 中央揃えのための必須設定 */
-            /* --------------------------- */
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            top: -40px;  
+            left: 50%;   
+            transform: translateX(-50%); 
         }
 
-        /* 撮影した写真を貼り付けるキャンバス */
         #photo-canvas {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transform: scaleX(-1); /* カメラ映像と同じく反転させておく */
+            transform: scaleX(-1); 
         }
 
-        /* キャラクターの体（画像を表示するように変更） */
         #body-part {
-            width: 200px; /* 体の横幅（マッチョ画像に合わせて調整してください） */
-            height: auto; /* 画像の縦横比を保つ */
-            margin-top: -40px; /* 顔と体の重なり具合（マイナスの数値を大きくすると深く重なります） */
+            width: 200px; 
+            height: auto; 
+            margin-top: -40px; 
             z-index: 1;
-            /* 画像の形に合わせて影をつける */
-            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5));
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.4));
         }
 
-        /* プレイ画面用のやり直しボタン */
+        /* やり直しボタン（ジャンプの邪魔にならないよう右上に） */
         #retry-btn {
             position: absolute;
-            bottom: 40px;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            background-color: #e74c3c; 
+            color: white;
+            z-index: 20;
+        }
+
+        /* ジャンプを促すテキスト */
+        #jump-hint {
+            position: absolute;
+            top: 30px;
             left: 50%;
             transform: translateX(-50%);
-            padding: 12px 30px;
-            font-size: 1.2rem;
-            background-color: #e74c3c; /* 赤系の色に */
-            color: white;
-            z-index: 10;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #d35400;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 5px 20px;
+            border-radius: 20px;
+            z-index: 15;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -160,18 +198,21 @@
         <button id="shoot-btn" class="btn">撮影する！</button>
     </div>
 
-    <!-- ステップ2: プレイ画面（はめ込み後） -->
+    <!-- ステップ2: プレイ画面（マリオ風アクション） -->
     <div id="playing-screen">
+        <div id="jump-hint">画面タップでジャンプ！</div>
+        
+        <!-- キャラクター -->
         <div id="character">
-            <!-- 体を基準にするため、HTMLの順番を体が先になるように変更してもOKですが、z-indexで重なりは制御しています。
-                 今回は絶対配置なので順番は影響しにくくなりました。 -->
-            <img id="body-part" src="maccho.png" alt="マッチョの体">
-            
+            <img id="body-part" src="maccho.png" alt="体">
             <div id="face-frame">
-                <!-- ここに撮影した写真が描画されます -->
                 <canvas id="photo-canvas"></canvas>
             </div>
         </div>
+        
+        <!-- テーブルクロスの地面 -->
+        <div id="ground"></div>
+
         <button id="retry-btn" class="btn">やり直す</button>
     </div>
 
@@ -185,12 +226,13 @@
         const shootBtn = document.getElementById('shoot-btn');
         const retryBtn = document.getElementById('retry-btn');
         const character = document.getElementById('character');
+        const ground = document.getElementById('ground');
 
-        let animationId; // アニメーションを止めるためのID
+        let animationId; 
 
-        // 1. スマホのインカメラを起動
+        // 1. カメラ起動
         navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: "user" }, // インカメラを指定
+            video: { facingMode: "user" }, 
             audio: false
         })
         .then(function(stream) {
@@ -198,76 +240,124 @@
         })
         .catch(function(err) {
             console.error("カメラエラー:", err);
-            alert("カメラの起動に失敗しました。ブラウザのカメラ許可設定を確認してください。");
+            alert("カメラの起動に失敗しました。");
         });
 
-        // 2. 「撮影する！」ボタンを押した時の処理
+        // 2. 撮影ボタン
         shootBtn.addEventListener('click', function() {
-            // まだカメラの準備ができていない場合は無視
             if (video.videoWidth === 0) return; 
             
-            // キャンバスのサイズをカメラの実際の解像度に合わせる
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
-            
-            // 現在のカメラ映像をキャンバスに1枚の絵として描き込む（写真を撮る）
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             
-            // 画面を「プレイ画面」に切り替える
             shootingScreen.style.display = 'none';
             playingScreen.style.display = 'block';
 
-            // キャラクターを動かし始める
-            startAnimation();
+            startActionGame(); // アクションゲーム開始！
         });
 
-        // 3. 「やり直す」ボタンを押した時の処理
+        // 3. やり直すボタン
         retryBtn.addEventListener('click', function() {
-            // 動いているキャラクターを止める
             cancelAnimationFrame(animationId); 
-            
-            // 画面を「撮影画面」に戻す
             playingScreen.style.display = 'none';
             shootingScreen.style.display = 'flex';
         });
 
-        // 4. キャラクターをバウンドさせて動かす処理
-        let x = 50;
-        let y = 50;
-        let speedX = 4; // 横のスピード
-        let speedY = 4; // 縦のスピード
 
-        function startAnimation() {
-            // 出現位置をランダムにする
-            x = Math.random() * (window.innerWidth - 200) + 50;
-            y = Math.random() * (window.innerHeight - 300) + 50;
+        // --- 4. マリオ風アクションの物理演算と動き ---
+        
+        let x = 0; // 横の位置
+        let y = 0; // 縦の位置
+        let velocityY = 0; // 縦方向のスピード（落下速度）
+        const gravity = 0.8; // 重力（大きいほど早く落ちる）
+        const jumpPower = -15; // ジャンプ力（マイナス方向が上）
+        let groundY = 0; // 地面の高さ（Y座標）
 
-            function move() {
-                const charWidth = character.offsetWidth;
-                const charHeight = character.offsetHeight;
+        // --- 背景画像のリスト（準備したファイル名をここに追加します） ---
+        const backgroundImages = [
+            "haikei1.jpg", // 1ステージ目の背景
+            "haikei2.jpg"  // 2ステージ目の背景
+        ];
+        let currentBgIndex = 0; // 今何枚目の背景を表示しているか
 
-                // 画面の左右の端にぶつかったら跳ね返る
-                if (x + charWidth >= window.innerWidth || x <= 0) {
-                    speedX *= -1;
+        function startActionGame() {
+            const charHeight = character.offsetHeight || 250; 
+            
+            // 地面の上端のY座標を計算
+            groundY = window.innerHeight - ground.offsetHeight;
+            
+            // スタート位置
+            x = 20; // 左端の少し右から
+            y = groundY - charHeight; // 地面の上にピッタリ乗せる
+            velocityY = 0;
+
+            // 最初の背景を設定
+            currentBgIndex = 0;
+            playingScreen.style.backgroundImage = `url("${backgroundImages[currentBgIndex]}")`;
+
+            function update() {
+                const currentHeight = character.offsetHeight;
+                
+                // --- 縦の動き（重力で落ちる） ---
+                velocityY += gravity;
+                y += velocityY;
+
+                // 床に着地したかどうかの判定
+                if (y + currentHeight >= groundY) {
+                    y = groundY - currentHeight; // 床にめり込まないように補正
+                    velocityY = 0; // 落下ストップ
                 }
-                // 画面の上下の端にぶつかったら跳ね返る（下のボタンに被らないよう少し上で反射）
-                if (y + charHeight >= window.innerHeight - 100 || y <= 0) {
-                    speedY *= -1;
+
+                // --- 横の動き（自動で右へ進む） ---
+                x += 3.5; // ここを増やすと走るスピードがアップします
+                
+                // 画面の右端を通り過ぎたら、左端から再登場し、背景を切り替える
+                if (x > window.innerWidth) {
+                    x = -character.offsetWidth; 
+                    
+                    // 背景を次の画像に進める
+                    currentBgIndex++;
+                    
+                    // 用意した背景画像をすべて使い切ったら、最初(0番目)の画像に戻す（ループ）
+                    if (currentBgIndex >= backgroundImages.length) {
+                        currentBgIndex = 0; 
+                    }
+                    
+                    // 新しい背景画像を適用
+                    playingScreen.style.backgroundImage = `url("${backgroundImages[currentBgIndex]}")`;
                 }
 
-                // 位置を更新
-                x += speedX;
-                y += speedY;
-
-                // キャラクターを移動させる
+                // キャラクターの位置を画面に反映
                 character.style.transform = `translate(${x}px, ${y}px)`;
 
-                // 次のコマでも動かすように予約する
-                animationId = requestAnimationFrame(move);
+                // 次のコマを予約
+                animationId = requestAnimationFrame(update);
             }
-            // アニメーションループ開始
-            move();
+            update();
         }
+
+        // --- 5. タップでジャンプする処理 ---
+        function jump(e) {
+            // やり直しボタンを押した時はジャンプさせない
+            if (e.target.id === 'retry-btn') return;
+            
+            // プレイ画面の時だけ
+            if (playingScreen.style.display === 'block') {
+                const currentHeight = character.offsetHeight;
+                
+                // 「地面に足がついている時」だけジャンプできるようにする
+                // (少しの隙間 -5px くらいは許容してジャンプしやすくしています)
+                if (y + currentHeight >= groundY - 5) {
+                    velocityY = jumpPower; // 上に向かって力を加える
+                }
+            }
+        }
+
+        // 画面のどこを触ってもジャンプするように設定
+        window.addEventListener('touchstart', jump); // スマホ用
+        window.addEventListener('mousedown', jump);  // PCクリック用
+
     </script>
 </body>
 </html>
