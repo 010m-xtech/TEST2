@@ -35,23 +35,9 @@
             position: relative;
         }
 
-        #ui-area {
-            background: #fff;
-            padding: 25px 20px 40px 20px;
-            border-top-left-radius: 30px;
-            border-top-right-radius: 30px;
-            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            /* UIの高さをしっかり確保 */
-            min-height: 200px;
-        }
-
-        /* --- キャラクター部分 --- */
         #character {
-            width: 300px; /* 落書きできる範囲のサイズ */
-            height: 300px;
+            width: 300px; 
+            height: 420px; /* 高さを伸ばして体を描くスペースを確保！ */
             position: relative;
             pointer-events: none; /* 撮影時は触れない */
         }
@@ -63,14 +49,16 @@
         }
 
         #face-frame {
-            width: 110px; /* 顔枠のサイズ */
-            height: 110px;
-            border-radius: 50%;
+            width: 120px; /* 顔枠の幅 */
+            height: 160px; /* 顔枠の高さ（縦長） */
+            /* 修正：上が広く、下がシャープな逆三角形・卵型にする！ */
+            border-radius: 50% 50% 50% 50% / 25% 25% 75% 75%;
             border: 5px solid #ff9800; 
             overflow: hidden;
             position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
+            top: 20px; /* キャンバスの上の方に配置して、下を広く空ける */
+            left: 50%;
+            transform: translateX(-50%);
             background-color: #000;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             z-index: 2;
@@ -98,10 +86,20 @@
         #character.drawing-mode #drawing-canvas {
             background-color: rgba(255,255,255,0.4);
             border: 3px dashed #ff9800;
-            border-radius: 50%; /* 丸い範囲に落書きできる */
+            border-radius: 30px; /* 角を少し丸く */
         }
 
-        /* --- UI部品のデザイン --- */
+        #ui-area {
+            background: #fff;
+            padding: 20px;
+            border-top-left-radius: 30px;
+            border-top-right-radius: 30px;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
         .btn {
             padding: 15px 30px;
             font-size: 1.3rem;
@@ -117,7 +115,7 @@
         .btn.small { padding: 10px 20px; font-size: 1rem; }
 
         .color-btn {
-            width: 45px; height: 45px;
+            width: 40px; height: 40px;
             border-radius: 50%;
             border: 4px solid #f0f0f0;
             cursor: pointer;
@@ -128,16 +126,39 @@
             transform: scale(1.15);
         }
 
-        /* --- プレイ画面 --- */
+        /* 線の太さボタン */
+        .size-btn-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 25px;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            padding: 10px 20px;
+            border-radius: 20px;
+        }
+        .size-btn {
+            background-color: #555;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s;
+            border: 2px solid transparent;
+        }
+        .size-btn.active {
+            background-color: #ff9800;
+            transform: scale(1.3);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
         #playing-screen {
             display: none; 
             width: 100%; height: 100%;
             position: absolute;
             top: 0; left: 0;
-            background-size: contain; 
-            background-position: bottom center;
+            background-size: cover; 
+            background-position: center bottom;
             background-repeat: no-repeat;
-            background-color: #87ceeb; /* 余白用の空色 */
+            background-color: #87ceeb; /* 空色 */
         }
 
         #ground {
@@ -161,12 +182,11 @@
 </head>
 <body>
 
-    <!-- 画面1＆2: 撮影＆お絵描き画面 -->
     <div id="setup-screen">
-        <!-- 上部の広いエリアにキャラクター（顔とキャンバス）を配置 -->
         <div id="character-area">
             <div id="character">
-                <canvas id="drawing-canvas" width="300" height="300"></canvas>
+                <!-- 高さを伸ばしたキャンバス -->
+                <canvas id="drawing-canvas" width="300" height="420"></canvas>
                 <div id="face-frame">
                     <video id="webcam" autoplay playsinline></video>
                     <canvas id="photo-canvas" style="display:none;"></canvas>
@@ -174,25 +194,30 @@
             </div>
         </div>
 
-        <!-- 下部の白いエリアに操作ボタンを配置 -->
         <div id="ui-area">
             <!-- 撮影時のボタン -->
             <div id="ui-shooting" style="text-align:center;">
-                <h2 style="margin:0 0 15px 0; color:#d35400; font-size:1.3rem;">丸い枠に顔を入れてね！</h2>
+                <h2 style="margin:0 0 15px 0; color:#d35400; font-size:1.2rem;">顔の形に合わせて撮影！</h2>
                 <button id="shoot-btn" class="btn" style="background-color:#ff9800; width:200px;">📸 撮影する！</button>
             </div>
 
             <!-- 撮影後のお絵描きパレットとボタン -->
             <div id="ui-drawing" style="display:none; width:100%; max-width:350px;">
-                <h3 style="margin:0 0 15px 0; color:#d35400; text-align:center; font-size:1.2rem;">好きな色で体を書こう！</h3>
-                
                 <!-- 5色のパレット -->
-                <div id="color-palette" style="display:flex; justify-content:space-around; margin-bottom:20px;">
+                <div id="color-palette" style="display:flex; justify-content:space-around; margin-bottom:15px;">
                     <div class="color-btn active" data-color="#000000" style="background-color:#000;"></div>
                     <div class="color-btn" data-color="#e74c3c" style="background-color:#e74c3c;"></div>
                     <div class="color-btn" data-color="#3498db" style="background-color:#3498db;"></div>
                     <div class="color-btn" data-color="#2ecc71" style="background-color:#2ecc71;"></div>
                     <div class="color-btn" data-color="#f1c40f" style="background-color:#f1c40f;"></div>
+                </div>
+
+                <!-- 線の太さパレット -->
+                <div class="size-btn-wrapper">
+                    <span style="font-size:0.9rem; font-weight:bold; color:#777;">太さ</span>
+                    <div class="size-btn" data-size="5" style="width:8px; height:8px;"></div>
+                    <div class="size-btn active" data-size="12" style="width:16px; height:16px;"></div>
+                    <div class="size-btn" data-size="25" style="width:26px; height:26px;"></div>
                 </div>
 
                 <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
@@ -204,7 +229,6 @@
         </div>
     </div>
 
-    <!-- 画面3: プレイ画面（マリオ風） -->
     <div id="playing-screen">
         <div id="jump-hint">画面タップでジャンプ！</div>
         <button id="retry-game-btn" class="btn small" style="position:absolute; top:20px; right:20px; background-color:#e74c3c; z-index:20;">やり直す</button>
@@ -212,7 +236,6 @@
     </div>
 
     <script>
-        // 各要素の取得
         const video = document.getElementById('webcam');
         const photoCanvas = document.getElementById('photo-canvas');
         const pCtx = photoCanvas.getContext('2d');
@@ -235,24 +258,21 @@
         let currentBgIndex = 0;
         let animationId; 
 
-        // --- カメラ起動 ---
+        // カメラ起動
         navigator.mediaDevices.getUserMedia({ 
             video: { facingMode: "user" }, audio: false
         })
         .then(stream => { video.srcObject = stream; video.play(); })
         .catch(err => { alert("カメラの起動に失敗しました。"); });
 
-        // --- 画面切り替えの処理 ---
         // 1. 撮影ボタン
         document.getElementById('shoot-btn').addEventListener('click', () => {
             if (video.videoWidth === 0) return; 
             
-            // カメラ映像をキャンバスに固定
             photoCanvas.width = video.videoWidth;
             photoCanvas.height = video.videoHeight;
             pCtx.drawImage(video, 0, 0, photoCanvas.width, photoCanvas.height);
             
-            // UIをお絵描きモードに切り替え
             video.style.display = 'none';
             photoCanvas.style.display = 'block';
             uiShooting.style.display = 'none';
@@ -270,12 +290,10 @@
 
         // 4. スタート（完成）ボタン
         document.getElementById('start-btn').addEventListener('click', () => {
-            // お絵描きモード解除
             character.classList.remove('drawing-mode');
             setupScreen.style.display = 'none';
             playingScreen.style.display = 'block';
             
-            // キャラクターを body 直下に移動して絶対配置で動かせるようにする
             document.body.appendChild(character);
             character.classList.add('playing-mode');
             
@@ -285,7 +303,6 @@
         // 5. ゲーム中のやり直しボタン
         document.getElementById('retry-game-btn').addEventListener('click', () => {
             cancelAnimationFrame(animationId);
-            // キャラクターを元の場所に戻す
             document.getElementById('character-area').appendChild(character);
             character.classList.remove('playing-mode');
             
@@ -304,9 +321,9 @@
             video.play();
         }
 
-        // --- お絵描きの処理 ---
         let isDrawing = false;
         let currentColor = '#000000';
+        let currentSize = 12; // 初期のペンの太さ
 
         function getPos(e) {
             const rect = drawCanvas.getBoundingClientRect();
@@ -322,7 +339,7 @@
 
         function startDrawing(e) {
             if (!character.classList.contains('drawing-mode')) return;
-            e.preventDefault(); // スクロール防止
+            e.preventDefault(); 
             isDrawing = true;
             const pos = getPos(e);
             dCtx.beginPath();
@@ -335,7 +352,7 @@
             const pos = getPos(e);
             dCtx.lineTo(pos.x, pos.y);
             dCtx.strokeStyle = currentColor;
-            dCtx.lineWidth = 10; // ペンの太さ
+            dCtx.lineWidth = currentSize; // 選んだ太さを適用
             dCtx.lineCap = 'round';
             dCtx.lineJoin = 'round';
             dCtx.stroke();
@@ -360,55 +377,68 @@
             });
         });
 
-        // --- アクションゲーム処理 ---
+        // 太さ変更
+        document.querySelectorAll('.size-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentSize = parseInt(this.dataset.size);
+            });
+        });
+
         let x = 0; let y = 0;
         let velocityY = 0; 
         const gravity = 0.8; 
         const jumpPower = -15; 
         let groundY = 0; 
+        const gameScale = 0.5; // ★追加：遊ぶ時のキャラクターの大きさ（0.5 = 半分）
 
         function startActionGame() {
             const ground = document.getElementById('ground');
             groundY = window.innerHeight - ground.offsetHeight;
             
             x = 20; 
-            // 描画キャンバスの高さに合わせて初期位置を調整
-            y = groundY - character.offsetHeight; 
+            // 修正：小さくなったサイズを考慮して初期位置を計算
+            y = groundY - (character.offsetHeight * gameScale); 
             velocityY = 0;
             currentBgIndex = 0;
             playingScreen.style.backgroundImage = `url("${backgroundImages[currentBgIndex]}")`;
 
             function update() {
+                // 修正：見た目のサイズに合わせて計算用の幅と高さを調整
+                const charWidth = character.offsetWidth * gameScale;
+                const charHeight = character.offsetHeight * gameScale;
+
                 velocityY += gravity;
                 y += velocityY;
 
-                // 着地判定
-                if (y + character.offsetHeight >= groundY) {
-                    y = groundY - character.offsetHeight;
+                if (y + charHeight >= groundY) {
+                    y = groundY - charHeight;
                     velocityY = 0;
                 }
 
                 x += 3.5; 
                 
-                // 画面端ループ＆背景切り替え
                 if (x > window.innerWidth) {
-                    x = -character.offsetWidth; 
+                    x = -charWidth; 
                     currentBgIndex++;
                     if (currentBgIndex >= backgroundImages.length) currentBgIndex = 0; 
                     playingScreen.style.backgroundImage = `url("${backgroundImages[currentBgIndex]}")`;
                 }
 
-                character.style.transform = `translate(${x}px, ${y}px)`;
+                // 修正：scale(gameScale) を追加して画面上で小さく表示！
+                character.style.transform = `translate(${x}px, ${y}px) scale(${gameScale})`;
                 animationId = requestAnimationFrame(update);
             }
             update();
         }
 
         function jump(e) {
-            // やり直しボタンや設定画面中はジャンプしない
             if (e.target.id === 'retry-game-btn' || setupScreen.style.display !== 'none') return;
             
-            if (y + character.offsetHeight >= groundY - 5) {
+            const charHeight = character.offsetHeight * gameScale;
+            // 修正：小さくなった足元の位置でジャンプ判定
+            if (y + charHeight >= groundY - 5) {
                 velocityY = jumpPower; 
             }
         }
