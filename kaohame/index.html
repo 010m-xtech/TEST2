@@ -3,380 +3,315 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>顔はめゲーム - アクション</title>
+    <title>顔はめ＆落書きアクションゲーム</title>
     <style>
-        /* 画面全体のデザイン（飲食店向けの温かい色合い） */
         body {
             margin: 0;
             overflow: hidden; 
-            background-color: #ffedd6; /* 温かいクリーム色 */
-            color: #5c3a21; /* こげ茶色 */
-            font-family: 'Hiragino Maru Gothic ProN', 'Rounded M+ 1c', sans-serif; /* 丸みのあるフォント */
+            background-color: #ffedd6; /* 撮影時の背景色 */
+            color: #5c3a21; 
+            font-family: 'Hiragino Maru Gothic ProN', sans-serif; 
             -webkit-tap-highlight-color: transparent; 
             width: 100vw;
             height: 100vh;
         }
 
-        /* --- 1. 撮影画面 --- */
-        #shooting-screen {
+        /* --- 撮影＆お絵描き画面のレイアウト --- */
+        #setup-screen {
             display: flex;
-            flex-direction: row; /* ★横並びに変更 */
-            align-items: center;
-            justify-content: center;
-            gap: 30px; /* カメラとボタンの間隔 */
+            flex-direction: column;
             height: 100%;
             width: 100%;
             position: absolute;
-            top: 0;
-            left: 0;
+            top: 0; left: 0;
             z-index: 100;
-            background-color: #ffedd6; 
         }
 
-        #camera-wrapper {
-            width: 50vh; /* ★横画面の高さに合わせて可変に */
-            height: 50vh;
-            max-width: 250px;
-            max-height: 250px;
-            border-radius: 50%; 
-            border: 6px solid #ff9800; /* オレンジ色の枠 */
-            overflow: hidden;
+        #character-area {
+            flex: 1; /* 上部の余白をすべて使う */
+            display: flex;
+            justify-content: center;
+            align-items: center;
             position: relative;
-            background-color: #000;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
         }
 
-        #webcam {
+        #ui-area {
+            background: #fff;
+            padding: 25px 20px 40px 20px;
+            border-top-left-radius: 30px;
+            border-top-right-radius: 30px;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* UIの高さをしっかり確保 */
+            min-height: 200px;
+        }
+
+        /* --- キャラクター部分 --- */
+        #character {
+            width: 300px; /* 落書きできる範囲のサイズ */
+            height: 300px;
+            position: relative;
+            pointer-events: none; /* 撮影時は触れない */
+        }
+        
+        /* ゲーム中のキャラクター設定 */
+        #character.playing-mode {
+            position: absolute;
+            z-index: 10;
+        }
+
+        #face-frame {
+            width: 110px; /* 顔枠のサイズ */
+            height: 110px;
+            border-radius: 50%;
+            border: 5px solid #ff9800; 
+            overflow: hidden;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #000;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            z-index: 2;
+        }
+
+        #webcam, #photo-canvas {
             width: 100%;
             height: 100%;
             object-fit: cover; 
             transform: scaleX(-1); 
         }
 
+        #drawing-canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 5;
+            transition: background-color 0.3s;
+        }
+
+        /* お絵描きモードの時のキャンバス（描ける範囲をわかりやすく） */
+        #character.drawing-mode {
+            pointer-events: auto;
+        }
+        #character.drawing-mode #drawing-canvas {
+            background-color: rgba(255,255,255,0.4);
+            border: 3px dashed #ff9800;
+            border-radius: 50%; /* 丸い範囲に落書きできる */
+        }
+
+        /* --- UI部品のデザイン --- */
         .btn {
-            padding: 15px 50px;
-            font-size: 1.5rem;
+            padding: 15px 30px;
+            font-size: 1.3rem;
             font-weight: bold;
             color: white;
-            background-color: #ff9800; /* 美味しそうなオレンジ */
             border: none;
-            border-radius: 40px;
-            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.4);
+            border-radius: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             cursor: pointer;
             transition: transform 0.1s;
         }
-        .btn:active {
-            transform: scale(0.95);
-        }
-
-        /* --- 2. プレイ画面 --- */
-        #playing-screen {
-            display: none; 
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-            /* 背景画像を「引き」で全体表示（見切れなく）する設定 */
-            background-size: contain; /* ★ここを cover から contain に変更 */
-            background-position: bottom center; /* 画像の下部を基準に表示 */
-            background-repeat: no-repeat;
-            background-color: #87ceeb; /* ★画像が収まって隙間ができた時用の背景色（空色） */
-            /* 背景が切り替わるときにフワッと変わるアニメーション（お好みで） */
-            transition: background-image 0.5s ease-in-out;
-        }
-
-        /* テーブルクロス柄の地面は削除し、背景画像に任せるか、必要に応じて透明にする */
-        #ground {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 80px; /* キャラクターが着地する基準の高さ（画像に合わせて調整） */
-            background-color: transparent; /* 透明にして見えない床にする */
-            z-index: 5;
-        }
-        @keyframes scrollBg {
-            from { background-position: 0 0; }
-            to { background-position: -120px 0; }
-        }
-
-        /* テーブルクロス柄の地面 */
-        #ground {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 100px;
-            background-color: #fff;
-            /* 赤白チェック柄のCSSグラデーション */
-            background-image: 
-                linear-gradient(45deg, #ff9999 25%, transparent 25%, transparent 75%, #ff9999 75%, #ff9999), 
-                linear-gradient(45deg, #ff9999 25%, transparent 25%, transparent 75%, #ff9999 75%, #ff9999);
-            background-size: 40px 40px;
-            background-position: 0 0, 20px 20px;
-            z-index: 5;
-            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
-            /* 地面も左に流す */
-            animation: scrollGround 1.5s linear infinite;
-        }
-        @keyframes scrollGround {
-            from { background-position: 0 0, 20px 20px; }
-            to { background-position: -40px 0, -20px 20px; }
-        }
-
-        /* キャラクター */
-        #character {
-            position: absolute;
-            pointer-events: none;
-            z-index: 10; /* 地面より前に表示 */
-            width: 150px;
-            height: 150px;
-        }
-
-        #face-frame {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            border: 6px solid #ff9800; /* 顔の枠もオレンジに */
-            overflow: hidden;
-            position: relative; 
-            z-index: 2;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
-            box-sizing: border-box;
-        }
-
-        #photo-canvas {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transform: scaleX(-1); 
-        }
-
-        /* やり直しボタン（ジャンプの邪魔にならないよう右上に） */
-        #retry-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            padding: 10px 20px;
-            font-size: 1rem;
-            background-color: #e74c3c; 
-            color: white;
-            z-index: 20;
-        }
-
-        /* --- お絵描き機能用のスタイル追加 --- */
-        #drawing-ui {
-            display: none;
-            position: absolute;
-            top: 5px; /* ★横画面の邪魔にならないよう上に詰める */
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(255,255,255,0.9);
-            padding: 10px; /* ★余白を少し小さく */
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            z-index: 30;
-            text-align: center;
-            width: 90%;
-            max-width: 500px;
-        }
-
-        #color-palette {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 5px 0; /* ★余白を少し小さく */
-        }
+        .btn:active { transform: scale(0.95); }
+        .btn.small { padding: 10px 20px; font-size: 1rem; }
 
         .color-btn {
-            width: 40px;
-            height: 40px;
+            width: 45px; height: 45px;
             border-radius: 50%;
+            border: 4px solid #f0f0f0;
             cursor: pointer;
-            border: 3px solid transparent;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
         }
-
         .color-btn.active {
             border-color: #333;
-            transform: scale(1.1);
+            transform: scale(1.15);
         }
 
-        #drawing-canvas {
+        /* --- プレイ画面 --- */
+        #playing-screen {
+            display: none; 
+            width: 100%; height: 100%;
             position: absolute;
-            top: 50%; 
-            left: 50%;
-            transform: translate(-50%, -50%);
+            top: 0; left: 0;
+            background-size: contain; 
+            background-position: bottom center;
+            background-repeat: no-repeat;
+            background-color: #87ceeb; /* 余白用の空色 */
+        }
+
+        #ground {
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 100%; height: 80px; 
+            background-color: transparent; 
             z-index: 5;
-            cursor: crosshair;
-            pointer-events: none; /* 通常は触れない */
         }
 
-        /* お絵描きモードの時のキャラクター */
-        .drawing-mode {
-            position: absolute !important;
-            top: 50% !important;
-            left: 50% !important;
-            transform: translate(-50%, -50%) scale(1.5) !important;
-            z-index: 25 !important;
-        }
-        .drawing-mode #drawing-canvas {
-            pointer-events: auto; /* お絵描き中は触れるように */
-            background-color: rgba(255,255,255,0.3); /* 描ける範囲をわかりやすく */
-            border-radius: 20px;
-        }
-
-        /* ジャンプを促すテキスト */
         #jump-hint {
             position: absolute;
-            top: 30px;
-            left: 50%;
+            top: 30px; left: 50%;
             transform: translateX(-50%);
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #d35400;
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 5px 20px;
-            border-radius: 20px;
-            z-index: 15;
-            pointer-events: none;
+            font-size: 1.5rem; font-weight: bold;
+            color: #d35400; background-color: rgba(255, 255, 255, 0.8);
+            padding: 5px 20px; border-radius: 20px;
+            z-index: 15; pointer-events: none;
         }
     </style>
 </head>
 <body>
 
-    <!-- ステップ1: 撮影画面 -->
-    <div id="shooting-screen">
-        <!-- ★左側にカメラ、右側にボタンを配置 -->
-        <div id="camera-wrapper">
-            <video id="webcam" autoplay playsinline></video>
+    <!-- 画面1＆2: 撮影＆お絵描き画面 -->
+    <div id="setup-screen">
+        <!-- 上部の広いエリアにキャラクター（顔とキャンバス）を配置 -->
+        <div id="character-area">
+            <div id="character">
+                <canvas id="drawing-canvas" width="300" height="300"></canvas>
+                <div id="face-frame">
+                    <video id="webcam" autoplay playsinline></video>
+                    <canvas id="photo-canvas" style="display:none;"></canvas>
+                </div>
+            </div>
         </div>
-        <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
-            <h2 style="margin-top: 0; margin-bottom: 20px;">丸い枠に顔を<br>合わせてね！</h2>
-            <button id="shoot-btn" class="btn">撮影する！</button>
+
+        <!-- 下部の白いエリアに操作ボタンを配置 -->
+        <div id="ui-area">
+            <!-- 撮影時のボタン -->
+            <div id="ui-shooting" style="text-align:center;">
+                <h2 style="margin:0 0 15px 0; color:#d35400; font-size:1.3rem;">丸い枠に顔を入れてね！</h2>
+                <button id="shoot-btn" class="btn" style="background-color:#ff9800; width:200px;">📸 撮影する！</button>
+            </div>
+
+            <!-- 撮影後のお絵描きパレットとボタン -->
+            <div id="ui-drawing" style="display:none; width:100%; max-width:350px;">
+                <h3 style="margin:0 0 15px 0; color:#d35400; text-align:center; font-size:1.2rem;">好きな色で体を書こう！</h3>
+                
+                <!-- 5色のパレット -->
+                <div id="color-palette" style="display:flex; justify-content:space-around; margin-bottom:20px;">
+                    <div class="color-btn active" data-color="#000000" style="background-color:#000;"></div>
+                    <div class="color-btn" data-color="#e74c3c" style="background-color:#e74c3c;"></div>
+                    <div class="color-btn" data-color="#3498db" style="background-color:#3498db;"></div>
+                    <div class="color-btn" data-color="#2ecc71" style="background-color:#2ecc71;"></div>
+                    <div class="color-btn" data-color="#f1c40f" style="background-color:#f1c40f;"></div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                    <button id="retake-btn" class="btn small" style="background-color:#95a5a6;">撮り直す</button>
+                    <button id="clear-btn" class="btn small" style="background-color:#95a5a6;">全消し</button>
+                </div>
+                <button id="start-btn" class="btn" style="width:100%; background-color:#2ecc71; padding:15px;">✨ 完成！遊ぶ！ ✨</button>
+            </div>
         </div>
     </div>
 
-    <!-- ステップ2: プレイ画面（マリオ風アクション） -->
+    <!-- 画面3: プレイ画面（マリオ風） -->
     <div id="playing-screen">
-        <!-- お絵描き用のカラーパレットとボタン -->
-        <div id="drawing-ui">
-            <h3 style="margin:0 0 5px 0; font-size: 1.1rem;">好きな色で落書きしよう！</h3>
-            <div id="color-palette">
-                <div class="color-btn active" data-color="#000000" style="background-color: #000;"></div>
-                <div class="color-btn" data-color="#e74c3c" style="background-color: #e74c3c;"></div>
-                <div class="color-btn" data-color="#3498db" style="background-color: #3498db;"></div>
-                <div class="color-btn" data-color="#2ecc71" style="background-color: #2ecc71;"></div>
-                <div class="color-btn" data-color="#f1c40f" style="background-color: #f1c40f;"></div>
-                <div class="color-btn" data-color="#ffffff" style="background-color: #fff; border: 1px solid #ccc;"></div>
-            </div>
-            <div>
-                <button id="clear-draw-btn" class="btn" style="background-color: #95a5a6; padding: 10px 20px; font-size: 1rem;">全部消す</button>
-                <button id="finish-draw-btn" class="btn" style="padding: 10px 30px; font-size: 1.2rem;">完成！遊ぶ！</button>
-            </div>
-        </div>
-
         <div id="jump-hint">画面タップでジャンプ！</div>
-        
-        <!-- キャラクター -->
-        <div id="character">
-            <!-- 落書き用レイヤー -->
-            <canvas id="drawing-canvas" width="300" height="300"></canvas>
-            
-            <div id="face-frame">
-                <canvas id="photo-canvas"></canvas>
-            </div>
-        </div>
-        
-        <!-- テーブルクロスの地面 -->
+        <button id="retry-game-btn" class="btn small" style="position:absolute; top:20px; right:20px; background-color:#e74c3c; z-index:20;">やり直す</button>
         <div id="ground"></div>
-
-        <button id="retry-btn" class="btn">やり直す</button>
     </div>
 
     <script>
+        // 各要素の取得
         const video = document.getElementById('webcam');
-        const canvas = document.getElementById('photo-canvas');
-        const ctx = canvas.getContext('2d');
+        const photoCanvas = document.getElementById('photo-canvas');
+        const pCtx = photoCanvas.getContext('2d');
         
-        const shootingScreen = document.getElementById('shooting-screen');
-        const playingScreen = document.getElementById('playing-screen');
-        const shootBtn = document.getElementById('shoot-btn');
-        const retryBtn = document.getElementById('retry-btn');
-        const character = document.getElementById('character');
-        const ground = document.getElementById('ground');
-
-        // お絵描き用要素の取得
         const drawCanvas = document.getElementById('drawing-canvas');
         const dCtx = drawCanvas.getContext('2d');
-        const drawingUI = document.getElementById('drawing-ui');
-        const finishDrawBtn = document.getElementById('finish-draw-btn');
-        const clearDrawBtn = document.getElementById('clear-draw-btn');
-        const jumpHint = document.getElementById('jump-hint');
+        
+        const character = document.getElementById('character');
+        const setupScreen = document.getElementById('setup-screen');
+        const playingScreen = document.getElementById('playing-screen');
+        
+        const uiShooting = document.getElementById('ui-shooting');
+        const uiDrawing = document.getElementById('ui-drawing');
 
+        // 背景画像のリスト
+        const backgroundImages = [
+            "haikei1.jpg", 
+            "haikei2.jpg"
+        ];
+        let currentBgIndex = 0;
         let animationId; 
 
-        // 1. カメラ起動
+        // --- カメラ起動 ---
         navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: "user" }, 
-            audio: false
+            video: { facingMode: "user" }, audio: false
         })
-        .then(function(stream) {
-            video.srcObject = stream;
-            video.play(); // ★スマホ環境向けに念のため明示的に再生処理を追加
-        })
-        .catch(function(err) {
-            console.error("カメラエラー:", err);
-            alert("カメラの起動に失敗しました。");
-        });
+        .then(stream => { video.srcObject = stream; video.play(); })
+        .catch(err => { alert("カメラの起動に失敗しました。"); });
 
-        // 2. 撮影ボタン
-        shootBtn.addEventListener('click', function() {
+        // --- 画面切り替えの処理 ---
+        // 1. 撮影ボタン
+        document.getElementById('shoot-btn').addEventListener('click', () => {
             if (video.videoWidth === 0) return; 
             
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            // カメラ映像をキャンバスに固定
+            photoCanvas.width = video.videoWidth;
+            photoCanvas.height = video.videoHeight;
+            pCtx.drawImage(video, 0, 0, photoCanvas.width, photoCanvas.height);
             
-            shootingScreen.style.display = 'none';
-            playingScreen.style.display = 'block';
-
-            // ゲーム開始前に、まずお絵描きモードにする
-            jumpHint.style.display = 'none'; // ジャンプ案内は一旦隠す
-            retryBtn.style.display = 'none'; // やり直しボタンも一旦隠す
+            // UIをお絵描きモードに切り替え
+            video.style.display = 'none';
+            photoCanvas.style.display = 'block';
+            uiShooting.style.display = 'none';
+            uiDrawing.style.display = 'block';
             character.classList.add('drawing-mode');
-            drawingUI.style.display = 'flex';
         });
 
-        // 「完成！遊ぶ！」ボタン
-        finishDrawBtn.addEventListener('click', function() {
-            character.classList.remove('drawing-mode');
-            drawingUI.style.display = 'none';
-            jumpHint.style.display = 'block';
-            retryBtn.style.display = 'block';
-            
-            startActionGame(); // ここでアクションゲーム開始！
-        });
+        // 2. 撮り直すボタン
+        document.getElementById('retake-btn').addEventListener('click', resetToShooting);
 
-        // 3. やり直すボタン
-        retryBtn.addEventListener('click', function() {
-            cancelAnimationFrame(animationId); 
-            playingScreen.style.display = 'none';
-            shootingScreen.style.display = 'flex';
-            
-            // 落書きを消去しておく
+        // 3. 全消しボタン
+        document.getElementById('clear-btn').addEventListener('click', () => {
             dCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
         });
 
+        // 4. スタート（完成）ボタン
+        document.getElementById('start-btn').addEventListener('click', () => {
+            // お絵描きモード解除
+            character.classList.remove('drawing-mode');
+            setupScreen.style.display = 'none';
+            playingScreen.style.display = 'block';
+            
+            // キャラクターを body 直下に移動して絶対配置で動かせるようにする
+            document.body.appendChild(character);
+            character.classList.add('playing-mode');
+            
+            startActionGame();
+        });
+
+        // 5. ゲーム中のやり直しボタン
+        document.getElementById('retry-game-btn').addEventListener('click', () => {
+            cancelAnimationFrame(animationId);
+            // キャラクターを元の場所に戻す
+            document.getElementById('character-area').appendChild(character);
+            character.classList.remove('playing-mode');
+            
+            playingScreen.style.display = 'none';
+            setupScreen.style.display = 'flex';
+            resetToShooting();
+        });
+
+        function resetToShooting() {
+            video.style.display = 'block';
+            photoCanvas.style.display = 'none';
+            uiShooting.style.display = 'block';
+            uiDrawing.style.display = 'none';
+            character.classList.remove('drawing-mode');
+            dCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+            video.play();
+        }
+
         // --- お絵描きの処理 ---
         let isDrawing = false;
-        let currentColor = '#000';
+        let currentColor = '#000000';
 
         function getPos(e) {
             const rect = drawCanvas.getBoundingClientRect();
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            // CSSのscale()で拡大表示されている分を補正
             const scaleX = drawCanvas.width / rect.width;
             const scaleY = drawCanvas.height / rect.height;
             return {
@@ -386,7 +321,8 @@
         }
 
         function startDrawing(e) {
-            e.preventDefault();
+            if (!character.classList.contains('drawing-mode')) return;
+            e.preventDefault(); // スクロール防止
             isDrawing = true;
             const pos = getPos(e);
             dCtx.beginPath();
@@ -399,17 +335,14 @@
             const pos = getPos(e);
             dCtx.lineTo(pos.x, pos.y);
             dCtx.strokeStyle = currentColor;
-            dCtx.lineWidth = 5; // ペンの太さ
+            dCtx.lineWidth = 10; // ペンの太さ
             dCtx.lineCap = 'round';
             dCtx.lineJoin = 'round';
             dCtx.stroke();
         }
 
-        function endDrawing() {
-            isDrawing = false;
-        }
+        function endDrawing() { isDrawing = false; }
 
-        // スマホとPC両方のタッチ・クリックイベントに対応
         drawCanvas.addEventListener('touchstart', startDrawing, {passive: false});
         drawCanvas.addEventListener('touchmove', draw, {passive: false});
         drawCanvas.addEventListener('touchend', endDrawing);
@@ -418,7 +351,7 @@
         drawCanvas.addEventListener('mouseup', endDrawing);
         drawCanvas.addEventListener('mouseout', endDrawing);
 
-        // パレットの色変更処理
+        // 色変更
         document.querySelectorAll('.color-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
@@ -427,108 +360,61 @@
             });
         });
 
-        // 落書きを消すボタン処理
-        clearDrawBtn.addEventListener('click', function() {
-            dCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-        });
-
-
-        // --- 4. マリオ風アクションの物理演算と動き ---
-        
-        let x = 0; // 横の位置
-        let y = 0; // 縦の位置
-        let velocityY = 0; // 縦方向のスピード（落下速度）
-        const gravity = 0.8; // 重力（大きいほど早く落ちる）
-        const jumpPower = -15; // ジャンプ力（マイナス方向が上）
-        let groundY = 0; // 地面の高さ（Y座標）
-
-        // --- 背景画像のリスト（準備したファイル名をここに追加します） ---
-        const backgroundImages = [
-            "haikei1.jpg", // 1ステージ目の背景
-            "haikei2.jpg"  // 2ステージ目の背景
-        ];
-        let currentBgIndex = 0; // 今何枚目の背景を表示しているか
+        // --- アクションゲーム処理 ---
+        let x = 0; let y = 0;
+        let velocityY = 0; 
+        const gravity = 0.8; 
+        const jumpPower = -15; 
+        let groundY = 0; 
 
         function startActionGame() {
-            const charHeight = character.offsetHeight || 250; 
-            
-            // 地面の上端のY座標を計算
+            const ground = document.getElementById('ground');
             groundY = window.innerHeight - ground.offsetHeight;
             
-            // スタート位置
-            x = 20; // 左端の少し右から
-            y = groundY - charHeight; // 地面の上にピッタリ乗せる
+            x = 20; 
+            // 描画キャンバスの高さに合わせて初期位置を調整
+            y = groundY - character.offsetHeight; 
             velocityY = 0;
-
-            // 最初の背景を設定
             currentBgIndex = 0;
             playingScreen.style.backgroundImage = `url("${backgroundImages[currentBgIndex]}")`;
 
             function update() {
-                const currentHeight = character.offsetHeight;
-                
-                // --- 縦の動き（重力で落ちる） ---
                 velocityY += gravity;
                 y += velocityY;
 
-                let isGrounded = false; // 地面に足がついているかの判定
-
-                // 床に着地したかどうかの判定
-                if (y + currentHeight >= groundY) {
-                    y = groundY - currentHeight; // 床にめり込まないように補正
-                    velocityY = 0; // 落下ストップ
-                    isGrounded = true; // 「地面にいる」状態にする
+                // 着地判定
+                if (y + character.offsetHeight >= groundY) {
+                    y = groundY - character.offsetHeight;
+                    velocityY = 0;
                 }
 
-                // --- 横の動き（自動で右へ進む） ---
-                x += 4.5; // スピードを少し上げて躍動感をアップ（3.5 -> 4.5）
+                x += 3.5; 
                 
-                // 画面の右端を通り過ぎたら、左端から再登場し、背景を切り替える
+                // 画面端ループ＆背景切り替え
                 if (x > window.innerWidth) {
                     x = -character.offsetWidth; 
-                    
-                    // 背景を次の画像に進める
                     currentBgIndex++;
-                    
-                    // 用意した背景画像をすべて使い切ったら、最初(0番目)の画像に戻す（ループ）
-                    if (currentBgIndex >= backgroundImages.length) {
-                        currentBgIndex = 0; 
-                    }
-                    
-                    // 新しい背景画像を適用
+                    if (currentBgIndex >= backgroundImages.length) currentBgIndex = 0; 
                     playingScreen.style.backgroundImage = `url("${backgroundImages[currentBgIndex]}")`;
                 }
 
-                // ★回転処理を削除し、純粋な位置移動のみに戻しました
                 character.style.transform = `translate(${x}px, ${y}px)`;
-
-                // 次のコマを予約
                 animationId = requestAnimationFrame(update);
             }
             update();
         }
 
-        // --- 5. タップでジャンプする処理 ---
         function jump(e) {
-            // やり直しボタンを押した時、または「お絵描きモード中」の時はジャンプさせない
-            if (e.target.id === 'retry-btn' || character.classList.contains('drawing-mode') || (e.target.closest && e.target.closest('#drawing-ui'))) return;
+            // やり直しボタンや設定画面中はジャンプしない
+            if (e.target.id === 'retry-game-btn' || setupScreen.style.display !== 'none') return;
             
-            // プレイ画面の時だけ
-            if (playingScreen.style.display === 'block') {
-                const currentHeight = character.offsetHeight;
-                
-                // 「地面に足がついている時」だけジャンプできるようにする
-                // (少しの隙間 -5px くらいは許容してジャンプしやすくしています)
-                if (y + currentHeight >= groundY - 5) {
-                    velocityY = jumpPower; // 上に向かって力を加える
-                }
+            if (y + character.offsetHeight >= groundY - 5) {
+                velocityY = jumpPower; 
             }
         }
 
-        // 画面のどこを触ってもジャンプするように設定
-        window.addEventListener('touchstart', jump); // スマホ用
-        window.addEventListener('mousedown', jump);  // PCクリック用
-
+        window.addEventListener('touchstart', jump);
+        window.addEventListener('mousedown', jump);
     </script>
 </body>
 </html>
