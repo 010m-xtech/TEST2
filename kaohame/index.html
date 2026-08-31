@@ -128,20 +128,20 @@
             position: absolute;
             pointer-events: none;
             z-index: 10; /* 地面より前に表示 */
+            width: 150px;
+            height: 150px;
         }
 
         #face-frame {
-            width: 150px;
-            height: 150px;
+            width: 100%;
+            height: 100%;
             border-radius: 50%;
             border: 6px solid #ff9800; /* 顔の枠もオレンジに */
             overflow: hidden;
-            position: absolute; 
+            position: relative; 
             z-index: 2;
             box-shadow: 0 5px 15px rgba(0,0,0,0.4);
-            top: -40px;  
-            left: 50%;   
-            transform: translateX(-50%); 
+            box-sizing: border-box;
         }
 
         #photo-canvas {
@@ -149,14 +149,6 @@
             height: 100%;
             object-fit: cover;
             transform: scaleX(-1); 
-        }
-
-        #body-part {
-            width: 200px; 
-            height: auto; 
-            margin-top: -40px; 
-            z-index: 1;
-            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.4));
         }
 
         /* やり直しボタン（ジャンプの邪魔にならないよう右上に） */
@@ -169,6 +161,85 @@
             background-color: #e74c3c; 
             color: white;
             z-index: 20;
+        }
+
+        /* --- お絵描き機能用のスタイル追加 --- */
+        .rotate-message {
+            display: none;
+        }
+        @media screen and (orientation: portrait) {
+            .rotate-message {
+                display: flex;
+                position: fixed;
+                top: 0; left: 0; width: 100%; height: 100%;
+                background-color: rgba(0,0,0,0.9);
+                color: white;
+                font-size: 2rem;
+                font-weight: bold;
+                align-items: center;
+                justify-content: center;
+                z-index: 9999;
+            }
+        }
+
+        #drawing-ui {
+            display: none;
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.9);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 30;
+            text-align: center;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        #color-palette {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .color-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+        }
+
+        .color-btn.active {
+            border-color: #333;
+            transform: scale(1.1);
+        }
+
+        #drawing-canvas {
+            position: absolute;
+            top: 50%; 
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            cursor: crosshair;
+            pointer-events: none; /* 通常は触れない */
+        }
+
+        /* お絵描きモードの時のキャラクター */
+        .drawing-mode {
+            position: absolute !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) scale(1.5) !important;
+            z-index: 25 !important;
+        }
+        .drawing-mode #drawing-canvas {
+            pointer-events: auto; /* お絵描き中は触れるように */
+            background-color: rgba(255,255,255,0.3); /* 描ける範囲をわかりやすく */
+            border-radius: 20px;
         }
 
         /* ジャンプを促すテキスト */
@@ -190,6 +261,9 @@
 </head>
 <body>
 
+    <!-- 縦向きの時の警告メッセージ -->
+    <div class="rotate-message">スマホを横向きにしてね！🔄</div>
+
     <!-- ステップ1: 撮影画面 -->
     <div id="shooting-screen">
         <h2 style="margin-bottom: 20px;">丸い枠に顔を合わせてね！</h2>
@@ -201,11 +275,30 @@
 
     <!-- ステップ2: プレイ画面（マリオ風アクション） -->
     <div id="playing-screen">
+        <!-- お絵描き用のカラーパレットとボタン -->
+        <div id="drawing-ui">
+            <h3 style="margin:0 0 10px 0;">好きな色で落書きしよう！</h3>
+            <div id="color-palette">
+                <div class="color-btn active" data-color="#000000" style="background-color: #000;"></div>
+                <div class="color-btn" data-color="#e74c3c" style="background-color: #e74c3c;"></div>
+                <div class="color-btn" data-color="#3498db" style="background-color: #3498db;"></div>
+                <div class="color-btn" data-color="#2ecc71" style="background-color: #2ecc71;"></div>
+                <div class="color-btn" data-color="#f1c40f" style="background-color: #f1c40f;"></div>
+                <div class="color-btn" data-color="#ffffff" style="background-color: #fff; border: 1px solid #ccc;"></div>
+            </div>
+            <div>
+                <button id="clear-draw-btn" class="btn" style="background-color: #95a5a6; padding: 10px 20px; font-size: 1rem;">全部消す</button>
+                <button id="finish-draw-btn" class="btn" style="padding: 10px 30px; font-size: 1.2rem;">完成！遊ぶ！</button>
+            </div>
+        </div>
+
         <div id="jump-hint">画面タップでジャンプ！</div>
         
         <!-- キャラクター -->
         <div id="character">
-            <img id="body-part" src="maccho.png" alt="体">
+            <!-- 落書き用レイヤー -->
+            <canvas id="drawing-canvas" width="300" height="300"></canvas>
+            
             <div id="face-frame">
                 <canvas id="photo-canvas"></canvas>
             </div>
@@ -228,6 +321,14 @@
         const retryBtn = document.getElementById('retry-btn');
         const character = document.getElementById('character');
         const ground = document.getElementById('ground');
+
+        // お絵描き用要素の取得
+        const drawCanvas = document.getElementById('drawing-canvas');
+        const dCtx = drawCanvas.getContext('2d');
+        const drawingUI = document.getElementById('drawing-ui');
+        const finishDrawBtn = document.getElementById('finish-draw-btn');
+        const clearDrawBtn = document.getElementById('clear-draw-btn');
+        const jumpHint = document.getElementById('jump-hint');
 
         let animationId; 
 
@@ -255,7 +356,21 @@
             shootingScreen.style.display = 'none';
             playingScreen.style.display = 'block';
 
-            startActionGame(); // アクションゲーム開始！
+            // ゲーム開始前に、まずお絵描きモードにする
+            jumpHint.style.display = 'none'; // ジャンプ案内は一旦隠す
+            retryBtn.style.display = 'none'; // やり直しボタンも一旦隠す
+            character.classList.add('drawing-mode');
+            drawingUI.style.display = 'flex';
+        });
+
+        // 「完成！遊ぶ！」ボタン
+        finishDrawBtn.addEventListener('click', function() {
+            character.classList.remove('drawing-mode');
+            drawingUI.style.display = 'none';
+            jumpHint.style.display = 'block';
+            retryBtn.style.display = 'block';
+            
+            startActionGame(); // ここでアクションゲーム開始！
         });
 
         // 3. やり直すボタン
@@ -263,6 +378,73 @@
             cancelAnimationFrame(animationId); 
             playingScreen.style.display = 'none';
             shootingScreen.style.display = 'flex';
+            
+            // 落書きを消去しておく
+            dCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+        });
+
+        // --- お絵描きの処理 ---
+        let isDrawing = false;
+        let currentColor = '#000';
+
+        function getPos(e) {
+            const rect = drawCanvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            // CSSのscale()で拡大表示されている分を補正
+            const scaleX = drawCanvas.width / rect.width;
+            const scaleY = drawCanvas.height / rect.height;
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
+            };
+        }
+
+        function startDrawing(e) {
+            e.preventDefault();
+            isDrawing = true;
+            const pos = getPos(e);
+            dCtx.beginPath();
+            dCtx.moveTo(pos.x, pos.y);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            e.preventDefault();
+            const pos = getPos(e);
+            dCtx.lineTo(pos.x, pos.y);
+            dCtx.strokeStyle = currentColor;
+            dCtx.lineWidth = 5; // ペンの太さ
+            dCtx.lineCap = 'round';
+            dCtx.lineJoin = 'round';
+            dCtx.stroke();
+        }
+
+        function endDrawing() {
+            isDrawing = false;
+        }
+
+        // スマホとPC両方のタッチ・クリックイベントに対応
+        drawCanvas.addEventListener('touchstart', startDrawing, {passive: false});
+        drawCanvas.addEventListener('touchmove', draw, {passive: false});
+        drawCanvas.addEventListener('touchend', endDrawing);
+        drawCanvas.addEventListener('mousedown', startDrawing);
+        drawCanvas.addEventListener('mousemove', draw);
+        drawCanvas.addEventListener('mouseup', endDrawing);
+        drawCanvas.addEventListener('mouseout', endDrawing);
+
+        // パレットの色変更処理
+        document.querySelectorAll('.color-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentColor = this.dataset.color;
+            });
+        });
+
+        // 落書きを消すボタン処理
+        clearDrawBtn.addEventListener('click', function() {
+            dCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
         });
 
 
@@ -343,8 +525,8 @@
 
         // --- 5. タップでジャンプする処理 ---
         function jump(e) {
-            // やり直しボタンを押した時はジャンプさせない
-            if (e.target.id === 'retry-btn') return;
+            // やり直しボタンを押した時、または「お絵描きモード中」の時はジャンプさせない
+            if (e.target.id === 'retry-btn' || character.classList.contains('drawing-mode') || (e.target.closest && e.target.closest('#drawing-ui'))) return;
             
             // プレイ画面の時だけ
             if (playingScreen.style.display === 'block') {
