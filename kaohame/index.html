@@ -83,24 +83,38 @@
         /* キャラクター全体 */
         #character {
             position: absolute;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            /* widthとheightを削除。サイズは中の要素で決まるようにします */
             /* アニメーション中はタップイベントを無視 */
             pointer-events: none;
         }
 
+        /* キャラクターの体（画像を表示するように変更） */
+        #body-part {
+            width: 200px; /* 体の横幅を基準にします */
+            height: auto;
+            position: relative; /* 顔を配置する基準位置にします */
+            z-index: 1;
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5));
+        }
+
         /* 動くキャラクターの顔枠 */
         #face-frame {
-            width: 150px; /* 顔をしっかり大きく表示 */
+            width: 150px;
             height: 150px;
             border-radius: 50%;
             border: 6px solid #fff;
             overflow: hidden;
-            position: relative;
-            background-color: #000;
+            position: absolute; /* 絶対配置に変更 */
             z-index: 2;
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            
+            /* --- 重要な位置調整部分 --- */
+            /* 体(body-part)の左上を基準に、顔をどこに置くか決めます */
+            /* top: 上からの位置, left: 左からの位置 */
+            top: -40px;  /* マイナスにすると体より上に飛び出します */
+            left: 50%;   /* 横幅の中央に配置 */
+            transform: translateX(-50%); /* 中央揃えのための必須設定 */
+            /* --------------------------- */
         }
 
         /* 撮影した写真を貼り付けるキャンバス */
@@ -149,12 +163,14 @@
     <!-- ステップ2: プレイ画面（はめ込み後） -->
     <div id="playing-screen">
         <div id="character">
+            <!-- 体を基準にするため、HTMLの順番を体が先になるように変更してもOKですが、z-indexで重なりは制御しています。
+                 今回は絶対配置なので順番は影響しにくくなりました。 -->
+            <img id="body-part" src="maccho.png" alt="マッチョの体">
+            
             <div id="face-frame">
                 <!-- ここに撮影した写真が描画されます -->
                 <canvas id="photo-canvas"></canvas>
             </div>
-            <!-- 黄色い四角のdivを消し、代わりに画像(maccho.jpg)を読み込む -->
-            <img id="body-part" src="maccho.jpg" alt="マッチョの体">
         </div>
         <button id="retry-btn" class="btn">やり直す</button>
     </div>
