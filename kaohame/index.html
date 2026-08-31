@@ -2,178 +2,256 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <!-- スマホで適切なサイズで表示するための超重要タグ -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>顔はめゲーム</title>
     <style>
         /* 画面全体のデザイン */
         body {
             margin: 0;
             overflow: hidden; /* スクロールバーを消す */
-            background-color: #2c3e50; /* 背景色（暗めのブルー） */
+            background-color: #2c3e50; /* 背景色 */
             color: white;
             font-family: sans-serif;
-            /* スマホでタップした時のハイライトを消す */
             -webkit-tap-highlight-color: transparent; 
+            width: 100vw;
+            height: 100vh;
         }
 
-        /* キャラクター全体をまとめる箱 */
-        #character {
-            position: absolute;
-            width: 150px; /* 全体の幅を大きく変更 */
+        /* --- 1. 撮影画面（ステップ1） --- */
+        #shooting-screen {
             display: flex;
             flex-direction: column;
             align-items: center;
-            pointer-events: none; 
+            justify-content: center;
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            background-color: rgba(44, 62, 80, 1); /* 背景色をしっかりつける */
         }
 
-        /* 顔（カメラ）を丸く切り抜く枠 */
+        /* 撮影時のカメラ枠（大きく表示） */
+        #camera-wrapper {
+            width: 250px; /* スマホ画面に合わせてかなり大きく */
+            height: 250px;
+            border-radius: 50%; /* 丸く切り抜く */
+            border: 6px solid #fff;
+            overflow: hidden;
+            position: relative;
+            background-color: #000;
+            margin-bottom: 40px;
+            box-shadow: 0 0 20px rgba(255,255,255,0.3);
+        }
+
+        #webcam {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* 枠いっぱいに映像を広げる */
+            transform: scaleX(-1); /* 鏡のように左右反転 */
+        }
+
+        /* 撮影・やり直しボタンのデザイン */
+        .btn {
+            padding: 15px 50px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            background-color: #f1c40f;
+            border: none;
+            border-radius: 40px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .btn:active {
+            transform: scale(0.95); /* 押した時に少し凹むアニメーション */
+        }
+
+        /* --- 2. プレイ画面（ステップ2） --- */
+        #playing-screen {
+            display: none; /* 最初は隠しておく */
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        /* キャラクター全体 */
+        #character {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* アニメーション中はタップイベントを無視 */
+            pointer-events: none;
+        }
+
+        /* 動くキャラクターの顔枠 */
         #face-frame {
-            width: 120px; /* 顔の枠を大きく変更 */
-            height: 120px; /* 顔の枠を大きく変更 */
-            border-radius: 50%; /* ここで丸くしています */
-            border: 5px solid #fff; /* 枠線も少し太く */
+            width: 150px; /* 顔をしっかり大きく表示 */
+            height: 150px;
+            border-radius: 50%;
+            border: 6px solid #fff;
             overflow: hidden;
             position: relative;
             background-color: #000;
             z-index: 2;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
 
-        /* カメラの映像 */
-        #webcam {
-            width: 240px; /* 映像ソースを枠より大きくして中央を切り抜く */
-            height: 240px;
-            object-fit: cover;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            /* 映像を中央に合わせ、鏡のように左右反転させる */
-            transform: translate(-50%, -50%) scaleX(-1);
-        }
-        
-        /* 撮影した写真を表示するキャンバス（最初は非表示） */
+        /* 撮影した写真を貼り付けるキャンバス */
         #photo-canvas {
-            display: none;
-            width: 240px; /* カメラ映像と同じサイズに */
-            height: 240px;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scaleX(-1);
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1); /* カメラ映像と同じく反転させておく */
         }
 
         /* キャラクターの体 */
         #body-part {
-            width: 70px; /* 体も少し大きく */
-            height: 80px;
-            background-color: #f1c40f; /* 服の色（黄色） */
-            border-radius: 15px;
-            margin-top: -15px; /* 顔との重なりを調整 */
+            width: 80px;
+            height: 100px;
+            background-color: #f1c40f; 
+            border-radius: 20px;
+            margin-top: -25px; /* 顔と少し重ねる */
             z-index: 1;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
-        
-        /* 操作案内のテキスト */
-        #instruction {
+
+        /* プレイ画面用のやり直しボタン */
+        #retry-btn {
             position: absolute;
-            top: 20px;
-            width: 100%;
-            text-align: center;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 30px;
             font-size: 1.2rem;
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            background-color: #e74c3c; /* 赤系の色に */
+            color: white;
             z-index: 10;
         }
     </style>
 </head>
 <body>
 
-    <div id="instruction">画面をタップして顔を撮影！</div>
-
-    <div id="character">
-        <div id="face-frame">
+    <!-- ステップ1: 撮影画面 -->
+    <div id="shooting-screen">
+        <h2 style="margin-bottom: 20px;">丸い枠に顔を合わせてね！</h2>
+        <div id="camera-wrapper">
             <video id="webcam" autoplay playsinline></video>
-            <!-- 写真を貼り付ける場所 -->
-            <canvas id="photo-canvas"></canvas>
         </div>
-        <div id="body-part"></div>
+        <button id="shoot-btn" class="btn">撮影する！</button>
+    </div>
+
+    <!-- ステップ2: プレイ画面（はめ込み後） -->
+    <div id="playing-screen">
+        <div id="character">
+            <div id="face-frame">
+                <!-- ここに撮影した写真が描画されます -->
+                <canvas id="photo-canvas"></canvas>
+            </div>
+            <div id="body-part"></div>
+        </div>
+        <button id="retry-btn" class="btn">やり直す</button>
     </div>
 
     <script>
         const video = document.getElementById('webcam');
-        const character = document.getElementById('character');
         const canvas = document.getElementById('photo-canvas');
         const ctx = canvas.getContext('2d');
-        const instruction = document.getElementById('instruction');
         
-        let isPhotoTaken = false; // 写真を撮ったかどうかのフラグ
+        const shootingScreen = document.getElementById('shooting-screen');
+        const playingScreen = document.getElementById('playing-screen');
+        const shootBtn = document.getElementById('shoot-btn');
+        const retryBtn = document.getElementById('retry-btn');
+        const character = document.getElementById('character');
 
-        // 1. カメラを起動する設定 (スマホを考慮し、なるべくインカメラを指定)
+        let animationId; // アニメーションを止めるためのID
+
+        // 1. スマホのインカメラを起動
         navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: "user" } // スマホのインカメラを優先
+            video: { facingMode: "user" }, // インカメラを指定
+            audio: false
         })
-            .then(function(stream) {
-                video.srcObject = stream;
-            })
-            .catch(function(err) {
-                console.error("カメラエラー:", err);
-                instruction.innerText = "カメラの起動に失敗しました";
-                // alertの代わりにUIで表示
-            });
-
-        // 2. 画面をタップ（クリック）したときの処理（写真撮影）
-        document.body.addEventListener('click', function() {
-            if (isPhotoTaken) {
-                // すでに撮っていたら、もう一度動画に戻す（リセット）
-                video.style.display = 'block';
-                canvas.style.display = 'none';
-                instruction.innerText = "画面をタップして顔を撮影！";
-                isPhotoTaken = false;
-            } else {
-                // 動画のサイズに合わせてキャンバスを設定
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                
-                // 現在のカメラ映像をキャンバスに描画（写真を撮る）
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                
-                // 動画を隠して、写真（キャンバス）を表示する
-                video.style.display = 'none';
-                canvas.style.display = 'block';
-                instruction.innerText = "もう一度タップで撮り直し";
-                isPhotoTaken = true;
-            }
+        .then(function(stream) {
+            video.srcObject = stream;
+        })
+        .catch(function(err) {
+            console.error("カメラエラー:", err);
+            alert("カメラの起動に失敗しました。ブラウザのカメラ許可設定を確認してください。");
         });
 
-        // 3. キャラクターを画面内で動かす設定（バウンド）
-        let x = 100; // 横の位置
-        let y = 100; // 縦の位置
-        let speedX = 3; // 横のスピード
-        let speedY = 3; // 縦のスピード
+        // 2. 「撮影する！」ボタンを押した時の処理
+        shootBtn.addEventListener('click', function() {
+            // まだカメラの準備ができていない場合は無視
+            if (video.videoWidth === 0) return; 
+            
+            // キャンバスのサイズをカメラの実際の解像度に合わせる
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            // 現在のカメラ映像をキャンバスに1枚の絵として描き込む（写真を撮る）
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // 画面を「プレイ画面」に切り替える
+            shootingScreen.style.display = 'none';
+            playingScreen.style.display = 'block';
 
-        function moveCharacter() {
-            // キャラクターの幅と高さを取得
-            const charWidth = character.offsetWidth;
-            const charHeight = character.offsetHeight;
+            // キャラクターを動かし始める
+            startAnimation();
+        });
 
-            // 画面の端にぶつかったら跳ね返る（スピードを逆にする）
-            if (x + charWidth >= window.innerWidth || x <= 0) {
-                speedX *= -1;
+        // 3. 「やり直す」ボタンを押した時の処理
+        retryBtn.addEventListener('click', function() {
+            // 動いているキャラクターを止める
+            cancelAnimationFrame(animationId); 
+            
+            // 画面を「撮影画面」に戻す
+            playingScreen.style.display = 'none';
+            shootingScreen.style.display = 'flex';
+        });
+
+        // 4. キャラクターをバウンドさせて動かす処理
+        let x = 50;
+        let y = 50;
+        let speedX = 4; // 横のスピード
+        let speedY = 4; // 縦のスピード
+
+        function startAnimation() {
+            // 出現位置をランダムにする
+            x = Math.random() * (window.innerWidth - 200) + 50;
+            y = Math.random() * (window.innerHeight - 300) + 50;
+
+            function move() {
+                const charWidth = character.offsetWidth;
+                const charHeight = character.offsetHeight;
+
+                // 画面の左右の端にぶつかったら跳ね返る
+                if (x + charWidth >= window.innerWidth || x <= 0) {
+                    speedX *= -1;
+                }
+                // 画面の上下の端にぶつかったら跳ね返る（下のボタンに被らないよう少し上で反射）
+                if (y + charHeight >= window.innerHeight - 100 || y <= 0) {
+                    speedY *= -1;
+                }
+
+                // 位置を更新
+                x += speedX;
+                y += speedY;
+
+                // キャラクターを移動させる
+                character.style.transform = `translate(${x}px, ${y}px)`;
+
+                // 次のコマでも動かすように予約する
+                animationId = requestAnimationFrame(move);
             }
-            if (y + charHeight >= window.innerHeight || y <= 0) {
-                speedY *= -1;
-            }
-
-            // 位置を更新
-            x += speedX;
-            y += speedY;
-
-            // キャラクターに新しい位置を適用
-            character.style.transform = `translate(${x}px, ${y}px)`;
-
-            // アニメーションを繰り返す
-            requestAnimationFrame(moveCharacter);
+            // アニメーションループ開始
+            move();
         }
-
-        // アニメーションスタート
-        moveCharacter();
     </script>
 </body>
 </html>
