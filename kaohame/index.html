@@ -20,9 +20,10 @@
         /* --- 1. 撮影画面 --- */
         #shooting-screen {
             display: flex;
-            flex-direction: column;
+            flex-direction: row; /* ★横並びに変更 */
             align-items: center;
             justify-content: center;
+            gap: 30px; /* カメラとボタンの間隔 */
             height: 100%;
             width: 100%;
             position: absolute;
@@ -33,14 +34,15 @@
         }
 
         #camera-wrapper {
-            width: 250px; 
-            height: 250px;
+            width: 50vh; /* ★横画面の高さに合わせて可変に */
+            height: 50vh;
+            max-width: 250px;
+            max-height: 250px;
             border-radius: 50%; 
             border: 6px solid #ff9800; /* オレンジ色の枠 */
             overflow: hidden;
             position: relative;
             background-color: #000;
-            margin-bottom: 40px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.2);
         }
 
@@ -164,32 +166,14 @@
         }
 
         /* --- お絵描き機能用のスタイル追加 --- */
-        .rotate-message {
-            display: none;
-        }
-        @media screen and (orientation: portrait) {
-            .rotate-message {
-                display: flex;
-                position: fixed;
-                top: 0; left: 0; width: 100%; height: 100%;
-                background-color: rgba(0,0,0,0.9);
-                color: white;
-                font-size: 2rem;
-                font-weight: bold;
-                align-items: center;
-                justify-content: center;
-                z-index: 9999;
-            }
-        }
-
         #drawing-ui {
             display: none;
             position: absolute;
-            top: 10px;
+            top: 5px; /* ★横画面の邪魔にならないよう上に詰める */
             left: 50%;
             transform: translateX(-50%);
             background: rgba(255,255,255,0.9);
-            padding: 15px;
+            padding: 10px; /* ★余白を少し小さく */
             border-radius: 15px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             z-index: 30;
@@ -202,7 +186,7 @@
             display: flex;
             justify-content: center;
             gap: 10px;
-            margin: 10px 0;
+            margin: 5px 0; /* ★余白を少し小さく */
         }
 
         .color-btn {
@@ -261,23 +245,23 @@
 </head>
 <body>
 
-    <!-- 縦向きの時の警告メッセージ -->
-    <div class="rotate-message">スマホを横向きにしてね！🔄</div>
-
     <!-- ステップ1: 撮影画面 -->
     <div id="shooting-screen">
-        <h2 style="margin-bottom: 20px;">丸い枠に顔を合わせてね！</h2>
+        <!-- ★左側にカメラ、右側にボタンを配置 -->
         <div id="camera-wrapper">
             <video id="webcam" autoplay playsinline></video>
         </div>
-        <button id="shoot-btn" class="btn">撮影する！</button>
+        <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+            <h2 style="margin-top: 0; margin-bottom: 20px;">丸い枠に顔を<br>合わせてね！</h2>
+            <button id="shoot-btn" class="btn">撮影する！</button>
+        </div>
     </div>
 
     <!-- ステップ2: プレイ画面（マリオ風アクション） -->
     <div id="playing-screen">
         <!-- お絵描き用のカラーパレットとボタン -->
         <div id="drawing-ui">
-            <h3 style="margin:0 0 10px 0;">好きな色で落書きしよう！</h3>
+            <h3 style="margin:0 0 5px 0; font-size: 1.1rem;">好きな色で落書きしよう！</h3>
             <div id="color-palette">
                 <div class="color-btn active" data-color="#000000" style="background-color: #000;"></div>
                 <div class="color-btn" data-color="#e74c3c" style="background-color: #e74c3c;"></div>
@@ -339,6 +323,7 @@
         })
         .then(function(stream) {
             video.srcObject = stream;
+            video.play(); // ★スマホ環境向けに念のため明示的に再生処理を追加
         })
         .catch(function(err) {
             console.error("カメラエラー:", err);
