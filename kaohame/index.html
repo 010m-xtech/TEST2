@@ -15,6 +15,7 @@
             -webkit-tap-highlight-color: transparent; 
             width: 100vw;
             height: 100vh;
+            touch-action: none; /* スマホでのデフォルトのスクロールなどを無効化して操作をスムーズに */
         }
 
         /* 減点時の画面揺れアニメーション */
@@ -115,6 +116,7 @@
             transform: scale(0.5); /* 全体を半分に縮小 */
             pointer-events: none;
             border: none;
+            transition: none !important; /* ★重要：キャッチゲームで指の動きが遅れないようにアニメーションを無効化 */
         }
         #character.playing-mode #face-frame {
             border-color: transparent; /* 遊ぶ時は枠線を消す */
@@ -266,7 +268,7 @@
             grid-template-rows: repeat(3, 1fr);
             gap: 10px;
             width: 100%;
-            /* ★上部のスコアを避けて、下は画面ギリギリまでいっぱいに広げる */
+            /* ★上部のスコアを避けて、下は画面ギリギリまでいっぱいに広げる（余白削除） */
             height: calc(100% - 90px); 
             max-width: none;
             margin: 80px auto 10px;
@@ -295,7 +297,8 @@
 
         .mole {
             position: absolute;
-            bottom: 5%; /* ★20%から5%に下げて、上の空間（頭の部分）に余裕をもたせる */
+            /* ★穴の少し深いところから飛び出すようにして、頭が切れないようにする */
+            bottom: 5%; 
             left: 50%;
             cursor: pointer;
             transition: transform 0.15s ease-out; /* 出る・隠れるスピード */
@@ -315,7 +318,7 @@
             width: 300px;
             height: 420px;
             transform-origin: bottom center;
-            /* ★枠から上がはみ出して切れないように、0.45倍 → 0.32倍に縮小 */
+            /* ★頭が枠からはみ出して切れないように、0.32倍まで縮小 */
             transform: translateX(-50%) scale(0.32) translateY(0); 
         }
         .character-mole.hidden {
@@ -452,7 +455,7 @@
         const uiShooting = document.getElementById('ui-shooting');
         const uiDrawing = document.getElementById('ui-drawing');
 
-        // ★食材リスト（お店の画像5枚を大きめに表示）
+        // ★食材リスト（お店の画像5枚）
         const goodFoods = [
             '<img src="S__22593553_0.jpg" style="width:80px; height:80px; object-fit:contain; border-radius:10px;">', 
             '<img src="S__22593554_0.jpg" style="width:80px; height:80px; object-fit:contain; border-radius:10px;">', 
@@ -460,7 +463,7 @@
             '<img src="海ぶどう.jpg" style="width:80px; height:80px; object-fit:contain; border-radius:10px;">',
             '<img src="紅イモコロッケ.jpg" style="width:80px; height:80px; object-fit:contain; border-radius:10px;">'
         ]; 
-        // ★危険物リスト（ウンコ削除済み）
+        // ★危険物リスト
         const badItems = ['💣', '⚡', '🕷️', '☠️']; 
 
         // --- 1. カメラと撮影・お絵描き ---
@@ -660,10 +663,10 @@
             
             const el = document.createElement('div');
             el.className = 'falling-item';
-            // ★文字(innerText)ではなくHTML(innerHTML)として表示する！
+            // ★文字ではなくHTML(画像)として表示
             el.innerHTML = htmlContent; 
             
-            const startX = Math.random() * (window.innerWidth - 80); // アイテムの幅分ずらす
+            const startX = Math.random() * (window.innerWidth - 80);
             el.style.left = startX + 'px';
             el.style.top = '-80px';
             catchScreen.appendChild(el);
@@ -715,7 +718,7 @@
         /* ★超スムーズな移動処理（指の位置にダイレクトに追従） */
         function onCatchMove(e) {
             if (catchTime <= 0) return;
-            // ★ボタンを押したときは、キャラの移動（デフォルト防止）をキャンセルしてボタンを優先する
+            // ボタンを押したときは移動処理をキャンセル
             if (e.target.tagName.toLowerCase() === 'button') return;
             
             e.preventDefault();
@@ -727,7 +730,6 @@
             if (newX < 0) newX = 0;
             if (newX > maxRight) newX = maxRight;
             
-            // 目標地点ではなく、即座にその位置に移動させる（レスポンス爆速）
             charX = newX;
         }
 
@@ -847,9 +849,9 @@
         function spawnMoles() {
             // 残り時間が減るにつれて、同時に出るモグラの数が増える！
             let spawnCount = 1;
-            if (whackTime <= 22) spawnCount = 2; // 22秒を切ったら2つ
-            if (whackTime <= 14) spawnCount = 3; // 14秒を切ったら3つ
-            if (whackTime <= 6) spawnCount = 4;  // 最後はパニック状態
+            if (whackTime <= 22) spawnCount = 2;
+            if (whackTime <= 14) spawnCount = 3;
+            if (whackTime <= 6) spawnCount = 4;
 
             // 今空いている穴をリストアップ
             let available = whackHoles.map((h, i) => ({h, i})).filter(obj => !obj.h.isActive);
@@ -876,12 +878,11 @@
             if (isCharacter) {
                 hole.charMole.classList.remove('hidden');
             } else {
-                // ★文字(innerText)ではなくHTML(innerHTML)で画像を表示！
+                // 画像（HTML）を表示
                 hole.foodMole.innerHTML = goodFoods[Math.floor(Math.random() * goodFoods.length)];
                 hole.foodMole.classList.remove('hidden');
             }
             
-            // 一定時間で自動的に引っ込む（スピードが早くなると引っ込むのも早くなる）
             let displayTime = currentSpawnInterval * 0.9; 
             hole.timeoutId = setTimeout(() => {
                 if (hole.isActive) {
@@ -898,19 +899,17 @@
             if (!hole.isActive) return;
 
             hole.isActive = false;
-            clearTimeout(hole.timeoutId); // 自動で引っ込むのをキャンセル
+            clearTimeout(hole.timeoutId); 
             
             if (isCharacter) {
-                whackScore -= 10; // 自分を叩いたら減点
-                // 画面をブルッと震わせる
+                whackScore -= 10; 
                 document.body.classList.add('shake-screen');
                 setTimeout(() => document.body.classList.remove('shake-screen'), 200);
             } else {
-                whackScore += 10; // 食材なら加点
+                whackScore += 10; 
             }
             document.getElementById('whack-score').innerText = whackScore;
 
-            // 叩かれたらすぐ引っ込む
             hole.charMole.classList.add('hidden');
             hole.foodMole.classList.add('hidden');
         }
