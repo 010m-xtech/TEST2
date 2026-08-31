@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <!-- スマホ画面にピタッと合わせるための設定 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>顔はめ＆お絵描きミニゲーム集</title>
     <style>
@@ -47,24 +48,28 @@
             justify-content: center;
             align-items: center;
             position: relative;
+            overflow: hidden; /* はみ出し防止 */
         }
 
+        /* ★初期状態（カメラ起動時）は1.7倍にズームし、位置を少し上(0%)に */
         #character {
             width: 300px; 
             height: 420px;
             position: relative;
             pointer-events: none;
-            transition: transform 0.4s ease; /* ズームのアニメーション */
-            /* ★1.7倍に少し小さくし、位置を少し上(0%)に引き上げる */
+            transition: transform 0.4s ease; 
             transform: scale(1.7) translateY(0%);
             transform-origin: top center;
         }
         
+        /* 顔はめ枠（卵型・逆三角形） */
         #face-frame {
             width: 120px; 
             height: 160px;
+            /* 上が丸く、下がシャープな卵型になる設定 */
             border-radius: 50% 50% 50% 50% / 25% 25% 75% 75%;
-            border: 5px solid transparent; 
+            /* 撮影時だけ枠線を見せるためのオレンジ枠 */
+            border: 5px dashed #ff9800; 
             overflow: hidden;
             position: absolute;
             top: 20px; 
@@ -78,7 +83,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover; 
-            transform: scaleX(-1); 
+            transform: scaleX(-1); /* 鏡写し */
         }
 
         #drawing-canvas {
@@ -89,15 +94,34 @@
             transition: background-color 0.3s;
         }
 
+        /* ★撮影が終わった「お絵描きモード」の時は元のサイズに戻す */
         #character.drawing-mode {
             pointer-events: auto;
-            /* 撮影が終わったら元のサイズにスッと戻る */
             transform: scale(1) translateY(0);
         }
+        /* お絵描きモードの時は顔の枠線を透明にする */
+        #character.drawing-mode #face-frame {
+            border-color: transparent;
+        }
+        /* お絵描きモードの体を描く範囲の枠 */
         #character.drawing-mode #drawing-canvas {
             background-color: rgba(255,255,255,0.4);
             border: 3px dashed #ff9800;
             border-radius: 30px; 
+        }
+
+        /* プレイ中のキャラクター（小さく表示） */
+        #character.playing-mode {
+            transform: scale(0.5); /* 全体を半分に縮小 */
+            pointer-events: none;
+            border: none;
+        }
+        #character.playing-mode #face-frame {
+            border-color: transparent; /* 遊ぶ時は枠線を消す */
+        }
+        #character.playing-mode #drawing-canvas {
+            background-color: transparent;
+            border: none;
         }
 
         #ui-area {
@@ -240,11 +264,13 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             grid-template-rows: repeat(3, 1fr);
-            gap: 15px;
-            width: 90%;
-            max-width: 400px;
-            aspect-ratio: 1; /* 正方形 */
-            margin: 80px auto 0;
+            gap: 10px;
+            width: 100%;       /* ★横幅いっぱいに */
+            height: 75%;      /* ★縦にも広げる */
+            max-width: none;
+            margin: 60px auto 0;
+            padding: 10px;
+            box-sizing: border-box;
         }
         
         .whack-hole {
@@ -283,22 +309,24 @@
             transform: translateX(-50%) translateY(150px);
         }
 
-        /* 飛び出す自分のキャラクター（縮小して表示） */
+        /* 飛び出す自分のキャラクター */
         .character-mole {
             width: 300px;
             height: 420px;
             transform-origin: bottom center;
-            transform: translateX(-50%) scale(0.4) translateY(0); /* キャラも少し大きく */
+            /* ★少し大きめ(0.45倍)に表示 */
+            transform: translateX(-50%) scale(0.45) translateY(0); 
         }
         .character-mole.hidden {
-            transform: translateX(-50%) scale(0.4) translateY(420px);
+            transform: translateX(-50%) scale(0.45) translateY(420px);
         }
 
         /* キャラクターをクローン表示するための内部スタイル */
         .clone-face-frame {
             width: 120px; 
             height: 160px;
-            border-radius: 50% 50% 50% 50% / 25% 25% 75% 75%; /* アゴがシャープな形に統一 */
+            /* ★メイン画面と同じ卵型にする */
+            border-radius: 50% 50% 50% 50% / 25% 25% 75% 75%;
             overflow: hidden;
             position: absolute;
             top: 20px; 
@@ -306,7 +334,7 @@
             transform: translateX(-50%);
             z-index: 2;
         }
-        /* ★修正：これがないと顔の画像が巨大化してはみ出し、見えなくなってしまいます */
+        /* ★モグラたたきの顔写真がはみ出ないようにする設定 */
         .clone-photo {
             width: 100%;
             height: 100%;
@@ -423,14 +451,15 @@
         const uiShooting = document.getElementById('ui-shooting');
         const uiDrawing = document.getElementById('ui-drawing');
 
-        // 食材リスト（ご指定の5つの画像を表示）
+        // ★食材リスト（お店の画像5枚を大きめに表示）
         const goodFoods = [
-            '<img src="S__22593553_0.jpg" style="width:70px; height:70px; object-fit:contain; border-radius:10px;">', 
-            '<img src="S__22593554_0.jpg" style="width:70px; height:70px; object-fit:contain; border-radius:10px;">', 
-            '<img src="チキン南蛮.jpg" style="width:70px; height:70px; object-fit:contain; border-radius:10px;">', 
-            '<img src="海ぶどう.jpg" style="width:70px; height:70px; object-fit:contain; border-radius:10px;">',
-            '<img src="紅イモコロッケ.jpg" style="width:70px; height:70px; object-fit:contain; border-radius:10px;">'
+            '<img src="S__22593553_0.jpg" style="width:80px; height:80px; object-fit:contain; border-radius:10px;">', 
+            '<img src="S__22593554_0.jpg" style="width:80px; height:80px; object-fit:contain; border-radius:10px;">', 
+            '<img src="チキン南蛮.jpg" style="width:80px; height:80px; object-fit:contain; border-radius:10px;">', 
+            '<img src="海ぶどう.jpg" style="width:80px; height:80px; object-fit:contain; border-radius:10px;">',
+            '<img src="紅イモコロッケ.jpg" style="width:80px; height:80px; object-fit:contain; border-radius:10px;">'
         ]; 
+        // ★危険物リスト（ウンコ削除済み）
         const badItems = ['💣', '⚡', '🕷️', '☠️']; 
 
         // --- 1. カメラと撮影・お絵描き ---
@@ -544,7 +573,7 @@
             setupScreen.style.display = 'none';
             selectScreen.style.display = 'flex';
             
-            // ★モグラたたき用のクローン（複製）を作成して穴にセットする
+            // モグラたたき用のクローン（複製）を作成して穴にセットする
             setupWhackHoles();
         });
 
@@ -592,7 +621,6 @@
         let catchTimerId, catchSpawnerId, catchAnimationId;
         let fallingItems = [];
         let charX = 0;
-        let targetCharX = 0; /* 追加：指の目標地点 */
 
         function startCatchGame() {
             catchScore = 0;
@@ -604,7 +632,6 @@
             document.getElementById('catch-time').innerText = catchTime;
             
             charX = window.innerWidth / 2 - (character.offsetWidth * gameScale) / 2;
-            targetCharX = charX; /* 初期位置セット */
             const charY = window.innerHeight - (character.offsetHeight * gameScale) - 20;
             character.style.transform = `translate(${charX}px, ${charY}px) scale(${gameScale})`;
 
@@ -626,22 +653,23 @@
 
         function spawnItem() {
             const isGood = Math.random() > 0.3; 
-            const text = isGood 
+            const htmlContent = isGood 
                 ? goodFoods[Math.floor(Math.random() * goodFoods.length)] 
                 : badItems[Math.floor(Math.random() * badItems.length)];
             
             const el = document.createElement('div');
             el.className = 'falling-item';
-            el.innerText = text;
+            // ★文字(innerText)ではなくHTML(innerHTML)として表示する！
+            el.innerHTML = htmlContent; 
             
-            const startX = Math.random() * (window.innerWidth - 40);
+            const startX = Math.random() * (window.innerWidth - 80); // アイテムの幅分ずらす
             el.style.left = startX + 'px';
-            el.style.top = '-50px';
+            el.style.top = '-80px';
             catchScreen.appendChild(el);
 
             fallingItems.push({
                 element: el,
-                y: -50,
+                y: -80,
                 x: startX,
                 speed: Math.random() * 3 + 4,
                 isGood: isGood
@@ -649,8 +677,6 @@
         }
 
         function catchLoop() {
-            /* 滑らかに追従させる処理を追加（現在地から目標地点へ少しずつ近づく） */
-            charX += (targetCharX - charX) * 0.3;
             const charY = window.innerHeight - (character.offsetHeight * gameScale) - 20;
             character.style.transform = `translate(${charX}px, ${charY}px) scale(${gameScale})`;
 
@@ -672,7 +698,7 @@
                     else catchScore -= 10;
                     document.getElementById('catch-score').innerText = catchScore;
                     
-                    item.element.innerText = item.isGood ? '✨' : '💥';
+                    item.element.innerHTML = item.isGood ? '✨' : '💥';
                     setTimeout(() => item.element.remove(), 200);
                     fallingItems.splice(i, 1);
                     continue;
@@ -685,9 +711,12 @@
             catchAnimationId = requestAnimationFrame(catchLoop);
         }
 
-        /* 新しい滑らかな移動入力処理 */
+        /* ★超スムーズな移動処理（指の位置にダイレクトに追従） */
         function onCatchMove(e) {
             if (catchTime <= 0) return;
+            // ★ボタンを押したときは、キャラの移動（デフォルト防止）をキャンセルしてボタンを優先する
+            if (e.target.tagName.toLowerCase() === 'button') return;
+            
             e.preventDefault();
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             
@@ -697,7 +726,8 @@
             if (newX < 0) newX = 0;
             if (newX > maxRight) newX = maxRight;
             
-            targetCharX = newX;
+            // 目標地点ではなく、即座にその位置に移動させる（レスポンス爆速）
+            charX = newX;
         }
 
         /* タッチとマウス両方に対応 */
@@ -736,7 +766,7 @@
                             <canvas class="clone-photo" width="${photoCanvas.width}" height="${photoCanvas.height}"></canvas>
                         </div>
                     </div>
-                    <div class="mole food-mole hidden">🍎</div>
+                    <div class="mole food-mole hidden"></div>
                 `;
                 container.appendChild(holeDiv);
                 
@@ -845,7 +875,8 @@
             if (isCharacter) {
                 hole.charMole.classList.remove('hidden');
             } else {
-                hole.foodMole.innerHTML = goodFoods[Math.floor(Math.random() * goodFoods.length)]; // innerHTMLに変更
+                // ★文字(innerText)ではなくHTML(innerHTML)で画像を表示！
+                hole.foodMole.innerHTML = goodFoods[Math.floor(Math.random() * goodFoods.length)];
                 hole.foodMole.classList.remove('hidden');
             }
             
@@ -882,7 +913,6 @@
             hole.charMole.classList.add('hidden');
             hole.foodMole.classList.add('hidden');
         }
-
     </script>
 </body>
 </html>
