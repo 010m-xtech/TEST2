@@ -54,13 +54,12 @@
             height: 420px;
             position: relative;
             pointer-events: none;
+            transition: transform 0.4s ease; /* ズームのアニメーション */
+            /* 撮影時（初期状態）は2倍にズームし、顔枠を見やすい位置に調整 */
+            transform: scale(2.0) translateY(10%);
+            transform-origin: top center;
         }
         
-        #character.playing-mode {
-            position: absolute;
-            z-index: 10;
-        }
-
         #face-frame {
             width: 120px; 
             height: 160px;
@@ -92,6 +91,8 @@
 
         #character.drawing-mode {
             pointer-events: auto;
+            /* 撮影が終わったら元のサイズにスッと戻る */
+            transform: scale(1) translateY(0);
         }
         #character.drawing-mode #drawing-canvas {
             background-color: rgba(255,255,255,0.4);
