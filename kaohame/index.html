@@ -2,7 +2,6 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <!-- スマホ画面にピタッと合わせるための設定 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>顔はめ＆お絵描きミニゲーム集</title>
     <style>
@@ -15,10 +14,9 @@
             -webkit-tap-highlight-color: transparent; 
             width: 100vw;
             height: 100vh;
-            touch-action: none; /* スマホでのデフォルトのスクロールなどを無効化して操作をスムーズに */
+            touch-action: none; 
         }
 
-        /* 減点時の画面揺れアニメーション */
         @keyframes shakeScreen {
             0% { transform: translate(0, 0); }
             20% { transform: translate(-15px, 10px); }
@@ -31,7 +29,6 @@
             animation: shakeScreen 0.2s ease-in-out;
         }
 
-        /* --- 撮影＆お絵描き画面 --- */
         #setup-screen {
             display: flex;
             flex-direction: column;
@@ -52,24 +49,20 @@
             overflow: hidden; 
         }
 
-        /* ★初期状態（カメラ起動時）は1.7倍にズームし、位置を少し上(0%)に */
         #character {
             width: 300px; 
             height: 420px;
             position: relative;
             pointer-events: none;
             transition: transform 0.4s ease; 
-            transform: scale(1.7) translateY(0%);
+            transform: scale(1.7); /* 初期は大きく */
             transform-origin: top center;
         }
         
-        /* 顔はめ枠（卵型・逆三角形） */
         #face-frame {
             width: 120px; 
             height: 160px;
-            /* 上が丸く、下がシャープな卵型になる設定 */
             border-radius: 50% 50% 50% 50% / 25% 25% 75% 75%;
-            /* 撮影時だけ枠線を見せるためのオレンジ枠 */
             border: 5px dashed #ff9800; 
             overflow: hidden;
             position: absolute;
@@ -84,7 +77,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover; 
-            transform: scaleX(-1); /* 鏡写し */
+            transform: scaleX(-1);
         }
 
         #drawing-canvas {
@@ -95,36 +88,63 @@
             transition: background-color 0.3s;
         }
 
-        /* ★撮影が終わった「お絵描きモード」の時は元のサイズに戻す */
         #character.drawing-mode {
             pointer-events: auto;
-            transform: scale(1) translateY(0);
+            transform: scale(1) translateY(0); /* お絵かき時は元サイズに */
         }
-        /* お絵描きモードの時は顔の枠線を透明にする */
         #character.drawing-mode #face-frame {
             border-color: transparent;
         }
-        /* お絵描きモードの体を描く範囲の枠 */
         #character.drawing-mode #drawing-canvas {
             background-color: rgba(255,255,255,0.4);
             border: 3px dashed #ff9800;
             border-radius: 30px; 
         }
 
-        /* プレイ中のキャラクター（小さく表示） */
         #character.playing-mode {
-            transform: scale(0.5); /* 全体を半分に縮小 */
-            transform-origin: top left; /* ★追加：左端まで移動できるように基準点を変更 */
+            transform: scale(0.5); 
+            transform-origin: top left;
             pointer-events: none;
             border: none;
-            transition: none !important; /* ★重要：キャッチゲームで指の動きが遅れないようにアニメーションを無効化 */
+            transition: none !important; /* スライド操作を遅延させない */
         }
         #character.playing-mode #face-frame {
-            border-color: transparent; /* 遊ぶ時は枠線を消す */
+            border-color: transparent; 
         }
         #character.playing-mode #drawing-canvas {
             background-color: transparent;
             border: none;
+        }
+
+        #floating-palette {
+            display: none;
+            position: absolute;
+            right: 15px; 
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 10px;
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            z-index: 110;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .palette-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .palette-divider {
+            width: 80%;
+            height: 2px;
+            background-color: #ddd;
+            margin: 2px 0;
+            border-radius: 2px;
         }
 
         #ui-area {
@@ -164,16 +184,6 @@
             transform: scale(1.15);
         }
 
-        .size-btn-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 25px;
-            margin-bottom: 20px;
-            background: #f8f9fa;
-            padding: 10px 20px;
-            border-radius: 20px;
-        }
         .size-btn {
             background-color: #555;
             border-radius: 50%;
@@ -187,7 +197,6 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
 
-        /* --- ゲーム選択画面 --- */
         #game-select-screen {
             display: none;
             flex-direction: column;
@@ -209,7 +218,6 @@
             background-color: #ff9800;
         }
 
-        /* --- 共通ゲーム画面UI --- */
         .game-screen {
             display: none;
             width: 100%; height: 100%;
@@ -242,20 +250,22 @@
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             background: white;
-            padding: 30px;
+            padding: 20px;
             border-radius: 20px;
             text-align: center;
             z-index: 50;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            width: 80%;
-            max-width: 300px;
+            width: 85%;
+            max-width: 320px;
+            max-height: 90vh; /* 画面からはみ出ないように */
+            overflow-y: auto; /* はみ出たらスクロール */
+            box-sizing: border-box;
         }
 
-        /* 結果画面のアバター表示用スタイル */
         .result-avatar-container {
-            width: 150px;
-            height: 210px;
-            margin: 10px auto;
+            width: 140px; /* 少し小さく調整 */
+            height: 196px; 
+            margin: 10px auto 0;
             position: relative;
             border: 2px solid #ccc;
             border-radius: 15px;
@@ -267,7 +277,6 @@
             height: 100%;
         }
 
-        /* --- ゲーム1: 食材キャッチゲーム --- */
         #catch-screen { background-color: #fdf5e6; }
         .falling-item {
             position: absolute;
@@ -276,7 +285,6 @@
             user-select: none;
         }
 
-        /* --- ゲーム2: モグラたたき風ゲーム --- */
         #whack-screen { background-color: #a3e4d7; }
         
         #whack-holes {
@@ -285,7 +293,6 @@
             grid-template-rows: repeat(3, 1fr);
             gap: 10px;
             width: 100%;
-            /* ★上部のスコアを避けて、下は画面ギリギリまでいっぱいに広げる（余白削除） */
             height: calc(100% - 90px); 
             max-width: none;
             margin: 80px auto 10px;
@@ -295,12 +302,11 @@
         
         .whack-hole {
             position: relative;
-            background-color: #76d7c4; /* 地面の色 */
+            background-color: #76d7c4; 
             border-radius: 20px;
             overflow: hidden;
         }
 
-        /* 穴の影（黒い楕円） */
         .hole-inner {
             position: absolute;
             bottom: 10%;
@@ -314,14 +320,12 @@
 
         .mole {
             position: absolute;
-            /* ★穴の少し深いところから飛び出すようにして、頭が切れないようにする */
             bottom: 5%; 
             left: 50%;
             cursor: pointer;
-            transition: transform 0.15s ease-out; /* 出る・隠れるスピード */
+            transition: transform 0.15s ease-out; 
         }
         
-        /* 飛び出す食材 */
         .food-mole {
             font-size: 60px;
             transform: translateX(-50%) translateY(0);
@@ -330,23 +334,19 @@
             transform: translateX(-50%) translateY(150px);
         }
 
-        /* 飛び出す自分のキャラクター */
         .character-mole {
             width: 300px;
             height: 420px;
             transform-origin: bottom center;
-            /* ★頭が枠からはみ出して切れないように、0.32倍まで縮小 */
             transform: translateX(-50%) scale(0.32) translateY(0); 
         }
         .character-mole.hidden {
             transform: translateX(-50%) scale(0.32) translateY(450px);
         }
 
-        /* キャラクターをクローン表示するための内部スタイル */
         .clone-face-frame {
             width: 120px; 
             height: 160px;
-            /* ★メイン画面と同じ卵型にする */
             border-radius: 50% 50% 50% 50% / 25% 25% 75% 75%;
             overflow: hidden;
             position: absolute;
@@ -355,7 +355,6 @@
             transform: translateX(-50%);
             z-index: 2;
         }
-        /* ★モグラたたきの顔写真がはみ出ないようにする設定 */
         .clone-photo {
             width: 100%;
             height: 100%;
@@ -371,7 +370,6 @@
     </style>
 </head>
 <body>
-    <!-- セットアップ画面（撮影・お絵かき） -->
     <div id="setup-screen">
         <div id="character-area">
             <div id="character">
@@ -381,45 +379,43 @@
                     <canvas id="photo-canvas" style="display:none;"></canvas>
                 </div>
             </div>
-        </div>
 
-        <div id="ui-area">
-            <div id="ui-shooting" style="text-align:center;">
-                <h2 style="margin:0 0 15px 0; color:#d35400; font-size:1.2rem;">顔の形に合わせて撮影！</h2>
-                <button id="shoot-btn" class="btn" style="background-color:#ff9800; width:200px;">📸 撮影する！</button>
-            </div>
-
-            <div id="ui-drawing" style="display:none; width:100%; max-width:350px;">
-                <!-- ★説明文の追加 -->
-                <p style="text-align:center; color:#e74c3c; font-weight:bold; margin-top:0; margin-bottom:15px;">撮った写真に体を落書きしてみよう！</p>
-                
-                <div id="color-palette" style="display:flex; justify-content:space-around; margin-bottom:15px;">
+            <!-- 横に浮くパレット -->
+            <div id="floating-palette">
+                <div class="palette-section">
                     <div class="color-btn active" data-color="#000000" style="background-color:#000;"></div>
                     <div class="color-btn" data-color="#e74c3c" style="background-color:#e74c3c;"></div>
                     <div class="color-btn" data-color="#3498db" style="background-color:#3498db;"></div>
                     <div class="color-btn" data-color="#2ecc71" style="background-color:#2ecc71;"></div>
                     <div class="color-btn" data-color="#f1c40f" style="background-color:#f1c40f;"></div>
                 </div>
-
-                <div class="size-btn-wrapper">
-                    <span style="font-size:0.9rem; font-weight:bold; color:#777;">太さ</span>
+                <div class="palette-divider"></div>
+                <div class="palette-section">
                     <div class="size-btn" data-size="5" style="width:8px; height:8px;"></div>
                     <div class="size-btn active" data-size="12" style="width:16px; height:16px;"></div>
                     <div class="size-btn" data-size="25" style="width:26px; height:26px;"></div>
                 </div>
+            </div>
+        </div>
 
-                <div style="display:flex; justify-content:space-between; gap: 5px; margin-bottom:15px;">
-                    <button id="retake-btn" class="btn small" style="flex:1; background-color:#95a5a6; padding:10px 0;">撮り直す</button>
-                    <button id="undo-btn" class="btn small" style="flex:1; background-color:#34495e; padding:10px 0;">1つ戻す</button>
-                    <button id="clear-btn" class="btn small" style="flex:1; background-color:#e74c3c; padding:10px 0;">全消し</button>
+        <div id="ui-area">
+            <div id="ui-shooting" style="text-align:center;">
+                <h2 style="margin:0 0 15px 0; color:#d35400; font-size:1.2rem;">顔の形に合わせて撮影！</h2>
+                <button id="shoot-btn" class="btn" style="background-color:#ff9800; width:200px;">撮影する！</button>
+            </div>
+
+            <div id="ui-drawing" style="display:none; width:100%; max-width:350px;">
+                <p style="text-align:center; color:#e74c3c; font-weight:bold; margin-top:0; margin-bottom:15px; font-size:1.1rem;">写真にらくがきしてみよう！</p>
+                <div style="display:flex; justify-content:space-between; gap: 8px; margin-bottom:20px;">
+                    <button id="retake-btn" class="btn small" style="flex:1; background-color:#95a5a6; padding:12px 5px; font-size:1rem;">撮り直す</button>
+                    <button id="undo-btn" class="btn small" style="flex:1; background-color:#34495e; padding:12px 5px; font-size:1rem;">1つ戻す</button>
+                    <button id="clear-btn" class="btn small" style="flex:1; background-color:#e74c3c; padding:12px 5px; font-size:1rem;">全消し</button>
                 </div>
-                
-                <button id="start-btn" class="btn" style="width:100%; background-color:#2ecc71; padding:15px;">✨ 完成！遊ぶ！ ✨</button>
+                <button id="start-btn" class="btn" style="width:100%; background-color:#2ecc71; padding:15px; font-size:1.4rem;">完成！遊ぶ！</button>
             </div>
         </div>
     </div>
 
-    <!-- ゲーム選択画面 -->
     <div id="game-select-screen">
         <h2 style="color:#d35400; margin-bottom:20px;">どのゲームで遊ぶ？</h2>
         <button id="btn-play-catch" class="btn game-btn">🍎 食材キャッチ！</button>
@@ -436,14 +432,19 @@
         <button class="btn small back-btn" onclick="backToMenu()">戻る</button>
         
         <div id="catch-result" class="result-popup">
-            <h2 style="color:#e74c3c; margin-top:0;">タイムアップ！</h2>
-            <p style="font-size:1.5rem; font-weight:bold;">最終スコア: <span id="catch-final-score"></span>点</p>
+            <h2 style="color:#e74c3c; margin-top:0; margin-bottom:10px;">タイムアップ！</h2>
+            <p style="font-size:1.5rem; font-weight:bold; margin:0 0 15px 0;">最終スコア: <span id="catch-final-score"></span>点</p>
             
-            <!-- ★結果アバター表示用 -->
+            <!-- ★一番取った食材の表示エリア -->
+            <div id="catch-best-food" style="margin-bottom: 10px; display: none; flex-direction: column; align-items: center;">
+                <span style="font-size: 0.9rem; font-weight: bold; color: #555;">一番たくさん集めたのはコレ！</span>
+                <img id="catch-best-food-img" src="" style="width: 90px; height: 90px; object-fit: contain; margin: 5px 0; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                <span id="catch-best-food-name" style="font-size: 1.2rem; font-weight: bold; color: #d35400;">商品名</span>
+            </div>
+
             <div class="result-avatar-container">
                 <canvas id="result-catch-canvas" class="result-avatar-canvas" width="300" height="420"></canvas>
             </div>
-
             <button class="btn" style="background-color:#ff9800; width:100%; margin-top:15px;" onclick="backToMenu()">メニューへ</button>
         </div>
     </div>
@@ -456,17 +457,22 @@
         </div>
         <button class="btn small back-btn" onclick="backToMenu()">戻る</button>
         
-        <div id="whack-holes"></div> <!-- ここに9つの穴が作られます -->
+        <div id="whack-holes"></div>
 
         <div id="whack-result" class="result-popup">
-            <h2 style="color:#e74c3c; margin-top:0;">タイムアップ！</h2>
-            <p style="font-size:1.5rem; font-weight:bold;">最終スコア: <span id="whack-final-score"></span>点</p>
+            <h2 style="color:#e74c3c; margin-top:0; margin-bottom:10px;">タイムアップ！</h2>
+            <p style="font-size:1.5rem; font-weight:bold; margin:0 0 15px 0;">最終スコア: <span id="whack-final-score"></span>点</p>
             
-            <!-- ★結果アバター表示用 -->
+            <!-- ★一番叩いた食材の表示エリア -->
+            <div id="whack-best-food" style="margin-bottom: 10px; display: none; flex-direction: column; align-items: center;">
+                <span style="font-size: 0.9rem; font-weight: bold; color: #555;">一番たくさん叩いたのはコレ！</span>
+                <img id="whack-best-food-img" src="" style="width: 90px; height: 90px; object-fit: contain; margin: 5px 0; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                <span id="whack-best-food-name" style="font-size: 1.2rem; font-weight: bold; color: #d35400;">商品名</span>
+            </div>
+
             <div class="result-avatar-container">
                 <canvas id="result-whack-canvas" class="result-avatar-canvas" width="300" height="420"></canvas>
             </div>
-
             <button class="btn" style="background-color:#ff9800; width:100%; margin-top:15px;" onclick="backToMenu()">メニューへ</button>
         </div>
     </div>
@@ -487,16 +493,18 @@
         const uiShooting = document.getElementById('ui-shooting');
         const uiDrawing = document.getElementById('ui-drawing');
 
-        // ★食材リスト（お店の画像5枚）
+        // ★食材リスト：画像と商品名のセットに変更
         const goodFoods = [
-            '<img src="S__22593553_0.jpg" style="width:80px; height:80px; object-fit:contain; border-radius:10px;">', 
-            '<img src="S__22593554_0.jpg" style="width:80px; height:80px; object-fit:contain; border-radius:10px;">', 
-            '<img src="チキン南蛮.jpg" style="width:80px; height:80px; object-fit:contain; border-radius:10px;">', 
-            '<img src="海ぶどう.jpg" style="width:80px; height:80px; object-fit:contain; border-radius:10px;">',
-            '<img src="紅イモコロッケ.jpg" style="width:80px; height:80px; object-fit:contain; border-radius:10px;">'
+            { name: "商品名1を入力", src: "S__22593553_0.jpg" },
+            { name: "商品名2を入力", src: "S__22593554_0.jpg" },
+            { name: "チキン南蛮", src: "チキン南蛮.jpg" },
+            { name: "海ぶどう", src: "海ぶどう.jpg" },
+            { name: "紅イモコロッケ", src: "紅イモコロッケ.jpg" }
         ]; 
-        // ★危険物リスト（うんこ削除）
         const badItems = ['💣', '⚡', '🕷️', '☠️']; 
+
+        // ゲーム中に獲得したアイテムを記録する変数
+        let caughtFoods = {};
 
         // --- 1. カメラと撮影・お絵描き ---
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false })
@@ -513,10 +521,11 @@
             photoCanvas.style.display = 'block';
             uiShooting.style.display = 'none';
             uiDrawing.style.display = 'block';
+            document.getElementById('floating-palette').style.display = 'flex'; 
+            
             character.classList.add('drawing-mode');
         });
 
-        // 戻る・消す処理
         let drawingHistory = [];
         document.getElementById('retake-btn').addEventListener('click', resetToShooting);
         document.getElementById('undo-btn').addEventListener('click', () => {
@@ -536,6 +545,7 @@
             photoCanvas.style.display = 'none';
             uiShooting.style.display = 'block';
             uiDrawing.style.display = 'none';
+            document.getElementById('floating-palette').style.display = 'none';
             character.classList.remove('drawing-mode');
             dCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
             drawingHistory = []; 
@@ -602,18 +612,13 @@
             });
         });
 
-        // --- 2. 画面遷移ロジック ---
-        // 完成ボタン -> ゲーム選択画面へ
         document.getElementById('start-btn').addEventListener('click', () => {
             character.classList.remove('drawing-mode');
             setupScreen.style.display = 'none';
             selectScreen.style.display = 'flex';
-            
-            // モグラたたき用のクローン（複製）を作成して穴にセットする
             setupWhackHoles();
         });
 
-        // キャラ作り直し
         document.getElementById('btn-remake').addEventListener('click', () => {
             selectScreen.style.display = 'none';
             setupScreen.style.display = 'flex';
@@ -621,11 +626,9 @@
         });
 
         function backToMenu() {
-            // キャッチゲームの停止
             cancelAnimationFrame(catchAnimationId);
             clearInterval(catchTimerId);
             clearInterval(catchSpawnerId);
-            // モグラゲームの停止
             clearInterval(whackTimerId);
             clearTimeout(whackSpawnerId);
             whackHoles.forEach(h => clearTimeout(h.timeoutId));
@@ -637,11 +640,44 @@
             
             document.body.appendChild(character);
             character.style.display = 'none'; 
-            
             selectScreen.style.display = 'flex';
         }
 
-        // ★結果画面に自分のキャラクターをコピーして表示する機能
+        // ★結果画面の表示（共通関数）
+        function showGameResult(gameType, finalScore) {
+            let resultScreenId = gameType + '-result';
+            let scoreId = gameType + '-final-score';
+            let bestFoodContainerId = gameType + '-best-food';
+            let bestFoodImgId = gameType + '-best-food-img';
+            let bestFoodNameId = gameType + '-best-food-name';
+
+            document.getElementById(scoreId).innerText = finalScore;
+
+            // 一番多く取得したアイテムを計算
+            let maxCount = 0;
+            let mostCaughtIndex = -1;
+            for (const [index, count] of Object.entries(caughtFoods)) {
+                if (count > maxCount) {
+                    maxCount = count;
+                    mostCaughtIndex = parseInt(index);
+                }
+            }
+
+            let bestFoodContainer = document.getElementById(bestFoodContainerId);
+            // 何か1つでも取っていれば表示
+            if (mostCaughtIndex !== -1) {
+                let bestFood = goodFoods[mostCaughtIndex];
+                document.getElementById(bestFoodImgId).src = bestFood.src;
+                document.getElementById(bestFoodNameId).innerText = bestFood.name;
+                bestFoodContainer.style.display = 'flex';
+            } else {
+                bestFoodContainer.style.display = 'none';
+            }
+
+            updateResultAvatar(resultScreenId);
+            document.getElementById(resultScreenId).style.display = 'block';
+        }
+
         function updateResultAvatar(resultScreenId) {
             let canvasId = resultScreenId === 'catch-result' ? 'result-catch-canvas' : 'result-whack-canvas';
             let targetCanvas = document.getElementById(canvasId);
@@ -649,25 +685,17 @@
             
             ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
             
-            // 1. まず顔写真を描画する (中心に配置)
-            let faceX = 90; 
-            let faceY = 20; 
-            let faceW = 120;
-            let faceH = 160;
-            
+            let faceX = 90; let faceY = 20; let faceW = 120; let faceH = 160;
             ctx.save();
             ctx.beginPath();
-            // メイン画面と同じ卵型に切り抜く
             ctx.ellipse(faceX + faceW/2, faceY + faceH/2, faceW/2, faceH/2, 0, 0, 2 * Math.PI);
             ctx.clip();
             ctx.drawImage(photoCanvas, faceX, faceY, faceW, faceH);
             ctx.restore();
             
-            // 2. その上からお絵描きレイヤーを重ねる
             ctx.drawImage(drawCanvas, 0, 0, targetCanvas.width, targetCanvas.height);
         }
 
-        // --- 3. ゲーム1: 食材キャッチゲーム ---
         let gameScale = 0.5;
         document.getElementById('btn-play-catch').addEventListener('click', () => {
             selectScreen.style.display = 'none';
@@ -684,7 +712,6 @@
         let fallingItems = [];
         let charX = 0;
         
-        // ★ジャンプ用の変数
         let isJumping = false;
         let jumpVelocity = 0;
         let gravity = 1.5;
@@ -694,10 +721,9 @@
         function startCatchGame() {
             catchScore = 0;
             catchTime = 30;
+            caughtFoods = {}; // カウントリセット
             fallingItems.forEach(item => item.element.remove());
             fallingItems = [];
-            
-            // ジャンプのリセット
             isJumping = false;
             jumpVelocity = 0;
             
@@ -706,7 +732,7 @@
             
             charX = window.innerWidth / 2 - (character.offsetWidth * gameScale) / 2;
             baseCharY = window.innerHeight - (character.offsetHeight * gameScale) - 20;
-            charY = baseCharY; // 現在のY座標
+            charY = baseCharY; 
             character.style.transform = `translate(${charX}px, ${charY}px) scale(${gameScale})`;
 
             catchTimerId = setInterval(() => {
@@ -716,9 +742,7 @@
                     clearInterval(catchTimerId);
                     clearInterval(catchSpawnerId);
                     cancelAnimationFrame(catchAnimationId);
-                    document.getElementById('catch-final-score').innerText = catchScore;
-                    updateResultAvatar('catch-result'); // ★ここでアバターを結果画面に表示
-                    document.getElementById('catch-result').style.display = 'block';
+                    showGameResult('catch', catchScore); // 結果画面呼び出し
                 }
             }, 1000);
 
@@ -728,13 +752,19 @@
 
         function spawnItem() {
             const isGood = Math.random() > 0.3; 
-            const htmlContent = isGood 
-                ? goodFoods[Math.floor(Math.random() * goodFoods.length)] 
-                : badItems[Math.floor(Math.random() * badItems.length)];
+            let htmlContent = '';
+            let foodIndex = -1;
+
+            if (isGood) {
+                foodIndex = Math.floor(Math.random() * goodFoods.length);
+                let food = goodFoods[foodIndex];
+                htmlContent = `<img src="${food.src}" style="width:80px; height:80px; object-fit:contain; border-radius:10px;">`;
+            } else {
+                htmlContent = badItems[Math.floor(Math.random() * badItems.length)];
+            }
             
             const el = document.createElement('div');
             el.className = 'falling-item';
-            // ★文字ではなくHTML(画像)として表示
             el.innerHTML = htmlContent; 
             
             const startX = Math.random() * (window.innerWidth - 80);
@@ -747,17 +777,15 @@
                 y: -80,
                 x: startX,
                 speed: Math.random() * 3 + 4,
-                isGood: isGood
+                isGood: isGood,
+                foodIndex: foodIndex // 記録用
             });
         }
 
         function catchLoop() {
-            // ★ジャンプの計算
             if (isJumping) {
                 charY += jumpVelocity;
-                jumpVelocity += gravity; // 重力で落ちる
-                
-                // 地面に着地したらジャンプ終了
+                jumpVelocity += gravity;
                 if (charY >= baseCharY) {
                     charY = baseCharY;
                     isJumping = false;
@@ -766,7 +794,6 @@
             }
 
             character.style.transform = `translate(${charX}px, ${charY}px) scale(${gameScale})`;
-
             const charRect = character.getBoundingClientRect();
 
             for (let i = fallingItems.length - 1; i >= 0; i--) {
@@ -781,8 +808,12 @@
                     itemRect.right > charRect.left + 30 && 
                     itemRect.left < charRect.right - 30) {
                     
-                    if (item.isGood) catchScore += 10;
-                    else catchScore -= 10;
+                    if (item.isGood) {
+                        catchScore += 10;
+                        caughtFoods[item.foodIndex] = (caughtFoods[item.foodIndex] || 0) + 1; // 獲得カウント追加
+                    } else {
+                        catchScore -= 10;
+                    }
                     document.getElementById('catch-score').innerText = catchScore;
                     
                     item.element.innerHTML = item.isGood ? '✨' : '💥';
@@ -798,13 +829,11 @@
             catchAnimationId = requestAnimationFrame(catchLoop);
         }
 
-        /* ★超スムーズな移動処理（指の位置にダイレクトに追従） */
         function onCatchMove(e) {
             if (catchTime <= 0) return;
-            // ボタンを押したときは移動処理をキャンセル
             if (e.target.tagName.toLowerCase() === 'button') return;
             
-            e.preventDefault(); // ★ここでスクロールを止めるので滑らかに動く
+            e.preventDefault(); 
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             
             let newX = clientX - (character.offsetWidth * gameScale) / 2;
@@ -812,35 +841,30 @@
             
             if (newX < 0) newX = 0;
             if (newX > maxRight) newX = maxRight;
-            
             charX = newX;
         }
 
-        // ★画面をタップした時にジャンプする処理
         function onCatchTap(e) {
             if (catchTime <= 0) return;
-            if (e.target.tagName.toLowerCase() === 'button') return; // 戻るボタンの時はジャンプしない
+            if (e.target.tagName.toLowerCase() === 'button') return; 
             
-            // 地面にいる時だけジャンプできる
             if (!isJumping) {
                 isJumping = true;
-                jumpVelocity = -22; // 上に向かって飛ぶ力
+                jumpVelocity = -22; 
             }
         }
 
-        /* タッチとマウス両方に対応 */
         catchScreen.addEventListener('touchmove', onCatchMove, {passive: false});
         catchScreen.addEventListener('mousemove', onCatchMove);
         catchScreen.addEventListener('touchstart', (e) => {
-            onCatchMove(e); // タッチした瞬間にその場所に移動する
-            onCatchTap(e);  // タッチした瞬間にジャンプする
+            onCatchMove(e);
+            onCatchTap(e);
         }, {passive: false});
         catchScreen.addEventListener('mousedown', (e) => {
             onCatchMove(e);
             onCatchTap(e);
         });
 
-        // --- 4. ゲーム2: モグラたたき風ゲーム ---
         document.getElementById('btn-play-whack').addEventListener('click', () => {
             selectScreen.style.display = 'none';
             whackScreen.style.display = 'block';
@@ -853,7 +877,6 @@
         let whackTimerId, whackSpawnerId;
         let currentSpawnInterval = 1000;
 
-        // モグラたたき用にキャラクターのコピーを9つの穴にセットする
         function setupWhackHoles() {
             const container = document.getElementById('whack-holes');
             container.innerHTML = '';
@@ -874,7 +897,6 @@
                 `;
                 container.appendChild(holeDiv);
                 
-                // キャンバスの内容をコピーして描画
                 const cloneDraw = holeDiv.querySelector('.clone-drawing');
                 const clonePhoto = holeDiv.querySelector('.clone-photo');
                 cloneDraw.getContext('2d').drawImage(drawCanvas, 0, 0);
@@ -883,7 +905,6 @@
                 const charMole = holeDiv.querySelector('.character-mole');
                 const foodMole = holeDiv.querySelector('.food-mole');
 
-                // タップ判定の追加
                 const tapAction = (e, isChar) => {
                     e.preventDefault();
                     tapMole(i, isChar);
@@ -897,7 +918,9 @@
                     charMole: charMole,
                     foodMole: foodMole,
                     isActive: false,
-                    timeoutId: null
+                    timeoutId: null,
+                    isCharacter: false,
+                    foodIndex: -1
                 });
             }
         }
@@ -906,11 +929,11 @@
             whackScore = 0;
             whackTime = 30;
             currentSpawnInterval = 1000;
+            caughtFoods = {}; // カウントリセット
             document.getElementById('whack-score').innerText = whackScore;
             document.getElementById('whack-time').innerText = whackTime;
             document.getElementById('whack-result').style.display = 'none';
 
-            // すべての穴をリセット
             whackHoles.forEach(h => {
                 h.isActive = false;
                 h.charMole.classList.add('hidden');
@@ -918,53 +941,38 @@
                 clearTimeout(h.timeoutId);
             });
 
-            // 1秒ごとのタイマー
             whackTimerId = setInterval(() => {
                 whackTime--;
                 document.getElementById('whack-time').innerText = whackTime;
                 if (whackTime <= 0) {
                     clearInterval(whackTimerId);
                     clearTimeout(whackSpawnerId);
-                    document.getElementById('whack-final-score').innerText = whackScore;
-                    updateResultAvatar('whack-result'); // ★ここでアバターを結果画面に表示
-                    document.getElementById('whack-result').style.display = 'block';
+                    showGameResult('whack', whackScore); // 結果画面呼び出し
                 }
             }, 1000);
 
             scheduleNextSpawn();
         }
 
-        // 次のモグラ出現をスケジュールする
         function scheduleNextSpawn() {
             if (whackTime <= 0) return;
-            
             spawnMoles();
-            
-            // 残り時間が減るにつれて、出現間隔が短くなる（1000ms → 300ms）
             let ratio = whackTime / 30; 
             currentSpawnInterval = 300 + (700 * ratio); 
-            
             whackSpawnerId = setTimeout(scheduleNextSpawn, currentSpawnInterval);
         }
 
-        // モグラを出す処理
         function spawnMoles() {
-            // 残り時間が減るにつれて、同時に出るモグラの数が増える！
             let spawnCount = 1;
             if (whackTime <= 22) spawnCount = 2;
             if (whackTime <= 14) spawnCount = 3;
             if (whackTime <= 6) spawnCount = 4;
 
-            // 今空いている穴をリストアップ
             let available = whackHoles.map((h, i) => ({h, i})).filter(obj => !obj.h.isActive);
-            
-            // ランダムに選ぶ（シャッフル）
             for (let i = available.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [available[i], available[j]] = [available[j], available[i]];
             }
-            
-            // 決まった数だけ穴から出す
             for (let i = 0; i < Math.min(spawnCount, available.length); i++) {
                 showMole(available[i].i);
             }
@@ -974,15 +982,18 @@
             let hole = whackHoles[index];
             hole.isActive = true;
             
-            // 30%の確率で「自分のキャラ」、70%の確率で「食材」
             let isCharacter = Math.random() < 0.3;
             
             if (isCharacter) {
                 hole.charMole.classList.remove('hidden');
+                hole.isCharacter = true;
             } else {
-                // 画像（HTML）を表示
-                hole.foodMole.innerHTML = goodFoods[Math.floor(Math.random() * goodFoods.length)];
+                let foodIndex = Math.floor(Math.random() * goodFoods.length);
+                let food = goodFoods[foodIndex];
+                hole.foodMole.innerHTML = `<img src="${food.src}" style="width:80px; height:80px; object-fit:contain; border-radius:10px;">`;
                 hole.foodMole.classList.remove('hidden');
+                hole.isCharacter = false;
+                hole.foodIndex = foodIndex; // 記録用
             }
             
             let displayTime = currentSpawnInterval * 0.9; 
@@ -995,7 +1006,6 @@
             }, displayTime);
         }
 
-        // モグラを叩いたときの処理
         function tapMole(index, isCharacter) {
             let hole = whackHoles[index];
             if (!hole.isActive) return;
@@ -1009,6 +1019,7 @@
                 setTimeout(() => document.body.classList.remove('shake-screen'), 200);
             } else {
                 whackScore += 10; 
+                caughtFoods[hole.foodIndex] = (caughtFoods[hole.foodIndex] || 0) + 1; // 獲得カウント追加
             }
             document.getElementById('whack-score').innerText = whackScore;
 
