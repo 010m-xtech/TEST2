@@ -49,7 +49,7 @@
             justify-content: center;
             align-items: center;
             position: relative;
-            overflow: hidden; /* はみ出し防止 */
+            overflow: hidden; 
         }
 
         /* ★初期状態（カメラ起動時）は1.7倍にズームし、位置を少し上(0%)に */
@@ -114,6 +114,7 @@
         /* プレイ中のキャラクター（小さく表示） */
         #character.playing-mode {
             transform: scale(0.5); /* 全体を半分に縮小 */
+            transform-origin: top left; /* ★追加：左端まで移動できるように基準点を変更 */
             pointer-events: none;
             border: none;
             transition: none !important; /* ★重要：キャッチゲームで指の動きが遅れないようにアニメーションを無効化 */
@@ -250,6 +251,22 @@
             max-width: 300px;
         }
 
+        /* 結果画面のアバター表示用スタイル */
+        .result-avatar-container {
+            width: 150px;
+            height: 210px;
+            margin: 10px auto;
+            position: relative;
+            border: 2px solid #ccc;
+            border-radius: 15px;
+            background-color: #fff;
+            overflow: hidden;
+        }
+        .result-avatar-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
         /* --- ゲーム1: 食材キャッチゲーム --- */
         #catch-screen { background-color: #fdf5e6; }
         .falling-item {
@@ -373,6 +390,9 @@
             </div>
 
             <div id="ui-drawing" style="display:none; width:100%; max-width:350px;">
+                <!-- ★説明文の追加 -->
+                <p style="text-align:center; color:#e74c3c; font-weight:bold; margin-top:0; margin-bottom:15px;">撮った写真に体を落書きしてみよう！</p>
+                
                 <div id="color-palette" style="display:flex; justify-content:space-around; margin-bottom:15px;">
                     <div class="color-btn active" data-color="#000000" style="background-color:#000;"></div>
                     <div class="color-btn" data-color="#e74c3c" style="background-color:#e74c3c;"></div>
@@ -418,6 +438,12 @@
         <div id="catch-result" class="result-popup">
             <h2 style="color:#e74c3c; margin-top:0;">タイムアップ！</h2>
             <p style="font-size:1.5rem; font-weight:bold;">最終スコア: <span id="catch-final-score"></span>点</p>
+            
+            <!-- ★結果アバター表示用 -->
+            <div class="result-avatar-container">
+                <canvas id="result-catch-canvas" class="result-avatar-canvas" width="300" height="420"></canvas>
+            </div>
+
             <button class="btn" style="background-color:#ff9800; width:100%; margin-top:15px;" onclick="backToMenu()">メニューへ</button>
         </div>
     </div>
@@ -435,6 +461,12 @@
         <div id="whack-result" class="result-popup">
             <h2 style="color:#e74c3c; margin-top:0;">タイムアップ！</h2>
             <p style="font-size:1.5rem; font-weight:bold;">最終スコア: <span id="whack-final-score"></span>点</p>
+            
+            <!-- ★結果アバター表示用 -->
+            <div class="result-avatar-container">
+                <canvas id="result-whack-canvas" class="result-avatar-canvas" width="300" height="420"></canvas>
+            </div>
+
             <button class="btn" style="background-color:#ff9800; width:100%; margin-top:15px;" onclick="backToMenu()">メニューへ</button>
         </div>
     </div>
@@ -463,7 +495,7 @@
             '<img src="海ぶどう.jpg" style="width:80px; height:80px; object-fit:contain; border-radius:10px;">',
             '<img src="紅イモコロッケ.jpg" style="width:80px; height:80px; object-fit:contain; border-radius:10px;">'
         ]; 
-        // ★危険物リスト
+        // ★危険物リスト（うんこ削除）
         const badItems = ['💣', '⚡', '🕷️', '☠️']; 
 
         // --- 1. カメラと撮影・お絵描き ---
@@ -609,6 +641,32 @@
             selectScreen.style.display = 'flex';
         }
 
+        // ★結果画面に自分のキャラクターをコピーして表示する機能
+        function updateResultAvatar(resultScreenId) {
+            let canvasId = resultScreenId === 'catch-result' ? 'result-catch-canvas' : 'result-whack-canvas';
+            let targetCanvas = document.getElementById(canvasId);
+            let ctx = targetCanvas.getContext('2d');
+            
+            ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
+            
+            // 1. まず顔写真を描画する (中心に配置)
+            let faceX = 90; 
+            let faceY = 20; 
+            let faceW = 120;
+            let faceH = 160;
+            
+            ctx.save();
+            ctx.beginPath();
+            // メイン画面と同じ卵型に切り抜く
+            ctx.ellipse(faceX + faceW/2, faceY + faceH/2, faceW/2, faceH/2, 0, 0, 2 * Math.PI);
+            ctx.clip();
+            ctx.drawImage(photoCanvas, faceX, faceY, faceW, faceH);
+            ctx.restore();
+            
+            // 2. その上からお絵描きレイヤーを重ねる
+            ctx.drawImage(drawCanvas, 0, 0, targetCanvas.width, targetCanvas.height);
+        }
+
         // --- 3. ゲーム1: 食材キャッチゲーム ---
         let gameScale = 0.5;
         document.getElementById('btn-play-catch').addEventListener('click', () => {
@@ -625,6 +683,13 @@
         let catchTimerId, catchSpawnerId, catchAnimationId;
         let fallingItems = [];
         let charX = 0;
+        
+        // ★ジャンプ用の変数
+        let isJumping = false;
+        let jumpVelocity = 0;
+        let gravity = 1.5;
+        let charY = 0;
+        let baseCharY = 0;
 
         function startCatchGame() {
             catchScore = 0;
@@ -632,11 +697,16 @@
             fallingItems.forEach(item => item.element.remove());
             fallingItems = [];
             
+            // ジャンプのリセット
+            isJumping = false;
+            jumpVelocity = 0;
+            
             document.getElementById('catch-score').innerText = catchScore;
             document.getElementById('catch-time').innerText = catchTime;
             
             charX = window.innerWidth / 2 - (character.offsetWidth * gameScale) / 2;
-            const charY = window.innerHeight - (character.offsetHeight * gameScale) - 20;
+            baseCharY = window.innerHeight - (character.offsetHeight * gameScale) - 20;
+            charY = baseCharY; // 現在のY座標
             character.style.transform = `translate(${charX}px, ${charY}px) scale(${gameScale})`;
 
             catchTimerId = setInterval(() => {
@@ -647,6 +717,7 @@
                     clearInterval(catchSpawnerId);
                     cancelAnimationFrame(catchAnimationId);
                     document.getElementById('catch-final-score').innerText = catchScore;
+                    updateResultAvatar('catch-result'); // ★ここでアバターを結果画面に表示
                     document.getElementById('catch-result').style.display = 'block';
                 }
             }, 1000);
@@ -681,7 +752,19 @@
         }
 
         function catchLoop() {
-            const charY = window.innerHeight - (character.offsetHeight * gameScale) - 20;
+            // ★ジャンプの計算
+            if (isJumping) {
+                charY += jumpVelocity;
+                jumpVelocity += gravity; // 重力で落ちる
+                
+                // 地面に着地したらジャンプ終了
+                if (charY >= baseCharY) {
+                    charY = baseCharY;
+                    isJumping = false;
+                    jumpVelocity = 0;
+                }
+            }
+
             character.style.transform = `translate(${charX}px, ${charY}px) scale(${gameScale})`;
 
             const charRect = character.getBoundingClientRect();
@@ -721,7 +804,7 @@
             // ボタンを押したときは移動処理をキャンセル
             if (e.target.tagName.toLowerCase() === 'button') return;
             
-            e.preventDefault();
+            e.preventDefault(); // ★ここでスクロールを止めるので滑らかに動く
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             
             let newX = clientX - (character.offsetWidth * gameScale) / 2;
@@ -733,11 +816,29 @@
             charX = newX;
         }
 
+        // ★画面をタップした時にジャンプする処理
+        function onCatchTap(e) {
+            if (catchTime <= 0) return;
+            if (e.target.tagName.toLowerCase() === 'button') return; // 戻るボタンの時はジャンプしない
+            
+            // 地面にいる時だけジャンプできる
+            if (!isJumping) {
+                isJumping = true;
+                jumpVelocity = -22; // 上に向かって飛ぶ力
+            }
+        }
+
         /* タッチとマウス両方に対応 */
         catchScreen.addEventListener('touchmove', onCatchMove, {passive: false});
         catchScreen.addEventListener('mousemove', onCatchMove);
-        catchScreen.addEventListener('touchstart', onCatchMove, {passive: false});
-        catchScreen.addEventListener('mousedown', onCatchMove);
+        catchScreen.addEventListener('touchstart', (e) => {
+            onCatchMove(e); // タッチした瞬間にその場所に移動する
+            onCatchTap(e);  // タッチした瞬間にジャンプする
+        }, {passive: false});
+        catchScreen.addEventListener('mousedown', (e) => {
+            onCatchMove(e);
+            onCatchTap(e);
+        });
 
         // --- 4. ゲーム2: モグラたたき風ゲーム ---
         document.getElementById('btn-play-whack').addEventListener('click', () => {
@@ -825,6 +926,7 @@
                     clearInterval(whackTimerId);
                     clearTimeout(whackSpawnerId);
                     document.getElementById('whack-final-score').innerText = whackScore;
+                    updateResultAvatar('whack-result'); // ★ここでアバターを結果画面に表示
                     document.getElementById('whack-result').style.display = 'block';
                 }
             }, 1000);
