@@ -437,10 +437,12 @@
     <div id="game-select-screen">
         <h2 style="color:#d35400; margin-bottom:10px;">どのゲームで遊ぶ？</h2>
         <button id="btn-play-catch" class="btn game-btn">
+            <img src="kyachi.png" alt="メニューキャッチ" style="width: 100%; max-height: 100px; object-fit: contain; margin-bottom: 5px; border-radius: 8px;">
             <div class="game-btn-title">メニューキャッチ</div>
             <div class="game-btn-desc">落ちてくるメニューをたくさんとろう。<br>爆弾にはきをつけて</div>
         </button>
         <button id="btn-play-whack" class="btn game-btn" style="background-color:#e74c3c;">
+            <img src="mogura.png" alt="モグラたたき" style="width: 100%; max-height: 100px; object-fit: contain; margin-bottom: 5px; border-radius: 8px;">
             <div class="game-btn-title">モグラたたき</div>
             <div class="game-btn-desc">とびだすメニューをタップしてたくさんとろう。<br>自分をとったらだめだよ</div>
         </button>
@@ -653,6 +655,19 @@
             resetToShooting();
         });
 
+        function resetToStart() {
+            // Hide everything else
+            selectScreen.style.display = 'none';
+            catchScreen.style.display = 'none';
+            whackScreen.style.display = 'none';
+            document.getElementById('catch-result').style.display = 'none';
+            document.getElementById('whack-result').style.display = 'none';
+
+            // Show the setup screen and reset to shooting mode
+            setupScreen.style.display = 'flex';
+            resetToShooting();
+        }
+
         function backToMenu() {
             cancelAnimationFrame(catchAnimationId);
             clearInterval(catchTimerId);
@@ -661,13 +676,11 @@
             clearTimeout(whackSpawnerId);
             whackHoles.forEach(h => clearTimeout(h.timeoutId));
             
+            // ゲーム選択画面に戻る
             catchScreen.style.display = 'none';
             whackScreen.style.display = 'none';
             document.getElementById('catch-result').style.display = 'none';
             document.getElementById('whack-result').style.display = 'none';
-            
-            document.body.appendChild(character);
-            character.style.display = 'none'; 
             selectScreen.style.display = 'flex';
         }
 
