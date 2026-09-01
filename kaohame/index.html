@@ -535,7 +535,15 @@
             if (video.videoWidth === 0) return; 
             photoCanvas.width = video.videoWidth;
             photoCanvas.height = video.videoHeight;
-            pCtx.drawImage(video, 0, 0, photoCanvas.width, photoCanvas.height);
+            
+            // 映像の中心部分を1.5倍にズームしてキャンバスに焼き付ける
+            const zoom = 1.5;
+            const sx = video.videoWidth / 2 - (video.videoWidth / zoom) / 2;
+            const sy = video.videoHeight / 2 - (video.videoHeight / zoom) / 2;
+            const sw = video.videoWidth / zoom;
+            const sh = video.videoHeight / zoom;
+            
+            pCtx.drawImage(video, sx, sy, sw, sh, 0, 0, photoCanvas.width, photoCanvas.height);
             
             video.style.display = 'none';
             photoCanvas.style.display = 'block';
