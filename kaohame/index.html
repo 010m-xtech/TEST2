@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>オリジナルミニゲーム</title>
+    <title>顔はめ＆お絵描きミニゲーム集</title>
     <style>
         body {
             margin: 0;
@@ -125,34 +125,32 @@
             border: none;
         }
 
-        #floating-palette {
+        /* パレットのスタイル変更 (下部に移動、大きく) */
+        #bottom-palette {
             display: none;
-            position: absolute;
-            right: 5px; 
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255, 255, 255, 0.95);
-            padding: 6px 4px;
-            border-radius: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            z-index: 110;
-            flex-direction: column;
-            gap: 6px;
+            flex-direction: row; /* 横並び */
+            justify-content: center;
             align-items: center;
+            gap: 15px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 20px;
+            margin-bottom: 15px; /* 下のボタンとの隙間 */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
         .palette-section {
             display: flex;
-            flex-direction: column;
-            gap: 6px;
+            flex-direction: row;
+            gap: 10px;
             align-items: center;
         }
 
         .palette-divider {
-            width: 80%;
-            height: 2px;
+            width: 2px;
+            height: 30px;
             background-color: #ddd;
-            margin: 2px 0;
+            margin: 0 5px;
             border-radius: 2px;
         }
 
@@ -182,7 +180,7 @@
         .btn.small { padding: 10px 20px; font-size: 1rem; }
 
         .color-btn {
-            width: 24px; height: 24px;
+            width: 32px; height: 32px; /* 少し大きく */
             border-radius: 50%;
             border: 3px solid #f0f0f0;
             cursor: pointer;
@@ -305,16 +303,13 @@
             content: "";
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 0; /* 木を一番奥の背景として設定 */
+            z-index: 0; /* 背景を一番奥に設定 */
             pointer-events: none;
-            /* 丸いグラデーションを組み合わせて「葉っぱ」と「幹」を描く */
-            background: 
-                radial-gradient(circle at 50% -5%, #2e7d32 35vw, transparent 35vw),
-                radial-gradient(circle at 15% 5%, #4caf50 28vw, transparent 28vw),
-                radial-gradient(circle at 85% 5%, #4caf50 28vw, transparent 28vw),
-                radial-gradient(circle at 35% 15%, #81c784 22vw, transparent 22vw),
-                radial-gradient(circle at 65% 15%, #81c784 22vw, transparent 22vw),
-                linear-gradient(90deg, transparent 40%, #795548 40%, #5d4037 60%, transparent 60%);
+            /* オリジナルの画像を背景に設定 */
+            background-image: url('haikeikyachi.png');
+            background-size: cover; /* 画面いっぱいに余白なく広げる */
+            background-position: center; /* 常に画像の中央を基準に表示 */
+            background-repeat: no-repeat;
         }
 
         .falling-item {
@@ -424,23 +419,6 @@
                     <canvas id="photo-canvas" style="display:none;"></canvas>
                 </div>
             </div>
-
-            <!-- 横に浮くパレット -->
-            <div id="floating-palette">
-                <div class="palette-section">
-                    <div class="color-btn active" data-color="#000000" style="background-color:#000;"></div>
-                    <div class="color-btn" data-color="#e74c3c" style="background-color:#e74c3c;"></div>
-                    <div class="color-btn" data-color="#3498db" style="background-color:#3498db;"></div>
-                    <div class="color-btn" data-color="#2ecc71" style="background-color:#2ecc71;"></div>
-                    <div class="color-btn" data-color="#f1c40f" style="background-color:#f1c40f;"></div>
-                </div>
-                <div class="palette-divider"></div>
-                <div class="palette-section">
-                    <div class="size-btn" data-size="5" style="width:4px; height:4px;"></div>
-                    <div class="size-btn active" data-size="12" style="width:8px; height:8px;"></div>
-                    <div class="size-btn" data-size="25" style="width:14px; height:14px;"></div>
-                </div>
-            </div>
         </div>
 
         <div id="ui-area">
@@ -451,7 +429,25 @@
             </div>
 
             <div id="ui-drawing" style="display:none; width:100%; max-width:350px;">
-                <p style="text-align:center; color:#e74c3c; font-weight:bold; margin-top:0; margin-bottom:15px; font-size:1.1rem;">写真にらくがきしてみよう！</p>
+                <p style="text-align:center; color:#e74c3c; font-weight:bold; margin-top:0; margin-bottom:10px; font-size:1.1rem;">写真にらくがきしてみよう！</p>
+                
+                <!-- 横から下に移動したパレット -->
+                <div id="bottom-palette">
+                    <div class="palette-section">
+                        <div class="color-btn active" data-color="#000000" style="background-color:#000;"></div>
+                        <div class="color-btn" data-color="#e74c3c" style="background-color:#e74c3c;"></div>
+                        <div class="color-btn" data-color="#3498db" style="background-color:#3498db;"></div>
+                        <div class="color-btn" data-color="#2ecc71" style="background-color:#2ecc71;"></div>
+                        <div class="color-btn" data-color="#f1c40f" style="background-color:#f1c40f;"></div>
+                    </div>
+                    <div class="palette-divider"></div>
+                    <div class="palette-section">
+                        <div class="size-btn" data-size="5" style="width:6px; height:6px;"></div>
+                        <div class="size-btn active" data-size="12" style="width:12px; height:12px;"></div>
+                        <div class="size-btn" data-size="25" style="width:20px; height:20px;"></div>
+                    </div>
+                </div>
+
                 <div style="display:flex; justify-content:space-between; gap: 8px; margin-bottom:20px;">
                     <button id="retake-btn" class="btn small" style="flex:1; background-color:#95a5a6; padding:12px 5px; font-size:0.95rem;">撮り直す</button>
                     <button id="undo-btn" class="btn small" style="flex:1; background-color:#34495e; padding:12px 5px; font-size:0.95rem;">1つ戻す</button>
@@ -465,12 +461,12 @@
     <div id="game-select-screen">
         <h2 style="color:#d35400; margin-bottom:10px;">どのゲームで遊ぶ？</h2>
         <button id="btn-play-catch" class="btn game-btn">
-            <img src="kyachi.png" alt="メニューキャッチ画像" style="width: 100%; max-height: 180px; height: 100%; object-fit: contain; margin-bottom: 5px; border-radius: 8px;">
+            <img src="kyachi.png" alt="メニューキャッチ" style="width: 100%; max-height: 190px; height: auto; object-fit: contain; margin-bottom: 5px; border-radius: 8px;">
             <div style="font-size: 1.2rem; margin-bottom: 3px;">メニューキャッチ</div>
             <div class="game-btn-desc">落ちてくるメニューをたくさんとろう。<br>爆弾にはきをつけて</div>
         </button>
         <button id="btn-play-whack" class="btn game-btn" style="background-color:#e74c3c;">
-            <img src="mogura.png" alt="モグラたたき画像" style="width: 100%; max-height: 180px; height: 100%; object-fit: contain; margin-bottom: 5px; border-radius: 8px;">
+            <img src="mogura.png" alt="モグラたたき" style="width: 100%; max-height: 190px; height: auto; object-fit: contain; margin-bottom: 5px; border-radius: 8px;">
             <div style="font-size: 1.2rem; margin-bottom: 3px;">モグラたたき</div>
             <div class="game-btn-desc">とびだすメニューをタップしてたくさんとろう。<br>自分をとったらだめだよ</div>
         </button>
@@ -552,13 +548,30 @@
             { name: "海ぶどう", src: "海ぶどう.jpg" },
             { name: "紅イモコロッケ", src: "紅イモコロッケ.jpg" }
         ]; 
-        const badItems = ['💣', '⚡', '🕷️', '☠️']; 
+        // 爆弾のみに統一
+        const badItems = ['💣']; 
 
         let caughtFoods = {};
+        
+        // カメラストリームを保持する変数
+        let currentStream = null;
 
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false })
-        .then(stream => { video.srcObject = stream; video.play(); })
-        .catch(err => { alert("カメラの起動に失敗しました。"); });
+        function startCamera() {
+            // 既にストリームがあれば停止
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false })
+            .then(stream => { 
+                currentStream = stream;
+                video.srcObject = stream; 
+                video.play(); 
+            })
+            .catch(err => { alert("カメラの起動に失敗しました。ブラウザの設定でカメラを許可してください。"); });
+        }
+
+        // 初回起動時
+        startCamera();
 
         document.getElementById('shoot-btn').addEventListener('click', () => {
             if (video.videoWidth === 0) return; 
@@ -578,7 +591,7 @@
             photoCanvas.style.display = 'block';
             uiShooting.style.display = 'none';
             uiDrawing.style.display = 'block';
-            document.getElementById('floating-palette').style.display = 'flex'; 
+            document.getElementById('bottom-palette').style.display = 'flex'; 
             
             character.classList.add('drawing-mode');
         });
@@ -602,11 +615,18 @@
             photoCanvas.style.display = 'none';
             uiShooting.style.display = 'block';
             uiDrawing.style.display = 'none';
-            document.getElementById('floating-palette').style.display = 'none';
+            document.getElementById('bottom-palette').style.display = 'none';
+            
+            // ★追加：アバターを確実に元の場所（撮影エリア）に戻してリセットする
+            document.getElementById('character-area').appendChild(character);
+            character.style.transform = ''; 
+            character.classList.remove('playing-mode');
+            
             character.classList.remove('drawing-mode');
             dCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
             drawingHistory = []; 
-            video.play();
+            // 念のためカメラを再起動
+            startCamera();
         }
 
         let isDrawing = false;
@@ -760,7 +780,7 @@
             ctx.drawImage(drawCanvas, 0, 0, targetCanvas.width, targetCanvas.height);
         }
 
-        let gameScale = 0.35; // キャッチゲームのキャラサイズを35%に
+        let gameScale = 0.42; // キャッチゲームのキャラサイズを42%に少し大きく
         let catchScore = 0;
         let catchTime = 30;
         let catchTimerId, catchSpawnerId, catchAnimationId;
@@ -816,7 +836,7 @@
                 let food = goodFoods[foodIndex];
                 htmlContent = `<img src="${food.src}" style="width:80px; height:80px; object-fit:contain; border-radius:10px;">`;
             } else {
-                htmlContent = badItems[Math.floor(Math.random() * badItems.length)];
+                htmlContent = badItems[0]; // 爆弾のみ
             }
             
             const el = document.createElement('div');
@@ -828,11 +848,15 @@
             el.style.top = '-80px';
             catchScreen.appendChild(el);
 
+            // 残り時間に応じた速度の増加を計算 (経過するほど速くなる)
+            const speedMultiplier = (30 - catchTime) / 30; // 最初は0、最後は1になる
+            const extraSpeed = speedMultiplier * 6; // 後半になるほど最大で+6のスピードを追加
+
             fallingItems.push({
                 element: el,
                 y: -80,
                 x: startX,
-                speed: Math.random() * 3 + 4,
+                speed: Math.random() * 3 + 4 + extraSpeed, // 基本速度 + 時間経過による追加速度
                 isGood: isGood,
                 foodIndex: foodIndex 
             });
