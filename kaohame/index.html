@@ -102,7 +102,6 @@
         }
 
         #character.playing-mode {
-            transform: scale(0.5); 
             transform-origin: top left;
             pointer-events: none;
             border: none;
@@ -123,19 +122,19 @@
             top: 50%;
             transform: translateY(-50%);
             background: rgba(255, 255, 255, 0.95);
-            padding: 10px 8px;
-            border-radius: 30px;
+            padding: 8px 6px;
+            border-radius: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             z-index: 110;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
             align-items: center;
         }
 
         .palette-section {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
             align-items: center;
         }
 
@@ -173,7 +172,7 @@
         .btn.small { padding: 10px 20px; font-size: 1rem; }
 
         .color-btn {
-            width: 32px; height: 32px;
+            width: 28px; height: 28px;
             border-radius: 50%;
             border: 3px solid #f0f0f0;
             cursor: pointer;
@@ -209,6 +208,7 @@
             background-color: #ffeaa7;
             z-index: 90;
         }
+        
         .game-btn {
             width: 90%;
             max-width: 320px;
@@ -227,7 +227,7 @@
             font-size: 0.85rem;
             font-weight: normal;
             line-height: 1.4;
-            white-space: nowrap; /* 意図しない改行を防ぎ、指定した場所でのみ改行させます */
+            white-space: nowrap; /* 意図しない改行を防ぐ */
         }
 
         .game-screen {
@@ -256,13 +256,14 @@
             background-color: #95a5a6;
             z-index: 20;
         }
+
         .result-popup {
             display: none;
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             background: white;
-            padding: 20px;
+            padding: 15px;
             border-radius: 20px;
             text-align: center;
             z-index: 50;
@@ -275,9 +276,9 @@
         }
 
         .result-avatar-container {
-            width: 140px; /* 少し小さく調整 */
+            width: 140px; 
             height: 196px; 
-            margin: 10px auto 0;
+            margin: 5px auto 0;
             position: relative;
             border: 2px solid #ccc;
             border-radius: 15px;
@@ -350,10 +351,10 @@
             width: 300px;
             height: 420px;
             transform-origin: bottom center;
-            transform: translateX(-50%) scale(0.32) translateY(0); 
+            transform: translateX(-50%) scale(0.28) translateY(100px); 
         }
         .character-mole.hidden {
-            transform: translateX(-50%) scale(0.32) translateY(450px);
+            transform: translateX(-50%) scale(0.28) translateY(450px);
         }
 
         .clone-face-frame {
@@ -383,6 +384,11 @@
 </head>
 <body>
     <div id="setup-screen">
+        <!-- 画面上部の1行タイトル -->
+        <div style="text-align:center; padding:15px 10px 5px; background-color:#ffedd6; z-index:110;">
+            <h1 style="color:#e74c3c; font-size:clamp(1rem, 5vw, 1.5rem); margin:0; font-weight:bold; white-space:nowrap; text-shadow: 1px 1px 0 #fff;">自分のアバターを作ってゲームで遊ぼう！！</h1>
+        </div>
+
         <div id="character-area">
             <div id="character">
                 <canvas id="drawing-canvas" width="300" height="420"></canvas>
@@ -403,25 +409,25 @@
                 </div>
                 <div class="palette-divider"></div>
                 <div class="palette-section">
-                    <div class="size-btn" data-size="5" style="width:6px; height:6px;"></div>
-                    <div class="size-btn active" data-size="12" style="width:12px; height:12px;"></div>
-                    <div class="size-btn" data-size="25" style="width:20px; height:20px;"></div>
+                    <div class="size-btn" data-size="5" style="width:5px; height:5px;"></div>
+                    <div class="size-btn active" data-size="12" style="width:10px; height:10px;"></div>
+                    <div class="size-btn" data-size="25" style="width:16px; height:16px;"></div>
                 </div>
             </div>
         </div>
 
         <div id="ui-area">
             <div id="ui-shooting" style="text-align:center;">
-                <h2 style="margin:0 0 15px 0; color:#d35400; font-size:1.2rem;">顔の形に合わせて撮影！</h2>
+                <h2 style="margin:0 0 15px 0; color:#d35400; font-size:1rem;">顔の形に合わせて撮影！</h2>
                 <button id="shoot-btn" class="btn" style="background-color:#ff9800; width:200px;">撮影する！</button>
             </div>
 
             <div id="ui-drawing" style="display:none; width:100%; max-width:350px;">
                 <p style="text-align:center; color:#e74c3c; font-weight:bold; margin-top:0; margin-bottom:15px; font-size:1.1rem;">写真にらくがきしてみよう！</p>
                 <div style="display:flex; justify-content:space-between; gap: 8px; margin-bottom:20px;">
-                    <button id="retake-btn" class="btn small" style="flex:1; background-color:#95a5a6; padding:12px 5px; font-size:1rem;">撮り直す</button>
-                    <button id="undo-btn" class="btn small" style="flex:1; background-color:#34495e; padding:12px 5px; font-size:1rem;">1つ戻す</button>
-                    <button id="clear-btn" class="btn small" style="flex:1; background-color:#e74c3c; padding:12px 5px; font-size:1rem;">全消し</button>
+                    <button id="retake-btn" class="btn small" style="flex:1; background-color:#95a5a6; padding:12px 5px; font-size:0.95rem;">撮り直す</button>
+                    <button id="undo-btn" class="btn small" style="flex:1; background-color:#34495e; padding:12px 5px; font-size:0.95rem;">1つ戻す</button>
+                    <button id="clear-btn" class="btn small" style="flex:1; background-color:#e74c3c; padding:12px 5px; font-size:0.95rem;">全消し</button>
                 </div>
                 <button id="start-btn" class="btn" style="width:100%; background-color:#2ecc71; padding:15px; font-size:1.4rem;">完成！遊ぶ！</button>
             </div>
@@ -431,17 +437,16 @@
     <div id="game-select-screen">
         <h2 style="color:#d35400; margin-bottom:10px;">どのゲームで遊ぶ？</h2>
         <button id="btn-play-catch" class="btn game-btn">
-            <div class="game-btn-title">メニューキャッチ！</div>
-            <div class="game-btn-desc">落ちてくるメニューをたくさんとろう。<br>爆弾にはきをつけて！</div>
+            <div class="game-btn-title">メニューキャッチ</div>
+            <div class="game-btn-desc">落ちてくるメニューをたくさんとろう。<br>爆弾にはきをつけて</div>
         </button>
         <button id="btn-play-whack" class="btn game-btn" style="background-color:#e74c3c;">
-            <div class="game-btn-title">モグラたたき！</div>
-            <div class="game-btn-desc">とびだすメニューをタップしてたくさんとろう。<br>自分をとったらだめだよ！</div>
+            <div class="game-btn-title">モグラたたき</div>
+            <div class="game-btn-desc">とびだすメニューをタップしてたくさんとろう。<br>自分をとったらだめだよ</div>
         </button>
         <button id="btn-remake" class="btn small" style="margin-top:20px; background-color:#95a5a6;">キャラを作り直す</button>
     </div>
 
-    <!-- ゲーム1: 食材キャッチゲーム -->
     <div id="catch-screen" class="game-screen">
         <div class="score-board">
             <span>スコア: <span id="catch-score">0</span></span>
@@ -450,13 +455,12 @@
         <button class="btn small back-btn" onclick="backToMenu()">戻る</button>
         
         <div id="catch-result" class="result-popup">
-            <h2 style="color:#e74c3c; margin-top:0; margin-bottom:10px;">タイムアップ！</h2>
-            <p style="font-size:1.5rem; font-weight:bold; margin:0 0 15px 0;">最終スコア: <span id="catch-final-score"></span>点</p>
+            <h2 style="color:#e74c3c; margin-top:0; margin-bottom:5px; font-size:1.2rem;">タイムアップ！</h2>
+            <p style="font-size:1.1rem; font-weight:bold; margin:0 0 10px 0;">最終スコア: <span id="catch-final-score"></span>点</p>
             
-            <!-- ★一番取った食材の表示エリア -->
-            <div id="catch-best-food" style="margin-bottom: 10px; display: none; flex-direction: column; align-items: center;">
-                <span style="font-size: 0.9rem; font-weight: bold; color: #555;">一番たくさん集めたのはコレ！</span>
-                <img id="catch-best-food-img" src="" style="width: 90px; height: 90px; object-fit: contain; margin: 5px 0; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+            <div id="catch-best-food" style="margin-bottom: 5px; display: none; flex-direction: column; align-items: center;">
+                <span style="font-size: 0.8rem; font-weight: bold; color: #555; white-space: nowrap;">たくさん集めた今日のおすすめメニューは</span>
+                <img id="catch-best-food-img" src="" style="width: 130px; height: 130px; object-fit: contain; margin: 5px 0; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
                 <span id="catch-best-food-name" style="font-size: 1.2rem; font-weight: bold; color: #d35400;">商品名</span>
             </div>
 
@@ -467,7 +471,6 @@
         </div>
     </div>
 
-    <!-- ゲーム2: モグラたたき風ゲーム -->
     <div id="whack-screen" class="game-screen">
         <div class="score-board">
             <span>スコア: <span id="whack-score">0</span></span>
@@ -478,13 +481,12 @@
         <div id="whack-holes"></div>
 
         <div id="whack-result" class="result-popup">
-            <h2 style="color:#e74c3c; margin-top:0; margin-bottom:10px;">タイムアップ！</h2>
-            <p style="font-size:1.5rem; font-weight:bold; margin:0 0 15px 0;">最終スコア: <span id="whack-final-score"></span>点</p>
+            <h2 style="color:#e74c3c; margin-top:0; margin-bottom:5px; font-size:1.2rem;">タイムアップ！</h2>
+            <p style="font-size:1.1rem; font-weight:bold; margin:0 0 10px 0;">最終スコア: <span id="whack-final-score"></span>点</p>
             
-            <!-- ★一番叩いた食材の表示エリア -->
-            <div id="whack-best-food" style="margin-bottom: 10px; display: none; flex-direction: column; align-items: center;">
+            <div id="whack-best-food" style="margin-bottom: 5px; display: none; flex-direction: column; align-items: center;">
                 <span style="font-size: 0.8rem; font-weight: bold; color: #555; white-space: nowrap;">たくさん集めた今日のおすすめメニューは</span>
-                <img id="whack-best-food-img" src="" style="width: 90px; height: 90px; object-fit: contain; margin: 5px 0; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                <img id="whack-best-food-img" src="" style="width: 130px; height: 130px; object-fit: contain; margin: 5px 0; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
                 <span id="whack-best-food-name" style="font-size: 1.2rem; font-weight: bold; color: #d35400;">商品名</span>
             </div>
 
@@ -511,7 +513,7 @@
         const uiShooting = document.getElementById('ui-shooting');
         const uiDrawing = document.getElementById('ui-drawing');
 
-        // ★食材リスト：画像と商品名のセットに変更
+        // 食材リスト：画像と商品名のセット
         const goodFoods = [
             { name: "商品名1を入力", src: "S__22593553_0.jpg" },
             { name: "商品名2を入力", src: "S__22593554_0.jpg" },
@@ -524,7 +526,7 @@
         // ゲーム中に獲得したアイテムを記録する変数
         let caughtFoods = {};
 
-        // --- 1. カメラと撮影・お絵描き ---
+        // 1. カメラと撮影・お絵描き
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false })
         .then(stream => { video.srcObject = stream; video.play(); })
         .catch(err => { alert("カメラの起動に失敗しました。"); });
@@ -661,7 +663,6 @@
             selectScreen.style.display = 'flex';
         }
 
-        // ★結果画面の表示（共通関数）
         function showGameResult(gameType, finalScore) {
             let resultScreenId = gameType + '-result';
             let scoreId = gameType + '-final-score';
@@ -682,7 +683,6 @@
             }
 
             let bestFoodContainer = document.getElementById(bestFoodContainerId);
-            // 何か1つでも取っていれば表示
             if (mostCaughtIndex !== -1) {
                 let bestFood = goodFoods[mostCaughtIndex];
                 document.getElementById(bestFoodImgId).src = bestFood.src;
@@ -714,7 +714,7 @@
             ctx.drawImage(drawCanvas, 0, 0, targetCanvas.width, targetCanvas.height);
         }
 
-        let gameScale = 0.5;
+        let gameScale = 0.35; // キャラクターのサイズ（35%）
         document.getElementById('btn-play-catch').addEventListener('click', () => {
             selectScreen.style.display = 'none';
             catchScreen.style.display = 'block';
@@ -729,12 +729,7 @@
         let catchTimerId, catchSpawnerId, catchAnimationId;
         let fallingItems = [];
         let charX = 0;
-        
-        let isJumping = false;
-        let jumpVelocity = 0;
-        let gravity = 1.5;
         let charY = 0;
-        let baseCharY = 0;
 
         function startCatchGame() {
             catchScore = 0;
@@ -742,15 +737,12 @@
             caughtFoods = {}; // カウントリセット
             fallingItems.forEach(item => item.element.remove());
             fallingItems = [];
-            isJumping = false;
-            jumpVelocity = 0;
             
             document.getElementById('catch-score').innerText = catchScore;
             document.getElementById('catch-time').innerText = catchTime;
             
             charX = window.innerWidth / 2 - (character.offsetWidth * gameScale) / 2;
-            baseCharY = window.innerHeight - (character.offsetHeight * gameScale) - 20;
-            charY = baseCharY; 
+            charY = window.innerHeight - (character.offsetHeight * gameScale) - 20;
             character.style.transform = `translate(${charX}px, ${charY}px) scale(${gameScale})`;
 
             catchTimerId = setInterval(() => {
@@ -769,7 +761,8 @@
         }
 
         function spawnItem() {
-            const isGood = Math.random() > 0.3; 
+            // 爆弾が落ちてくる確率を45%にアップ
+            const isGood = Math.random() > 0.45; 
             let htmlContent = '';
             let foodIndex = -1;
 
@@ -801,16 +794,6 @@
         }
 
         function catchLoop() {
-            if (isJumping) {
-                charY += jumpVelocity;
-                jumpVelocity += gravity;
-                if (charY >= baseCharY) {
-                    charY = baseCharY;
-                    isJumping = false;
-                    jumpVelocity = 0;
-                }
-            }
-
             character.style.transform = `translate(${charX}px, ${charY}px) scale(${gameScale})`;
             const charRect = character.getBoundingClientRect();
 
