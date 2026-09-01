@@ -40,6 +40,7 @@
             background-color: #ffedd6;
         }
 
+        /* キャラクター作成エリア */
         #character-area {
             flex: 1;
             display: flex;
@@ -73,11 +74,19 @@
             z-index: 2;
         }
 
-        #webcam, #photo-canvas {
+        #photo-canvas {
             width: 100%;
             height: 100%;
             object-fit: cover; 
             transform: scaleX(-1);
+        }
+
+        #webcam {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; 
+            /* カメラ映像を1.5倍ズーム */
+            transform: scaleX(-1) scale(1.5);
         }
 
         #drawing-canvas {
@@ -90,7 +99,7 @@
 
         #character.drawing-mode {
             pointer-events: auto;
-            transform: scale(1) translateY(0); /* お絵かき時は元サイズに */
+            transform: scale(1) translateY(0);
         }
         #character.drawing-mode #face-frame {
             border-color: transparent;
@@ -105,7 +114,8 @@
             transform-origin: top left;
             pointer-events: none;
             border: none;
-            transition: none !important; /* スライド操作を遅延させない */
+            transition: none !important;
+            z-index: 20; /* アイテムより手前に表示 */
         }
         #character.playing-mode #face-frame {
             border-color: transparent; 
@@ -118,23 +128,23 @@
         #floating-palette {
             display: none;
             position: absolute;
-            right: 10px; 
+            right: 5px; 
             top: 50%;
             transform: translateY(-50%);
             background: rgba(255, 255, 255, 0.95);
-            padding: 8px 6px;
-            border-radius: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            padding: 6px 4px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
             z-index: 110;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
             align-items: center;
         }
 
         .palette-section {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
             align-items: center;
         }
 
@@ -148,7 +158,7 @@
 
         #ui-area {
             background: #fff;
-            padding: 20px;
+            padding: 15px 20px 20px;
             border-top-left-radius: 30px;
             border-top-right-radius: 30px;
             box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
@@ -172,7 +182,7 @@
         .btn.small { padding: 10px 20px; font-size: 1rem; }
 
         .color-btn {
-            width: 28px; height: 28px;
+            width: 24px; height: 24px;
             border-radius: 50%;
             border: 3px solid #f0f0f0;
             cursor: pointer;
@@ -211,7 +221,7 @@
         
         .game-btn {
             width: 90%;
-            max-width: 320px;
+            max-width: 340px;
             margin: 10px 0;
             padding: 15px;
             background-color: #ff9800;
@@ -219,15 +229,11 @@
             flex-direction: column;
             gap: 5px;
         }
-        .game-btn-title {
-            font-size: 1.4rem;
-            font-weight: bold;
-        }
         .game-btn-desc {
             font-size: 0.85rem;
             font-weight: normal;
             line-height: 1.4;
-            white-space: nowrap; /* 意図しない改行を防ぐ */
+            white-space: nowrap; 
         }
 
         .game-screen {
@@ -247,14 +253,14 @@
             background: rgba(255,255,255,0.8);
             padding: 10px 15px;
             border-radius: 20px;
-            z-index: 20;
+            z-index: 30; /* スコアは一番上に */
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         .back-btn {
             position: absolute;
             top: 10px; right: 10px;
             background-color: #95a5a6;
-            z-index: 20;
+            z-index: 30;
         }
 
         .result-popup {
@@ -270,8 +276,8 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             width: 85%;
             max-width: 320px;
-            max-height: 90vh; /* 画面からはみ出ないように */
-            overflow-y: auto; /* はみ出たらスクロール */
+            max-height: 90vh;
+            overflow-y: auto; 
             box-sizing: border-box;
         }
 
@@ -290,16 +296,16 @@
             height: 100%;
         }
 
+        /* キャッチゲームの木と空の背景 */
         #catch-screen { 
             background-color: #e1f5fe; /* 爽やかな空の色 */
             position: relative;
         }
-        
         #catch-screen::before {
             content: "";
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 1; /* アイテムやスコアの奥に表示 */
+            z-index: 0; /* 木を一番奥の背景として設定 */
             pointer-events: none;
             /* 丸いグラデーションを組み合わせて「葉っぱ」と「幹」を描く */
             background: 
@@ -314,7 +320,7 @@
         .falling-item {
             position: absolute;
             font-size: 40px;
-            z-index: 15;
+            z-index: 15; /* アイテムは木(0)より手前 */
             user-select: none;
         }
 
@@ -359,9 +365,10 @@
             transition: transform 0.15s ease-out; 
         }
         
+        /* 飛び出す高さ（translateY）を小さくして、高くジャンプさせる */
         .food-mole {
             font-size: 60px;
-            transform: translateX(-50%) translateY(0);
+            transform: translateX(-50%) translateY(-30px);
         }
         .food-mole.hidden {
             transform: translateX(-50%) translateY(150px);
@@ -371,7 +378,7 @@
             width: 300px;
             height: 420px;
             transform-origin: bottom center;
-            transform: translateX(-50%) scale(0.28) translateY(100px); 
+            transform: translateX(-50%) scale(0.28) translateY(30px); 
         }
         .character-mole.hidden {
             transform: translateX(-50%) scale(0.28) translateY(450px);
@@ -429,16 +436,17 @@
                 </div>
                 <div class="palette-divider"></div>
                 <div class="palette-section">
-                    <div class="size-btn" data-size="5" style="width:5px; height:5px;"></div>
-                    <div class="size-btn active" data-size="12" style="width:10px; height:10px;"></div>
-                    <div class="size-btn" data-size="25" style="width:16px; height:16px;"></div>
+                    <div class="size-btn" data-size="5" style="width:4px; height:4px;"></div>
+                    <div class="size-btn active" data-size="12" style="width:8px; height:8px;"></div>
+                    <div class="size-btn" data-size="25" style="width:14px; height:14px;"></div>
                 </div>
             </div>
         </div>
 
         <div id="ui-area">
             <div id="ui-shooting" style="text-align:center;">
-                <h2 style="margin:0 0 15px 0; color:#d35400; font-size:1rem;">顔の形に合わせて撮影！</h2>
+                <!-- タイトルは上部に移動したので、ここはシンプルに -->
+                <p style="margin:0 0 15px 0; color:#d35400; font-size:1.1rem; font-weight:bold;">顔の形に合わせて撮影！</p>
                 <button id="shoot-btn" class="btn" style="background-color:#ff9800; width:200px;">撮影する！</button>
             </div>
 
@@ -456,14 +464,13 @@
 
     <div id="game-select-screen">
         <h2 style="color:#d35400; margin-bottom:10px;">どのゲームで遊ぶ？</h2>
+        <!-- タイトル文字を削除し、説明文のみ表示 -->
         <button id="btn-play-catch" class="btn game-btn">
-            <img src="kyachi.png" alt="メニューキャッチ" style="width: 100%; max-height: 180px; height: 160px; object-fit: contain; margin-bottom: 5px; border-radius: 8px;">
-            <div class="game-btn-title">メニューキャッチ</div>
+            <img src="kyachi.png" alt="メニューキャッチ" style="width: 100%; max-height: 250px; height: 220px; object-fit: contain; margin-bottom: 5px; border-radius: 8px;">
             <div class="game-btn-desc">落ちてくるメニューをたくさんとろう。<br>爆弾にはきをつけて</div>
         </button>
         <button id="btn-play-whack" class="btn game-btn" style="background-color:#e74c3c;">
-            <img src="mogura.png" alt="モグラたたき" style="width: 100%; max-height: 180px; height: 160px; object-fit: contain; margin-bottom: 5px; border-radius: 8px;">
-            <div class="game-btn-title">モグラたたき</div>
+            <img src="mogura.png" alt="モグラたたき" style="width: 100%; max-height: 250px; height: 220px; object-fit: contain; margin-bottom: 5px; border-radius: 8px;">
             <div class="game-btn-desc">とびだすメニューをタップしてたくさんとろう。<br>自分をとったらだめだよ</div>
         </button>
         <button id="btn-remake" class="btn small" style="margin-top:20px; background-color:#95a5a6;">キャラを作り直す</button>
@@ -477,8 +484,8 @@
         <button class="btn small back-btn" onclick="backToMenu()">戻る</button>
         
         <div id="catch-result" class="result-popup">
-            <h2 style="color:#e74c3c; margin-top:0; margin-bottom:5px; font-size:1.2rem;">タイムアップ！</h2>
-            <p style="font-size:1.1rem; font-weight:bold; margin:0 0 10px 0;">最終スコア: <span id="catch-final-score"></span>点</p>
+            <h2 style="color:#e74c3c; margin-top:0; margin-bottom:5px; font-size:1.1rem;">タイムアップ！</h2>
+            <p style="font-size:1rem; font-weight:bold; margin:0 0 5px 0;">最終スコア: <span id="catch-final-score"></span>点</p>
             
             <div id="catch-best-food" style="margin-bottom: 5px; display: none; flex-direction: column; align-items: center;">
                 <span style="font-size: 0.8rem; font-weight: bold; color: #555; white-space: nowrap;">たくさん集めた今日のおすすめメニューは</span>
@@ -489,7 +496,8 @@
             <div class="result-avatar-container">
                 <canvas id="result-catch-canvas" class="result-avatar-canvas" width="300" height="420"></canvas>
             </div>
-            <button class="btn" style="background-color:#ff9800; width:100%; margin-top:15px;" onclick="backToMenu()">メニューへ</button>
+            <!-- もう一度ボタンで resetToStart を呼ぶ -->
+            <button class="btn" style="background-color:#ff9800; width:100%; margin-top:15px;" onclick="resetToStart()">もう一度</button>
         </div>
     </div>
 
@@ -503,8 +511,8 @@
         <div id="whack-holes"></div>
 
         <div id="whack-result" class="result-popup">
-            <h2 style="color:#e74c3c; margin-top:0; margin-bottom:5px; font-size:1.2rem;">タイムアップ！</h2>
-            <p style="font-size:1.1rem; font-weight:bold; margin:0 0 10px 0;">最終スコア: <span id="whack-final-score"></span>点</p>
+            <h2 style="color:#e74c3c; margin-top:0; margin-bottom:5px; font-size:1.1rem;">タイムアップ！</h2>
+            <p style="font-size:1rem; font-weight:bold; margin:0 0 5px 0;">最終スコア: <span id="whack-final-score"></span>点</p>
             
             <div id="whack-best-food" style="margin-bottom: 5px; display: none; flex-direction: column; align-items: center;">
                 <span style="font-size: 0.8rem; font-weight: bold; color: #555; white-space: nowrap;">たくさん集めた今日のおすすめメニューは</span>
@@ -515,7 +523,8 @@
             <div class="result-avatar-container">
                 <canvas id="result-whack-canvas" class="result-avatar-canvas" width="300" height="420"></canvas>
             </div>
-            <button class="btn" style="background-color:#ff9800; width:100%; margin-top:15px;" onclick="backToMenu()">メニューへ</button>
+            <!-- もう一度ボタンで resetToStart を呼ぶ -->
+            <button class="btn" style="background-color:#ff9800; width:100%; margin-top:15px;" onclick="resetToStart()">もう一度</button>
         </div>
     </div>
 
@@ -535,7 +544,6 @@
         const uiShooting = document.getElementById('ui-shooting');
         const uiDrawing = document.getElementById('ui-drawing');
 
-        // 食材リスト：画像と商品名のセット
         const goodFoods = [
             { name: "商品名1を入力", src: "S__22593553_0.jpg" },
             { name: "商品名2を入力", src: "S__22593554_0.jpg" },
@@ -545,10 +553,8 @@
         ]; 
         const badItems = ['💣', '⚡', '🕷️', '☠️']; 
 
-        // ゲーム中に獲得したアイテムを記録する変数
         let caughtFoods = {};
 
-        // 1. カメラと撮影・お絵描き
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false })
         .then(stream => { video.srcObject = stream; video.play(); })
         .catch(err => { alert("カメラの起動に失敗しました。"); });
@@ -558,7 +564,7 @@
             photoCanvas.width = video.videoWidth;
             photoCanvas.height = video.videoHeight;
             
-            // 映像の中心部分を1.5倍にズームしてキャンバスに焼き付ける
+            // 映像の中心部分を1.5倍にズームしてキャンバスに焼き付ける（ズーム設定反映）
             const zoom = 1.5;
             const sx = video.videoWidth / 2 - (video.videoWidth / zoom) / 2;
             const sy = video.videoHeight / 2 - (video.videoHeight / zoom) / 2;
@@ -675,19 +681,19 @@
             resetToShooting();
         });
 
+        // 最初のカメラ画面へ完全に戻る関数
         function resetToStart() {
-            // Hide everything else
             selectScreen.style.display = 'none';
             catchScreen.style.display = 'none';
             whackScreen.style.display = 'none';
             document.getElementById('catch-result').style.display = 'none';
             document.getElementById('whack-result').style.display = 'none';
 
-            // Show the setup screen and reset to shooting mode
             setupScreen.style.display = 'flex';
             resetToShooting();
         }
 
+        // ゲーム選択画面に戻る関数
         function backToMenu() {
             cancelAnimationFrame(catchAnimationId);
             clearInterval(catchTimerId);
@@ -696,7 +702,6 @@
             clearTimeout(whackSpawnerId);
             whackHoles.forEach(h => clearTimeout(h.timeoutId));
             
-            // ゲーム選択画面に戻る
             catchScreen.style.display = 'none';
             whackScreen.style.display = 'none';
             document.getElementById('catch-result').style.display = 'none';
@@ -713,7 +718,6 @@
 
             document.getElementById(scoreId).innerText = finalScore;
 
-            // 一番多く取得したアイテムを計算
             let maxCount = 0;
             let mostCaughtIndex = -1;
             for (const [index, count] of Object.entries(caughtFoods)) {
@@ -755,7 +759,14 @@
             ctx.drawImage(drawCanvas, 0, 0, targetCanvas.width, targetCanvas.height);
         }
 
-        let gameScale = 0.35; // キャラクターのサイズ（35%）
+        let gameScale = 0.35; // キャッチゲームのキャラサイズを35%に
+        let catchScore = 0;
+        let catchTime = 30;
+        let catchTimerId, catchSpawnerId, catchAnimationId;
+        let fallingItems = [];
+        let charX = 0;
+        let charY = 0;
+
         document.getElementById('btn-play-catch').addEventListener('click', () => {
             selectScreen.style.display = 'none';
             catchScreen.style.display = 'block';
@@ -765,17 +776,10 @@
             startCatchGame();
         });
 
-        let catchScore = 0;
-        let catchTime = 30;
-        let catchTimerId, catchSpawnerId, catchAnimationId;
-        let fallingItems = [];
-        let charX = 0;
-        let charY = 0;
-
         function startCatchGame() {
             catchScore = 0;
             catchTime = 30;
-            caughtFoods = {}; // カウントリセット
+            caughtFoods = {}; 
             fallingItems.forEach(item => item.element.remove());
             fallingItems = [];
             
@@ -793,7 +797,7 @@
                     clearInterval(catchTimerId);
                     clearInterval(catchSpawnerId);
                     cancelAnimationFrame(catchAnimationId);
-                    showGameResult('catch', catchScore); // 結果画面呼び出し
+                    showGameResult('catch', catchScore); 
                 }
             }, 1000);
 
@@ -802,8 +806,7 @@
         }
 
         function spawnItem() {
-            // 爆弾が落ちてくる確率を45%にアップ
-            const isGood = Math.random() > 0.45; 
+            const isGood = Math.random() > 0.45; // 爆弾の確率45%
             let htmlContent = '';
             let foodIndex = -1;
 
@@ -830,7 +833,7 @@
                 x: startX,
                 speed: Math.random() * 3 + 4,
                 isGood: isGood,
-                foodIndex: foodIndex // 記録用
+                foodIndex: foodIndex 
             });
         }
 
@@ -852,7 +855,7 @@
                     
                     if (item.isGood) {
                         catchScore += 10;
-                        caughtFoods[item.foodIndex] = (caughtFoods[item.foodIndex] || 0) + 1; // 獲得カウント追加
+                        caughtFoods[item.foodIndex] = (caughtFoods[item.foodIndex] || 0) + 1;
                     } else {
                         catchScore -= 10;
                     }
@@ -955,7 +958,7 @@
             whackScore = 0;
             whackTime = 30;
             currentSpawnInterval = 1000;
-            caughtFoods = {}; // カウントリセット
+            caughtFoods = {}; 
             document.getElementById('whack-score').innerText = whackScore;
             document.getElementById('whack-time').innerText = whackTime;
             document.getElementById('whack-result').style.display = 'none';
@@ -973,7 +976,7 @@
                 if (whackTime <= 0) {
                     clearInterval(whackTimerId);
                     clearTimeout(whackSpawnerId);
-                    showGameResult('whack', whackScore); // 結果画面呼び出し
+                    showGameResult('whack', whackScore); 
                 }
             }, 1000);
 
@@ -1019,7 +1022,7 @@
                 hole.foodMole.innerHTML = `<img src="${food.src}" style="width:80px; height:80px; object-fit:contain; border-radius:10px;">`;
                 hole.foodMole.classList.remove('hidden');
                 hole.isCharacter = false;
-                hole.foodIndex = foodIndex; // 記録用
+                hole.foodIndex = foodIndex; 
             }
             
             let displayTime = currentSpawnInterval * 0.9; 
@@ -1045,7 +1048,7 @@
                 setTimeout(() => document.body.classList.remove('shake-screen'), 200);
             } else {
                 whackScore += 10; 
-                caughtFoods[hole.foodIndex] = (caughtFoods[hole.foodIndex] || 0) + 1; // 獲得カウント追加
+                caughtFoods[hole.foodIndex] = (caughtFoods[hole.foodIndex] || 0) + 1; 
             }
             document.getElementById('whack-score').innerText = whackScore;
 
