@@ -13,7 +13,8 @@
             font-family: 'Hiragino Maru Gothic ProN', sans-serif; 
             -webkit-tap-highlight-color: transparent; 
             width: 100vw;
-            height: 100vh;
+            /* スマホの上下バーを考慮して常に画面内に収める魔法の単位 (Dynamic Viewport Height) */
+            height: 100dvh;
             touch-action: none; 
         }
 
@@ -125,17 +126,17 @@
             border: none;
         }
 
-        /* パレットのスタイル変更 (下部に移動、大きく) */
+        /* らくがきキャンバスの下に配置するパレット */
         #bottom-palette {
             display: none;
-            flex-direction: row; /* 横並び */
+            flex-direction: row; 
             justify-content: center;
             align-items: center;
             gap: 15px;
             padding: 10px;
             background: rgba(255, 255, 255, 0.8);
             border-radius: 20px;
-            margin-bottom: 15px; /* 下のボタンとの隙間 */
+            margin-bottom: 15px; 
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
@@ -163,6 +164,9 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            /* UIエリアが広がりすぎないように制限 */
+            max-height: 45vh;
+            overflow-y: auto;
         }
 
         .btn {
@@ -204,28 +208,44 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
 
+        /* ゲーム選択画面を上下バーがあっても収まるように調整 */
         #game-select-screen {
             display: none;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: space-evenly; /* 隙間を均等に */
             height: 100%;
             width: 100%;
             position: absolute;
             top: 0; left: 0;
             background-color: #ffeaa7;
             z-index: 90;
+            padding: 5vh 0; /* 上下に少し余白 */
+            box-sizing: border-box;
         }
         
         .game-btn {
             width: 90%;
             max-width: 340px;
-            margin: 10px 0;
-            padding: 15px;
+            padding: 10px 15px; /* 上下のパディングを少し狭く */
             background-color: #ff9800;
             display: flex;
             flex-direction: column;
+            align-items: center;
             gap: 5px;
+            /* スマホでボタンが潰れないための設定 */
+            flex-shrink: 1; 
+        }
+        .game-btn-img {
+            width: 100%;
+            max-height: 25vh; /* 画面の高さの25%まで。見切れ防止の要 */
+            height: auto;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+        .game-btn-title {
+            font-size: 1.2rem;
+            margin: 2px 0;
         }
         .game-btn-desc {
             font-size: 0.85rem;
@@ -303,7 +323,7 @@
             content: "";
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 0; /* 背景を一番奥に設定 */
+            z-index: 0; /* 木を一番奥の背景として設定 */
             pointer-events: none;
             /* オリジナルの画像を背景に設定 */
             background-image: url('haikeikyachi.png');
@@ -459,18 +479,21 @@
     </div>
 
     <div id="game-select-screen">
-        <h2 style="color:#d35400; margin-bottom:10px;">どのゲームで遊ぶ？</h2>
+        <h2 style="color:#d35400; margin:0; font-size: 1.3rem;">どのゲームで遊ぶ？</h2>
+        
         <button id="btn-play-catch" class="btn game-btn">
-            <img src="kyachi.png" alt="メニューキャッチ" style="width: 100%; max-height: 190px; height: auto; object-fit: contain; margin-bottom: 5px; border-radius: 8px;">
-            <div style="font-size: 1.2rem; margin-bottom: 3px;">メニューキャッチ</div>
+            <img src="kyachi.png" alt="メニューキャッチ" class="game-btn-img">
+            <div class="game-btn-title">メニューキャッチ</div>
             <div class="game-btn-desc">落ちてくるメニューをたくさんとろう。<br>爆弾にはきをつけて</div>
         </button>
+        
         <button id="btn-play-whack" class="btn game-btn" style="background-color:#e74c3c;">
-            <img src="mogura.png" alt="モグラたたき" style="width: 100%; max-height: 190px; height: auto; object-fit: contain; margin-bottom: 5px; border-radius: 8px;">
-            <div style="font-size: 1.2rem; margin-bottom: 3px;">モグラたたき</div>
+            <img src="mogura.png" alt="モグラたたき" class="game-btn-img">
+            <div class="game-btn-title">モグラたたき</div>
             <div class="game-btn-desc">とびだすメニューをタップしてたくさんとろう。<br>自分をとったらだめだよ</div>
         </button>
-        <button id="btn-remake" class="btn small" style="margin-top:15px; background-color:#95a5a6;">キャラを作り直す</button>
+        
+        <button id="btn-remake" class="btn small" style="background-color:#95a5a6; margin-top: 5px;">キャラを作り直す</button>
     </div>
 
     <div id="catch-screen" class="game-screen">
@@ -617,7 +640,7 @@
             uiDrawing.style.display = 'none';
             document.getElementById('bottom-palette').style.display = 'none';
             
-            // ★追加：アバターを確実に元の場所（撮影エリア）に戻してリセットする
+            // ★アバターを確実に元の場所（撮影エリア）に戻してリセットする
             document.getElementById('character-area').appendChild(character);
             character.style.transform = ''; 
             character.classList.remove('playing-mode');
@@ -625,7 +648,7 @@
             character.classList.remove('drawing-mode');
             dCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
             drawingHistory = []; 
-            // 念のためカメラを再起動
+            // カメラを再起動
             startCamera();
         }
 
