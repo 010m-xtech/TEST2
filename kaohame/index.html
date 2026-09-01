@@ -119,23 +119,23 @@
         #floating-palette {
             display: none;
             position: absolute;
-            right: 15px; 
+            right: 10px; 
             top: 50%;
             transform: translateY(-50%);
             background: rgba(255, 255, 255, 0.95);
-            padding: 15px 10px;
+            padding: 10px 8px;
             border-radius: 30px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             z-index: 110;
             flex-direction: column;
-            gap: 15px;
+            gap: 10px;
             align-items: center;
         }
 
         .palette-section {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
             align-items: center;
         }
 
@@ -173,11 +173,11 @@
         .btn.small { padding: 10px 20px; font-size: 1rem; }
 
         .color-btn {
-            width: 40px; height: 40px;
+            width: 32px; height: 32px;
             border-radius: 50%;
-            border: 4px solid #f0f0f0;
+            border: 3px solid #f0f0f0;
             cursor: pointer;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         .color-btn.active {
             border-color: #333;
@@ -210,12 +210,24 @@
             z-index: 90;
         }
         .game-btn {
-            width: 80%;
-            max-width: 300px;
-            margin: 15px 0;
-            padding: 20px;
-            font-size: 1.3rem;
+            width: 90%;
+            max-width: 320px;
+            margin: 10px 0;
+            padding: 15px;
             background-color: #ff9800;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .game-btn-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+        .game-btn-desc {
+            font-size: 0.85rem;
+            font-weight: normal;
+            line-height: 1.4;
+            white-space: nowrap; /* 意図しない改行を防ぎ、指定した場所でのみ改行させます */
         }
 
         .game-screen {
@@ -391,9 +403,9 @@
                 </div>
                 <div class="palette-divider"></div>
                 <div class="palette-section">
-                    <div class="size-btn" data-size="5" style="width:8px; height:8px;"></div>
-                    <div class="size-btn active" data-size="12" style="width:16px; height:16px;"></div>
-                    <div class="size-btn" data-size="25" style="width:26px; height:26px;"></div>
+                    <div class="size-btn" data-size="5" style="width:6px; height:6px;"></div>
+                    <div class="size-btn active" data-size="12" style="width:12px; height:12px;"></div>
+                    <div class="size-btn" data-size="25" style="width:20px; height:20px;"></div>
                 </div>
             </div>
         </div>
@@ -417,10 +429,16 @@
     </div>
 
     <div id="game-select-screen">
-        <h2 style="color:#d35400; margin-bottom:20px;">どのゲームで遊ぶ？</h2>
-        <button id="btn-play-catch" class="btn game-btn">🍎 食材キャッチ！</button>
-        <button id="btn-play-whack" class="btn game-btn" style="background-color:#e74c3c;">🔨 モグラたたき！</button>
-        <button id="btn-remake" class="btn small" style="margin-top:30px; background-color:#95a5a6;">キャラを作り直す</button>
+        <h2 style="color:#d35400; margin-bottom:10px;">どのゲームで遊ぶ？</h2>
+        <button id="btn-play-catch" class="btn game-btn">
+            <div class="game-btn-title">メニューキャッチ！</div>
+            <div class="game-btn-desc">落ちてくるメニューをたくさんとろう。<br>爆弾にはきをつけて！</div>
+        </button>
+        <button id="btn-play-whack" class="btn game-btn" style="background-color:#e74c3c;">
+            <div class="game-btn-title">モグラたたき！</div>
+            <div class="game-btn-desc">とびだすメニューをタップしてたくさんとろう。<br>自分をとったらだめだよ！</div>
+        </button>
+        <button id="btn-remake" class="btn small" style="margin-top:20px; background-color:#95a5a6;">キャラを作り直す</button>
     </div>
 
     <!-- ゲーム1: 食材キャッチゲーム -->
@@ -465,7 +483,7 @@
             
             <!-- ★一番叩いた食材の表示エリア -->
             <div id="whack-best-food" style="margin-bottom: 10px; display: none; flex-direction: column; align-items: center;">
-                <span style="font-size: 0.9rem; font-weight: bold; color: #555;">一番たくさん叩いたのはコレ！</span>
+                <span style="font-size: 0.8rem; font-weight: bold; color: #555; white-space: nowrap;">たくさん集めた今日のおすすめメニューは</span>
                 <img id="whack-best-food-img" src="" style="width: 90px; height: 90px; object-fit: contain; margin: 5px 0; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
                 <span id="whack-best-food-name" style="font-size: 1.2rem; font-weight: bold; color: #d35400;">商品名</span>
             </div>
@@ -844,26 +862,10 @@
             charX = newX;
         }
 
-        function onCatchTap(e) {
-            if (catchTime <= 0) return;
-            if (e.target.tagName.toLowerCase() === 'button') return; 
-            
-            if (!isJumping) {
-                isJumping = true;
-                jumpVelocity = -22; 
-            }
-        }
-
         catchScreen.addEventListener('touchmove', onCatchMove, {passive: false});
         catchScreen.addEventListener('mousemove', onCatchMove);
-        catchScreen.addEventListener('touchstart', (e) => {
-            onCatchMove(e);
-            onCatchTap(e);
-        }, {passive: false});
-        catchScreen.addEventListener('mousedown', (e) => {
-            onCatchMove(e);
-            onCatchTap(e);
-        });
+        catchScreen.addEventListener('touchstart', onCatchMove, {passive: false});
+        catchScreen.addEventListener('mousedown', onCatchMove);
 
         document.getElementById('btn-play-whack').addEventListener('click', () => {
             selectScreen.style.display = 'none';
