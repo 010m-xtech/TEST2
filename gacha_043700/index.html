@@ -1,1 +1,443 @@
 
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>速達生ビールガチャ</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone@7.23.10/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black select-none" style="-webkit-tap-highlight-color: transparent;">
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module" data-presets="react">
+        const { useState, useMemo, useEffect, useRef } = React;
+
+        // --- 景品データ定義 (V2 新構造) ---
+        // 文章を配列や改行コードに頼らず、プロパティとして完全に分離して文字消えを防ぐ
+        const PRIZES = [
+          { 
+            id: 1, rank: '1等', prob: 1, 
+            border: 'border-yellow-300', text: 'text-yellow-400',
+            name: '【仮】特上黒毛和牛ロース',
+            resultTitle: '1等当選おめでとう！', 
+            giftText: '次回のサービス品となります！！',
+            imgUrl: 'https://placehold.co/600x400/facc15/000000?text=1st+Prize+Menu+Image',
+            soundType: 'fanfare'
+          },
+          { 
+            id: 2, rank: '2等', prob: 5, 
+            border: 'border-gray-400', text: 'text-gray-300',
+            name: '【仮】名物！厚切り牛タン塩',
+            resultTitle: '2等当選おめでとう！', 
+            giftText: '次回のサービス品となります！！',
+            imgUrl: 'https://placehold.co/600x400/9ca3af/000000?text=2nd+Prize+Menu+Image',
+            soundType: 'fanfare'
+          },
+          { 
+            id: 3, rank: '3等', prob: 20, 
+            border: 'border-amber-600', text: 'text-amber-500',
+            name: '【仮】特選もつ鍋 (2人前)',
+            resultTitle: '3等当選おめでとう！', 
+            giftText: '次回のサービス品となります！！',
+            imgUrl: 'https://placehold.co/600x400/d97706/ffffff?text=3rd+Prize+Menu+Image',
+            soundType: 'fanfare'
+          },
+          { 
+            id: 4, rank: '4等', prob: 30, 
+            border: 'border-blue-400', text: 'text-blue-300',
+            name: '【仮】若鶏の唐揚げ',
+            resultTitle: '4等当選おめでとう！', 
+            giftText: '次回のサービス品となります！！',
+            imgUrl: 'https://placehold.co/600x400/60a5fa/000000?text=4th+Prize+Menu+Image',
+            soundType: 'fanfare'
+          },
+          { 
+            id: 5, rank: '5等', prob: 44, 
+            border: 'border-green-400', text: 'text-green-300',
+            name: '【仮】やみつき塩キャベツ',
+            resultTitle: '5等当選おめでとう！', 
+            giftText: '次回のサービス品となります！！',
+            imgUrl: 'https://placehold.co/600x400/4ade80/000000?text=5th+Prize+Menu+Image',
+            soundType: 'fanfare'
+          }
+        ];
+
+        // --- 黄金に輝くテキスト用スタイル ---
+        const customStyles = `
+        @keyframes floatUp {
+          0% { transform: translateY(80px) scale(0.6); opacity: 0; }
+          100% { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-8px) rotate(-5deg); }
+          75% { transform: translateX(8px) rotate(5deg); }
+        }
+        @keyframes popZoom {
+          0% { transform: scale(0.5); opacity: 0; }
+          70% { transform: scale(1.1); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes imagePop {
+          0% { transform: scale(0.1) translateY(100px) rotate(-10deg); opacity: 0; }
+          60% { transform: scale(1.1) translateY(-20px) rotate(5deg); opacity: 1; }
+          80% { transform: scale(0.95) translateY(10px) rotate(-2deg); }
+          100% { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; }
+        }
+        @keyframes riseUp {
+          0% { transform: translateY(100vh) scale(0.3); opacity: 0; }
+          10% { opacity: 0.8; }
+          90% { opacity: 0.8; }
+          100% { transform: translateY(-20vh) scale(1.5); opacity: 0; }
+        }
+        
+        /* 🌟 変更箇所：透明度を使わず、直接濃い色で塗りつぶした完全な静止画サンバースト */
+        .sunburst {
+          background: repeating-conic-gradient(
+            from 0deg,
+            #000000 0deg,
+            #000000 10deg,
+            #3d2500 10deg,
+            #211400 20deg
+          );
+        }
+        
+        .glass-highlight {
+          background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+        }
+        
+        .gold-text-shimmer {
+          background: linear-gradient(to bottom, #fff 0%, #fede53 30%, #f1ad04 70%, #9a6500 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.8));
+        }
+        `;
+
+        // --- ガチャマシンのコンポーネント ---
+        const GachaMachine = ({ onPlay }) => {
+            const [isImageLoaded, setIsImageLoaded] = useState(false);
+
+            useEffect(() => {
+                const timer = setTimeout(() => setIsImageLoaded(true), 3000);
+                return () => clearTimeout(timer);
+            }, []);
+
+            return (
+                <div 
+                    className="flex flex-col items-center justify-center cursor-pointer group w-full h-[100dvh] touch-manipulation select-none" 
+                    onClick={onPlay}
+                >
+                    <div className="relative w-full h-full transition-transform duration-300 active:scale-95 md:group-hover:scale-[1.02] flex items-center justify-center">
+                        {!isImageLoaded && (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center z-20 bg-zinc-900/50 backdrop-blur-sm">
+                                <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-4 shadow-[0_0_15px_rgba(245,158,11,0.5)]"></div>
+                                <p className="text-amber-400 font-bold animate-pulse drop-shadow-md">ガチャ準備中...</p>
+                            </div>
+                        )}
+
+                        {/* 🌟 変更箇所: A4サイズの画像が画面内に綺麗に収まるように object-contain に変更 */}
+                        <img 
+                            src="top.jpg"
+                            alt="速達生ビールガチャ" 
+                            className={`w-full h-full max-h-[100dvh] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)] transition-opacity duration-700 ease-in-out ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                            onLoad={() => setIsImageLoaded(true)}
+                            onError={(e) => {
+                                e.target.onerror = null;
+                                /* プレビュー用にA4比率に近い画像をフォールバック表示 */
+                                e.target.src = "https://placehold.co/1000x1414/27272a/f59e0b?text=top.jpg%5Cn(A4+Size)";
+                                setIsImageLoaded(true);
+                            }}
+                        />
+                        <div className="absolute inset-0 bg-white opacity-0 active:opacity-10 md:group-hover:opacity-10 transition-opacity duration-300 pointer-events-none"></div>
+                        
+                        {/* 🌟 変更箇所: タップしてスタートボタンを「えんじ色」に変更 */}
+                        {isImageLoaded && (
+                            <div className="absolute z-30 flex items-center justify-center pointer-events-none w-full px-4">
+                                <div className="bg-gradient-to-b from-[#8B0000] to-[#4A0000] text-white font-black text-2xl md:text-4xl py-4 px-8 md:py-6 md:px-12 rounded-full shadow-[0_15px_30px_rgba(0,0,0,0.9)] border-4 border-[#ffcccc] animate-pulse flex flex-col items-center w-full max-w-[320px] md:max-w-md text-center">
+                                    <span style={{ WebkitTextStroke: '1px rgba(0,0,0,0.4)', paintOrder: 'stroke fill' }} className="drop-shadow-lg tracking-wide whitespace-nowrap">
+                                        タップしてスタート！
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        // --- 詐欺対策用の現在時刻表示コンポーネント ---
+        const RealTimeClock = () => {
+            const [time, setTime] = useState(new Date());
+            useEffect(() => {
+                const timer = setInterval(() => setTime(new Date()), 1000);
+                return () => clearInterval(timer);
+            }, []);
+            
+            const formattedTime = time.toLocaleString('ja-JP', { 
+                year: 'numeric', month: '2-digit', day: '2-digit', 
+                hour: '2-digit', minute: '2-digit', second: '2-digit' 
+            });
+
+            return (
+                <div 
+                    className="text-white font-mono text-xl sm:text-2xl md:text-3xl font-black tracking-widest drop-shadow-[0_3px_6px_rgba(0,0,0,0.95)] whitespace-nowrap"
+                    style={{ WebkitTextStroke: '0.8px black', paintOrder: 'stroke fill' }}
+                >
+                    {formattedTime}
+                </div>
+            );
+        };
+
+        // --- アプリケーションのメイン ---
+        const App = () => {
+          const [stage, setStage] = useState('idle');
+          const [prizeId, setPrizeId] = useState(null);
+          const [isLoaded, setIsLoaded] = useState(false); 
+          
+          const videoRef = useRef(null);
+          const audioCtxRef = useRef(null);
+
+          // 🌟 常にメモリ上の最新のPRIZESマスタデータを直接参照する
+          const activePrize = useMemo(() => {
+              if (!prizeId) return null;
+              return PRIZES.find(p => p.id === prizeId) || PRIZES[PRIZES.length - 1]; // 万が一見つからなければ最下位をフォールバック
+          }, [prizeId]);
+
+          useEffect(() => {
+              const urlParams = new URLSearchParams(window.location.search);
+              
+              if (urlParams.get('action') === 'reset') {
+                  // キャッシュをクリア
+                  localStorage.removeItem('beer_app_gacha_result_v2');
+                  localStorage.removeItem('beer_app_gacha_result');
+                  
+                  const shopParam = urlParams.get('shop');
+                  const baseUrl = 'https://010m-xtech.github.io/TEST2/botekogacha4/';
+                  const newUrl = baseUrl + (shopParam ? `?shop=${shopParam}` : '');
+                  window.history.replaceState({}, document.title, newUrl);
+              }
+
+              // 🌟 バグ根絶処理: 古いシステム(beer_app_gacha_result)のデータが残っていたら強制削除してバグを防ぐ
+              if (localStorage.getItem('beer_app_gacha_result')) {
+                  localStorage.removeItem('beer_app_gacha_result');
+              }
+
+              // V2用の新しいキーからIDのみを読み込む
+              const savedPrizeId = localStorage.getItem('beer_app_gacha_result_v2');
+              
+              if (savedPrizeId) {
+                  setPrizeId(parseInt(savedPrizeId, 10));
+                  setStage('result');
+              }
+              
+              setIsLoaded(true);
+          }, []);
+
+          const bubbles = useMemo(() => {
+            return Array.from({ length: 400 }).map((_, i) => {
+                const size = Math.random() * 20 + 5; 
+                const left = Math.random() * 100;
+                const duration = Math.random() * 4 + 2; 
+                const delay = Math.random() * -10; 
+                return { size, left, duration, delay };
+            });
+          }, []);
+
+          const drawPrize = () => {
+            const rand = Math.random() * 100;
+            let sum = 0;
+            for (const prize of PRIZES) {
+                sum += prize.prob;
+                if (rand <= sum) return prize;
+            }
+            return PRIZES[PRIZES.length - 1];
+          };
+
+          const playFanfare = (ctx) => {
+              if (!ctx) return;
+              try {
+                  const playNote = (freq, startTime, duration) => {
+                      const osc = ctx.createOscillator();
+                      const gain = ctx.createGain();
+                      osc.connect(gain);
+                      gain.connect(ctx.destination);
+                      osc.type = 'triangle'; 
+                      osc.frequency.value = freq;
+                      
+                      gain.gain.setValueAtTime(0, startTime);
+                      gain.gain.linearRampToValueAtTime(0.2, startTime + 0.05);
+                      gain.gain.setValueAtTime(0.2, startTime + duration - 0.05);
+                      gain.gain.linearRampToValueAtTime(0, startTime + duration);
+                      
+                      osc.start(startTime);
+                      osc.stop(startTime + duration);
+                  };
+                  
+                  const now = ctx.currentTime;
+                  playNote(523.25, now, 0.15);
+                  playNote(659.25, now + 0.15, 0.15);
+                  playNote(783.99, now + 0.30, 0.15);
+                  playNote(1046.50, now + 0.45, 0.5);
+              } catch (e) {
+                  console.error("Audio playback error:", e);
+              }
+          };
+
+          useEffect(() => {
+            if (stage === 'result' && activePrize && activePrize.soundType === 'fanfare') {
+                playFanfare(audioCtxRef.current);
+            }
+          }, [stage, activePrize]);
+
+          const handlePlay = () => {
+            if (stage !== 'idle') return;
+
+            if (!audioCtxRef.current) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) {
+                    audioCtxRef.current = new AudioContext();
+                }
+            }
+            if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
+                audioCtxRef.current.resume();
+            }
+
+            if (navigator.vibrate) {
+                navigator.vibrate([100, 50, 100]); 
+            }
+            
+            const prize = drawPrize();
+            setPrizeId(prize.id); 
+            
+            localStorage.setItem('beer_app_gacha_result_v2', prize.id.toString());
+            setStage('playing_video');
+            
+            if (videoRef.current) {
+                videoRef.current.currentTime = 0;
+                videoRef.current.play().catch(e => console.error("動画の再生に失敗しました:", e));
+            }
+          };
+
+          if (!isLoaded) return null;
+
+          return (
+            <React.Fragment>
+              <style>{customStyles}</style>
+              
+              <div className="min-h-screen bg-gradient-to-b from-yellow-100 via-yellow-400 to-amber-600 font-sans overflow-x-hidden relative selection:bg-amber-800 selection:text-white">
+                
+                <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+                    {bubbles.map((bubble, i) => (
+                        <div key={i}
+                             className="absolute bottom-0 bg-white/50 rounded-full border border-white/40 backdrop-blur-[2px] shadow-[0_0_8px_rgba(255,255,255,0.6)]"
+                             style={{
+                                 width: `${bubble.size}px`, height: `${bubble.size}px`, left: `${bubble.left}%`,
+                                 animation: `riseUp ${bubble.duration}s linear infinite ${bubble.delay}s`
+                             }}
+                        />
+                    ))}
+                    <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-white/60 rounded-full blur-[100px] mix-blend-overlay"></div>
+                    <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-orange-600/30 rounded-full blur-[120px] mix-blend-color-burn"></div>
+                </div>
+
+                <div className="w-full mx-auto flex flex-col items-center justify-center min-h-[100dvh] relative z-10">
+                    <div className="w-full h-[100dvh] flex justify-center items-center">
+                        <GachaMachine onPlay={handlePlay} />
+                    </div>
+                </div>
+
+                <div 
+                    className={`fixed inset-0 bg-black z-50 flex items-center justify-center transition-opacity duration-300 ${stage === 'playing_video' ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+                    style={{ visibility: stage === 'playing_video' ? 'visible' : 'hidden' }}
+                >
+                    <video 
+                        ref={videoRef}
+                        src="https://github.com/user-attachments/assets/e6cba716-a806-4e82-84cb-618aa012f1f2"
+                        className="w-full h-full object-contain"
+                        playsInline
+                        onEnded={() => setStage('result')}
+                    ></video>
+                </div>
+
+                {stage === 'result' && (
+                    <div 
+                        className="fixed inset-0 z-50 flex flex-col justify-between items-center p-4 overflow-y-auto min-h-[100dvh]"
+                        style={{ backgroundColor: '#000000' }} 
+                    >
+                        
+                        <div className="absolute inset-0 sunburst -z-10 pointer-events-none"></div>
+                        
+                        {activePrize && (
+                            <div className="flex-grow flex flex-col items-center justify-center w-full max-w-[340px] md:max-w-xl py-4 animate-[popZoom_0.6s_cubic-bezier(0.175,0.885,0.32,1.275)_forwards]">
+                                
+                                {/* 🌟 写真を大きく見せるため、横並び(flex-row)から縦積み(flex-col)に変更 */}
+                                <div className="flex flex-col items-center justify-center gap-4 mb-4 relative w-full">
+                                    <div className={`w-20 h-20 md:w-24 md:h-24 rounded-full border-4 md:border-6 ${activePrize.border} flex flex-col items-center justify-center bg-zinc-900/95 ${activePrize.glow || 'shadow-[0_10px_40px_rgba(0,0,0,0.8)]'} relative z-10`}>
+                                        <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/20 to-transparent pointer-events-none"></div>
+                                        <span 
+                                            className={`text-2xl md:text-4xl font-black ${activePrize.text} drop-shadow-[0_0_15px_rgba(255,255,255,0.4)] tracking-tighter`}
+                                            style={{ WebkitTextStroke: '1.5px #000', paintOrder: 'stroke fill' }}
+                                        >
+                                            {activePrize.rank}
+                                        </span>
+                                    </div>
+                                    
+                                    {/* 大きな写真用コンテナ (4:3の比率) */}
+                                    <div className="relative z-10 flex items-center justify-center w-full max-w-[280px] md:max-w-[400px] aspect-[4/3]">
+                                        {activePrize.imgUrl ? (
+                                            <img 
+                                                src={activePrize.imgUrl} 
+                                                alt={activePrize.rank} 
+                                                className="w-full h-full object-cover rounded-2xl border-4 border-white/20 filter drop-shadow-[0_15px_25px_rgba(0,0,0,0.8)] animate-[imagePop_0.8s_cubic-bezier(0.175,0.885,0.32,1.275)_forwards]" 
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full filter drop-shadow-[0_15px_25px_rgba(0,0,0,0.8)] bg-white/5 rounded-3xl p-1.5 backdrop-blur-sm border border-white/10 relative">
+                                                <BeerGlass rank={activePrize.rank} />
+                                            </div>
+                                        )}
+                                        <div className="absolute inset-0 bg-yellow-400 mix-blend-overlay animate-pulse rounded-full blur-2xl opacity-20 pointer-events-none"></div>
+                                    </div>
+                                </div>
+
+                                {/* 商品名の表示領域 */}
+                                {activePrize.name && (
+                                    <h2 className={`text-2xl md:text-4xl font-black mb-4 drop-shadow-[0_5px_10px_rgba(0,0,0,0.9)] ${activePrize.text} tracking-tight text-center leading-tight`} style={{ WebkitTextStroke: '1.5px #000', paintOrder: 'stroke fill' }}>
+                                        {activePrize.name}
+                                    </h2>
+                                )}
+                                
+                                <div className="bg-zinc-900/90 px-2 py-4 md:px-12 md:py-6 rounded-2xl border-2 border-amber-500/30 text-center backdrop-blur-md shadow-[0_15px_30px_rgba(0,0,0,0.8)] relative z-10 w-full overflow-hidden">
+                                    
+                                    <div className="text-xl md:text-4xl font-black text-yellow-400 tracking-tight leading-snug drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] mb-3 md:mb-4">
+                                        {activePrize.resultTitle}
+                                    </div>
+                                    
+                                    <div className="w-full flex items-center justify-center">
+                                        <div className="font-black gold-text-shimmer tracking-tighter whitespace-nowrap text-[clamp(1.1rem,4.8vw,2.5rem)] w-full text-center px-1">
+                                            {activePrize.giftText}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        
+                        <div className="w-full text-center pb-2 z-50">
+                            {activePrize && <RealTimeClock />}
+                        </div>
+                    </div>
+                )}
+              </div>
+            </React.Fragment>
+          );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
