@@ -318,7 +318,10 @@
             
             if (videoRef.current) {
                 videoRef.current.currentTime = 0;
-                videoRef.current.play().catch(e => console.error("動画の再生に失敗しました:", e));
+                videoRef.current.play().catch(e => {
+                    console.error("動画の再生に失敗しました:", e);
+                    setStage('result'); // プレビュー等で動画がない場合は結果画面へスキップ
+                });
             }
           };
 
@@ -356,10 +359,11 @@
                 >
                     <video 
                         ref={videoRef}
-                        src="https://github.com/user-attachments/assets/e6cba716-a806-4e82-84cb-618aa012f1f2"
+                        src="ガチャ2.mp4"
                         className="w-full h-full object-contain"
                         playsInline
                         onEnded={() => setStage('result')}
+                        onError={() => setStage('result')}
                     ></video>
                 </div>
 
@@ -395,8 +399,8 @@
                                                 className="w-full h-full object-cover rounded-2xl border-4 border-white/20 filter drop-shadow-[0_15px_25px_rgba(0,0,0,0.8)] animate-[imagePop_0.8s_cubic-bezier(0.175,0.885,0.32,1.275)_forwards]" 
                                             />
                                         ) : (
-                                            <div className="w-full h-full filter drop-shadow-[0_15px_25px_rgba(0,0,0,0.8)] bg-white/5 rounded-3xl p-1.5 backdrop-blur-sm border border-white/10 relative">
-                                                <BeerGlass rank={activePrize.rank} />
+                                            <div className="w-full h-full filter drop-shadow-[0_15px_25px_rgba(0,0,0,0.8)] bg-zinc-800 rounded-3xl p-1.5 backdrop-blur-sm border border-white/10 relative flex items-center justify-center">
+                                                <span className="text-white/50 font-bold">No Image</span>
                                             </div>
                                         )}
                                         <div className="absolute inset-0 bg-yellow-400 mix-blend-overlay animate-pulse rounded-full blur-2xl opacity-20 pointer-events-none"></div>
@@ -417,7 +421,8 @@
                                     </div>
                                     
                                     <div className="w-full flex items-center justify-center">
-                                        <div className="font-black gold-text-shimmer tracking-tighter whitespace-nowrap text-[clamp(1.1rem,4.8vw,2.5rem)] w-full text-center px-1">
+                                        {/* 🌟 変更箇所: clampの下限を下げて(0.8rem)、スマホ画面でも左右が絶対に切れないように修正 */}
+                                        <div className="font-black gold-text-shimmer tracking-tighter whitespace-nowrap text-[clamp(0.8rem,4vw,2.5rem)] w-full text-center px-1">
                                             {activePrize.giftText}
                                         </div>
                                     </div>
