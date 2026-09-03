@@ -174,32 +174,34 @@
                     </p>
                 </div>
 
-                <!-- グラフエリア (中央上) -->
-                <div class="w-full flex-grow flex items-center justify-center relative min-h-[150px] mb-2">
-                    <div class="w-full h-full max-w-[240px] max-h-[240px] relative">
-                        <canvas id="radarChart" class="w-full h-full"></canvas>
-                    </div>
+                <!-- ▼ 変更箇所: 写真エリア (中央上: 元グラフエリア) ▼ -->
+                <div class="w-full flex-grow flex items-center justify-center relative min-h-[180px] sm:min-h-[220px] mb-2 bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden shadow-inner">
+                    <!-- 写真全体が見えるように object-contain にするか、枠いっぱいの object-cover にするかはお好みで変更可能です。現在は枠いっぱいにしています -->
+                    <img v-if="finalProduct && finalProduct.img" :src="finalProduct.img" alt="Drink Photo" class="w-full h-full object-cover relative z-10" @error="handleImageError">
+                    <span v-else class="text-slate-500 text-xs sm:text-base font-bold font-sans tracking-wide px-2 text-center">DRINK<br>PHOTO</span>
                 </div>
 
-                <!-- 写真と右側エリア (中央下部) -->
+                <!-- ▼ 変更箇所: 説明文とグラフエリア (中央下部) ▼ -->
                 <div class="w-full flex gap-2 sm:gap-4 flex-grow min-h-[180px]">
-                    <!-- 左側: 写真 (青枠部分) -->
-                    <div class="w-1/2 bg-slate-800/50 rounded-xl border border-slate-700 flex flex-col items-center justify-center relative overflow-hidden">
-                        <span class="text-slate-500 text-xs sm:text-base font-bold font-sans tracking-wide px-2 text-center">DRINK<br>PHOTO</span>
+                    <!-- 左側: おすすめ商品＆説明文 (元写真エリアの枠) -->
+                    <div class="w-1/2 flex flex-col justify-start text-left bg-slate-800/80 rounded-xl border border-slate-700 p-2.5 sm:p-3 overflow-y-auto">
+                        <h3 class="text-[11px] sm:text-sm font-bold text-amber-300 mb-0.5 tracking-wide">【商品名】</h3>
+                        <p class="text-[10px] sm:text-xs text-slate-100 font-bold mb-2 leading-snug">{{ finalProduct ? finalProduct.name : '準備中' }}</p>
+
+                        <h3 class="text-[11px] sm:text-sm font-bold text-amber-300 mb-0.5 tracking-wide">【特徴】</h3>
+                        <p class="text-[10px] sm:text-xs text-slate-200 mb-2 leading-snug">{{ finalProduct ? finalProduct.description : '準備中' }}</p>
+
+                        <h3 class="text-[11px] sm:text-sm font-bold text-amber-300 mb-0.5 tracking-wide">【合うメニュー】</h3>
+                        <p class="text-[10px] sm:text-xs text-slate-200 leading-snug whitespace-pre-line">{{ finalProduct ? finalProduct.matching : '準備中' }}</p>
                     </div>
 
-                    <!-- 右側: おすすめ商品＆説明文 ＋ ボタン (赤枠部分) -->
+                    <!-- 右側: グラフ ＋ ボタン (元説明文エリアの枠) -->
                     <div class="w-1/2 flex flex-col justify-between gap-2 sm:gap-3">
-                        <!-- 説明文エリア - 高さをなるべく取る -->
-                        <div class="flex-grow flex flex-col justify-start text-left bg-slate-800/80 rounded-xl border border-slate-700 p-2.5 sm:p-3 overflow-y-auto">
-                            <h3 class="text-[11px] sm:text-sm font-bold text-amber-300 mb-0.5 tracking-wide">【商品名】</h3>
-                            <p class="text-[10px] sm:text-xs text-slate-200 mb-2 leading-snug">仮のテキスト</p>
-
-                            <h3 class="text-[11px] sm:text-sm font-bold text-amber-300 mb-0.5 tracking-wide">【産地】</h3>
-                            <p class="text-[10px] sm:text-xs text-slate-200 mb-2 leading-snug">仮のテキスト</p>
-
-                            <h3 class="text-[11px] sm:text-sm font-bold text-amber-300 mb-0.5 tracking-wide">【おすすめの飲み方/合うメニュー等】</h3>
-                            <p class="text-[10px] sm:text-xs text-slate-200 leading-snug whitespace-pre-line">仮のテキスト</p>
+                        <!-- グラフエリア - 枠内に収まるようにサイズを調整 -->
+                        <div class="flex-grow flex items-center justify-center bg-slate-800/50 rounded-xl border border-slate-700 relative p-1 overflow-hidden">
+                            <div class="w-full h-full max-w-[160px] max-h-[160px] relative">
+                                <canvas id="radarChart" class="w-full h-full"></canvas>
+                            </div>
                         </div>
                         
                         <!-- ボタン -->
@@ -332,7 +334,21 @@
                             sake: '淡麗辛口、生酒、本醸造\n（水のようにスッキリ飲めるキレのある爽酒）',
                             craft: '【ビール】ピルスナー、ラガー、セッションIPA\n【ジン】シトラス・柑橘系ジン'
                         },
-                        description: '1日の疲れやモヤモヤをスッキリと洗い流してくれる、淀みなくクリアな味わい。喉を潤す爽快感が今日を新しくリセットしてくれる一杯です。'
+                        description: '1日の疲れやモヤモヤをスッキリと洗い流してくれる、淀みなくクリアな味わい。喉を潤す爽快感が今日を新しくリセットしてくれる一杯です。',
+                        products: {
+                            sake: {
+                                name: '【貴の特別純米・夏タイプ】',
+                                img: 'sarasaranihonsyu.jpg',
+                                description: 'さっぱりとしたクエン酸の酸味が魅力の限定酒です。軽やかな飲み口に優しい甘みと米の味わいが溶け合い、夏の和食とすいすい楽しめます。',
+                                matching: 'お刺身・あさりの酒蒸し'
+                            },
+                            craft: {
+                                name: '【yasogin オレンジ】',
+                                img: 'sarasarajin.jpg',
+                                description: 'オレンジピールをたっぷりと使用したジューシーでビターなジンです。甘味が強く香り高いネーブルオレンジを使用してバランス良く仕上がった一品。定番はトニックとソーダ、寒い日はお湯割りでほっとひと息つくのもおすすめ',
+                                matching: '焼売やチーズケーキ・ショコラテリーヌ'
+                            }
+                        }
                     },
                     type2: {
                         id: 'type2',
@@ -345,7 +361,21 @@
                             sake: '大吟醸、吟醸酒\n（メロンやリンゴのようなフルーティーな薫酒）',
                             craft: '【ビール】フルーツエール、ヘイジーIPA\n【ジン】フローラル系、ベリー系ジン'
                         },
-                        description: '果実やボタニカルの豊かな香りが、心と体をたっぷりと潤すリッチな味わい。ひと口飲むと気分がパッと明るくなるような一杯です。'
+                        description: '果実やボタニカルの豊かな香りが、心と体をたっぷりと潤すリッチな味わい。ひと口飲むと気分がパッと明るくなるような一杯です。',
+                        products: {
+                            sake: {
+                                name: '【産土】',
+                                img: 'ururunihonsyu.jpg',
+                                description: '炭酸ガスを含んだ、メロン・洋梨・マスカットなどのもぎたてフルーツを想わせる香りと味わい。アルコール13%と軽快ながらも、旨味かつとろみのある味わいです。',
+                                matching: 'ちーずそぼろ・秋刀魚の炭焼き'
+                            },
+                            craft: {
+                                name: '【虎ノ門　いちごジン】',
+                                img: 'uruurujin.jpg',
+                                description: '栃木産「とちおとめ・とちあいか」の甘酸っぱい香り。この香りと風味を堪能できる飲み方はトニック割・ソーダ割がおすすめ。',
+                                matching: 'カモロース炭焼き・ラムの黒焼き'
+                            }
+                        }
                     },
                     type3: {
                         id: 'type3',
@@ -358,7 +388,11 @@
                             sake: '純米酒、生酛、山廃\n（お米本来のふくよかな旨みと甘みを持つ醇酒）',
                             craft: '【ビール】ペールエール、アンバーエール\n【ジン】お茶・ハーブ・スパイス系ジン'
                         },
-                        description: '口の中で優しくとろけるような繊細で穏やかな味わい。緊張をゆるやかにほどき、日常にホッと安心をくれる優しい一杯です。'
+                        description: '口の中で優しくとろけるような繊細で穏やかな味わい。緊張をゆるやかにほどき、日常にホッと安心をくれる優しい一杯です。',
+                        products: {
+                            sake: { name: '【準備中】', img: '', description: '準備中', matching: '準備中' },
+                            craft: { name: '【準備中】', img: '', description: '準備中', matching: '準備中' }
+                        }
                     },
                     type4: {
                         id: 'type4',
@@ -371,7 +405,11 @@
                             sake: '古酒、長期熟成酒、貴醸酒\n（熟成による複雑な香りと深みを持つ熟酒）',
                             craft: '【ビール】スタウト、ポーター、バーレイワイン\n【ジン】樽熟成ジン、ウッディ系ジン'
                         },
-                        description: '時間を忘れて少しずつ味わいたい、深みとコクのある味わい。癒しの時間を彷彿させる大人の一杯です。'
+                        description: '時間を忘れて少しずつ味わいたい、深みとコクのある味わい。癒しの時間を彷彿させる大人の一杯です。',
+                        products: {
+                            sake: { name: '【準備中】', img: '', description: '準備中', matching: '準備中' },
+                            craft: { name: '【準備中】', img: '', description: '準備中', matching: '準備中' }
+                        }
                     }
                 };
 
@@ -427,6 +465,12 @@
                     }
 
                     return resultTypes[resultTypeId]; 
+                });
+
+                // ▼ 選ばれたお酒の種類に応じた最終的な商品を計算 ▼
+                const finalProduct = computed(() => {
+                    if (!finalResult.value || !selectedDrink.value) return null;
+                    return finalResult.value.products[selectedDrink.value];
                 });
 
                 // ▼ チャート用のデータ計算も新ロジックに合わせて微調整 ▼
@@ -507,8 +551,9 @@
                                     },
                                     pointLabels: {
                                         color: '#fff',
-                                        font: { size: 11, family: 'serif', weight: 'bold' },
-                                        padding: 6
+                                        // ▼ グラフが小さくなったので文字サイズと余白を少し小さく調整
+                                        font: { size: 9, family: 'serif', weight: 'bold' },
+                                        padding: 3
                                     },
                                     ticks: {
                                         display: false,
@@ -629,7 +674,7 @@
 
                 return {
                     step, selectedDrink, drinks, questions,
-                    currentQuestionIndex, currentQuestion, answersHistory, finalResult,
+                    currentQuestionIndex, currentQuestion, answersHistory, finalResult, finalProduct,
                     startQuiz, answerQuestion, prevQuestion, resetQuiz, handleImageError
                 };
             }
