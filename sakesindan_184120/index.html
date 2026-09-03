@@ -53,12 +53,12 @@
     <div id="app" class="relative z-10 w-full h-full overflow-y-auto flex flex-col items-center justify-center p-2 pb-6 sm:p-4 text-slate-100 font-serif">
         
         <transition name="fade" mode="out-in" appear>
-            <!-- ▼ 0. オープニング演出（3秒間） ▼ -->
+            <!-- ▼ 0. オープニング演出（3.5秒間） ▼ -->
             <div v-if="step === 'opening'" key="opening" class="flex flex-col items-center justify-center text-center px-6 min-h-[60vh] my-auto">
                 <p class="text-2xl sm:text-3xl md:text-4xl text-white font-serif tracking-widest leading-relaxed drop-shadow-lg opacity-90 mb-8">
                     今日のお客様に<br>ちょうどいい一杯を。
                 </p>
-                <!-- ▼ ロゴ画像の追加 ▼ -->
+                <!-- ▼ ロゴ画像 ▼ -->
                 <div class="w-32 sm:w-40 md:w-48 opacity-80 transition-opacity duration-1000">
                     <img src="logo_w.png" alt="かごや ロゴ" class="w-full h-auto object-contain drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]" @error="handleImageError">
                 </div>
@@ -107,7 +107,7 @@
                             </svg>
                             BACK
                         </button>
-                        <div v-else class="w-16"></div> <!-- 1問目のプレースホルダー -->
+                        <div v-else class="w-16"></div>
                         
                         <div class="text-xs sm:text-sm font-bold text-slate-400 tracking-widest drop-shadow-md">
                             <span class="text-amber-300 text-sm sm:text-base">{{ currentQuestionIndex + 1 }}</span> / {{ questions.length }}
@@ -130,7 +130,6 @@
                          @click="answerQuestion(option.type)"
                          class="bg-slate-900/80 backdrop-blur-md rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 border border-slate-600/50">
                         
-                        <!-- Q2用のテキスト枠か、それ以外の画像枠かを出し分け -->
                         <div v-if="currentQuestionIndex === 1" class="w-full h-44 sm:h-52 flex items-center justify-center bg-white overflow-hidden relative p-1.5">
                             <span class="text-amber-400 font-extrabold text-3xl tracking-widest drop-shadow-sm">{{ option.imgText }}</span>
                         </div>
@@ -174,16 +173,16 @@
                     </p>
                 </div>
 
-                <!-- ▼ グラフエリア (上部へ戻す) ▼ -->
+                <!-- ▼ 【上部】レーダーチャート三角形エリア ▼ -->
                 <div class="w-full flex-grow flex items-center justify-center relative min-h-[150px] mb-2">
                     <div class="w-full h-full max-w-[240px] max-h-[240px] relative">
                         <canvas id="radarChart" class="w-full h-full max-w-full max-h-full"></canvas>
                     </div>
                 </div>
 
-                <!-- ▼ 下部エリア (左:写真、右:説明とボタン) ▼ -->
+                <!-- ▼ 【下部エリア】左: 写真 / 右: 説明文とボタン ▼ -->
                 <div class="w-full flex gap-2 sm:gap-4 flex-grow min-h-[180px]">
-                    <!-- 左側: 写真エリア -->
+                    <!-- 左下: 写真エリア -->
                     <div class="w-1/2 bg-slate-800/50 rounded-xl border border-slate-700 flex flex-col items-center justify-center relative overflow-hidden">
                         <img v-if="finalProduct && finalProduct.img" :src="finalProduct.img" alt="Drink Photo" class="w-full h-full object-cover absolute inset-0" @error="handleImageError">
                         <div v-else class="flex flex-col items-center justify-center text-center p-2 relative z-10 opacity-70">
@@ -192,10 +191,10 @@
                         </div>
                     </div>
 
-                    <!-- 右側: 説明文エリア ＋ ボタン -->
+                    <!-- 右下: 説明文 ＆ ボタン -->
                     <div class="w-1/2 flex flex-col justify-between gap-2 sm:gap-3">
                         <div class="flex-grow flex flex-col justify-between text-left bg-slate-800/80 rounded-xl border border-slate-700 p-2.5 sm:p-3.5 overflow-y-auto">
-                            <!-- 準備中の結果タイプの場合：中央に整ったComing Soonカードを表示 -->
+                            <!-- 準備中の結果タイプの場合 -->
                             <div v-if="isPreparation" class="flex flex-col items-center justify-center h-full text-center p-2 my-auto">
                                 <span class="text-2xl sm:text-3xl mb-1.5 opacity-80">🍶</span>
                                 <h3 class="text-amber-300 font-bold text-xs sm:text-sm tracking-widest mb-1">COMING SOON</h3>
@@ -254,7 +253,7 @@
             bgVideoBlurElement.src = videoSrc;
         }
 
-        // ▼ 【重要】ご指定いただいたGASのURL ▼
+        // ▼ GASのURL ▼
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxOHrvgUYlPKeemzFOfhxggXXssC3L9Od0RbuhtxIPM-mLXVvpVKJJsFf8FlmOOA4Zj7Q/exec';
 
         const { createApp, ref, computed, onMounted, watch } = Vue;
@@ -270,7 +269,6 @@
                 const isSubmitted = ref(false);
                 let chartInstance = null;
 
-                // ▼ 改善ポイント: 画面トップへスクロールする処理を1つにまとめる（DRY原則） ▼
                 const scrollToTop = (smooth = false) => {
                     const app = document.getElementById('app');
                     if (app) app.scrollTo({ top: 0, behavior: smooth ? 'smooth' : 'auto' });
@@ -279,7 +277,7 @@
                 onMounted(() => {
                     setTimeout(() => {
                         if (step.value === 'opening') step.value = 'start';
-                    }, 3500); // 3000から3500(+0.5秒)に変更
+                    }, 3500);
                 });
                 
                 const drinks = [
@@ -439,11 +437,10 @@
 
                 const currentQuestion = computed(() => questions[currentQuestionIndex.value]);
 
-                // ▼ 診断ロジックをポイント制にアップデート ▼
+                // ▼ 診断ロジック（ポイント制） ▼
                 const finalResult = computed(() => {
                     if (answersHistory.value.length < 8) return null;
                     
-                    // 各タイプの得点箱を用意
                     const scores = { type1: 0, type2: 0, type3: 0, type4: 0 };
                     
                     const q3 = answersHistory.value[2]; // 気分
@@ -453,31 +450,24 @@
                     const q7 = answersHistory.value[6]; // 喉越し
                     const q8 = answersHistory.value[7]; // テーマ
 
-                    // Q3. 気分 (A:リセット -> 爽快T1, 華やかT2 / B:ほっこり -> 癒しT3, 重厚T4)
                     if (q3 === 'A') { scores.type1 += 1; scores.type2 += 1; }
                     else { scores.type3 += 1; scores.type4 += 2; }
 
-                    // Q4. 食事 (A:肉・揚げ物 -> 重厚T4, 癒しT3 / B:刺身・野菜 -> 爽快T1, 華やかT2)
                     if (q4 === 'A') { scores.type4 += 2; scores.type3 += 1; }
                     else { scores.type1 += 2; scores.type2 += 1; }
 
-                    // Q5. 香り (A:柑橘フルーティー -> 華やかT2, 爽快T1 / B:スパイス木 -> 重厚T4, 癒しT3)
                     if (q5 === 'A') { scores.type2 += 2; scores.type1 += 1; }
                     else { scores.type4 += 2; scores.type3 += 1; }
 
-                    // Q6. 味 (A:甘みフルーティー -> 華やかT2, 癒しT3 / B:ドライ苦味 -> 爽快T1, 重厚T4)
                     if (q6 === 'A') { scores.type2 += 2; scores.type3 += 2; }
                     else { scores.type1 += 2; scores.type4 += 1; }
 
-                    // Q7. 喉越し (A:爽快キレ -> 爽快T1, 華やかT2 / B:なめらか -> 癒しT3, 重厚T4)
                     if (q7 === 'A') { scores.type1 += 2; scores.type2 += 1; }
                     else { scores.type3 += 2; scores.type4 += 1; }
 
-                    // Q8. テーマ (A:王道定番 -> 癒しT3, 爽快T1 / B:個性的 -> 華やかT2, 重厚T4)
                     if (q8 === 'A') { scores.type3 += 2; scores.type1 += 1; }
                     else { scores.type2 += 2; scores.type4 += 1; }
 
-                    // 一番スコアが高いタイプを見つける
                     let maxScore = -1;
                     let resultTypeId = 'type1';
                     
@@ -497,7 +487,7 @@
                     return finalResult.value.products[selectedDrink.value];
                 });
 
-                // ▼ 準備中（トロトロ・ウトウトなど未登録タイプ）の判定 ▼
+                // ▼ 準備中判定 ▼
                 const isPreparation = computed(() => {
                     if (!finalProduct.value) return true;
                     return !finalProduct.value.description || finalProduct.value.description === '準備中';
@@ -519,8 +509,7 @@
                     const match = finalProduct.value.matching || '';
                     const totalLength = desc.length + match.length;
 
-                    // 1. 短めのテキスト（80文字未満：例 虎ノ門いちごジンなど）
-                    // 文字を大きめにし、行間もゆったりと取って枠内をリッチに埋める
+                    // 短めのテキスト（80文字未満）: 文字を大きめにして行間をゆったり
                     if (totalLength < 80) {
                         return {
                             title: 'text-sm sm:text-base font-bold',
@@ -530,8 +519,7 @@
                             matchBody: 'text-xs sm:text-sm leading-relaxed sm:leading-loose'
                         };
                     } else if (totalLength < 125) {
-                        // 2. 標準テキスト（80〜125文字：例 産土、貴など）
-                        // 読みやすさと情報密度のバランスが良いサイズ
+                        // 標準テキスト（80〜125文字）
                         return {
                             title: 'text-xs sm:text-base font-bold',
                             body: 'text-[11px] sm:text-xs md:text-sm leading-relaxed',
@@ -540,8 +528,7 @@
                             matchBody: 'text-[11px] sm:text-xs md:text-sm leading-relaxed'
                         };
                     } else {
-                        // 3. 長文テキスト（125文字以上：例 yasoginなど）
-                        // スッキリ収まるよう少し引き締め、枠内ではみ出さないよう調整
+                        // 長文テキスト（125文字以上）
                         return {
                             title: 'text-[11px] sm:text-sm font-bold',
                             body: 'text-[10px] sm:text-[11px] md:text-xs leading-snug',
@@ -552,40 +539,36 @@
                     }
                 });
 
-                // ▼ チャート用のデータ計算も新ロジックに合わせて微調整 ▼
+                // ▼ チャート用のデータ計算 ▼
                 const getChartData = () => {
                     if (answersHistory.value.length < 8) return [0, 0, 0];
                     
-                    // 最終的に導き出されたタイプに合わせてベースの形を作る
                     const result = finalResult.value;
                     let sukkiri = 2, fruity = 2, shikkari = 2;
 
-                    if (result.id === 'type1') { sukkiri = 5; fruity = 2.5; shikkari = 1.5; } // Type1 (Sara Sara)
-                    else if (result.id === 'type2') { sukkiri = 3; fruity = 5; shikkari = 2; } // Type2 (Uru Uru)
-                    else if (result.id === 'type3') { sukkiri = 2.5; fruity = 2.5; shikkari = 3.5; } // Type3 (Toro Toro)
-                    else { sukkiri = 1.5; fruity = 2; shikkari = 5; } // Type4 (Uto Uto)
+                    if (result.id === 'type1') { sukkiri = 5; fruity = 2.5; shikkari = 1.5; }
+                    else if (result.id === 'type2') { sukkiri = 3; fruity = 5; shikkari = 2; }
+                    else if (result.id === 'type3') { sukkiri = 2.5; fruity = 2.5; shikkari = 3.5; }
+                    else { sukkiri = 1.5; fruity = 2; shikkari = 5; }
 
-                    // 値を1.5〜5の範囲に収める（1本の線に潰れないように）
                     const clamp = (val) => Math.min(Math.max(val, 1.5), 5);
 
                     return [ clamp(sukkiri), clamp(fruity), clamp(shikkari) ];
                 };
 
-                // チャートを描画する関数（リトライ機能付き）
+                // チャートを描画する関数
                 const renderChart = () => {
                     const ctxElement = document.getElementById('radarChart');
                     if (!ctxElement) {
-                        // DOM要素がまだ生成されていない場合は少し待ってから再実行
                         setTimeout(renderChart, 100);
                         return;
                     }
                     
                     const ctx = ctxElement.getContext('2d');
                     if (chartInstance) {
-                        chartInstance.destroy(); // 既存のチャートを破棄
+                        chartInstance.destroy();
                     }
 
-                    // チャートの共通スタイル色
                     const whiteLineColor = 'rgba(255, 255, 255, 0.8)';
                     const whiteBgColor = 'rgba(255, 255, 255, 0.3)';
                     const gridColor = 'rgba(255, 255, 255, 0.15)';
@@ -629,7 +612,6 @@
                                     },
                                     pointLabels: {
                                         color: '#fff',
-                                        // ▼ 文字サイズを元の大きさに戻す
                                         font: { size: 11, family: 'serif', weight: 'bold' },
                                         padding: 6
                                     },
@@ -656,16 +638,13 @@
                         currentQuestionIndex.value = 0;
                         isSubmitted.value = false;
                     }
-                    scrollToTop(); // スクロール関数を呼び出すだけ！
+                    scrollToTop();
                 };
 
-                // ▼ データを送信するための関数 ▼
                 const sendToGoogleSheet = (q1, q2, type, drink) => {
                     if (!GAS_URL) return;
                     try {
                         const ua = navigator.userAgent;
-                        
-                        // 【超重要】GAS側のプログラムの変数名と完全に一致させます
                         const payload = {
                             userAgent: ua,
                             q1Gender: q1,
@@ -678,9 +657,9 @@
 
                         fetch(GAS_URL, { 
                             method: 'POST',
-                            mode: 'no-cors', // ブラウザのセキュリティブロックを回避
+                            mode: 'no-cors',
                             headers: {
-                                'Content-Type': 'text/plain' // セキュリティ回避のためtext/plainとしてJSONを送る
+                                'Content-Type': 'text/plain'
                             },
                             body: JSON.stringify(payload)
                         });
@@ -689,23 +668,21 @@
                     }
                 };
 
-                // ▼ 1つ前の質問に戻る関数 ▼
                 const prevQuestion = () => {
                     if (currentQuestionIndex.value > 0) {
                         currentQuestionIndex.value--;
-                        answersHistory.value.pop(); // 直前の回答を履歴から削除
+                        answersHistory.value.pop();
                         scrollToTop(true);
                     }
                 };
 
                 const answerQuestion = (type) => {
-                    // 連打防止: 質問画面以外での処理をブロック
                     if (step.value !== 'quiz') return;
 
                     answersHistory.value.push(type);
                     if (currentQuestionIndex.value < questions.length - 1) {
                         currentQuestionIndex.value++;
-                        scrollToTop(true); // スムーズスクロール
+                        scrollToTop(true);
                     } else {
                         step.value = 'pouring';
                         scrollToTop();
@@ -716,18 +693,16 @@
                             step.value = 'result';
                             scrollToTop();
                             
-                            // 結果が表示されたタイミングで送信処理（未送信の場合のみ）
                             if (!isSubmitted.value) {
                                 const q1Ans = answersHistory.value[0] === 'A' ? '男性' : '女性';
                                 const q2Ans = answersHistory.value[1] === 'A' ? '35歳未満' : '35歳以上';
                                 const typeId = finalResult.value ? finalResult.value.id : 'unknown';
                                 
-                                // お酒の種類名を取得（wine -> ワイン）
                                 const drinkTypeObj = drinks.find(d => d.id === selectedDrink.value);
                                 const drinkTypeName = drinkTypeObj ? drinkTypeObj.name : '不明';
 
                                 sendToGoogleSheet(q1Ans, q2Ans, typeId, drinkTypeName);
-                                isSubmitted.value = true; // 送信完了フラグを立てる
+                                isSubmitted.value = true;
                             }
                         }, duration);
                     }
