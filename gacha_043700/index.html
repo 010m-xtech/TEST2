@@ -215,10 +215,14 @@
                   localStorage.removeItem('beer_app_gacha_result_v2');
                   localStorage.removeItem('beer_app_gacha_result');
                   
-                  const shopParam = urlParams.get('shop');
-                  const baseUrl = 'https://010m-xtech.github.io/TEST2/botekogacha4/';
-                  const newUrl = baseUrl + (shopParam ? `?shop=${shopParam}` : '');
-                  window.history.replaceState({}, document.title, newUrl);
+                  try {
+                      // 🌟 修正: プレビュー環境でセキュリティエラーを起こさないよう、現在のURLをベースに処理
+                      const url = new URL(window.location.href);
+                      url.searchParams.delete('action');
+                      window.history.replaceState({}, document.title, url.toString());
+                  } catch (e) {
+                      console.warn("プレビュー環境のためURL書き換えをスキップしました");
+                  }
               }
 
               // 🌟 バグ根絶処理: 古いシステム(beer_app_gacha_result)のデータが残っていたら強制削除してバグを防ぐ
