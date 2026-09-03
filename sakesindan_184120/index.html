@@ -191,16 +191,17 @@
 
                     <!-- 右側: 説明文エリア ＋ ボタン -->
                     <div class="w-1/2 flex flex-col justify-between gap-2 sm:gap-3">
-                        <div class="flex-grow flex flex-col justify-start text-left bg-slate-800/80 rounded-xl border border-slate-700 p-2.5 sm:p-3 overflow-y-auto">
+                        <div class="flex-grow flex flex-col text-left bg-slate-800/80 rounded-xl border border-slate-700 p-2.5 sm:p-3 overflow-y-auto"
+                             :class="descStyle.container">
                             <!-- 商品名（アンバー色） -->
-                            <h3 class="text-[11px] sm:text-sm font-bold text-amber-300 mb-2 tracking-wide">{{ finalProduct ? finalProduct.name : '準備中' }}</h3>
+                            <h3 class="text-amber-300 tracking-wide" :class="[descStyle.title, descStyle.gap]">{{ finalProduct ? finalProduct.name : '準備中' }}</h3>
                             
                             <!-- 特徴の説明文 -->
-                            <p class="text-[10px] sm:text-xs text-slate-200 mb-4 leading-snug">{{ finalProduct ? finalProduct.description : '準備中' }}</p>
+                            <p class="text-slate-200" :class="[descStyle.body, descStyle.gap]">{{ finalProduct ? finalProduct.description : '準備中' }}</p>
 
                             <!-- 合うメニュー -->
-                            <h3 class="text-[11px] sm:text-sm font-bold text-amber-300 mb-0.5 tracking-wide">【合うメニュー】</h3>
-                            <p class="text-[10px] sm:text-xs text-slate-200 leading-snug whitespace-pre-line">{{ finalProduct ? finalProduct.matching : '準備中' }}</p>
+                            <h3 class="text-amber-300 mb-0.5 tracking-wide" :class="descStyle.matchTitle">【合うメニュー】</h3>
+                            <p class="text-slate-200 whitespace-pre-line" :class="descStyle.matchBody">{{ finalProduct ? finalProduct.matching : '準備中' }}</p>
                         </div>
                         
                         <!-- ボタン -->
@@ -472,6 +473,56 @@
                     return finalResult.value.products[selectedDrink.value];
                 });
 
+                // ▼ 説明文の文字数に応じた文字サイズ＆余白の自動調整 ▼
+                const descStyle = computed(() => {
+                    if (!finalProduct.value) {
+                        return {
+                            container: 'justify-center',
+                            title: 'text-xs sm:text-base font-bold',
+                            body: 'text-xs sm:text-sm leading-relaxed',
+                            gap: 'mb-3',
+                            matchTitle: 'text-xs sm:text-base font-bold',
+                            matchBody: 'text-xs sm:text-sm leading-relaxed'
+                        };
+                    }
+                    
+                    const desc = finalProduct.value.description || '';
+                    const match = finalProduct.value.matching || '';
+                    const totalLength = desc.length + match.length;
+
+                    // 文字数が少ない場合（「準備中」や短文）: 文字を大きくし、上下中央寄せで余白バランスを調整
+                    if (totalLength < 60) {
+                        return {
+                            container: 'justify-center py-2',
+                            title: 'text-xs sm:text-base font-bold',
+                            body: 'text-xs sm:text-sm leading-relaxed',
+                            gap: 'mb-3',
+                            matchTitle: 'text-xs sm:text-base font-bold',
+                            matchBody: 'text-xs sm:text-sm leading-relaxed'
+                        };
+                    } else if (totalLength < 110) {
+                        // 中くらいの文字数（標準）
+                        return {
+                            container: 'justify-start',
+                            title: 'text-[11px] sm:text-sm font-bold',
+                            body: 'text-[10px] sm:text-xs leading-snug',
+                            gap: 'mb-2.5',
+                            matchTitle: 'text-[11px] sm:text-sm font-bold',
+                            matchBody: 'text-[10px] sm:text-xs leading-snug'
+                        };
+                    } else {
+                        // 文字数が多い場合: 枠内にスッキリ収まるよう少しタイトに調整
+                        return {
+                            container: 'justify-start',
+                            title: 'text-[10.5px] sm:text-xs font-bold',
+                            body: 'text-[9.5px] sm:text-[11px] leading-tight',
+                            gap: 'mb-1.5',
+                            matchTitle: 'text-[10.5px] sm:text-xs font-bold',
+                            matchBody: 'text-[9.5px] sm:text-[11px] leading-tight'
+                        };
+                    }
+                });
+
                 // ▼ チャート用のデータ計算も新ロジックに合わせて微調整 ▼
                 const getChartData = () => {
                     if (answersHistory.value.length < 8) return [0, 0, 0];
@@ -673,6 +724,7 @@
                 return {
                     step, selectedDrink, drinks, questions,
                     currentQuestionIndex, currentQuestion, answersHistory, finalResult, finalProduct,
+                    descStyle,
                     startQuiz, answerQuestion, prevQuestion, resetQuiz, handleImageError
                 };
             }
