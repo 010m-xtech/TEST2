@@ -221,60 +221,65 @@
                     </div>
                 </div>
 
-                <!-- ▼ 【下部エリア】左: 写真 / 右: 説明文とボタン（ふわっとフェード 3） ▼ -->
-                <div class="w-full flex gap-2 sm:gap-4 flex-grow min-h-[180px] fade-in-section delay-3">
-                    <!-- 左下: 写真エリア（全体が切れずに収まるよう自動調整） -->
-                    <div class="w-1/2 bg-slate-900/60 rounded-xl border border-slate-700 flex items-center justify-center relative overflow-hidden p-1 sm:p-1.5">
-                        <img v-if="finalProduct && finalProduct.img" :src="finalProduct.img" alt="Drink Photo" class="w-full h-full object-contain rounded-lg transition-opacity duration-1000" @error="handleImageError">
-                        <div v-else class="flex flex-col items-center justify-center text-center p-2 relative z-10 opacity-70">
-                            <span class="text-2xl mb-1">📸</span>
-                            <span class="text-slate-400 text-[10px] sm:text-xs font-bold font-sans tracking-wider">DRINK<br>PHOTO</span>
+                <!-- ▼ 【中段エリア】左: 写真（アンバー額縁） / 右: 説明文（ふわっとフェード 3） ▼ -->
+                <div class="w-full flex gap-2.5 sm:gap-3.5 flex-grow min-h-[170px] mb-2 sm:mb-3 fade-in-section delay-3 items-stretch">
+                    <!-- 左: 写真エリア（アンバー色の外枠 ＆ 白背景台座で画像に完全フィット） -->
+                    <div class="w-1/2 bg-slate-900/90 rounded-2xl border-2 border-amber-300/70 shadow-[0_0_18px_rgba(252,211,77,0.25)] flex items-center justify-center relative overflow-hidden p-1.5 sm:p-2">
+                        <div class="w-full h-full flex items-center justify-center bg-white rounded-xl overflow-hidden shadow-inner p-1">
+                            <img v-if="finalProduct && finalProduct.img" :src="finalProduct.img" alt="Drink Photo" class="w-full h-full object-contain transition-opacity duration-700" @error="handleImageError">
+                            <div v-else class="flex flex-col items-center justify-center text-center p-2 opacity-70">
+                                <span class="text-2xl mb-1">📸</span>
+                                <span class="text-slate-500 text-[10px] sm:text-xs font-bold font-sans tracking-wider">DRINK<br>PHOTO</span>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- 右下: 説明文 ＆ ボタン -->
-                    <div class="w-1/2 flex flex-col justify-between gap-2 sm:gap-3">
-                        <div class="flex-grow flex flex-col justify-between text-left bg-slate-800/80 rounded-xl border border-slate-700 p-2.5 sm:p-3.5 overflow-y-auto">
-                            <!-- 準備中の結果タイプの場合 -->
-                            <div v-if="isPreparation" class="flex flex-col items-center justify-center h-full text-center p-2 my-auto">
-                                <span class="text-2xl sm:text-3xl mb-1.5 opacity-80">🍶</span>
-                                <h3 class="text-amber-300 font-bold text-xs sm:text-sm tracking-widest mb-1">COMING SOON</h3>
-                                <p class="text-slate-300 text-[10px] sm:text-xs leading-relaxed">
-                                    現在ソムリエが<br>ぴったりのお酒を厳選中。<br>どうぞお楽しみに！
+                    <!-- 右: 説明文エリア -->
+                    <div class="w-1/2 flex flex-col justify-between text-left bg-slate-800/80 rounded-2xl border border-slate-700 p-2.5 sm:p-3.5 overflow-y-auto shadow-md">
+                        <!-- 準備中の結果タイプの場合 -->
+                        <div v-if="isPreparation" class="flex flex-col items-center justify-center h-full text-center p-2 my-auto">
+                            <span class="text-2xl sm:text-3xl mb-1.5 opacity-80">🍶</span>
+                            <h3 class="text-amber-300 font-bold text-xs sm:text-sm tracking-widest mb-1">COMING SOON</h3>
+                            <p class="text-slate-300 text-[10px] sm:text-xs leading-relaxed">
+                                現在ソムリエが<br>ぴったりのお酒を厳選中。<br>どうぞお楽しみに！
+                            </p>
+                        </div>
+
+                        <!-- 商品情報がある場合：文字数に応じた動的レイアウト -->
+                        <template v-else>
+                            <!-- 上部：商品名 ＆ 特徴説明 -->
+                            <div :class="descStyle.gap">
+                                <h3 class="text-amber-300 font-bold mb-1 sm:mb-1.5 whitespace-nowrap overflow-hidden text-ellipsis block"
+                                    :style="productTitleStyle">
+                                    {{ finalProduct.name }}
+                                </h3>
+                                <p class="text-slate-200" :class="descStyle.body">
+                                    {{ finalProduct.description }}
                                 </p>
                             </div>
 
-                            <!-- 商品情報がある場合：文字数に応じた動的レイアウト -->
-                            <template v-else>
-                                <!-- 上部：商品名 ＆ 特徴説明 -->
-                                <div :class="descStyle.gap">
-                                    <!-- 1行で収まるようにフォントサイズと文字間を動的調整 -->
-                                    <h3 class="text-amber-300 font-bold mb-1 sm:mb-1.5 whitespace-nowrap overflow-hidden text-ellipsis block"
-                                        :style="productTitleStyle">
-                                        {{ finalProduct.name }}
-                                    </h3>
-                                    <p class="text-slate-200" :class="descStyle.body">
-                                        {{ finalProduct.description }}
-                                    </p>
-                                </div>
-
-                                <!-- 下部：合うメニュー（境界線を入れて上下の余白バランスを調整） -->
-                                <div v-if="finalProduct.matching" class="pt-2 border-t border-slate-700/60 mt-auto">
-                                    <h3 class="text-amber-300 tracking-wide font-bold mb-0.5 sm:mb-1" :class="descStyle.matchTitle">
-                                        合うメニュー
-                                    </h3>
-                                    <p class="text-slate-200 whitespace-pre-line" :class="descStyle.matchBody">
-                                        {{ formattedMatching }}
-                                    </p>
-                                </div>
-                            </template>
-                        </div>
-                        
-                        <!-- ボタン -->
-                        <button @click="resetQuiz" class="w-full py-2.5 sm:py-3.5 bg-amber-300 hover:bg-amber-200 text-slate-900 rounded-xl font-bold text-sm sm:text-base tracking-widest transition-all shadow-[0_0_15px_rgba(252,211,77,0.4)] shrink-0">
-                            One more
-                        </button>
+                            <!-- 下部：合うメニュー -->
+                            <div v-if="finalProduct.matching" class="pt-2 border-t border-slate-700/60 mt-auto">
+                                <h3 class="text-amber-300 tracking-wide font-bold mb-0.5 sm:mb-1" :class="descStyle.matchTitle">
+                                    合うメニュー
+                                </h3>
+                                <p class="text-slate-200 whitespace-pre-line" :class="descStyle.matchBody">
+                                    {{ formattedMatching }}
+                                </p>
+                            </div>
+                        </template>
                     </div>
+                </div>
+
+                <!-- ▼ 【下段】横幅いっぱいに広がる立体的な「One more」ボタン（ふわっとフェード 4） ▼ -->
+                <div class="w-full shrink-0 fade-in-section delay-4 mt-auto">
+                    <button @click="resetQuiz" 
+                            class="w-full py-3 sm:py-3.5 px-4 bg-gradient-to-b from-amber-300 via-amber-400 to-amber-500 hover:from-amber-200 hover:to-amber-400 text-slate-950 font-extrabold rounded-xl text-base sm:text-lg tracking-widest transition-all duration-100 border-b-4 border-amber-600 shadow-[0_6px_20px_rgba(252,211,77,0.35)] active:translate-y-1 active:border-b-0 active:shadow-[0_2px_10px_rgba(252,211,77,0.2)] flex items-center justify-center gap-2">
+                        <span>One more</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                    </button>
                 </div>
             </div>
         </transition>
