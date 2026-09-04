@@ -33,6 +33,26 @@
             0% { opacity: 0; }
             100% { opacity: 0.8; }
         }
+
+        /* 結果画面のふわっとフェード演出 */
+        @keyframes resultFadeUp {
+            0% {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .fade-in-section {
+            opacity: 0;
+            animation: resultFadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .delay-1 { animation-delay: 0.15s; }
+        .delay-2 { animation-delay: 0.35s; }
+        .delay-3 { animation-delay: 0.55s; }
+        .delay-4 { animation-delay: 0.75s; }
     </style>
 </head>
 
@@ -157,8 +177,8 @@
 
             <!-- ▼ 3. 動的診断結果画面 ▼ -->
             <div v-else-if="step === 'result' && finalResult" key="result" class="w-full h-full max-w-[98%] sm:max-w-lg my-1 p-3 sm:p-5 bg-slate-900/80 backdrop-blur-md border border-white/20 rounded-2xl flex flex-col items-center text-center shadow-2xl justify-between">
-                <!-- 上部: タイトルと説明 -->
-                <div class="w-full flex flex-col items-center justify-center shrink-0">
+                <!-- 上部: タイトルと説明（ふわっとフェード 1） -->
+                <div class="w-full flex flex-col items-center justify-center shrink-0 fade-in-section delay-1">
                     <div class="flex items-end justify-center mb-1 flex-wrap w-full mt-1">
                         <span class="text-[11px] sm:text-base text-slate-200 tracking-widest font-serif font-bold pb-0.5 sm:pb-1.5 mr-1 sm:mr-2">あなたは</span>
                         <ruby class="font-cursive text-3xl sm:text-4xl text-amber-300 font-bold tracking-widest drop-shadow-md mr-1 sm:mr-2">
@@ -173,18 +193,18 @@
                     </p>
                 </div>
 
-                <!-- ▼ 【上部】レーダーチャート三角形エリア ▼ -->
-                <div class="w-full flex-grow flex items-center justify-center relative min-h-[150px] mb-2">
+                <!-- ▼ 【上部】レーダーチャート三角形エリア（ふわっとフェード 2） ▼ -->
+                <div class="w-full flex-grow flex items-center justify-center relative min-h-[150px] mb-2 fade-in-section delay-2">
                     <div class="w-full h-full max-w-[240px] max-h-[240px] relative">
                         <canvas id="radarChart" class="w-full h-full max-w-full max-h-full"></canvas>
                     </div>
                 </div>
 
-                <!-- ▼ 【下部エリア】左: 写真 / 右: 説明文とボタン ▼ -->
-                <div class="w-full flex gap-2 sm:gap-4 flex-grow min-h-[180px]">
+                <!-- ▼ 【下部エリア】左: 写真 / 右: 説明文とボタン（ふわっとフェード 3） ▼ -->
+                <div class="w-full flex gap-2 sm:gap-4 flex-grow min-h-[180px] fade-in-section delay-3">
                     <!-- 左下: 写真エリア -->
                     <div class="w-1/2 bg-slate-800/50 rounded-xl border border-slate-700 flex flex-col items-center justify-center relative overflow-hidden">
-                        <img v-if="finalProduct && finalProduct.img" :src="finalProduct.img" alt="Drink Photo" class="w-full h-full object-cover absolute inset-0" @error="handleImageError">
+                        <img v-if="finalProduct && finalProduct.img" :src="finalProduct.img" alt="Drink Photo" class="w-full h-full object-cover absolute inset-0 transition-opacity duration-1000" @error="handleImageError">
                         <div v-else class="flex flex-col items-center justify-center text-center p-2 relative z-10 opacity-70">
                             <span class="text-2xl mb-1">📸</span>
                             <span class="text-slate-400 text-[10px] sm:text-xs font-bold font-sans tracking-wider">DRINK<br>PHOTO</span>
@@ -207,7 +227,9 @@
                             <template v-else>
                                 <!-- 上部：商品名 ＆ 特徴説明 -->
                                 <div :class="descStyle.gap">
-                                    <h3 class="text-amber-300 tracking-wide font-bold mb-1 sm:mb-1.5" :class="descStyle.title">
+                                    <!-- 1行で収まるようにフォントサイズと文字間を動的調整 -->
+                                    <h3 class="text-amber-300 font-bold mb-1 sm:mb-1.5 whitespace-nowrap overflow-hidden text-ellipsis block"
+                                        :style="productTitleStyle">
                                         {{ finalProduct.name }}
                                     </h3>
                                     <p class="text-slate-200" :class="descStyle.body">
@@ -526,6 +548,38 @@
                     return finalProduct.value.matching.replace(/・/g, '\n');
                 });
 
+                // ▼ 商品名を1行に収めるための動的スタイル計算 ▼
+                const productTitleStyle = computed(() => {
+                    if (!finalProduct.value || !finalProduct.value.name) return {};
+                    const name = finalProduct.value.name;
+                    const len = name.length;
+
+                    // 文字数に応じてフォントサイズと文字間隔を調整し、スマホ幅でも1行に収める
+                    if (len <= 8) {
+                        return {
+                            fontSize: 'clamp(13px, 3.4vw, 16px)',
+                            letterSpacing: '0.03em'
+                        };
+                    } else if (len <= 11) {
+                        // 「【虎ノ門　いちごジン】」など（11文字前後）
+                        return {
+                            fontSize: 'clamp(11px, 2.7vw, 14px)',
+                            letterSpacing: '-0.02em'
+                        };
+                    } else if (len <= 14) {
+                        // 「【貴の特別純米・夏タイプ】」など
+                        return {
+                            fontSize: 'clamp(10px, 2.4vw, 13px)',
+                            letterSpacing: '-0.04em'
+                        };
+                    } else {
+                        return {
+                            fontSize: 'clamp(9.5px, 2.1vw, 12px)',
+                            letterSpacing: '-0.05em'
+                        };
+                    }
+                });
+
                 // ▼ 説明文の文字数に応じた文字サイズ＆余白の動的自動調整（全結果対応） ▼
                 const descStyle = computed(() => {
                     if (!finalProduct.value || isPreparation.value) {
@@ -761,7 +815,7 @@
                 return {
                     step, selectedDrink, drinks, questions,
                     currentQuestionIndex, currentQuestion, answersHistory, finalResult, finalProduct,
-                    isPreparation, formattedMatching, descStyle,
+                    isPreparation, formattedMatching, productTitleStyle, descStyle,
                     startQuiz, answerQuestion, prevQuestion, resetQuiz, handleImageError
                 };
             }
