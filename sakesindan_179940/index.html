@@ -218,10 +218,10 @@
                                 <!-- 下部：合うメニュー（境界線を入れて上下の余白バランスを調整） -->
                                 <div v-if="finalProduct.matching" class="pt-2 border-t border-slate-700/60 mt-auto">
                                     <h3 class="text-amber-300 tracking-wide font-bold mb-0.5 sm:mb-1" :class="descStyle.matchTitle">
-                                        【合うメニュー】
+                                        合うメニュー
                                     </h3>
                                     <p class="text-slate-200 whitespace-pre-line" :class="descStyle.matchBody">
-                                        {{ finalProduct.matching }}
+                                        {{ formattedMatching }}
                                     </p>
                                 </div>
                             </template>
@@ -362,13 +362,40 @@
                                 name: '【貴の特別純米・夏タイプ】',
                                 img: 'sarasaranihonsyu.jpg',
                                 description: 'さっぱりとしたクエン酸の酸味が魅力の限定酒です。軽やかな飲み口に優しい甘みと米の味わいが溶け合い、夏の和食とすいすい楽しめます。',
-                                matching: 'お刺身・あさりの酒蒸し'
+                                matching: 'お刺身\nあさりの酒蒸し'
                             },
                             craft: {
                                 name: '【yasogin オレンジ】',
                                 img: 'sarasarajin.jpg',
                                 description: 'オレンジピールをたっぷりと使用したジューシーでビターなジンです。甘味が強く香り高いネーブルオレンジを使用してバランス良く仕上がった一品。定番はトニックとソーダ、寒い日はお湯割りでほっとひと息つくのもおすすめ',
-                                matching: '焼売やチーズケーキ・ショコラテリーヌ'
+                                matching: '焼売やチーズケーキ\nショコラテリーヌ'
+                            }
+                        }
+                    },
+                    type2: {
+                        id: 'type2',
+                        titleRuby: 'ウルウル',
+                        titleRomaji: 'Uru Uru',
+                        icon: '🍊',
+                        shortDescription: 'ひと口でうるっと心潤う、華やかな一杯。',
+                        recommendations: {
+                            wine: '樽熟成のリッチな白ワイン（シャルドネなど）\n香り高い白（ゲヴュルツトラミネール）\n華やかなロゼワイン',
+                            sake: '大吟醸、吟醸酒\n（メロンやリンゴのようなフルーティーな薫酒）',
+                            craft: '【ビール】フルーツエール、ヘイジーIPA\n【ジン】フローラル系、ベリー系ジン'
+                        },
+                        description: '果実やボタニカルの豊かな香りが、心と体をたっぷりと潤すリッチな味わい。ひと口飲むと気分がパッと明るくなるような一杯です。',
+                        products: {
+                            sake: {
+                                name: '【産土】',
+                                img: 'ururunihonsyu.jpg',
+                                description: '炭酸ガスを含んだ、メロン・洋梨・マスカットなどのもぎたてフルーツを想わせる香りと味わい。アルコール13%と軽快ながらも、旨味かつとろみのある味わいです。',
+                                matching: 'ちーずそぼろ\n秋刀魚の炭焼き'
+                            },
+                            craft: {
+                                name: '【虎ノ門　いちごジン】',
+                                img: 'uruurujin.jpg',
+                                description: '栃木産「とちおとめ・とちあいか」の甘酸っぱい香り。この香りと風味を堪能できる飲み方はトニック割・ソーダ割がおすすめ。',
+                                matching: 'カモロース炭焼き\nラムの黒焼き'
                             }
                         }
                     },
@@ -491,6 +518,12 @@
                 const isPreparation = computed(() => {
                     if (!finalProduct.value) return true;
                     return !finalProduct.value.description || finalProduct.value.description === '準備中';
+                });
+
+                // ▼ 合うメニューの「・」を改行に変換する処理 ▼
+                const formattedMatching = computed(() => {
+                    if (!finalProduct.value || !finalProduct.value.matching) return '';
+                    return finalProduct.value.matching.replace(/・/g, '\n');
                 });
 
                 // ▼ 説明文の文字数に応じた文字サイズ＆余白の動的自動調整（全結果対応） ▼
@@ -728,7 +761,7 @@
                 return {
                     step, selectedDrink, drinks, questions,
                     currentQuestionIndex, currentQuestion, answersHistory, finalResult, finalProduct,
-                    isPreparation, descStyle,
+                    isPreparation, formattedMatching, descStyle,
                     startQuiz, answerQuestion, prevQuestion, resetQuiz, handleImageError
                 };
             }
