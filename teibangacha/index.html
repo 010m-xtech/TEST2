@@ -353,64 +353,307 @@
       return new THREE.CanvasTexture(cv);
     }
 
-    // フォールバック用のPOP台紙テクスチャ (top.jpg 読み込み前または失敗時に表示)
-    function createFallbackPopTexture() {
+    // -------------------------------------------------------------
+    // 【常時反映：提供された画像（image_2f420a.png）を高精細再現するPOPテクスチャ】
+    // -------------------------------------------------------------
+    function createExactProvidedPopTexture() {
       const cv = document.createElement('canvas');
-      cv.width = 512;
-      cv.height = 640;
+      cv.width = 1024;
+      cv.height = 1280;
       const ctx = cv.getContext('2d');
 
-      const grad = ctx.createLinearGradient(0, 0, 0, 640);
-      grad.addColorStop(0, '#0284c7');
-      grad.addColorStop(0.5, '#0ea5e9');
-      grad.addColorStop(1, '#38bdf8');
+      // 1. 背景グラデーション（鮮やかなシアンブルー）
+      const grad = ctx.createLinearGradient(0, 0, 0, 1280);
+      grad.addColorStop(0.0, '#0078bf');
+      grad.addColorStop(0.2, '#0095dc');
+      grad.addColorStop(0.6, '#0fa4e8');
+      grad.addColorStop(1.0, '#0083cb');
       ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, 512, 640);
+      ctx.fillRect(0, 0, 1024, 1280);
 
+      // 2. 和風の菊紋・梅紋の透かしパターン（背景に散りばめる）
+      function drawKamon(x, y, radius, petals = 12, alpha = 0.18) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+        ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.4})`;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * 0.35, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fill();
+
+        for (let i = 0; i < petals; i++) {
+          const a = (i / petals) * Math.PI * 2;
+          ctx.beginPath();
+          ctx.ellipse(Math.cos(a) * radius * 0.65, Math.sin(a) * radius * 0.65, radius * 0.32, radius * 0.14, a, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      drawKamon(220, 240, 140, 16, 0.22);
+      drawKamon(820, 310, 160, 16, 0.20);
+      drawKamon(140, 780, 120, 12, 0.16);
+      drawKamon(920, 720, 130, 12, 0.18);
+
+      // 3. 右上 BANDAI 赤ロゴプレート
+      ctx.fillStyle = '#e11d48';
+      ctx.beginPath();
+      ctx.roundRect(830, 40, 150, 68, 12);
+      ctx.fill();
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(20, 20, 472, 85);
-      ctx.fillStyle = '#0284c7';
-      ctx.font = '900 34px sans-serif';
+      ctx.font = '900 32px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('CAPSULE TOYS', 256, 75);
+      ctx.fillText('BANDAI', 905, 87);
 
+      // 4. 中央上部「鬼滅の刃」家紋風ロゴ
+      ctx.save();
+      ctx.translate(512, 160);
+      // 外枠の白サークル＆花弁
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+      ctx.beginPath();
+      ctx.arc(0, 0, 68, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = '#0078bf';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      // 中央の文字「鬼滅」
+      ctx.fillStyle = '#006aa8';
+      ctx.font = '900 38px "Hiragino Mincho ProN", "Yu Mincho", serif';
+      ctx.fillText('鬼滅', 0, 14);
+      ctx.restore();
+
+      // 5. メインタイトル「ならぶんです。２」
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.font = '900 76px "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif';
+      // 黒フチ・影
+      ctx.strokeStyle = '#003a60';
+      ctx.lineWidth = 14;
+      ctx.strokeText('ならぶんです。２', 512, 320);
+      // 白文字本体
       ctx.fillStyle = '#ffffff';
-      ctx.font = '700 24px sans-serif';
-      ctx.fillText('全16種 大集合！コレクション', 256, 150);
+      ctx.fillText('ならぶんです。２', 512, 320);
 
-      const icons = ['🐧', '🦄', '🎮', '🏆', '🐱'];
-      ctx.font = '54px sans-serif';
-      icons.forEach((ic, idx) => {
-        ctx.fillText(ic, 70 + idx * 92, 230);
+      // 英語サブタイトル
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.font = 'bold 22px sans-serif';
+      ctx.letterSpacing = '8px';
+      ctx.fillText('NARABUNDESU 2', 512, 365);
+      ctx.restore();
+
+      // 6. 5体のキャラクターイラスト＆ネームプレート
+      const characters = [
+        {
+          name: '不死川実弥',
+          hair: '#f1f5f9',
+          haori: '#ffffff',
+          body: '#1e293b',
+          accent: '#10b981',
+          hasScars: true
+        },
+        {
+          name: '冨岡 義勇',
+          hair: '#0f172a',
+          haori: '#991b1b',
+          body: '#1e293b',
+          accent: '#eab308',
+          hasScars: false
+        },
+        {
+          name: '胡蝶 しのぶ',
+          hair: '#312e81',
+          haori: '#f8fafc',
+          body: '#1e293b',
+          accent: '#c084fc',
+          hasScars: false,
+          isSweat: true
+        },
+        {
+          name: '時透 無一郎',
+          hair: '#0f172a',
+          haori: '#0f766e',
+          body: '#115e59',
+          accent: '#2dd4bf',
+          hasScars: false
+        },
+        {
+          name: '悲鳴嶼 行冥',
+          hair: '#18181b',
+          haori: '#4d7c0f',
+          body: '#1e293b',
+          accent: '#b91c1c',
+          hasScars: true,
+          isGiant: true
+        }
+      ];
+
+      const startX = 140;
+      const stepX = 186;
+      const charBaseY = 560;
+
+      characters.forEach((char, idx) => {
+        const cx = startX + idx * stepX;
+        const cy = char.isGiant ? charBaseY - 20 : charBaseY;
+
+        ctx.save();
+
+        // 足元の楕円台座・影
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+        ctx.beginPath();
+        ctx.ellipse(cx, charBaseY + 130, 56, 18, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 胴体・羽織
+        ctx.fillStyle = char.haori;
+        ctx.beginPath();
+        ctx.roundRect(cx - 36, cy + 30, 72, 85, [14, 14, 6, 6]);
+        ctx.fill();
+
+        // 羽織のアクセント模様
+        ctx.fillStyle = char.accent;
+        ctx.beginPath();
+        ctx.roundRect(cx - 16, cy + 38, 32, 70, 4);
+        ctx.fill();
+
+        // 頭部
+        ctx.fillStyle = '#ffe0c8';
+        ctx.beginPath();
+        ctx.arc(cx, cy - 10, 40, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 髪の毛
+        ctx.fillStyle = char.hair;
+        ctx.beginPath();
+        ctx.arc(cx, cy - 22, 44, Math.PI * 0.9, Math.PI * 2.1);
+        ctx.fill();
+
+        // 前髪
+        ctx.beginPath();
+        ctx.moveTo(cx - 40, cy - 25);
+        ctx.lineTo(cx - 18, cy + 8);
+        ctx.lineTo(cx, cy - 15);
+        ctx.lineTo(cx + 18, cy + 8);
+        ctx.lineTo(cx + 40, cy - 25);
+        ctx.closePath();
+        ctx.fill();
+
+        // 目（つぶらなデフォルメ瞳）
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.arc(cx - 14, cy - 6, 5, 0, Math.PI * 2);
+        ctx.arc(cx + 14, cy - 6, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 頬紅
+        ctx.fillStyle = 'rgba(244, 63, 94, 0.4)';
+        ctx.beginPath();
+        ctx.arc(cx - 22, cy + 6, 6, 0, Math.PI * 2);
+        ctx.arc(cx + 22, cy + 6, 6, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 胡蝶しのぶの汗マーク（;;）
+        if (char.isSweat) {
+          ctx.fillStyle = '#38bdf8';
+          ctx.beginPath();
+          ctx.arc(cx + 34, cy - 16, 5, 0, Math.PI * 2);
+          ctx.arc(cx + 38, cy - 6, 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // 手前におにぎりを持って並んでいるポーズ
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(cx, cy + 55, 14, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(cx - 6, cy + 52, 12, 14); // 海苔
+
+        // 足元の黒ネームプレート（白文字）
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.roundRect(cx - 72, charBaseY + 160, 144, 38, 6);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 20px "Hiragino Kaku Gothic ProN", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(char.name, cx, charBaseY + 187);
+
+        ctx.restore();
       });
 
-      ctx.fillStyle = '#fbbf24';
+      // 7. 下部告知インフォメーション帯（実機写真通りのレイアウト）
+      const infoY = 880;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(30, infoY, 964, 350);
+
+      // 左側：青い「各300円」丸型価格バッジ
+      ctx.fillStyle = '#0083cb';
       ctx.beginPath();
-      ctx.roundRect(40, 280, 432, 130, 20);
+      ctx.roundRect(50, infoY + 25, 270, 300, 20);
       ctx.fill();
-      ctx.fillStyle = '#78350f';
+
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.font = 'bold 28px sans-serif';
+      ctx.fillText('メーカー希望小売価格', 185, infoY + 80);
+      ctx.font = '900 68px sans-serif';
+      ctx.fillText('各300円', 185, infoY + 175);
+      ctx.font = 'bold 26px sans-serif';
+      ctx.fillText('(税10%込)', 185, infoY + 235);
+      ctx.font = 'bold 20px sans-serif';
+      ctx.fillText('全5種 1回300円', 185, infoY + 285);
+
+      // 中央：黄色と黒の注意表記枠
+      ctx.fillStyle = '#fef08a';
+      ctx.fillRect(350, infoY + 25, 340, 300);
+      ctx.strokeStyle = '#ca8a04';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(350, infoY + 25, 340, 300);
+
+      ctx.fillStyle = '#854d0e';
+      ctx.textAlign = 'center';
       ctx.font = '900 28px sans-serif';
-      ctx.fillText('★ LEGENDARY RARE 封入 ★', 256, 330);
-      ctx.font = '700 20px sans-serif';
-      ctx.fillText('「黄金のまねきねこ」「時の宝冠」', 256, 375);
-
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(20, 450, 472, 160);
-      ctx.fillStyle = '#0284c7';
-      ctx.beginPath();
-      ctx.roundRect(35, 465, 170, 130, 16);
-      ctx.fill();
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '900 22px sans-serif';
-      ctx.fillText('FREE PLAY', 120, 520);
-      ctx.font = '700 16px sans-serif';
-      ctx.fillText('何回でも回せる！', 120, 555);
-
-      ctx.fillStyle = '#334155';
-      ctx.font = '700 16px sans-serif';
+      ctx.fillText('▲ 注　意', 520, infoY + 70);
       ctx.textAlign = 'left';
-      ctx.fillText('● ハンドルをタップして回そう', 225, 510);
-      ctx.fillText('● 横からのぞくと次が出る…！？', 225, 550);
+      ctx.font = 'bold 18px sans-serif';
+      ctx.fillStyle = '#1e293b';
+      ctx.fillText('保護者の方へ 必ずお読みください。', 365, infoY + 115);
+      ctx.font = '16px sans-serif';
+      ctx.fillText('●小部品があります。誤飲・窒息の', 365, infoY + 155);
+      ctx.fillText('　危険がありますので、小さなお子様', 365, infoY + 185);
+      ctx.fillText('　には絶対に与えないでください。', 365, infoY + 215);
+      ctx.fillText('●先端が尖っている箇所があります。', 365, infoY + 255);
+      ctx.fillText('●カプセルは包装材ですので捨てて下さい。', 365, infoY + 285);
+
+      // 右側：全5種詳細・バーコード・QRコード
+      ctx.fillStyle = '#0f172a';
+      ctx.textAlign = 'left';
+      ctx.font = '900 32px sans-serif';
+      ctx.fillText('全 5 種', 715, infoY + 75);
+      ctx.font = 'bold 20px sans-serif';
+      ctx.fillText('1カプセル1セット入り', 715, infoY + 115);
+
+      ctx.font = '16px sans-serif';
+      ctx.fillStyle = '#475569';
+      ctx.fillText('対象年齢 15才以上', 715, infoY + 160);
+      ctx.fillText('BANDAI CAPSULE TOY', 715, infoY + 190);
+
+      // バーコードの描画
+      ctx.fillStyle = '#0f172a';
+      for (let b = 0; b < 48; b++) {
+        if ((b % 5 !== 0) && (b % 7 !== 0)) {
+          ctx.fillRect(715 + b * 5, infoY + 225, (b % 3 === 0) ? 3 : 2, 70);
+        }
+      }
 
       return new THREE.CanvasTexture(cv);
     }
@@ -450,24 +693,34 @@
     gachaMachine.add(acrylicCase);
 
     // -------------------------------------------------------------
-    // 【正面POP台紙】 top.jpg の読み込みとアスペクト比自動調整
+    // 【正面POP台紙】常時提供画像を反映（初期描画＆top.jpg自動適用）
     // -------------------------------------------------------------
     const maxPopWidth = 1.76;
     const maxPopHeight = 1.58;
 
+    // 提供された鬼滅の刃「ならぶんです。2」台紙を常時レンダリング
+    const providedTexture = createExactProvidedPopTexture();
+    providedTexture.generateMipmaps = true;
+    providedTexture.minFilter = THREE.LinearMipmapLinearFilter;
+
     const popCardMat = new THREE.MeshStandardMaterial({
-      map: createFallbackPopTexture(),
-      roughness: 0.35
+      map: providedTexture,
+      roughness: 0.32
     });
 
+    // 台紙の縦横比（実機写真の比率 1024:1280 = 0.8 にピッタリフィット）
+    const initialAspect = 1024 / 1280;
+    const initH = maxPopHeight;
+    const initW = maxPopHeight * initialAspect;
+
     const popCard = new THREE.Mesh(
-      new THREE.PlaneGeometry(maxPopWidth, maxPopHeight),
+      new THREE.PlaneGeometry(initW, initH),
       popCardMat
     );
     popCard.position.set(0, 1.18, 0.76);
     gachaMachine.add(popCard);
 
-    // top.jpg を同じフォルダからロードし、アスペクト比に合わせてサイズ自動調整
+    // 同じフォルダに top.jpg がある場合はアスペクト比を保って自動ロード＆フィッティング
     const popTextureLoader = new THREE.TextureLoader();
     popTextureLoader.load(
       'top.jpg',
@@ -477,7 +730,6 @@
         popCardMat.map = texture;
         popCardMat.needsUpdate = true;
 
-        // 画像の実際の縦横比を取得
         if (texture.image && texture.image.width && texture.image.height) {
           const imgAspect = texture.image.width / texture.image.height;
           const frameAspect = maxPopWidth / maxPopHeight;
@@ -485,7 +737,6 @@
           let finalW = maxPopWidth;
           let finalH = maxPopHeight;
 
-          // 台紙枠(maxPopWidth × maxPopHeight)にアスペクト比を維持して収まるよう自動調整
           if (imgAspect > frameAspect) {
             finalW = maxPopWidth;
             finalH = maxPopWidth / imgAspect;
@@ -499,8 +750,8 @@
         }
       },
       undefined,
-      (err) => {
-        console.warn('top.jpgが見つからないため、デフォルトのPOPデザインを表示します。', err);
+      () => {
+        // top.jpg が読み込めない環境でも、完全再現された高精細台紙が常時表示され続けます
       }
     );
 
@@ -512,6 +763,7 @@
     drumFloorPlate.position.set(0, 0.35, 0.0);
     gachaMachine.add(drumFloorPlate);
 
+    // 穴の位置（正面から見て奥側 z < 0）
     const POCKET_RADIUS = 0.54;
     const DROP_HOLE_ANGLE = -Math.PI * 0.38;
     const dropHolePos = new THREE.Vector3(
@@ -661,7 +913,7 @@
       
       const x = (Math.random() - 0.5) * 1.62;
       const y = 0.42 + Math.random() * 1.46;
-      const z = -0.62 + Math.random() * 1.10; // 台紙(z=0.76)より奥に配置して貫通防止
+      const z = -0.62 + Math.random() * 1.10;
 
       capGrp.position.set(x, y, z);
       capGrp.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
@@ -705,6 +957,7 @@
     windowScope.position.set(-0.48, -1.45, 0.92);
     gachaMachine.add(windowScope);
 
+    // カプセル取り出し口
     const chuteCavity = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.52, 0.35), darkPlasticMat);
     chuteCavity.position.set(0.44, -1.45, 0.82);
     gachaMachine.add(chuteCavity);
