@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>3Dカプセルトイ！カプセルステーション</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    body {
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 30%, #2e2a36, #121016 90%);
+    }
+
+    .modal-enter {
+      animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0.6) translateY(20px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    @keyframes pulseHint {
+      0%, 100% { transform: scale(1); opacity: 0.9; }
+      50% { transform: scale(1.05); opacity: 1; filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.6)); }
+    }
+
+    .pulse-peek {
+      animation: pulseHint 2.4s infinite;
+    }
+  </style>
+</head>
+<body class="w-screen h-screen m-0 p-0 text-white relative">
+  <!-- 3D Canvas Container -->
+  <div id="canvas-container" class="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing"></div>
+
+  <!-- Minimal Guide Overlay -->
+  <div id="guide-bubble" class="absolute top-5 left-0 right-0 flex justify-center pointer-events-none z-10 transition-opacity duration-500">
+    <div class="px-5 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-sm font-bold text-sky-200 shadow-xl flex items-center space-x-2">
+      <span class="animate-bounce inline-block">👆</span>
+      <span id="guide-text">ハンドルをタップして回そう！</span>
+    </div>
+  </div>
+
+  <!-- Quick Peek Button (横からのぞくボタン) -->
+  <div class="absolute bottom-6 left-5 z-20">
+    <button id="btn-peek" class="pulse-peek px-4 py-2.5 rounded-full bg-slate-900/85 hover:bg-slate-800 active:scale-95 backdrop-blur-md border border-sky-400/50 text-xs sm:text-sm font-bold text-sky-200 shadow-xl flex items-center space-x-2 transition-all cursor-pointer">
+      <span class="text-base">👀</span>
+      <span id="btn-peek-text">横からのぞく</span>
+    </button>
+  </div>
+
+  <div class="absolute bottom-6 right-5 text-right text-[11px] text-white/50 pointer-events-none z-10 hidden sm:block">
+    ドラッグで視点回転 / スクロールでズーム
+  </div>
+
+  <!-- Capsule Open Result Modal -->
+  <div id="reward-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 hidden p-4 cursor-pointer">
+    <div class="bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-950 border-2 border-white/20 rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl relative modal-enter overflow-hidden pointer-events-auto">
+      <div id="modal-glow" class="absolute -inset-20 bg-amber-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="relative z-10">
+        <span id="reward-rarity" class="inline-block px-3 py-1 rounded-full text-xs font-black tracking-wider uppercase mb-2 bg-yellow-400 text-black shadow">
+          SUPER RARE
+        </span>
+        <div id="reward-icon" class="text-7xl my-3 filter drop-shadow-lg transform transition hover:scale-110 select-none">
+          🦄
+        </div>
+        <h2 id="reward-name" class="text-2xl font-black tracking-wide text-white mb-1">
+          ファンタジーユニコーン
+        </h2>
+        <p id="reward-flavor" class="text-xs text-white/70 px-2 min-h-[36px] mb-4">
+          虹の彼方からやってきた伝説の生き物。幸運をもたらすと言われている。
+        </p>
+        
+        <div class="text-[11px] text-white/50 animate-pulse">
+          タップして閉じる
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Confetti burst fallback
+    function triggerConfettiBurst() {
+      if (typeof confetti === 'function') {
+        try {
+          confetti({ particleCount: 85, spread: 75, origin: { y: 0.6 } });
+          return;
+        } catch (e) {}
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.className = 'fixed inset-0 pointer-events-none z-50';
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      document.body.appendChild(canvas);
+      const ctx = canvas.getContext('2d');
+
+      const colors = ['#f59e0b', '#ec4899', '#3b82f6', '#10b981', '#a855f7', '#fbbf24', '#06b6d4'];
+      const particles = [];
+      for (let i = 0; i < 70; i++) {
+        particles.push({
+          x: window.innerWidth * (0.35 + Math.random() * 0.3),
+          y: window.innerHeight * 0.6,
+          vx: (Math.random() - 0.5) * 14,
+          vy: -(Math.random() * 12 + 6),
+          size: Math.random() * 9 + 5,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * 360,
+          rotSpeed: (Math.random() - 0.5) * 12,
+          alpha: 1
+        });
+      }
+
+      const startTime = performance.now();
+      function renderParticles(currentTime) {
+        const elapsed = (currentTime - startTime) / 1000;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let hasAlive = false;
+
+        particles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.38;
+          p.rotation += p.rotSpeed;
+          if (elapsed > 0.8) p.alpha = Math.max(0, p.alpha - 0.025);
+          if (p.alpha > 0) {
+            hasAlive = true;
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate((p.rotation * Math.PI) / 180);
+            ctx.globalAlpha = p.alpha;
+            ctx.fillStyle = p.color;
+            ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+            ctx.restore();
+          }
+        });
+
+        if (hasAlive && elapsed < 2.5) {
+          requestAnimationFrame(renderParticles);
+        } else if (canvas.parentNode) {
+          canvas.parentNode.removeChild(canvas);
+        }
+      }
+      requestAnimationFrame(renderParticles);
+    }
+
+    // Items database: 16 items
+    const ITEMS = [
+      // Normal
+      { id: 'n1', name: 'おにぎりペンギン', icon: '🐧', rarity: 'N', desc: 'いつでもシャケおにぎりを抱えているペンギン。' },
+      { id: 'n2', name: 'まるっこハムスター', icon: '🐹', rarity: 'N', desc: 'ほっぺたにヒマワリの種を限界まで詰めている。' },
+      { id: 'n3', name: 'レトロゲームカセット', icon: '🎮', rarity: 'N', desc: '息を吹きかけると起動する不思議なカセット。' },
+      { id: 'n4', name: 'たいやきキーホルダー', icon: '🐟', rarity: 'N', desc: 'しっぽの先まであんこがたっぷり入っている。' },
+      { id: 'n5', name: '宇宙どんぐり', icon: '🌰', rarity: 'N', desc: '夜になるとほんのり青白く光る謎のどんぐり。' },
+      { id: 'n6', name: 'のんびりカピバラ', icon: '♨️', rarity: 'N', desc: 'ゆず湯に浸かるのが何よりの至福。' },
+      
+      // Rare
+      { id: 'r1', name: 'マジカルクロック', icon: '⏰', rarity: 'R', desc: '5分だけ時間を巻き戻せるかもしれない時計。' },
+      { id: 'r2', name: 'サイバーにゃんこ', icon: '🐱', rarity: 'R', desc: '肉球からホログラムを投影できる近未来猫。' },
+      { id: 'r3', name: 'クリスタルキノコ', icon: '🍄', rarity: 'R', desc: '洞窟の最深部に自生する透き通ったキノコ。' },
+      { id: 'r4', name: '金平糖の惑星', icon: '🪐', rarity: 'R', desc: '甘い香りのするミニチュア天体模型。' },
+
+      // Super Rare
+      { id: 'sr1', name: 'ドラゴンのたまご', icon: '🥚', rarity: 'SR', desc: '触るとポカポカ温かい。もうすぐ生まれそう！' },
+      { id: 'sr2', name: 'フェニックスの羽', icon: '🪶', rarity: 'SR', desc: '決して燃え尽きることのない神秘の紅蓮の羽。' },
+      { id: 'sr3', name: '星くずの砂時計', icon: '⏳', rarity: 'SR', desc: '流れる砂が美しい銀河の瞬きを刻む。' },
+
+      // Legend
+      { id: 'ur1', name: '黄金のまねきねこ', icon: '🏆', rarity: 'UR', desc: '持ち主に莫大な富と福徳をもたらす伝説の黄金像。' },
+      { id: 'ur2', name: '幻獣レインボーユニコーン', icon: '🦄', rarity: 'UR', desc: '純粋な心を持つ者にだけ姿を現す虹色の角を持つ馬。' },
+      { id: 'ur3', name: '時の支配者の宝冠', icon: '👑', rarity: 'UR', desc: 'すべての時空を統べる古代の王冠。圧倒的な威光。' }
+    ];
+
+    const RARITY_INFO = {
+      'N': { label: 'NORMAL', bg: 'bg-slate-500', text: 'text-slate-200', color: 0x3b82f6, glow: 'rgba(59, 130, 246, 0.4)' },
+      'R': { label: 'RARE', bg: 'bg-sky-500', text: 'text-sky-100', color: 0x06b6d4, glow: 'rgba(6, 182, 212, 0.6)' },
+      'SR': { label: 'SUPER RARE', bg: 'bg-purple-600', text: 'text-purple-100', color: 0xa855f7, glow: 'rgba(168, 85, 247, 0.8)' },
+      'UR': { label: 'LEGENDARY', bg: 'bg-amber-400', text: 'text-amber-950', color: 0xf59e0b, glow: 'rgba(245, 158, 11, 0.95)' }
+    };
+
+    // Tone.js Sound Synthesizer
+    let synth, metalSynth, fanfareSynth;
+    let audioReady = false;
+
+    function initAudio() {
+      if (audioReady) return;
+      try {
+        if (typeof Tone !== 'undefined') {
+          Tone.start();
+          synth = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: "triangle" },
+            envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.5 }
+          }).toDestination();
+          synth.volume.value = -6;
+
+          metalSynth = new Tone.MetalSynth({
+            frequency: 250,
+            envelope: { attack: 0.001, decay: 0.09, release: 0.06 },
+            harmonicity: 3.2,
+            modulationIndex: 22,
+            resonance: 3200,
+            octaves: 1.3
+          }).toDestination();
+          metalSynth.volume.value = -9;
+
+          fanfareSynth = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: "sine" },
+            envelope: { attack: 0.02, decay: 0.2, sustain: 0.3, release: 0.8 }
+          }).toDestination();
+          fanfareSynth.volume.value = -4;
+
+          audioReady = true;
+        }
+      } catch (e) {}
+    }
+
+    function playCrankSound() {
+      if (!audioReady || !metalSynth) return;
+      try { metalSynth.triggerAttackRelease("D3", "16n"); } catch (e) {}
+    }
+
+    function playRotorClackSound() {
+      if (!audioReady || !metalSynth) return;
+      try { metalSynth.triggerAttackRelease("F#3", "32n"); } catch (e) {}
+    }
+
+    function playDispenseSound() {
+      if (!audioReady || !synth) return;
+      try {
+        const now = Tone.now();
+        synth.triggerAttackRelease("A4", "16n", now);
+        synth.triggerAttackRelease("D5", "16n", now + 0.07);
+      } catch (e) {}
+    }
+
+    function playOpenFanfare(rarity) {
+      if (!audioReady) return;
+      try {
+        const now = Tone.now();
+        if (rarity === 'UR' && fanfareSynth) {
+          fanfareSynth.triggerAttackRelease(["D5", "F#5", "A5", "D6"], "4n", now);
+          fanfareSynth.triggerAttackRelease(["G5", "B5", "D6", "G6"], "2n", now + 0.25);
+        } else if (rarity === 'SR' && fanfareSynth) {
+          fanfareSynth.triggerAttackRelease(["E5", "G#5", "B5"], "8n", now);
+          fanfareSynth.triggerAttackRelease(["A5", "C#6", "E6"], "4n", now + 0.15);
+        } else if (rarity === 'R' && synth) {
+          synth.triggerAttackRelease(["F#5", "A5", "C#6"], "8n", now);
+        } else if (synth) {
+          synth.triggerAttackRelease(["D5", "F#5"], "16n", now);
+        }
+      } catch (e) {}
+    }
+
+    // -------------------------------------------------------------
+    // THREE.JS SCENE SETUP
+    // -------------------------------------------------------------
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    container.appendChild(renderer.domElement);
+
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+    scene.add(ambientLight);
+
+    const mainLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    mainLight.position.set(4, 8, 7);
+    mainLight.castShadow = true;
+    scene.add(mainLight);
+
+    // 内部奥側の穴と次弾カプセルを照らすスポットライト
+    const innerLight = new THREE.PointLight(0xffedd5, 1.3, 6);
+    innerLight.position.set(0.4, 1.2, -0.3);
+    scene.add(innerLight);
+
+    const sideLight = new THREE.PointLight(0x38bdf8, 1.0, 7);
+    sideLight.position.set(2.4, 0.6, 0.2);
+    scene.add(sideLight);
+
+    const backLight = new THREE.DirectionalLight(0xffedd5, 0.4);
+    backLight.position.set(0, 5, -5);
+    scene.add(backLight);
+
+    const gachaMachine = new THREE.Group();
+    scene.add(gachaMachine);
+
+    // Materials
+    const ivoryMat = new THREE.MeshStandardMaterial({ color: 0xf2efea, roughness: 0.35, metalness: 0.05 });
+    const ivoryBevelMat = new THREE.MeshStandardMaterial({ color: 0xe5e1d8, roughness: 0.4, metalness: 0.05 });
+    const rotorPlasticMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.3, metalness: 0.05 });
+    const springMetalMat = new THREE.MeshStandardMaterial({ color: 0xd4d4d8, metalness: 0.9, roughness: 0.2 });
+    const darkPlasticMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.7 });
+    const chromeMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.92, roughness: 0.15 });
+
+    // Handle Dial Texture
+    function createHandleDialTexture() {
+      const cv = document.createElement('canvas');
+      cv.width = 512;
+      cv.height = 512;
+      const ctx = cv.getContext('2d');
+      ctx.fillStyle = '#f2efea';
+      ctx.fillRect(0, 0, 512, 512);
+
+      const cx = 256, cy = 256, rOuter = 230, rInner = 160;
+      ctx.beginPath();
+      ctx.arc(cx, cy, rOuter, 0, Math.PI * 2);
+      ctx.arc(cx, cy, rInner, 0, Math.PI * 2, true);
+      ctx.fillStyle = '#005bac';
+      ctx.fill();
+
+      ctx.strokeStyle = '#ffdd00';
+      ctx.lineWidth = 14;
+      ctx.beginPath();
+      ctx.arc(cx, cy, (rOuter + rInner) / 2, -Math.PI * 0.7, -Math.PI * 0.1);
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffdd00';
+      ctx.beginPath();
+      ctx.moveTo(cx + 175, cy - 80);
+      ctx.lineTo(cx + 205, cy - 40);
+      ctx.lineTo(cx + 155, cy - 45);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, (rOuter + rInner) / 2, Math.PI * 0.3, Math.PI * 0.9);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(cx - 175, cy + 80);
+      ctx.lineTo(cx - 205, cy + 40);
+      ctx.lineTo(cx - 155, cy + 45);
+      ctx.closePath();
+      ctx.fill();
+
+      return new THREE.CanvasTexture(cv);
+    }
+
+    // 正面のPOP台紙テクスチャ
+    function createPopCardTexture() {
+      const cv = document.createElement('canvas');
+      cv.width = 512;
+      cv.height = 640;
+      const ctx = cv.getContext('2d');
+
+      const grad = ctx.createLinearGradient(0, 0, 0, 640);
+      grad.addColorStop(0, '#0284c7');
+      grad.addColorStop(0.5, '#0ea5e9');
+      grad.addColorStop(1, '#38bdf8');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 512, 640);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(20, 20, 472, 85);
+      ctx.fillStyle = '#0284c7';
+      ctx.font = '900 34px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('CAPSULE TOYS', 256, 75);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '700 24px sans-serif';
+      ctx.fillText('全16種 大集合！コレクション', 256, 150);
+
+      const icons = ['🐧', '🦄', '🎮', '🏆', '🐱'];
+      ctx.font = '54px sans-serif';
+      icons.forEach((ic, idx) => {
+        ctx.fillText(ic, 70 + idx * 92, 230);
+      });
+
+      ctx.fillStyle = '#fbbf24';
+      ctx.beginPath();
+      ctx.roundRect(40, 280, 432, 130, 20);
+      ctx.fill();
+      ctx.fillStyle = '#78350f';
+      ctx.font = '900 28px sans-serif';
+      ctx.fillText('★ LEGENDARY RARE 封入 ★', 256, 330);
+      ctx.font = '700 20px sans-serif';
+      ctx.fillText('「黄金のまねきねこ」「時の宝冠」', 256, 375);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(20, 450, 472, 160);
+      ctx.fillStyle = '#0284c7';
+      ctx.beginPath();
+      ctx.roundRect(35, 465, 170, 130, 16);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 22px sans-serif';
+      ctx.fillText('FREE PLAY', 120, 520);
+      ctx.font = '700 16px sans-serif';
+      ctx.fillText('何回でも回せる！', 120, 555);
+
+      ctx.fillStyle = '#334155';
+      ctx.font = '700 16px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('● ハンドルをタップして回そう', 225, 510);
+      ctx.fillText('● 横からのぞくと次が出る…！？', 225, 550);
+
+      return new THREE.CanvasTexture(cv);
+    }
+
+    // Machine Body
+    const lowerBody = new THREE.Mesh(new THREE.BoxGeometry(2.1, 2.3, 1.7), ivoryMat);
+    lowerBody.position.set(0, -0.9, 0);
+    gachaMachine.add(lowerBody);
+
+    const frontPanel = new THREE.Mesh(new THREE.BoxGeometry(1.98, 2.18, 0.08), ivoryBevelMat);
+    frontPanel.position.set(0, -0.9, 0.88);
+    gachaMachine.add(frontPanel);
+
+    const topCap = new THREE.Mesh(new THREE.BoxGeometry(2.16, 0.45, 1.76), ivoryMat);
+    topCap.position.set(0, 2.1, 0);
+    gachaMachine.add(topCap);
+
+    const headerSign = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.22, 0.04), new THREE.MeshStandardMaterial({ color: 0x0284c7 }));
+    headerSign.position.set(0, 2.1, 0.9);
+    gachaMachine.add(headerSign);
+
+    // Clear Acrylic Case
+    const acrylicMat = new THREE.MeshPhysicalMaterial({
+      color: 0xffffff,
+      transmission: 0.95,
+      opacity: 1,
+      transparent: true,
+      roughness: 0.02,
+      ior: 1.48,
+      reflectivity: 0.6,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.05
+    });
+
+    const acrylicCase = new THREE.Mesh(new THREE.BoxGeometry(2.0, 1.8, 1.6), acrylicMat);
+    acrylicCase.position.set(0, 1.15, 0);
+    gachaMachine.add(acrylicCase);
+
+    // 正面POP台紙（前面クリアガラスの内側にピタッと配置し、カプセルはこれより奥にのみ配置）
+    const popCard = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.76, 1.58),
+      new THREE.MeshStandardMaterial({ map: createPopCardTexture(), roughness: 0.35 })
+    );
+    popCard.position.set(0, 1.18, 0.76);
+    gachaMachine.add(popCard);
+
+    // -------------------------------------------------------------
+    // 【実機構造】回転ドラム ＆ 正面奥の落下穴
+    // -------------------------------------------------------------
+    const drumFloorPlateGeo = new THREE.CylinderGeometry(0.88, 0.88, 0.08, 36);
+    const drumFloorPlate = new THREE.Mesh(drumFloorPlateGeo, ivoryBevelMat);
+    drumFloorPlate.position.set(0, 0.35, 0.0);
+    gachaMachine.add(drumFloorPlate);
+
+    // 穴の位置（正面から見て奥側 z < 0）
+    const POCKET_RADIUS = 0.54;
+    const DROP_HOLE_ANGLE = -Math.PI * 0.38;
+    const dropHolePos = new THREE.Vector3(
+      Math.cos(DROP_HOLE_ANGLE) * POCKET_RADIUS,
+      0.355,
+      Math.sin(DROP_HOLE_ANGLE) * POCKET_RADIUS
+    );
+
+    const dropHoleGeo = new THREE.CylinderGeometry(0.22, 0.22, 0.09, 24);
+    const dropHole = new THREE.Mesh(dropHoleGeo, darkPlasticMat);
+    dropHole.position.copy(dropHolePos);
+    gachaMachine.add(dropHole);
+
+    const holeRimGeo = new THREE.TorusGeometry(0.23, 0.02, 12, 32);
+    holeRimGeo.rotateX(Math.PI / 2);
+    const holeRim = new THREE.Mesh(holeRimGeo, new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.3 }));
+    holeRim.position.copy(dropHolePos);
+    holeRim.position.y += 0.045;
+    gachaMachine.add(holeRim);
+
+    // 内部落下シュート
+    const chuteTubeMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.5 });
+    const chuteStart = new THREE.Vector3(dropHolePos.x, dropHolePos.y - 0.1, dropHolePos.z);
+    const chuteEnd = new THREE.Vector3(0.44, -1.35, 0.82);
+    const chuteDist = chuteStart.distanceTo(chuteEnd);
+    const chuteTubeGeo = new THREE.CylinderGeometry(0.24, 0.26, chuteDist, 20);
+    const chuteTube = new THREE.Mesh(chuteTubeGeo, chuteTubeMat);
+    chuteTube.position.lerpVectors(chuteStart, chuteEnd, 0.5);
+    chuteTube.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), chuteEnd.clone().sub(chuteStart).normalize());
+    gachaMachine.add(chuteTube);
+
+    // 回転ドラムローター本体
+    const drumRotorGroup = new THREE.Group();
+    drumRotorGroup.position.set(0, 0.42, 0.0);
+    gachaMachine.add(drumRotorGroup);
+
+    const outerRingGeo = new THREE.CylinderGeometry(0.85, 0.85, 0.28, 36, 1, true);
+    const outerRing = new THREE.Mesh(outerRingGeo, rotorPlasticMat);
+    drumRotorGroup.add(outerRing);
+
+    const hubGeo = new THREE.CylinderGeometry(0.22, 0.24, 0.35, 24);
+    const hub = new THREE.Mesh(hubGeo, rotorPlasticMat);
+    drumRotorGroup.add(hub);
+
+    const centralRodGeo = new THREE.CylinderGeometry(0.025, 0.025, 1.4, 16);
+    const centralRod = new THREE.Mesh(centralRodGeo, chromeMat);
+    centralRod.position.y = 0.7;
+    drumRotorGroup.add(centralRod);
+
+    // 5つの仕切りポケット＆金属バネ攪拌アーム
+    const NUM_POCKETS = 5;
+    const pocketAngles = [];
+
+    for (let i = 0; i < NUM_POCKETS; i++) {
+      const angle = (i / NUM_POCKETS) * Math.PI * 2;
+      pocketAngles.push(angle);
+
+      const ribGeo = new THREE.BoxGeometry(0.04, 0.28, 0.48);
+      const rib = new THREE.Mesh(ribGeo, rotorPlasticMat);
+      rib.position.set(
+        Math.cos(angle + Math.PI / NUM_POCKETS) * 0.46,
+        0,
+        Math.sin(angle + Math.PI / NUM_POCKETS) * 0.46
+      );
+      rib.rotation.y = - (angle + Math.PI / NUM_POCKETS);
+      drumRotorGroup.add(rib);
+
+      const springArmGeo = new THREE.CylinderGeometry(0.035, 0.035, 0.52, 16);
+      springArmGeo.rotateZ(Math.PI / 2);
+      const springArm = new THREE.Mesh(springArmGeo, springMetalMat);
+      springArm.position.set(Math.cos(angle) * 0.42, 0.22, Math.sin(angle) * 0.42);
+      springArm.rotation.y = -angle;
+      drumRotorGroup.add(springArm);
+
+      const screwHeadGeo = new THREE.CylinderGeometry(0.045, 0.045, 0.03, 12);
+      const screw = new THREE.Mesh(screwHeadGeo, chromeMat);
+      screw.position.set(Math.cos(angle) * 0.66, 0.22, Math.sin(angle) * 0.66);
+      drumRotorGroup.add(screw);
+    }
+
+    // -------------------------------------------------------------
+    // ポケット内カプセル配置（5個）: Pocket 0 が穴の真上にスタンバイ
+    // -------------------------------------------------------------
+    const rotorCapsules = [];
+    const capSphereRadius = 0.17;
+    const capGeoTop = new THREE.SphereGeometry(capSphereRadius, 18, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+    const capGeoBottom = new THREE.SphereGeometry(capSphereRadius, 18, 16, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2);
+    const capBottomSharedMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.25 });
+
+    function drawItemByRate() {
+      const rand = Math.random() * 100;
+      let targetTier = 'N';
+      if (rand < 4) targetTier = 'UR';
+      else if (rand < 18) targetTier = 'SR';
+      else if (rand < 50) targetTier = 'R';
+      else targetTier = 'N';
+
+      const pool = ITEMS.filter(item => item.rarity === targetTier);
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    function createRotorCapsule(item) {
+      const grp = new THREE.Group();
+      const topMat = new THREE.MeshStandardMaterial({
+        color: RARITY_INFO[item.rarity].color,
+        roughness: 0.2,
+        metalness: 0.1
+      });
+      grp.add(new THREE.Mesh(capGeoTop, topMat));
+      grp.add(new THREE.Mesh(capGeoBottom, capBottomSharedMat));
+      grp.topMat = topMat;
+      return grp;
+    }
+
+    const STEP_ANGLE = (Math.PI * 2) / NUM_POCKETS;
+    const baseOffset = DROP_HOLE_ANGLE;
+
+    for (let i = 0; i < NUM_POCKETS; i++) {
+      const item = drawItemByRate();
+      const capMesh = createRotorCapsule(item);
+      const angle = baseOffset + (i * STEP_ANGLE);
+
+      capMesh.position.set(
+        Math.cos(angle) * POCKET_RADIUS,
+        0.05,
+        Math.sin(angle) * POCKET_RADIUS
+      );
+      capMesh.rotation.set(Math.random() * 0.5, Math.random() * Math.PI, Math.random() * 0.5);
+
+      drumRotorGroup.add(capMesh);
+      rotorCapsules.push({
+        mesh: capMesh,
+        item: item,
+        pocketIndex: i,
+        angle: angle
+      });
+    }
+
+    // -------------------------------------------------------------
+    // ストックカプセル群（95個）: ドラム5個と合わせて【合計100個】
+    // POP台紙（z=0.76）より必ず奥（z <= 0.48）に配置し、突き抜けを完全防止！
+    // -------------------------------------------------------------
+    const stockCapsules = [];
+    const stockColors = [
+      0xef4444, 0x3b82f6, 0x10b981, 0xf59e0b, 0x8b5cf6, 0xec4899,
+      0x06b6d4, 0xffffff, 0xf97316, 0x14b8a6, 0xa855f7, 0xeab308
+    ];
+    const numStockCapsules = 95; // ドラム内5個 + ストック95個 = 合計100個
+
+    for (let i = 0; i < numStockCapsules; i++) {
+      const capGrp = new THREE.Group();
+      
+      // x: アクリル内側の横幅 (-0.80 〜 +0.80)
+      const x = (Math.random() - 0.5) * 1.62;
+      // y: ドラム上部からアクリル天面までたっぷり積み上げる (0.42 〜 1.88)
+      const y = 0.42 + Math.random() * 1.46;
+      // z: 背面アクリル手前からPOP台紙の手前安全圏まで (-0.62 〜 +0.48)
+      // カプセル半径0.17を加味しても最大zは0.65となり、台紙0.76を絶対に突き抜けない
+      const z = -0.62 + Math.random() * 1.10;
+
+      capGrp.position.set(x, y, z);
+      capGrp.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+
+      const color = stockColors[i % stockColors.length];
+      const topMat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.25 });
+      capGrp.add(new THREE.Mesh(capGeoTop, topMat));
+      capGrp.add(new THREE.Mesh(capGeoBottom, capBottomSharedMat));
+
+      gachaMachine.add(capGrp);
+      stockCapsules.push({
+        mesh: capGrp,
+        basePos: new THREE.Vector3(x, y, z),
+        phase: Math.random() * 30
+      });
+    }
+
+    // -------------------------------------------------------------
+    // パネル操作部ディテール
+    // -------------------------------------------------------------
+    const slotRimGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.04, 24);
+    slotRimGeo.rotateX(Math.PI / 2);
+    const slotRim = new THREE.Mesh(slotRimGeo, chromeMat);
+    slotRim.position.set(0.42, -0.16, 0.93);
+    gachaMachine.add(slotRim);
+
+    const slotHole = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.14, 0.05), darkPlasticMat);
+    slotHole.position.set(0.42, -0.16, 0.94);
+    gachaMachine.add(slotHole);
+
+    const ejectBtnGeo = new THREE.CylinderGeometry(0.045, 0.045, 0.05, 16);
+    ejectBtnGeo.rotateX(Math.PI / 2);
+    const ejectBtn = new THREE.Mesh(ejectBtnGeo, darkPlasticMat);
+    ejectBtn.position.set(0.58, -0.28, 0.93);
+    gachaMachine.add(ejectBtn);
+
+    const windowScopeGeo = new THREE.SphereGeometry(0.24, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+    windowScopeGeo.rotateX(Math.PI / 2);
+    const windowScope = new THREE.Mesh(
+      windowScopeGeo,
+      new THREE.MeshPhysicalMaterial({ color: 0x111827, transmission: 0.6, opacity: 1, transparent: true, roughness: 0.1 })
+    );
+    windowScope.position.set(-0.48, -1.45, 0.92);
+    gachaMachine.add(windowScope);
+
+    // カプセル取り出し口
+    const chuteCavity = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.52, 0.35), darkPlasticMat);
+    chuteCavity.position.set(0.44, -1.45, 0.82);
+    gachaMachine.add(chuteCavity);
+
+    // ハンドルユニット
+    const handleMountGroup = new THREE.Group();
+    handleMountGroup.position.set(0, -0.68, 0.92);
+    gachaMachine.add(handleMountGroup);
+
+    const dialPlate = new THREE.Mesh(
+      new THREE.CircleGeometry(0.46, 36),
+      new THREE.MeshStandardMaterial({ map: createHandleDialTexture(), roughness: 0.35 })
+    );
+    dialPlate.position.z = 0.005;
+    handleMountGroup.add(dialPlate);
+
+    const rotatingHandle = new THREE.Group();
+    rotatingHandle.position.set(0, 0, 0.015);
+    handleMountGroup.add(rotatingHandle);
+
+    const handleOuterRimGeo = new THREE.CylinderGeometry(0.33, 0.35, 0.08, 36);
+    handleOuterRimGeo.rotateX(Math.PI / 2);
+    const handleOuterRim = new THREE.Mesh(handleOuterRimGeo, ivoryBevelMat);
+    rotatingHandle.add(handleOuterRim);
+
+    const handleDishGeo = new THREE.CylinderGeometry(0.29, 0.29, 0.06, 32);
+    handleDishGeo.rotateX(Math.PI / 2);
+    const handleDish = new THREE.Mesh(handleDishGeo, new THREE.MeshStandardMaterial({ color: 0xdfdad2, roughness: 0.45 }));
+    handleDish.position.z = 0.02;
+    rotatingHandle.add(handleDish);
+
+    const gripLength = 0.54;
+    const gripRadius = 0.07;
+    const bridge = new THREE.Mesh(new THREE.CylinderGeometry(gripRadius, gripRadius, gripLength, 24), ivoryMat);
+    bridge.position.z = 0.09;
+    rotatingHandle.add(bridge);
+
+    const capSphereA = new THREE.Mesh(new THREE.SphereGeometry(gripRadius, 16, 16), ivoryMat);
+    capSphereA.position.set(0, gripLength / 2, 0.09);
+    rotatingHandle.add(capSphereA);
+
+    const capSphereB = new THREE.Mesh(new THREE.SphereGeometry(gripRadius, 16, 16), ivoryMat);
+    capSphereB.position.set(0, -gripLength / 2, 0.09);
+    rotatingHandle.add(capSphereB);
+
+    const handleHitBox = new THREE.Mesh(
+      new THREE.SphereGeometry(0.68, 16, 16),
+      new THREE.MeshBasicMaterial({ visible: false })
+    );
+    handleHitBox.position.set(0, -0.68, 0.95);
+    gachaMachine.add(handleHitBox);
+
+    const floorStand = new THREE.Mesh(
+      new THREE.CylinderGeometry(2.4, 2.7, 0.3, 36),
+      new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.6 })
+    );
+    floorStand.position.y = -2.15;
+    gachaMachine.add(floorStand);
+
+    // 排出されたカプセル
+    const dispensedCapsuleGroup = new THREE.Group();
+    dispensedCapsuleGroup.visible = false;
+    scene.add(dispensedCapsuleGroup);
+
+    const mainCapScale = 0.34;
+    const mainCapsuleTop = new THREE.Mesh(
+      new THREE.SphereGeometry(mainCapScale, 28, 20, 0, Math.PI * 2, 0, Math.PI / 2),
+      new THREE.MeshStandardMaterial({ color: 0x3b82f6, roughness: 0.2, metalness: 0.1 })
+    );
+    const mainCapsuleBottom = new THREE.Mesh(
+      new THREE.SphereGeometry(mainCapScale, 28, 20, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2),
+      new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2, metalness: 0.1 })
+    );
+    dispensedCapsuleGroup.add(mainCapsuleTop);
+    dispensedCapsuleGroup.add(mainCapsuleBottom);
+
+    const capsuleHitBox = new THREE.Mesh(
+      new THREE.SphereGeometry(mainCapScale * 1.6, 16, 16),
+      new THREE.MeshBasicMaterial({ visible: false })
+    );
+    dispensedCapsuleGroup.add(capsuleHitBox);
+
+    const crankTargets = [handleHitBox, handleOuterRim, handleDish, bridge, capSphereA, capSphereB, dialPlate];
+    const capsuleTargets = [capsuleHitBox, mainCapsuleTop, mainCapsuleBottom];
+
+    // -------------------------------------------------------------
+    // CAMERA & ORBIT
+    // -------------------------------------------------------------
+    let isDragging = false;
+    let previousPointerPosition = { x: 0, y: 0 };
+    let cameraAngle = 0;
+    let cameraPitch = 0.08;
+    let cameraDistance = 6.4;
+    let hasMovedMuch = false;
+
+    let targetAngle = 0;
+    let targetPitch = 0.08;
+    let targetDistance = 6.4;
+    let isPeekingSide = false;
+
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+
+    function updateCamera() {
+      camera.position.x = Math.sin(cameraAngle) * cameraDistance * Math.cos(cameraPitch);
+      camera.position.z = Math.cos(cameraAngle) * cameraDistance * Math.cos(cameraPitch);
+      camera.position.y = 0.35 + cameraDistance * Math.sin(cameraPitch);
+      camera.lookAt(0, 0.15, 0);
+    }
+    updateCamera();
+
+    // 「横からのぞく」ボタントグル
+    const btnPeek = document.getElementById('btn-peek');
+    const btnPeekText = document.getElementById('btn-peek-text');
+
+    btnPeek.addEventListener('click', (e) => {
+      e.stopPropagation();
+      initAudio();
+      isPeekingSide = !isPeekingSide;
+
+      if (isPeekingSide) {
+        targetAngle = 1.36;
+        targetPitch = 0.32;
+        targetDistance = 4.8;
+        btnPeekText.textContent = "正面にもどる";
+        updateGuide("👀 カプセルのすきまから、穴の上にあるカプセルが見えるよ！");
+      } else {
+        targetAngle = 0;
+        targetPitch = 0.08;
+        targetDistance = 6.4;
+        btnPeekText.textContent = "横からのぞく";
+        updateGuide("ハンドルをタップして回そう！");
+      }
+    });
+
+    window.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      hasMovedMuch = false;
+      previousPointerPosition = { x: e.clientX, y: e.clientY };
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const deltaX = e.clientX - previousPointerPosition.x;
+      const deltaY = e.clientY - previousPointerPosition.y;
+      if (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 4) hasMovedMuch = true;
+
+      targetAngle -= deltaX * 0.007;
+      targetPitch = Math.max(-0.15, Math.min(0.85, targetPitch + deltaY * 0.006));
+      previousPointerPosition = { x: e.clientX, y: e.clientY };
+    });
+
+    window.addEventListener('mouseup', (e) => {
+      if (!hasMovedMuch && isDragging) handlePointerTap(e.clientX, e.clientY);
+      isDragging = false;
+    });
+
+    let initialTouchDist = 0;
+    window.addEventListener('touchstart', (e) => {
+      initAudio();
+      if (e.touches.length === 1) {
+        isDragging = true;
+        hasMovedMuch = false;
+        previousPointerPosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      } else if (e.touches.length === 2) {
+        isDragging = false;
+        initialTouchDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+      }
+    }, { passive: false });
+
+    window.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 1 && isDragging) {
+        const deltaX = e.touches[0].clientX - previousPointerPosition.x;
+        const deltaY = e.touches[0].clientY - previousPointerPosition.y;
+        if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) hasMovedMuch = true;
+        targetAngle -= deltaX * 0.007;
+        targetPitch = Math.max(-0.15, Math.min(0.85, targetPitch + deltaY * 0.006));
+        previousPointerPosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      } else if (e.touches.length === 2) {
+        const dist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        targetDistance = Math.max(3.8, Math.min(8.5, targetDistance + (initialTouchDist - dist) * 0.01));
+        initialTouchDist = dist;
+      }
+    }, { passive: false });
+
+    window.addEventListener('touchend', (e) => {
+      if (!hasMovedMuch && isDragging && e.changedTouches.length > 0) {
+        handlePointerTap(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+      }
+      isDragging = false;
+    });
+
+    window.addEventListener('wheel', (e) => {
+      targetDistance = Math.max(3.8, Math.min(8.5, targetDistance + e.deltaY * 0.004));
+    }, { passive: true });
+
+    // -------------------------------------------------------------
+    // GACHA LOGIC & ROTOR LINKAGE
+    // -------------------------------------------------------------
+    let handleRotationTarget = 0;
+    let drumRotationTarget = 0;
+    let capsuleAnimationState = 'idle';
+    let currentDispensedReward = null;
+    let dropProgress = 0;
+    let openProgress = 0;
+    let shakeIntensity = 0;
+    let isSpinning = false;
+
+    let activePocketIndex = 0;
+
+    const guideText = document.getElementById('guide-text');
+    function updateGuide(text) {
+      guideText.textContent = text;
+    }
+
+    function handlePointerTap(clientX, clientY) {
+      pointer.x = (clientX / window.innerWidth) * 2 - 1;
+      pointer.y = -(clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(pointer, camera);
+
+      if (capsuleAnimationState === 'ready_to_open') {
+        const capHits = raycaster.intersectObjects(capsuleTargets, true);
+        if (capHits.length > 0) {
+          openCurrentCapsule();
+          return;
+        }
+      }
+
+      if (!isSpinning && capsuleAnimationState === 'idle') {
+        const crankHits = raycaster.intersectObjects(crankTargets, true);
+        if (crankHits.length > 0) {
+          triggerSpin();
+        }
+      }
+    }
+
+    function triggerSpin() {
+      if (isSpinning || capsuleAnimationState !== 'idle') return;
+      initAudio();
+      
+      isSpinning = true;
+      updateGuide("ガシャガシャ...！");
+
+      // 穴の直上にあるカプセルを取得
+      const dispensedCapData = rotorCapsules[activePocketIndex];
+      currentDispensedReward = dispensedCapData.item;
+
+      // ハンドル回転
+      handleRotationTarget -= Math.PI * 2;
+      shakeIntensity = 0.09;
+
+      // 排出カプセルの色をセット
+      mainCapsuleTop.material.color.setHex(RARITY_INFO[currentDispensedReward.rarity].color);
+
+      playCrankSound();
+      setTimeout(playRotorClackSound, 140);
+      setTimeout(playCrankSound, 280);
+
+      // 穴の直上にあるカプセルが垂直に沈んで落下
+      const targetMesh = dispensedCapData.mesh;
+      let fallProgress = 0;
+      const originalY = targetMesh.position.y;
+
+      const dropInterval = setInterval(() => {
+        fallProgress += 0.18;
+        targetMesh.position.y = originalY - fallProgress * 0.45;
+        if (fallProgress >= 1.0) {
+          clearInterval(dropInterval);
+          targetMesh.visible = false;
+        }
+      }, 16);
+
+      // ドラムが1ステップ回転して次のカプセルが穴の上へ
+      setTimeout(() => {
+        drumRotationTarget += STEP_ANGLE;
+      }, 120);
+
+      // 排出カプセルが取り出し口から転がり出る
+      setTimeout(() => {
+        dispensedCapsuleGroup.visible = true;
+        dispensedCapsuleGroup.position.set(0.44, -1.35, 0.95);
+        mainCapsuleTop.position.set(0, 0, 0);
+        mainCapsuleBottom.position.set(0, 0, 0);
+        mainCapsuleTop.rotation.set(0, 0, 0);
+        mainCapsuleBottom.rotation.set(0, 0, 0);
+        dropProgress = 0;
+        capsuleAnimationState = 'dispensing';
+        playDispenseSound();
+
+        // 空いたポケットに新しいカプセルが補充
+        setTimeout(() => {
+          const newItem = drawItemByRate();
+          dispensedCapData.item = newItem;
+          targetMesh.topMat.color.setHex(RARITY_INFO[newItem.rarity].color);
+          targetMesh.position.y = 0.55;
+          targetMesh.visible = true;
+
+          activePocketIndex = (activePocketIndex + 1) % NUM_POCKETS;
+        }, 340);
+      }, 360);
+    }
+
+    function openCurrentCapsule() {
+      if (capsuleAnimationState !== 'ready_to_open') return;
+      capsuleAnimationState = 'opening';
+      openProgress = 0;
+      updateGuide("パカッ！");
+      
+      playOpenFanfare(currentDispensedReward.rarity);
+      
+      if (currentDispensedReward.rarity === 'UR' || currentDispensedReward.rarity === 'SR') {
+        triggerConfettiBurst();
+      }
+
+      setTimeout(() => {
+        showRewardModal(currentDispensedReward);
+      }, 400);
+    }
+
+    // Modal UI
+    const rewardModal = document.getElementById('reward-modal');
+    const rewardRarity = document.getElementById('reward-rarity');
+    const rewardIcon = document.getElementById('reward-icon');
+    const rewardName = document.getElementById('reward-name');
+    const rewardFlavor = document.getElementById('reward-flavor');
+    const rewardGlow = document.getElementById('modal-glow');
+
+    function showRewardModal(item) {
+      const rarityMeta = RARITY_INFO[item.rarity];
+      rewardRarity.textContent = rarityMeta.label;
+      rewardRarity.className = `inline-block px-3 py-1 rounded-full text-xs font-black tracking-wider uppercase mb-2 ${rarityMeta.bg} ${rarityMeta.text} shadow-md`;
+      rewardIcon.textContent = item.icon;
+      rewardName.textContent = item.name;
+      rewardFlavor.textContent = item.desc;
+      rewardGlow.style.backgroundColor = rarityMeta.glow;
+
+      rewardModal.classList.remove('hidden');
+    }
+
+    rewardModal.addEventListener('click', () => {
+      rewardModal.classList.add('hidden');
+      dispensedCapsuleGroup.visible = false;
+      capsuleAnimationState = 'idle';
+      isSpinning = false;
+      updateGuide(isPeekingSide ? "👀 横からのぞくと、奥の穴と次に出るカプセルが見えるよ！" : "ハンドルをタップして回そう！");
+    });
+
+    // -------------------------------------------------------------
+    // MAIN LOOP
+    // -------------------------------------------------------------
+    let clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const delta = clock.getDelta();
+      const elapsedTime = clock.getElapsedTime();
+
+      // カメラ補間
+      cameraAngle += (targetAngle - cameraAngle) * 0.12;
+      cameraPitch += (targetPitch - cameraPitch) * 0.12;
+      cameraDistance += (targetDistance - cameraDistance) * 0.12;
+      updateCamera();
+
+      // ハンドル回転補間
+      rotatingHandle.rotation.z += (handleRotationTarget - rotatingHandle.rotation.z) * 0.14;
+
+      // 内部ドラムローター補間
+      drumRotorGroup.rotation.y += (drumRotationTarget - drumRotorGroup.rotation.y) * 0.12;
+
+      // 補充カプセルの着地アニメーション
+      rotorCapsules.forEach(cap => {
+        if (cap.mesh.position.y > 0.05) {
+          cap.mesh.position.y = Math.max(0.05, cap.mesh.position.y - delta * 2.0);
+        }
+      });
+
+      // マシンの振動演出（POP台紙を突き抜けないよう安全範囲内で微動）
+      if (shakeIntensity > 0.001) {
+        gachaMachine.position.x = (Math.random() - 0.5) * shakeIntensity;
+        gachaMachine.position.z = (Math.random() - 0.5) * shakeIntensity;
+        shakeIntensity *= 0.92;
+
+        stockCapsules.forEach(cap => {
+          cap.mesh.position.x = cap.basePos.x + (Math.random() - 0.5) * 0.06;
+          cap.mesh.position.y = cap.basePos.y + Math.sin(elapsedTime * 24 + cap.phase) * 0.05;
+          cap.mesh.rotation.x += 0.1;
+        });
+      } else {
+        gachaMachine.position.x = 0;
+        gachaMachine.position.z = 0;
+
+        stockCapsules.forEach(cap => {
+          cap.mesh.position.y = cap.basePos.y + Math.sin(elapsedTime * 1.5 + cap.phase) * 0.008;
+        });
+      }
+
+      // 排出カプセルのアニメーション
+      if (capsuleAnimationState === 'dispensing') {
+        dropProgress += delta * 2.2;
+        const t = Math.min(1.0, dropProgress);
+        dispensedCapsuleGroup.position.x = 0.44 - t * 0.44;
+        dispensedCapsuleGroup.position.y = -1.45 + Math.sin(t * Math.PI) * 0.28;
+        dispensedCapsuleGroup.position.z = 0.95 + t * 0.75;
+        dispensedCapsuleGroup.rotation.x = t * Math.PI * 2.8;
+        dispensedCapsuleGroup.rotation.y = t * Math.PI;
+
+        if (t >= 1.0) {
+          capsuleAnimationState = 'ready_to_open';
+          updateGuide("カプセルをタップして開けよう！");
+        }
+      } else if (capsuleAnimationState === 'ready_to_open') {
+        dispensedCapsuleGroup.position.y = -1.45 + Math.abs(Math.sin(elapsedTime * 6)) * 0.1;
+        dispensedCapsuleGroup.rotation.y += 0.03;
+      } else if (capsuleAnimationState === 'opening') {
+        openProgress += delta * 3.5;
+        const p = Math.min(1.0, openProgress);
+        mainCapsuleTop.position.y = p * 0.5;
+        mainCapsuleTop.rotation.z = p * 0.8;
+        mainCapsuleBottom.position.y = -p * 0.3;
+        mainCapsuleBottom.rotation.z = -p * 0.4;
+      }
+
+      floorStand.rotation.y += 0.001;
+
+      renderer.render(scene, camera);
+    }
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    window.onload = function() {
+      animate();
+    };
+  </script>
+</body>
+</html>
