@@ -47,13 +47,70 @@
       z-index: 1;
     }
 
+    /* 【ド迫力「ドーン！」着地アニメーション】 */
     .modal-enter {
-      animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      animation: slamDown 0.5s cubic-bezier(0.12, 1.15, 0.28, 1) forwards;
+      transform-origin: center center;
     }
 
-    @keyframes popIn {
-      0% { opacity: 0; transform: scale(0.7) translateY(20px); }
-      100% { opacity: 1; transform: scale(1) translateY(0); }
+    @keyframes slamDown {
+      0% {
+        opacity: 0;
+        transform: scale(2.6) translateY(-50px);
+        filter: brightness(2.5) drop-shadow(0 0 50px rgba(255,255,255,1));
+      }
+      45% {
+        opacity: 1;
+        transform: scale(0.92) translateY(5px);
+        filter: brightness(1.4);
+      }
+      70% {
+        transform: scale(1.06) translateY(-2px);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+        filter: brightness(1);
+      }
+    }
+
+    /* 画面全体が「ドーン！」と激震するスクリーンシェイク */
+    @keyframes screenSlamShake {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      15% { transform: translate(-10px, 8px) rotate(-0.5deg); }
+      30% { transform: translate(10px, -8px) rotate(0.5deg); }
+      45% { transform: translate(-6px, -4px) rotate(-0.2deg); }
+      65% { transform: translate(5px, 3px) rotate(0.2deg); }
+      85% { transform: translate(-2px, 1px); }
+      100% { transform: translate(0, 0) rotate(0deg); }
+    }
+    .screen-slam {
+      animation: screenSlamShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    }
+
+    /* 「ドーン！」の瞬間に広がる光の衝撃波リング */
+    @keyframes shockwaveExpand {
+      0% {
+        transform: translate(-50%, -50%) scale(0.2);
+        opacity: 1;
+        border-width: 14px;
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(2.8);
+        opacity: 0;
+        border-width: 1px;
+      }
+    }
+    .shockwave-ring {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 80vw;
+      height: 80vw;
+      border-radius: 50%;
+      border-style: solid;
+      pointer-events-none;
+      animation: shockwaveExpand 0.75s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
     }
 
     @keyframes pulseHint {
@@ -98,9 +155,50 @@
 
     .lux-3d-button-rect:active {
       transform: scale(0.98);
-      box-shadow: 0 4px 0 #200208, 0 6px 10px rgba(0, 0, 0, 0.7);
+      box-shadow: 
+        0 4px 0 #200208,
+        0 6px 10px rgba(0, 0, 0, 0.7),
+        inset 0 2px 4px rgba(0, 0, 0, 0.6);
     }
 
+    /* 【カプセル排出時の文字点滅アニメーション】 */
+    @keyframes textAttentionBlink {
+      0%, 100% {
+        opacity: 1;
+        transform: scale(1.05);
+        filter: drop-shadow(0 0 12px rgba(254, 240, 138, 1)) brightness(1.35);
+        color: #fef08a;
+      }
+      50% {
+        opacity: 0.25;
+        transform: scale(0.97);
+        filter: drop-shadow(0 0 0px transparent) brightness(0.85);
+        color: #ca8a04;
+      }
+    }
+
+    .blink-attention {
+      animation: textAttentionBlink 0.75s ease-in-out infinite;
+      display: inline-block;
+    }
+
+    /* ボタン外枠の脈動ゴールドグロー */
+    @keyframes buttonAttentionPulse {
+      0%, 100% {
+        box-shadow: 0 0 35px rgba(245, 158, 11, 0.95), 0 8px 20px rgba(0, 0, 0, 0.85);
+        border-color: #fef08a;
+      }
+      50% {
+        box-shadow: 0 0 10px rgba(245, 158, 11, 0.3), 0 8px 20px rgba(0, 0, 0, 0.85);
+        border-color: #78350f;
+      }
+    }
+
+    .btn-attention-glow {
+      animation: buttonAttentionPulse 0.75s ease-in-out infinite;
+    }
+
+    /* 1〜3等の金色の光線回転エフェクト */
     @keyframes raySpin {
       0% { transform: translate(-50%, -50%) rotate(0deg); }
       100% { transform: translate(-50%, -50%) rotate(360deg); }
@@ -129,6 +227,11 @@
   <!-- 【純白フラッシュアウト演出レイヤー】 -->
   <div id="flash-overlay" class="fixed inset-0 pointer-events-none z-[90] opacity-0 transition-opacity duration-300 bg-white" style="display: none;"></div>
 
+  <!-- 「ドーン！」の衝撃波エフェクトコンテナ -->
+  <div id="impact-container" class="fixed inset-0 pointer-events-none z-[108] overflow-hidden" style="display: none;">
+    <div id="shockwave-element" class="shockwave-ring border-amber-300 shadow-[0_0_50px_rgba(251,191,36,0.9)]"></div>
+  </div>
+
   <!-- 1〜3等用の金色の放射光線エフェクト -->
   <div id="gold-ray-overlay" class="fixed inset-0 pointer-events-none z-[95] opacity-0 transition-opacity duration-500 flex items-center justify-center overflow-hidden" style="display: none;">
     <div class="w-[200vw] h-[200vw] sunburst bg-[radial-gradient(circle,_rgba(251,191,36,0.42)_0%,_rgba(245,158,11,0.20)_35%,_transparent_70%)]"></div>
@@ -144,15 +247,15 @@
 
     <div id="spin-btn-container" class="absolute top-[58%] sm:top-[57%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-auto transition-opacity duration-300">
       <div class="lux-metal-bezel-rect p-2 sm:p-2.5 border-2 border-amber-400/80 shadow-[0_12px_30px_rgba(0,0,0,0.85)]">
-        <button id="btn-spin" class="lux-3d-button-rect font-mincho px-10 sm:px-14 py-4 sm:py-5 min-w-[260px] sm:min-w-[340px] text-amber-200 font-black text-xl sm:text-2xl tracking-[0.25em] flex items-center justify-center cursor-pointer whitespace-nowrap">
-          <span id="btn-spin-text" class="font-black drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">タップして回す</span>
+        <button id="btn-spin" class="lux-3d-button-rect btn-attention-glow font-mincho px-10 sm:px-14 py-4 sm:py-5 min-w-[260px] sm:min-w-[340px] text-amber-200 font-black text-xl sm:text-2xl tracking-[0.25em] flex items-center justify-center cursor-pointer whitespace-nowrap">
+          <span id="btn-spin-text" class="font-black drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] blink-attention">タップして回す</span>
         </button>
       </div>
     </div>
   </div>
 
   <!-- 【当選結果モーダル：最前面 z-[110] で確実に表示】 -->
-  <div id="reward-modal" class="fixed inset-0 bg-black/95 backdrop-blur-2xl items-center justify-center z-[110] p-4 cursor-pointer" style="display: none;">
+  <div id="reward-modal" class="fixed inset-0 bg-black/95 backdrop-blur-2xl items-center justify-center z-[110] p-4" style="display: none;">
     <div class="bg-gradient-to-b from-red-950 via-slate-900 to-black border-2 border-amber-400/70 rounded-3xl p-7 max-w-sm w-full text-center shadow-[0_0_70px_rgba(220,38,38,0.7)] relative modal-enter overflow-hidden pointer-events-auto">
       <div id="modal-glow" class="absolute -inset-20 bg-amber-500/30 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -166,13 +269,9 @@
         <h2 id="reward-name" class="text-2xl font-black tracking-wide text-amber-200 mb-2 drop-shadow">
           1等：超豪華特賞ギフト
         </h2>
-        <p id="reward-flavor" class="text-xs text-amber-100/90 px-2 min-h-[40px] mb-5 leading-relaxed font-sans">
+        <p id="reward-flavor" class="text-xs text-amber-100/90 px-2 min-h-[40px] mb-2 leading-relaxed font-sans">
           おめでとうございます！最高峰のプレミアム特賞が当たりました！
         </p>
-        
-        <div class="text-xs text-amber-300/70 tracking-widest animate-pulse">
-          タップして閉じる
-        </div>
       </div>
     </div>
   </div>
@@ -267,7 +366,7 @@
       '5等': { label: '5等', bg: 'bg-slate-400', text: 'text-slate-950', color: 0xffffff, glow: 'rgba(255, 255, 255, 0.5)' }
     };
 
-    let synth, metalSynth, fanfareSynth;
+    let synth, metalSynth, fanfareSynth, impactSynth;
     let audioReady = false;
 
     function initAudio() {
@@ -297,7 +396,31 @@
           }).toDestination();
           fanfareSynth.volume.value = -3;
 
+          // 「ドーン！」と腹に響く重低音インパクトシンセ
+          impactSynth = new Tone.MembraneSynth({
+            pitchDecay: 0.07,
+            octaves: 6,
+            oscillator: { type: "sine" },
+            envelope: { attack: 0.001, decay: 0.7, sustain: 0.01, release: 1.2 }
+          }).toDestination();
+          impactSynth.volume.value = 2; // パワフルな音量
+
           audioReady = true;
+        }
+      } catch (e) {}
+    }
+
+    function playImpactSlamSound(isGold) {
+      if (!audioReady) return;
+      try {
+        const now = Tone.now();
+        // ズドォォン！という重低音バスドラム
+        if (impactSynth) {
+          impactSynth.triggerAttackRelease("C1", "1n", now);
+        }
+        // 1〜3等なら重厚なメタルゴング・シンバルも同時に響かせる
+        if (isGold && metalSynth) {
+          metalSynth.triggerAttackRelease("G2", "2n", now, 0.85);
         }
       } catch (e) {}
     }
@@ -642,39 +765,41 @@
       return tex;
     }
 
-    // 【POP中央の文字描画関数：サイズをしっかり目立つ大きさに最適化】
+    // 【POP中央の文字描画関数：1行にまとめてバランスよく収まるサイズに調整】
     function drawPopCenterText(ctx, width, height) {
       ctx.save();
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
       const cx = width / 2;
-      const cy = height * 0.47; // 上部タイトルと下部イラストの中央
+      const cy = height * 0.46; // 中央の空白スペース
 
-      // POP枠に調和しつつ、パッと目に飛び込むサイズ（横幅の約6.4%）
-      const fontSize = Math.round(width * 0.064);
+      const text = '1日1回の運試し';
+
+      // 1行で左右マージンを残しつつPOP内に美しく収まるフォントサイズ
+      const fontSize = Math.round(width * 0.082);
+
       ctx.font = `900 ${fontSize}px "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", serif`;
-      ctx.letterSpacing = '4px';
 
-      // 視認性を高める重厚なドロップシャドウ
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.75)';
-      ctx.shadowBlur = 12;
+      // 遠くからでも浮き出る重厚な漆黒ドロップシャドウ
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
+      ctx.shadowBlur = 14;
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 3;
 
-      // 鮮明な濃いエッジ境界線
-      ctx.lineWidth = Math.max(3, fontSize * 0.12);
-      ctx.strokeStyle = 'rgba(25, 5, 5, 0.85)';
-      ctx.strokeText('【1日1回の運試し】', cx, cy);
+      // くっきりと引き締める濃い境界エッジ線
+      ctx.lineWidth = Math.max(4, fontSize * 0.12);
+      ctx.strokeStyle = 'rgba(20, 5, 5, 0.92)';
+      ctx.strokeText(text, cx, cy);
 
-      // 上品で燦然と輝くゴールド＆純白のグラデーション
+      // 煌びやかな純白〜黄金グラデーション
       const textGrad = ctx.createLinearGradient(0, cy - fontSize / 2, 0, cy + fontSize / 2);
       textGrad.addColorStop(0, '#ffffff');
-      textGrad.addColorStop(0.35, '#fffbeb');
-      textGrad.addColorStop(0.7, '#fde047');
+      textGrad.addColorStop(0.3, '#fffbeb');
+      textGrad.addColorStop(0.65, '#fde047');
       textGrad.addColorStop(1, '#f59e0b');
       ctx.fillStyle = textGrad;
-      ctx.fillText('【1日1回の運試し】', cx, cy);
+      ctx.fillText(text, cx, cy);
 
       ctx.restore();
     }
@@ -1436,14 +1561,24 @@
     const btnSpin = document.getElementById('btn-spin');
     const btnSpinText = document.getElementById('btn-spin-text');
 
+    // ボタンのテキストと状態制御
     function updateSpinButtonState() {
-      if (capsuleAnimationState === 'dispensing' || isSpinning) {
+      if (capsuleAnimationState === 'dispensing') {
+        // 排出中は連打を防止し点滅を一時停止
         btnSpin.classList.add('cursor-not-allowed', 'pointer-events-none');
+        btnSpinText.classList.remove('blink-attention');
+        btnSpin.classList.remove('btn-attention-glow');
       } else if (capsuleAnimationState === 'ready_to_open') {
+        // カプセルが出たら「タップしてあける」に変更し、文字をわかりやすく点滅
         btnSpinText.textContent = "タップしてあける";
+        btnSpinText.classList.add('blink-attention');
+        btnSpin.classList.add('btn-attention-glow');
         btnSpin.classList.remove('cursor-not-allowed', 'pointer-events-none');
       } else {
+        // 初期状態：回す前も「タップして回す」の文字と枠をわかりやすく点滅
         btnSpinText.textContent = "タップして回す";
+        btnSpinText.classList.add('blink-attention');
+        btnSpin.classList.add('btn-attention-glow');
         btnSpin.classList.remove('cursor-not-allowed', 'pointer-events-none');
       }
     }
@@ -1574,6 +1709,8 @@
       }, 300);
     }
 
+    let videoTimerId = null;
+
     function startPureVideoPlayback() {
       if (!currentDispensedReward || hasTransitionedToResult) return;
       isVideoPlaying = true;
@@ -1597,28 +1734,28 @@
         }, 300);
       }, 150);
 
-      // 【安全タイマー】万一動画が停止・未配置でも最大7.5秒で必ず結果画面へ進む
+      // 【5秒ジャストタイマー】動画開始からきっかり5.0秒後に結果がドーンと表示される！
+      clearTimeout(videoTimerId);
       clearTimeout(videoSafetyTimeout);
-      videoSafetyTimeout = setTimeout(() => {
-        if (!hasTransitionedToResult && (isVideoPlaying || capsuleAnimationState === 'opening')) {
-          console.warn("動画セーフティタイマーにより結果画面を表示します。");
+
+      videoTimerId = setTimeout(() => {
+        if (!hasTransitionedToResult) {
           transitionToResultOnly();
         }
-      }, 7500);
+      }, 5000);
 
       const playPromise = ensyutuVideo.play();
       if (playPromise !== undefined) {
         playPromise.catch((err) => {
-          console.warn("自動再生制限または動画未配置のため結果画面へ直接遷移します:", err);
-          transitionToResultOnly();
+          console.warn("自動再生制限または動画未配置のため安全タイマーにて遷移します:", err);
         });
       }
     }
 
-    // 動画再生時間監視：動画が終端（98%以上）に達したら即座に結果へ
+    // 動画再生時間監視：5秒または動画終端に到達したタイミングでも即座に結果へ
     ensyutuVideo.ontimeupdate = () => {
-      if (isVideoPlaying && ensyutuVideo.duration > 0) {
-        if (ensyutuVideo.currentTime >= ensyutuVideo.duration - 0.15) {
+      if (isVideoPlaying) {
+        if (ensyutuVideo.currentTime >= 4.95 || (ensyutuVideo.duration > 0 && ensyutuVideo.currentTime >= ensyutuVideo.duration - 0.08)) {
           transitionToResultOnly();
         }
       }
@@ -1634,17 +1771,18 @@
       }
     };
 
-    // 画面タップでいつでも動画をスキップして結果画面へ
+    // 画面タップでスキップも可能
     videoOverlay.addEventListener('click', (e) => {
       e.stopPropagation();
       transitionToResultOnly();
     });
 
-    // 【確実に結果画面を表示する共通関数】
+    // 【5秒経過時：ドーンと衝撃とともに結果画面を表示する関数】
     function transitionToResultOnly() {
       if (hasTransitionedToResult || !currentDispensedReward) return;
       hasTransitionedToResult = true;
       isVideoPlaying = false;
+      clearTimeout(videoTimerId);
       clearTimeout(videoSafetyTimeout);
 
       // 1. 白いフラッシュや余計な光源を確実に完全消去
@@ -1660,8 +1798,31 @@
       videoOverlay.classList.add('opacity-0');
       videoOverlay.style.display = 'none';
 
-      // 3. 等級に応じた光彩演出
       const isGoldTier = currentDispensedReward.tier === 'gold';
+
+      // 3. 【ドーン！演出①】画面全体が激震（スクリーンシェイク）
+      document.body.classList.remove('screen-slam');
+      void document.body.offsetWidth; // リフロー強制
+      document.body.classList.add('screen-slam');
+      setTimeout(() => {
+        document.body.classList.remove('screen-slam');
+      }, 500);
+
+      // 4. 【ドーン！演出②】重低音「ズドォォン！」インパクト音
+      playImpactSlamSound(isGoldTier);
+
+      // 5. 【ドーン！演出③】光の衝撃波リング展開
+      const impactContainer = document.getElementById('impact-container');
+      const shockwave = document.getElementById('shockwave-element');
+      if (impactContainer && shockwave) {
+        shockwave.className = `shockwave-ring ${isGoldTier ? 'border-amber-300 shadow-[0_0_60px_rgba(251,191,36,1)]' : 'border-white shadow-[0_0_60px_rgba(255,255,255,1)]'}`;
+        impactContainer.style.display = 'block';
+        setTimeout(() => {
+          impactContainer.style.display = 'none';
+        }, 800);
+      }
+
+      // 6. 等級に応じた光彩演出
       if (isGoldTier) {
         goldRayOverlay.style.display = 'flex';
         requestAnimationFrame(() => {
@@ -1670,11 +1831,13 @@
         });
       }
 
-      // 4. ファンファーレ・紙吹雪
-      playOpenFanfare(currentDispensedReward.rank);
+      // 7. ファンファーレ・大量紙吹雪
+      setTimeout(() => {
+        playOpenFanfare(currentDispensedReward.rank);
+      }, 80);
       triggerConfettiBurst(isGoldTier);
 
-      // 5. 結果モーダルを最前面に確実に表示
+      // 8. 結果モーダルを最前面にド迫力で着地表示
       showRewardModal(currentDispensedReward);
     }
 
@@ -1699,24 +1862,6 @@
       rewardModal.style.opacity = '1';
       rewardModal.style.zIndex = '110';
     }
-
-    rewardModal.addEventListener('click', () => {
-      rewardModal.style.display = 'none';
-      goldRayOverlay.classList.remove('opacity-100');
-      goldRayOverlay.classList.add('opacity-0');
-      setTimeout(() => {
-        goldRayOverlay.style.display = 'none';
-      }, 400);
-
-      dispensedCapsuleGroup.visible = false;
-      capsuleAnimationState = 'idle';
-      isSpinning = false;
-      currentDispensedReward = null;
-
-      // 操作UIレイヤーを元通りフェードイン
-      uiLayer.classList.remove('opacity-0', 'pointer-events-none');
-      updateSpinButtonState();
-    });
 
     let clock = new THREE.Clock();
 
@@ -1793,6 +1938,7 @@
         dispensedCapsuleGroup.rotation.y = t * Math.PI;
 
         if (t >= 1.0) {
+          isSpinning = false; // 回転フラグを解除して開封可能状態へ確実に移行
           capsuleAnimationState = 'ready_to_open';
           updateSpinButtonState();
         }
