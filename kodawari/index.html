@@ -37,6 +37,18 @@
       writing-mode: vertical-rl;
       text-orientation: mixed;
     }
+    /* スマホでの美しい日本語タイポグラフィと文節自動改行調整 */
+    .auto-phrase {
+      word-break: auto-phrase;
+      overflow-wrap: break-word;
+    }
+    .text-balance {
+      text-wrap: balance;
+    }
+    .text-pretty {
+      text-wrap: pretty;
+    }
+
     /* 深みのある朱赤・テラコッタ背景 */
     body {
       background-color: #a43425;
@@ -62,38 +74,45 @@
     
     /* モーダル表示アニメーション */
     .modal-enter {
-      animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation: modalFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
     @keyframes modalFadeIn {
-      from { opacity: 0; transform: translateY(20px) scale(0.97); }
+      from { opacity: 0; transform: translateY(18px) scale(0.97); }
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
     .magazine-shadow {
       box-shadow: 0 20px 45px -15px rgba(28, 27, 26, 0.28), 0 0 1px 1px rgba(0, 0, 0, 0.05);
     }
-    /* バブルの影とタッチエフェクト */
+    /* バブルのタッチエフェクト */
     .bubble-item {
       touch-action: none;
-      transition: transform 0.08s ease-out;
+      transition: transform 0.04s ease-out;
       will-change: transform;
     }
     .bubble-item:active {
-      transform: scale(0.92);
+      transform: scale(0.93);
     }
 
     /* 導入動画フェードアウト */
     .video-fade-out {
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.5s ease-out;
+      transition: opacity 0.45s ease-out;
+    }
+
+    /* haikei.jpg を適用するステージ背景 */
+    .stage-haikei-bg {
+      background-image: url('haikei.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-color: #ece8e1;
     }
   </style>
 </head>
 <body class="font-sans antialiased min-h-screen flex flex-col items-center">
 
-  <!-- ======================================================== -->
   <!-- 導入オープニング動画オーバーレイ (dounyuu.mp4) -->
-  <!-- ======================================================== -->
   <div id="introOverlay" class="fixed inset-0 z-50 bg-black flex items-center justify-center overflow-hidden transition-opacity duration-500">
     <video 
       id="introVideo" 
@@ -109,7 +128,7 @@
     <button 
       id="skipVideoBtn" 
       onclick="endIntroVideo()"
-      class="absolute top-5 right-5 z-20 px-4 py-2.5 bg-black/60 hover:bg-black/80 text-white rounded-full text-xs font-serif font-bold tracking-widest border border-white/40 shadow-xl backdrop-blur-md flex items-center gap-1.5 active:scale-95 transition-all"
+      class="absolute top-5 right-5 z-20 px-4 py-2.5 bg-black/65 hover:bg-black/85 text-white rounded-full text-xs font-serif font-bold tracking-widest border border-white/40 shadow-xl backdrop-blur-md flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer"
     >
       <span>スキップ</span>
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -119,7 +138,7 @@
 
     <!-- 下部インフォメーション -->
     <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 text-center pointer-events-none px-4">
-      <span class="text-white/80 font-serif text-[11px] tracking-[0.25em] bg-black/40 px-3 py-1.5 rounded-full border border-white/15 backdrop-blur-xs">
+      <span class="text-white/85 font-serif text-[11px] tracking-[0.25em] bg-black/50 px-3.5 py-1.5 rounded-full border border-white/20 backdrop-blur-xs">
         オハラマーラーStorybook
       </span>
     </div>
@@ -129,7 +148,7 @@
   <div class="w-full max-w-md min-h-screen terracotta-bg shadow-2xl relative flex flex-col pb-20 border-x border-orange-950/20 text-stone-900">
 
     <!-- トップヘッダー（左側に logo-footer.png ＋ タイトル） -->
-    <header class="sticky top-0 z-30 bg-[#b84433]/90 backdrop-blur-md border-b border-orange-950/20 px-4 py-3 flex items-center shadow-sm">
+    <header class="sticky top-0 z-30 bg-[#b84433]/92 backdrop-blur-md border-b border-orange-950/20 px-4 py-3 flex items-center shadow-sm">
       <div class="flex items-center gap-2.5 min-w-0">
         <!-- ヘッダーロゴ（logo-footer.png） -->
         <div class="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-white/40 p-0.5 bg-white shadow-sm flex items-center justify-center">
@@ -147,11 +166,10 @@
         </div>
       </div>
     </header>
-
     <!-- メインコンテンツ -->
-    <main class="flex-1 p-4 space-y-6">
+    <main class="flex-1 p-4 space-y-5">
 
-      <!-- 動的バブルステージ（大きくなった丸アイコンが優雅に動き回るエリア） -->
+      <!-- 動的バブルステージ（haikei.jpg背景・14個の丸がエアホッケーのようにすーっと滑るエリア） -->
       <section class="relative rounded-2xl bg-[#f5f3ef] p-4 overflow-hidden border border-white/80 shadow-lg">
         <div class="flex justify-between items-baseline mb-2">
           <div class="flex items-center gap-2">
@@ -161,15 +179,12 @@
           <span class="text-[11px] text-stone-500 font-serif">タップでこだわりを開く</span>
         </div>
 
-        <!-- 丸が元気に動き回るインタラクティブステージ -->
-        <div id="bubbleStage" style="height: 380px; min-height: 380px;" class="relative w-full rounded-xl overflow-hidden bg-[#ece8e1]/60 border border-stone-200/80 cursor-grab active:cursor-grabbing">
-          <!-- 背景装飾文字 -->
-          <div class="absolute inset-0 flex flex-col items-center justify-center opacity-10 pointer-events-none select-none">
-            <span class="font-serif text-4xl font-extrabold tracking-[0.35em] text-stone-900">OHARA MALA</span>
-            <span class="text-xs font-serif tracking-[0.2em] text-stone-700 mt-1">麻辣・旬味探訪</span>
-          </div>
+        <!-- 丸が滑らかに滑り回るインタラクティブステージ（背景にhaikei.jpgを自動調整適用） -->
+        <div id="bubbleStage" style="height: 380px; min-height: 380px;" class="stage-haikei-bg relative w-full rounded-xl overflow-hidden border border-stone-200/80 cursor-grab active:cursor-grabbing shadow-inner">
+          <!-- 背景透過オーバーレイで視認性向上 -->
+          <div class="absolute inset-0 bg-white/20 backdrop-blur-[0.5px] pointer-events-none"></div>
 
-          <!-- バブル要素群（12個の大きめ円形写真） -->
+          <!-- バブル要素群（12個のメニュー ＋ 2個のロゴ） -->
           <div id="bubblesContainer" class="absolute inset-0"></div>
         </div>
 
@@ -197,29 +212,24 @@
             >
           </div>
 
-          <div class="flex-1 min-w-0">
-            <h2 class="text-xs font-bold text-sumi tracking-wider mb-1.5 font-serif">
-              「待つ時間」を、いちばん贅沢なひとときに。
+          <div class="flex-1 min-w-0 font-serif">
+            <h2 class="text-xs font-bold text-sumi tracking-wider mb-1 auto-phrase text-balance">
+              「待つ時間」も贅沢なひとときに。
             </h2>
-            <p class="text-[12px] text-stone-700 leading-relaxed font-serif">
-              痺れるほど美味しい創作中華。<br>お時間ある際当店自慢のこだわりを覗いてください。
+            <p class="text-[11.5px] text-stone-700 leading-relaxed auto-phrase text-pretty">
+              こだわりを知って食べる、知らずに食べるとでは大きな違いがあります。知って食べて頂くことでより美味しいを実感ください。
             </p>
           </div>
         </div>
       </section>
 
-      <!-- 雑誌スタイル・メニューカード一覧（全12品の2分割グリッドレイアウト） -->
-      <section class="space-y-3">
-        <!-- 見出しと注釈エリア（中央揃え） -->
-        <div class="border-b border-white/25 pb-2.5 text-center flex flex-col items-center justify-center">
-          <h3 class="font-serif font-bold text-base text-white flex items-center justify-center gap-2 drop-shadow-sm">
-            <span class="w-1.5 h-4 bg-amber-300 rounded-full inline-block"></span>
-            こだわりメニュー
-          </h3>
-          <!-- 注釈メッセージ（中央揃え） -->
-          <div class="mt-2 inline-flex items-center justify-center gap-1.5 bg-black/15 backdrop-blur-xs border border-white/15 px-3 py-1.5 rounded-lg text-orange-100 mx-auto">
-            <span class="text-amber-300 font-bold text-xs shrink-0 leading-tight">※</span>
-            <p class="text-[11px] leading-tight font-serif text-white/90 text-center">
+      <!-- メニューカード一覧セクション（中央揃えの大きめ注釈 ＋ 2列グリッド） -->
+      <section class="space-y-3.5">
+        <!-- 注釈エリア（中央揃え・視認性の高い大きめフォント） -->
+        <div class="text-center flex flex-col items-center justify-center pt-1">
+          <div class="inline-flex items-center justify-center gap-2 bg-black/25 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-xl text-white shadow-sm mx-auto max-w-full">
+            <span class="text-amber-300 font-extrabold text-sm shrink-0 leading-none">※</span>
+            <p class="text-xs sm:text-[13px] font-bold leading-tight font-serif text-white tracking-wide text-center auto-phrase text-balance">
               こちらからは注文できませんのでご注意ください。
             </p>
           </div>
@@ -232,54 +242,54 @@
       </section>
 
     </main>
-
-    <!-- 雑誌風こだわり解説モーダル -->
+    <!-- 雑誌風こだわり解説モーダル（スマホ幅に完全追従する自動バランス設計） -->
     <div id="detailModal" class="fixed inset-0 z-50 bg-black/65 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-      <div id="modalCard" class="bg-washi w-full max-w-md rounded-2xl overflow-hidden magazine-shadow relative my-auto modal-enter border border-stone-200 flex flex-col max-h-[90vh]">
+      <div id="modalCard" class="bg-washi w-full max-w-md rounded-2xl overflow-hidden magazine-shadow relative my-auto modal-enter border border-stone-200 flex flex-col max-h-[92vh]">
 
         <!-- 右上の閉じる「×」ボタン -->
-        <button onclick="closeModal()" aria-label="閉じる" class="absolute top-3.5 right-3.5 z-30 w-8 h-8 rounded-full bg-stone-100/90 backdrop-blur-sm flex items-center justify-center hover:bg-stone-200 text-stone-700 transition-colors shadow-sm">
+        <button onclick="closeModal()" aria-label="閉じる" class="absolute top-3.5 right-3.5 z-30 w-8 h-8 rounded-full bg-stone-100/90 backdrop-blur-sm flex items-center justify-center hover:bg-stone-200 text-stone-700 transition-colors shadow-sm cursor-pointer">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
           </svg>
         </button>
 
-        <!-- モーダル本文 -->
-        <div class="overflow-y-auto flex-1 p-5 space-y-4 font-serif">
+        <!-- モーダル本文（スマホ幅に応じた自動改行・均等配置） -->
+        <div class="overflow-y-auto flex-1 p-4 sm:p-5 space-y-4 font-serif">
 
-          <!-- タイトル＆ペアリング酒名 -->
+          <!-- タイトル＆ペアリング酒名（auto-phrase & text-balanceで不自然な折り返しを根絶） -->
           <div class="border-b border-stone-300 pb-2.5 pr-9">
-            <h2 id="modalTitle" class="text-2xl font-extrabold text-sumi tracking-tight mb-1"></h2>
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-[#b84433] tracking-wider">ペアリング酒・相性：</span>
-              <span id="modalPairingName" class="text-xs font-semibold text-stone-800"></span>
+            <h2 id="modalTitle" class="text-xl sm:text-2xl font-extrabold text-sumi tracking-tight mb-1 leading-snug auto-phrase text-balance"></h2>
+            <div class="flex flex-wrap items-baseline gap-x-1.5 text-xs">
+              <span class="font-bold text-[#b84433] tracking-wider shrink-0">ペアリング酒・相性：</span>
+              <span id="modalPairingName" class="font-semibold text-stone-800 auto-phrase"></span>
             </div>
           </div>
 
-          <!-- 料理ビジュアル＆エモーショナルコピーエリア -->
-          <div class="relative rounded-xl overflow-hidden shadow-md bg-stone-900">
-            <img id="modalImage" src="" alt="料理写真" class="w-full h-56 object-cover opacity-90 transition-transform duration-700 hover:scale-105" onerror="this.src='https://placehold.co/600x400/222/fff?text=料理写真'">
-            <!-- 縦書き詩的コピー -->
-            <div class="absolute top-3 right-3 bg-black/55 backdrop-blur-sm p-3 rounded-lg border border-white/15 text-white shadow-lg">
-              <p id="modalVerticalPoem" class="vertical-rl text-xs font-medium tracking-widest leading-loose max-h-44"></p>
+          <!-- 料理ビジュアル＆エモーショナルコピーエリア（スマホ縦横比崩れ防止） -->
+          <div class="relative w-full aspect-[4/3] rounded-xl overflow-hidden shadow-md bg-stone-900">
+            <img id="modalImage" src="" alt="料理写真" class="w-full h-full object-cover opacity-90 transition-transform duration-700 hover:scale-105" onerror="this.src='https://placehold.co/600x400/222/fff?text=料理写真'">
+            
+            <!-- 縦書き詩的コピー（文字量・サイズに合わせて背景の黒枠が自動フィット） -->
+            <div class="absolute top-2.5 right-2.5 max-w-[55%] max-h-[calc(100%-1.25rem)] w-fit h-fit bg-black/65 backdrop-blur-sm px-2.5 py-2 rounded-lg border border-white/20 text-white shadow-lg pointer-events-none flex items-center justify-center">
+              <p id="modalVerticalPoem" class="vertical-rl text-[11px] sm:text-xs font-medium tracking-[0.18em] leading-[1.75] select-none whitespace-pre"></p>
             </div>
           </div>
 
-          <!-- ストーリー＆味の調和解説 -->
-          <div class="bg-kinari/60 p-4 rounded-xl border border-stone-200">
-            <p id="modalStory" class="text-xs text-stone-700 leading-relaxed text-justify"></p>
+          <!-- ストーリー＆味の調和解説（文節ごとの自然な折り返し） -->
+          <div class="bg-kinari/60 p-3.5 sm:p-4 rounded-xl border border-stone-200">
+            <p id="modalStory" class="text-xs sm:text-[13px] text-stone-700 leading-relaxed auto-phrase text-pretty text-left"></p>
           </div>
 
           <!-- ペアリング地酒・ドリンクのディテール -->
-          <div class="flex items-center gap-3.5 bg-white p-3.5 rounded-xl border border-stone-200">
+          <div class="flex items-center gap-3.5 bg-white p-3 sm:p-3.5 rounded-xl border border-stone-200">
             <div class="w-16 h-20 bg-stone-100 rounded-lg flex items-center justify-center p-1 shrink-0 overflow-hidden">
               <img id="modalSakeImage" src="" alt="お酒" class="max-h-full object-contain" onerror="this.src='https://placehold.co/100x200/eee/333?text=地酒'">
             </div>
             <div class="flex-1 min-w-0">
-              <span class="text-[10px] text-amber-700 font-bold tracking-widest block mb-0.5">RECOMMENDED PAIRING</span>
-              <h4 id="modalSakeTitle" class="text-sm font-bold text-sumi truncate"></h4>
-              <p id="modalSakeBrewery" class="text-[11px] text-stone-500 mb-1"></p>
-              <p id="modalSakeDesc" class="text-[11px] text-stone-600 line-clamp-2 leading-snug"></p>
+              <span class="text-[9.5px] text-amber-700 font-bold tracking-widest block mb-0.5">RECOMMENDED PAIRING</span>
+              <h4 id="modalSakeTitle" class="text-xs sm:text-sm font-bold text-sumi truncate"></h4>
+              <p id="modalSakeBrewery" class="text-[10.5px] text-stone-500 mb-0.5 truncate"></p>
+              <p id="modalSakeDesc" class="text-[10.5px] sm:text-[11px] text-stone-600 line-clamp-2 leading-relaxed auto-phrase text-pretty"></p>
             </div>
           </div>
 
@@ -287,7 +297,7 @@
 
         <!-- フッターアクション -->
         <div class="p-3 bg-stone-50 border-t border-stone-200 flex gap-2">
-          <button onclick="closeModal()" class="flex-1 py-2.5 rounded-xl bg-sumi text-white text-xs font-serif font-bold tracking-wider hover:bg-stone-800 active:scale-95 transition-all">
+          <button onclick="closeModal()" class="flex-1 py-2.5 rounded-xl bg-sumi text-white text-xs font-serif font-bold tracking-wider hover:bg-stone-800 active:scale-95 transition-all cursor-pointer">
             メニュー一覧へ戻る
           </button>
         </div>
@@ -296,7 +306,6 @@
     </div>
 
   </div>
-
   <script>
     // ========================================================
     // オープニング動画の制御（スキップ & 再生完了でメインへ）
@@ -308,20 +317,29 @@
     function endIntroVideo() {
       if (isIntroEnded) return;
       isIntroEnded = true;
-      introOverlay.classList.add("video-fade-out");
-      setTimeout(() => {
-        introOverlay.style.display = "none";
-        try { introVideo.pause(); } catch(e){}
-        // 動画終了時にステージのサイズを同期・再描画
-        initFloatingBubbles();
-      }, 500);
+      if (introOverlay) {
+        introOverlay.classList.add("video-fade-out");
+        setTimeout(() => {
+          introOverlay.style.display = "none";
+          try { introVideo.pause(); } catch(e){}
+          initFloatingBubbles();
+        }, 450);
+      }
     }
 
-    introVideo.addEventListener("ended", endIntroVideo);
-    introVideo.addEventListener("error", () => {
-      console.warn("dounyuu.mp4の読み込みができなかったためスキップします");
-      endIntroVideo();
-    });
+    if (introVideo) {
+      introVideo.addEventListener("ended", endIntroVideo);
+      introVideo.addEventListener("error", () => {
+        console.warn("dounyuu.mp4の読み込みができなかったためスキップします");
+        endIntroVideo();
+      });
+      // 1.5秒経過しても再生が開始されない場合は自動スキップ（真っ黒画面立ち往生防止）
+      setTimeout(() => {
+        if (!isIntroEnded && introVideo.paused && introVideo.currentTime === 0) {
+          endIntroVideo();
+        }
+      }, 1500);
+    }
 
     // ========================================================
     // 画像読み込みフォールバック用マップ
@@ -526,23 +544,23 @@
         }
       }
     ];
-
     // ========================================================
-    // 大きくなった丸が枠内を元気に跳ね回る物理シミュレーション
+    // エアホッケーのように「すーっと滑らかに」滑る物理シミュレーション
     // ========================================================
     let bubbles = [];
     let animationFrameId = null;
     let stageWidth = 320;
     let stageHeight = 380;
-    const BUBBLE_RADIUS = 35;
+    const BUBBLE_RADIUS = 35; // 直径70pxの存在感ある正円
     const BUBBLE_DIAMETER = BUBBLE_RADIUS * 2;
 
     class DynamicBubble {
-      constructor(item, index, total) {
-        this.item = item;
+      constructor(data, index, total) {
+        this.data = data;
+        this.isBrand = data.isBrand || false;
         this.radius = BUBBLE_RADIUS;
         
-        // 12個の初期配置
+        // 14個（12品＋2ロゴ）の分散初期配置
         const padding = 12;
         const cols = 4;
         const col = index % cols;
@@ -552,15 +570,13 @@
         const usableH = Math.max(180, stageHeight - padding * 2 - this.radius * 2);
 
         this.x = padding + this.radius + col * (usableW / (cols - 1 || 1)) + (Math.random() * 6 - 3);
-        this.y = padding + this.radius + row * (usableH / 2) + (Math.random() * 6 - 3);
+        this.y = padding + this.radius + row * (usableH / Math.max(1, Math.ceil(total / cols) - 1)) + (Math.random() * 6 - 3);
 
-        // 浮遊・跳ね回り速度
-        const speed = 1.0 + Math.random() * 0.6;
+        // エアホッケーの滑走速度（すーっと気持ちよく進む巡航速度）
+        this.baseSpeed = 0.95 + Math.random() * 0.35;
         const angle = Math.random() * Math.PI * 2;
-        this.vx = Math.cos(angle) * speed;
-        this.vy = Math.sin(angle) * speed;
-
-        this.noiseOffset = Math.random() * 100;
+        this.vx = Math.cos(angle) * this.baseSpeed;
+        this.vy = Math.sin(angle) * this.baseSpeed;
 
         this.isDragging = false;
         this.dragStartX = 0;
@@ -573,18 +589,32 @@
         this.element.style.width = `${BUBBLE_DIAMETER}px`;
         this.element.style.height = `${BUBBLE_DIAMETER}px`;
 
-        const fallback = fallbackImages[item.id] || 'https://placehold.co/140x140/b84433/fff?text=逸品';
-
-        this.element.innerHTML = `
-          <div class="relative w-full h-full rounded-full bg-white p-[2.5px] shadow-[0_5px_15px_rgba(0,0,0,0.22)] border-2 border-white hover:border-[#b84433] hover:shadow-[0_8px_22px_rgba(184,68,51,0.4)] transition-all overflow-hidden">
-            <img 
-              src="${item.image}" 
-              alt="${item.title}" 
-              class="w-full h-full object-cover rounded-full pointer-events-none filter saturate-[1.08]" 
-              onerror="this.onerror=null; this.src='${fallback}';"
-            >
-          </div>
-        `;
+        if (this.isBrand) {
+          // ロゴバブル（ゴールドの輪をまとった特別バブル）
+          this.element.innerHTML = `
+            <div class="relative w-full h-full rounded-full bg-white p-[2.5px] shadow-[0_5px_15px_rgba(0,0,0,0.22)] border-2 border-amber-300 hover:border-[#b84433] hover:shadow-[0_8px_22px_rgba(184,68,51,0.4)] transition-all overflow-hidden flex items-center justify-center">
+              <img 
+                src="logo-footer.png" 
+                alt="オハラマーラ" 
+                class="w-full h-full object-contain rounded-full pointer-events-none p-1" 
+                onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=150&q=80';"
+              >
+            </div>
+          `;
+        } else {
+          // 料理バブル
+          const fallback = fallbackImages[data.id] || 'https://placehold.co/140x140/b84433/fff?text=逸品';
+          this.element.innerHTML = `
+            <div class="relative w-full h-full rounded-full bg-white p-[2.5px] shadow-[0_5px_15px_rgba(0,0,0,0.22)] border-2 border-white hover:border-[#b84433] hover:shadow-[0_8px_22px_rgba(184,68,51,0.4)] transition-all overflow-hidden">
+              <img 
+                src="${data.image}" 
+                alt="${data.title}" 
+                class="w-full h-full object-cover rounded-full pointer-events-none filter saturate-[1.08]" 
+                onerror="this.onerror=null; this.src='${fallback}';"
+              >
+            </div>
+          `;
+        }
 
         this.setupEvents();
       }
@@ -615,8 +645,8 @@
 
           this.x += dx;
           this.y += dy;
-          this.vx = dx * 0.4;
-          this.vy = dy * 0.4;
+          this.vx = dx * 0.35;
+          this.vy = dy * 0.35;
 
           this.dragStartX = point.clientX;
           this.dragStartY = point.clientY;
@@ -626,7 +656,11 @@
           if (this.isDragging) {
             this.isDragging = false;
             if (!this.hasMoved) {
-              openModal(this.item.id);
+              if (this.isBrand) {
+                openBrandModal();
+              } else {
+                openModal(this.data.id);
+              }
             }
           }
         };
@@ -642,22 +676,30 @@
 
       update() {
         if (!this.isDragging) {
-          this.noiseOffset += 0.02;
-          this.vx += Math.sin(this.noiseOffset) * 0.04;
-          this.vy += Math.cos(this.noiseOffset) * 0.04;
+          let speed = Math.hypot(this.vx, this.vy);
 
-          const speed = Math.hypot(this.vx, this.vy);
-          if (speed > 2.2) {
-            this.vx = (this.vx / speed) * 2.2;
-            this.vy = (this.vy / speed) * 2.2;
-          } else if (speed < 0.5) {
-            this.vx = (this.vx / (speed || 1)) * 0.7;
-            this.vy = (this.vy / (speed || 1)) * 0.7;
+          if (speed < 0.05) {
+            const angle = Math.random() * Math.PI * 2;
+            this.vx = Math.cos(angle) * this.baseSpeed;
+            this.vy = Math.sin(angle) * this.baseSpeed;
+            speed = this.baseSpeed;
           }
 
+          // フリック後の自然減速と一定巡航への滑らかな復帰
+          if (speed > this.baseSpeed) {
+            this.vx *= 0.985;
+            this.vy *= 0.985;
+          } else if (speed < this.baseSpeed * 0.9) {
+            const ratio = this.baseSpeed / speed;
+            this.vx = this.vx * 0.98 + (this.vx * ratio) * 0.02;
+            this.vy = this.vy * 0.98 + (this.vy * ratio) * 0.02;
+          }
+
+          // 等速直線運動でスーッと進む
           this.x += this.vx;
           this.y += this.vy;
 
+          // 四方の壁とのエアホッケー反発
           const leftWall = this.radius;
           const rightWall = stageWidth - this.radius;
           const topWall = this.radius;
@@ -665,18 +707,18 @@
 
           if (this.x < leftWall) {
             this.x = leftWall;
-            this.vx = Math.abs(this.vx) * 0.95;
+            this.vx = Math.abs(this.vx);
           } else if (this.x > rightWall) {
             this.x = rightWall;
-            this.vx = -Math.abs(this.vx) * 0.95;
+            this.vx = -Math.abs(this.vx);
           }
 
           if (this.y < topWall) {
             this.y = topWall;
-            this.vy = Math.abs(this.vy) * 0.95;
+            this.vy = Math.abs(this.vy);
           } else if (this.y > bottomWall) {
             this.y = bottomWall;
-            this.vy = -Math.abs(this.vy) * 0.95;
+            this.vy = -Math.abs(this.vy);
           }
         }
 
@@ -686,7 +728,7 @@
       }
     }
 
-    // バブル同士のふんわり衝突・反発処理
+    // ホッケーの弾性衝突処理（パック同士がカツンと反射）
     function resolveBubbleCollisions() {
       for (let i = 0; i < bubbles.length; i++) {
         for (let j = i + 1; j < bubbles.length; j++) {
@@ -695,7 +737,7 @@
           const dx = b2.x - b1.x;
           const dy = b2.y - b1.y;
           const dist = Math.hypot(dx, dy);
-          const minDist = b1.radius + b2.radius + 3;
+          const minDist = b1.radius + b2.radius;
 
           if (dist < minDist && dist > 0) {
             const overlap = (minDist - dist) * 0.5;
@@ -705,21 +747,29 @@
             if (!b1.isDragging) {
               b1.x -= nx * overlap;
               b1.y -= ny * overlap;
-              b1.vx -= nx * 0.3;
-              b1.vy -= ny * 0.3;
             }
             if (!b2.isDragging) {
               b2.x += nx * overlap;
-              b2.y -= ny * overlap;
-              b2.vx += nx * 0.3;
-              b2.vy -= ny * 0.3;
+              b2.y += ny * overlap;
+            }
+
+            const kx = b1.vx - b2.vx;
+            const ky = b1.vy - b2.vy;
+            const p = 2 * (nx * kx + ny * ky) / 2;
+
+            if (!b1.isDragging) {
+              b1.vx -= p * nx * 0.98;
+              b1.vy -= p * ny * 0.98;
+            }
+            if (!b2.isDragging) {
+              b2.vx += p * nx * 0.98;
+              b2.vy += p * ny * 0.98;
             }
           }
         }
       }
     }
 
-    // アニメーションループ
     function startBubbleLoop() {
       function loop() {
         resolveBubbleCollisions();
@@ -729,8 +779,7 @@
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
       animationFrameId = requestAnimationFrame(loop);
     }
-
-    // ステージ初期化
+    // ステージ初期化（全12品 ＋ ロゴ2個 = 計14個のバブル生成）
     function initFloatingBubbles() {
       const stage = document.getElementById("bubbleStage");
       const container = document.getElementById("bubblesContainer");
@@ -742,8 +791,13 @@
       stageWidth = stage.clientWidth || 320;
       stageHeight = stage.clientHeight || 380;
 
-      menuData.forEach((item, index) => {
-        const bubble = new DynamicBubble(item, index, menuData.length);
+      // 12メニュー ＋ 2ロゴの混成リスト作成
+      const allBubbleItems = [...menuData];
+      allBubbleItems.splice(3, 0, { id: "brand_1", isBrand: true, title: "オハラマーラ" });
+      allBubbleItems.splice(8, 0, { id: "brand_2", isBrand: true, title: "オハラマーラ" });
+
+      allBubbleItems.forEach((item, index) => {
+        const bubble = new DynamicBubble(item, index, allBubbleItems.length);
         bubbles.push(bubble);
         container.appendChild(bubble.element);
       });
@@ -751,7 +805,7 @@
       startBubbleLoop();
     }
 
-    // メニューカード一覧の描画
+    // メニューカード一覧の描画（全12品の四角形サムネイル 2列グリッド）
     function renderMenuCards() {
       const container = document.getElementById("menuCardsList");
       if (!container) return;
@@ -774,9 +828,9 @@
             >
           </div>
 
-          <!-- メニュー名 -->
-          <div class="w-full mb-2 text-center">
-            <h4 class="font-serif font-bold text-sumi text-xs leading-snug line-clamp-2">
+          <!-- メニュー名（auto-phraseで折り返し調整） -->
+          <div class="w-full mb-2 text-center px-0.5">
+            <h4 class="font-serif font-bold text-sumi text-xs leading-snug line-clamp-2 auto-phrase text-balance">
               ${item.title}
             </h4>
           </div>
@@ -800,7 +854,7 @@
       });
     }
 
-    // モーダルオープン処理
+    // 料理用モーダルオープン処理
     function openModal(id) {
       const item = menuData.find(m => m.id === id);
       if (!item) return;
@@ -809,6 +863,7 @@
       document.getElementById("modalPairingName").innerText = item.pairingName;
       
       const modalImg = document.getElementById("modalImage");
+      modalImg.className = "w-full h-full object-cover opacity-90 transition-transform duration-700 hover:scale-105";
       modalImg.src = item.image;
       modalImg.onerror = () => {
         modalImg.onerror = null;
@@ -830,11 +885,39 @@
       document.body.style.overflow = "hidden";
     }
 
+    // ロゴ丸バブルタップ時のオハラマーラ紹介モーダル
+    function openBrandModal() {
+      document.getElementById("modalTitle").innerText = "創作中華 オハラマーラ";
+      document.getElementById("modalPairingName").innerText = "痺れと旨味の極致・厳選美酒";
+
+      const modalImg = document.getElementById("modalImage");
+      modalImg.className = "w-full h-full object-contain p-6 bg-stone-900";
+      modalImg.src = "logo-footer.png";
+      modalImg.onerror = () => {
+        modalImg.onerror = null;
+        modalImg.src = 'https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=600&q=80';
+      };
+
+      document.getElementById("modalStory").innerText = "こだわりを知って食べる、知らずに食べるとでは大きな違いがあります。知って食べて頂くことでより美味しいを実感ください。\n\n四川花椒の爽快な痺れと自家製漢方辣油、そして備長炭の香気。お料理が届くまでの時間も、特別な物語としてお愉しみいただければ幸いです。";
+      document.getElementById("modalVerticalPoem").innerText = "五感を震わす麻辣。\n美酒と響き合う、\n唯一無二の口福。";
+
+      document.getElementById("modalSakeTitle").innerText = "超炭酸ハイボール ＆ 厳選紹興酒・地酒";
+      document.getElementById("modalSakeBrewery").innerText = "オハラマーラおすすめセレクション";
+      document.getElementById("modalSakeDesc").innerText = "スパイスの刺激を心地よくリセットし、料理のコクを幾重にも引き立てるお酒を取り揃えております。";
+      document.getElementById("modalSakeImage").src = "logo-footer.png";
+
+      const modal = document.getElementById("detailModal");
+      modal.classList.remove("hidden");
+      document.body.style.overflow = "hidden";
+    }
+
     // モーダルクローズ
     function closeModal() {
       const modal = document.getElementById("detailModal");
-      modal.classList.add("hidden");
-      document.body.style.overflow = "";
+      if (modal) {
+        modal.classList.add("hidden");
+        document.body.style.overflow = "";
+      }
     }
 
     document.getElementById("detailModal").addEventListener("click", (e) => {
