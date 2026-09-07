@@ -17,7 +17,27 @@
       -webkit-user-select: none;
       font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       overflow: hidden;
-      background: radial-gradient(circle at 50% 30%, #1e293b 0%, #090d16 65%, #020617 100%);
+      background: radial-gradient(circle at 50% 20%, #1e1b4b 0%, #0f172a 45%, #030712 100%);
+    }
+
+    /* 華やかな動的ネオンオーロラ背景エフェクト */
+    .neon-bg-glow {
+      position: absolute;
+      inset: 0;
+      background: 
+        radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.22) 0%, transparent 50%),
+        radial-gradient(circle at 80% 25%, rgba(236, 72, 153, 0.22) 0%, transparent 50%),
+        radial-gradient(circle at 50% 85%, rgba(14, 165, 233, 0.25) 0%, transparent 55%),
+        radial-gradient(circle at 50% 45%, rgba(245, 158, 11, 0.12) 0%, transparent 60%);
+      animation: auroraShift 10s ease-in-out infinite alternate;
+      pointer-events-none;
+      z-index: 1;
+    }
+
+    @keyframes auroraShift {
+      0% { transform: scale(1) rotate(0deg); opacity: 0.85; filter: hue-rotate(0deg); }
+      50% { transform: scale(1.08) rotate(1deg); opacity: 1; filter: hue-rotate(15deg); }
+      100% { transform: scale(1) rotate(-1deg); opacity: 0.85; filter: hue-rotate(-15deg); }
     }
 
     .modal-enter {
@@ -49,20 +69,23 @@
   </style>
 </head>
 <body class="w-screen h-screen m-0 p-0 text-white relative">
+  <!-- 華やかな動的ネオンオーロラ背景レイヤー -->
+  <div class="neon-bg-glow"></div>
+
   <!-- 3D Canvas Container -->
-  <div id="canvas-container" class="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing"></div>
+  <div id="canvas-container" class="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing z-10"></div>
 
   <!-- 全画面フラッシュアウト演出レイヤー -->
   <div id="flash-overlay" class="fixed inset-0 pointer-events-none z-40 opacity-0 transition-opacity duration-300"></div>
 
   <!-- 1〜3等用の金色の放射光線エフェクト -->
   <div id="gold-ray-overlay" class="fixed inset-0 pointer-events-none z-35 opacity-0 transition-opacity duration-500 flex items-center justify-center overflow-hidden">
-    <div class="w-[200vw] h-[200vw] sunburst bg-[radial-gradient(circle,_rgba(251,191,36,0.35)_0%,_rgba(245,158,11,0.15)_35%,_transparent_70%)]"></div>
+    <div class="w-[200vw] h-[200vw] sunburst bg-[radial-gradient(circle,_rgba(251,191,36,0.38)_0%,_rgba(245,158,11,0.18)_35%,_transparent_70%)]"></div>
   </div>
 
   <!-- Minimal Guide Overlay -->
   <div id="guide-bubble" class="absolute top-4 left-0 right-0 flex justify-center pointer-events-none z-30 transition-opacity duration-300">
-    <div class="px-5 py-2 rounded-full bg-black/70 backdrop-blur-md border border-white/20 text-sm font-bold text-sky-200 shadow-xl flex items-center space-x-2">
+    <div class="px-5 py-2 rounded-full bg-black/75 backdrop-blur-md border border-sky-400/40 text-sm font-bold text-sky-200 shadow-[0_0_20px_rgba(56,189,248,0.25)] flex items-center space-x-2">
       <span class="animate-bounce inline-block">👆</span>
       <span id="guide-text">ハンドルをタップして回そう！</span>
     </div>
@@ -76,12 +99,12 @@
     </button>
   </div>
 
-  <div class="absolute bottom-6 right-5 text-right text-[11px] text-white/50 pointer-events-none z-10 hidden sm:block">
+  <div class="absolute bottom-6 right-5 text-right text-[11px] text-white/60 pointer-events-none z-20 hidden sm:block bg-black/40 px-3 py-1 rounded-full backdrop-blur-sm border border-white/10">
     ドラッグで視点回転 / スクロール・ピンチでズーム
   </div>
 
   <!-- Capsule Open Result Modal -->
-  <div id="reward-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 hidden p-4 cursor-pointer">
+  <div id="reward-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 hidden p-4 cursor-pointer">
     <div class="bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-950 border-2 border-white/20 rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl relative modal-enter overflow-hidden pointer-events-auto">
       <div id="modal-glow" class="absolute -inset-20 bg-amber-500/25 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -111,7 +134,7 @@
   </div>
 
   <script>
-    // Confetti burst fallback
+    // Confetti burst fallback（等級に応じたカラー展開）
     function triggerConfettiBurst(isGoldTier) {
       const colors = isGoldTier
         ? ['#f59e0b', '#fbbf24', '#fef08a', '#d97706', '#ffffff', '#eab308']
@@ -120,8 +143,8 @@
       if (typeof confetti === 'function') {
         try {
           confetti({
-            particleCount: isGoldTier ? 120 : 60,
-            spread: isGoldTier ? 90 : 65,
+            particleCount: isGoldTier ? 130 : 70,
+            spread: isGoldTier ? 95 : 70,
             origin: { y: 0.6 },
             colors: colors
           });
@@ -383,7 +406,7 @@
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
     scene.add(ambientLight);
 
-    const keyLight = new THREE.DirectionalLight(0xfff8ed, 1.2);
+    const keyLight = new THREE.DirectionalLight(0xfff8ed, 1.25);
     keyLight.position.set(4.5, 9, 6.5);
     keyLight.castShadow = true;
     keyLight.shadow.mapSize.width = 2048;
@@ -391,7 +414,7 @@
     keyLight.shadow.bias = -0.0005;
     scene.add(keyLight);
 
-    const rimLight = new THREE.DirectionalLight(0x7dd3fc, 0.8);
+    const rimLight = new THREE.DirectionalLight(0x7dd3fc, 0.85);
     rimLight.position.set(-6, 3, -5);
     scene.add(rimLight);
 
@@ -410,6 +433,130 @@
     const burstPointLight = new THREE.PointLight(0xffffff, 0, 12);
     burstPointLight.position.set(0, -1.35, 1.7);
     scene.add(burstPointLight);
+
+    // =============================================================
+    // 【盛り上がる背景演出】キラキラ光の粒子 ＆ ステージ演出
+    // =============================================================
+    const bgEffectGroup = new THREE.Group();
+    scene.add(bgEffectGroup);
+
+    // 1. 空間を漂うキラキラ光の粒子（スパークルダスト）
+    const particleCount = 280;
+    const particleGeo = new THREE.BufferGeometry();
+    const particlePositions = new Float32Array(particleCount * 3);
+    const particleColors = new Float32Array(particleCount * 3);
+    const particleBasePositions = [];
+
+    const sparkPalette = [
+      new THREE.Color(0xfbbf24), // ゴールド
+      new THREE.Color(0x38bdf8), // シアン
+      new THREE.Color(0xf472b6), // マゼンタ
+      new THREE.Color(0xffffff), // ホワイト
+      new THREE.Color(0xa78bfa)  // パープル
+    ];
+
+    for (let i = 0; i < particleCount; i++) {
+      // マシンの周囲から背景奥にかけてふわふわ広がる範囲
+      const x = (Math.random() - 0.5) * 14;
+      const y = (Math.random() - 0.5) * 10 + 0.5;
+      const z = (Math.random() - 0.5) * 10 - 2.0;
+
+      particlePositions[i * 3] = x;
+      particlePositions[i * 3 + 1] = y;
+      particlePositions[i * 3 + 2] = z;
+
+      particleBasePositions.push({ x, y, z, phase: Math.random() * Math.PI * 2, speed: 0.8 + Math.random() * 1.5 });
+
+      const col = sparkPalette[i % sparkPalette.length];
+      particleColors[i * 3] = col.r;
+      particleColors[i * 3 + 1] = col.g;
+      particleColors[i * 3 + 2] = col.b;
+    }
+
+    particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+    particleGeo.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
+
+    // 光の粒のテクスチャ（丸くふんわり発光するCanvasプロシージャルテクスチャ）
+    function createGlowPointTexture() {
+      const cv = document.createElement('canvas');
+      cv.width = 64;
+      cv.height = 64;
+      const c = cv.getContext('2d');
+      const grad = c.createRadialGradient(32, 32, 0, 32, 32, 32);
+      grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+      grad.addColorStop(0.3, 'rgba(255, 255, 255, 0.8)');
+      grad.addColorStop(0.65, 'rgba(255, 255, 255, 0.25)');
+      grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      c.fillStyle = grad;
+      c.fillRect(0, 0, 64, 64);
+      return new THREE.CanvasTexture(cv);
+    }
+
+    const particleMat = new THREE.PointsMaterial({
+      size: 0.18,
+      map: createGlowPointTexture(),
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.85,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
+
+    const sparkPoints = new THREE.Points(particleGeo, particleMat);
+    bgEffectGroup.add(sparkPoints);
+
+    // 2. マシン足元に広がる光の特設ステージリング（光彩サークル）
+    const stageRingGroup = new THREE.Group();
+    stageRingGroup.position.y = -2.26;
+    bgEffectGroup.add(stageRingGroup);
+
+    // 発光する同心円リング（ネオンブルー＆マゼンタ）
+    const ringMatCyan = new THREE.MeshBasicMaterial({ color: 0x0ea5e9, transparent: true, opacity: 0.55 });
+    const ringMatPink = new THREE.MeshBasicMaterial({ color: 0xec4899, transparent: true, opacity: 0.45 });
+    const ringMatGold = new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.4 });
+
+    const outerStageRing = new THREE.Mesh(new THREE.RingGeometry(3.2, 3.28, 48), ringMatCyan);
+    outerStageRing.rotation.x = -Math.PI / 2;
+    stageRingGroup.add(outerStageRing);
+
+    const midStageRing = new THREE.Mesh(new THREE.RingGeometry(3.6, 3.65, 48), ringMatPink);
+    midStageRing.rotation.x = -Math.PI / 2;
+    stageRingGroup.add(midStageRing);
+
+    const accentStageRing = new THREE.Mesh(new THREE.RingGeometry(4.1, 4.14, 48), ringMatGold);
+    accentStageRing.rotation.x = -Math.PI / 2;
+    stageRingGroup.add(accentStageRing);
+
+    // 3. マシン背面で交差するステージムービングライトビーム（2本の光の柱）
+    const beamMat1 = new THREE.MeshBasicMaterial({
+      color: 0x6366f1,
+      transparent: true,
+      opacity: 0.14,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    const beamMat2 = new THREE.MeshBasicMaterial({
+      color: 0xec4899,
+      transparent: true,
+      opacity: 0.12,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+
+    const beamGeo = new THREE.CylinderGeometry(0.1, 1.8, 12, 16, 1, true);
+    beamGeo.translate(0, 6, 0);
+
+    const stageBeam1 = new THREE.Mesh(beamGeo, beamMat1);
+    stageBeam1.position.set(-2.8, -2.2, -2.5);
+    stageBeam1.rotation.z = -0.28;
+    bgEffectGroup.add(stageBeam1);
+
+    const stageBeam2 = new THREE.Mesh(beamGeo, beamMat2);
+    stageBeam2.position.set(2.8, -2.2, -2.5);
+    stageBeam2.rotation.z = 0.28;
+    bgEffectGroup.add(stageBeam2);
 
     const gachaMachine = new THREE.Group();
     scene.add(gachaMachine);
@@ -832,11 +979,11 @@
     });
 
     // -------------------------------------------------------------
-    // 【正面POP台紙】前面に邪魔なパーツが一切被らないクッキリ配置
+    // 【正面POP台紙】
     // -------------------------------------------------------------
     const POP_MAX_WIDTH = 1.78;
     const POP_MAX_HEIGHT = 1.48;
-    const POP_BOTTOM_Y = 0.32; // 下部まで見渡せるよう低めにセット
+    const POP_BOTTOM_Y = 0.32;
 
     const providedTexture = createExactProvidedPopTexture();
 
@@ -859,7 +1006,6 @@
 
       popCard.geometry.dispose();
       popCard.geometry = new THREE.PlaneGeometry(finalW, finalH);
-      // 台紙位置を z = 0.76 に設定（前面アクリルの直前）
       popCard.position.set(0, POP_BOTTOM_Y + (finalH / 2), 0.76);
     }
 
@@ -890,10 +1036,8 @@
     );
 
     // -------------------------------------------------------------
-    // 【内部ドラム機構】POP台紙の手前に被らないよう奥側へ適正配置！
+    // 【内部ドラム機構】
     // -------------------------------------------------------------
-    // ドラムの中心を奥（z = -0.22）に配置し、半径を0.70にすることで
-    // 最前面でも z = -0.22 + 0.70 = 0.48 となり、POP台紙（z = 0.76）の手前へ絶対に飛び出さない
     const DRUM_CENTER_Z = -0.22;
     const DRUM_RADIUS = 0.70;
     const POCKET_RADIUS = 0.46;
@@ -933,7 +1077,7 @@
     chuteTube.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), chuteEnd.clone().sub(chuteStart).normalize());
     gachaMachine.add(chuteTube);
 
-    // 回転ドラムローター本体（台紙の手前にはみ出ない奥側配置）
+    // 回転ドラムローター本体
     const drumRotorGroup = new THREE.Group();
     drumRotorGroup.position.set(0, 0.42, DRUM_CENTER_Z);
     gachaMachine.add(drumRotorGroup);
@@ -982,7 +1126,7 @@
       drumRotorGroup.add(screw);
     }
 
-    // ポケット内カプセル配置（5個）: Pocket 0 が穴の真上にスタンバイ
+    // ポケット内カプセル配置（5個）
     const rotorCapsules = [];
     const capSphereRadius = 0.16;
     const capGeoTop = new THREE.SphereGeometry(capSphereRadius, 18, 16, 0, Math.PI * 2, 0, Math.PI / 2);
@@ -1038,7 +1182,7 @@
       });
     }
 
-    // ストックカプセル群（95個）: POP台紙より奥のスペースに配置
+    // ストックカプセル群（95個）
     const stockCapsules = [];
     const stockColors = [
       0xf59e0b, 0xfbbf24, 0x38bdf8, 0xffffff, 0x60a5fa, 0xe2e8f0,
@@ -1050,7 +1194,6 @@
       const capGrp = new THREE.Group();
       const x = (Math.random() - 0.5) * 1.55;
       const y = 0.42 + Math.random() * 1.46;
-      // 台紙(z=0.76)より奥側（-0.65 〜 0.45）に確実に収める
       const z = -0.65 + Math.random() * 1.05;
 
       capGrp.position.set(x, y, z);
@@ -1556,11 +1699,50 @@
       const delta = clock.getDelta();
       const elapsedTime = clock.getElapsedTime();
 
+      // カメラ補間
       cameraAngle += (targetAngle - cameraAngle) * 0.12;
       cameraPitch += (targetPitch - cameraPitch) * 0.12;
       cameraDistance += (targetDistance - cameraDistance) * 0.12;
       updateCamera();
 
+      // =============================================================
+      // 【背景の盛り上がるアニメーション】
+      // =============================================================
+      // 1. スパークル粒子の浮遊＆きらめきアニメーション
+      const positions = particleGeo.attributes.position.array;
+      for (let i = 0; i < particleCount; i++) {
+        const bp = particleBasePositions[i];
+        // 縦方向にゆっくり浮遊し、サイン波で揺らぐ
+        const yOffset = Math.sin(elapsedTime * bp.speed + bp.phase) * 0.45;
+        const xOffset = Math.cos(elapsedTime * (bp.speed * 0.6) + bp.phase) * 0.25;
+        positions[i * 3] = bp.x + xOffset;
+        positions[i * 3 + 1] = bp.y + yOffset;
+      }
+      particleGeo.attributes.position.needsUpdate = true;
+      sparkPoints.rotation.y = elapsedTime * 0.025; // 空間全体がゆっくり旋回
+
+      // 2. 特設ステージリングのネオン回転
+      outerStageRing.rotation.z = elapsedTime * 0.25;
+      midStageRing.rotation.z = -elapsedTime * 0.35;
+      accentStageRing.rotation.z = elapsedTime * 0.15;
+
+      // 3. 背面のサーチライト・ムービングビームの交差スイング
+      const spinSpeed = isSpinning ? 2.5 : 1.0;
+      stageBeam1.rotation.z = -0.28 + Math.sin(elapsedTime * 0.9 * spinSpeed) * 0.22;
+      stageBeam1.rotation.x = Math.cos(elapsedTime * 0.7 * spinSpeed) * 0.15;
+      stageBeam2.rotation.z = 0.28 - Math.sin(elapsedTime * 0.85 * spinSpeed) * 0.22;
+      stageBeam2.rotation.x = -Math.cos(elapsedTime * 0.75 * spinSpeed) * 0.15;
+
+      // 回転中の背景ビーム発光強化
+      if (isSpinning) {
+        beamMat1.opacity = 0.26 + Math.sin(elapsedTime * 12) * 0.08;
+        beamMat2.opacity = 0.24 + Math.cos(elapsedTime * 12) * 0.08;
+      } else {
+        beamMat1.opacity = 0.14;
+        beamMat2.opacity = 0.12;
+      }
+
+      // マシン本体の制御
       rotatingHandle.rotation.z += (handleRotationTarget - rotatingHandle.rotation.z) * 0.14;
       drumRotorGroup.rotation.y += (drumRotationTarget - drumRotorGroup.rotation.y) * 0.12;
 
