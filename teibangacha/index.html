@@ -276,11 +276,11 @@
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.05; // 白飛びを防ぎ適正露出に調整
-    renderer.outputEncoding = THREE.sRGBEncoding; // 【重要】sRGBカラースペースを有効化し、テクスチャ本来の濃さと深みを再現
+    renderer.toneMappingExposure = 1.0;
+    renderer.outputEncoding = THREE.sRGBEncoding; // sRGBカラースペース
     container.appendChild(renderer.domElement);
 
-    // 高級スタジオ環境反射マップ（プロシージャル生成）
+    // 高級スタジオ環境反射マップ
     function createStudioEnvironment() {
       const pmremGenerator = new THREE.PMREMGenerator(renderer);
       pmremGenerator.compileEquirectangularShader();
@@ -312,10 +312,10 @@
     scene.environment = studioEnvMap;
 
     // スタジオ照明群
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
     scene.add(ambientLight);
 
-    const keyLight = new THREE.DirectionalLight(0xfff8ed, 1.3);
+    const keyLight = new THREE.DirectionalLight(0xfff8ed, 1.2);
     keyLight.position.set(4.5, 9, 6.5);
     keyLight.castShadow = true;
     keyLight.shadow.mapSize.width = 2048;
@@ -323,18 +323,18 @@
     keyLight.shadow.bias = -0.0005;
     scene.add(keyLight);
 
-    const rimLight = new THREE.DirectionalLight(0x7dd3fc, 0.9);
+    const rimLight = new THREE.DirectionalLight(0x7dd3fc, 0.8);
     rimLight.position.set(-6, 3, -5);
     scene.add(rimLight);
 
-    const spotDownLight = new THREE.SpotLight(0xffeedb, 1.8, 10, Math.PI / 4, 0.4, 1.2);
+    const spotDownLight = new THREE.SpotLight(0xffeedb, 1.4, 10, Math.PI / 4, 0.4, 1.2);
     spotDownLight.position.set(0, 5, 2.5);
     spotDownLight.target.position.set(0, 0, 0);
     scene.add(spotDownLight);
     scene.add(spotDownLight.target);
 
-    // 内部奥側の穴と次弾カプセルを照らすショーケースライト
-    const innerLight = new THREE.PointLight(0xffeedd, 1.6, 4.5);
+    // 内部奥側の穴と次弾カプセルを照らすライト
+    const innerLight = new THREE.PointLight(0xffeedd, 1.4, 4.5);
     innerLight.position.set(0.35, 1.25, -0.2);
     scene.add(innerLight);
 
@@ -452,17 +452,15 @@
       cv.height = 1280;
       const ctx = cv.getContext('2d');
 
-      // 背景：深みのある和風シアン・セルリアンブルー
       const grad = ctx.createLinearGradient(0, 0, 0, 1280);
-      grad.addColorStop(0.0, '#0065a3');
-      grad.addColorStop(0.2, '#0083c4');
-      grad.addColorStop(0.6, '#0b94d8');
-      grad.addColorStop(1.0, '#0072b0');
+      grad.addColorStop(0.0, '#00609d');
+      grad.addColorStop(0.2, '#007ebf');
+      grad.addColorStop(0.6, '#0b90d4');
+      grad.addColorStop(1.0, '#006ea8');
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, 1024, 1280);
 
-      // 透かし菊紋・梅紋パターン
-      function drawKamon(x, y, radius, petals = 12, alpha = 0.2) {
+      function drawKamon(x, y, radius, petals = 12, alpha = 0.22) {
         ctx.save();
         ctx.translate(x, y);
         ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
@@ -488,7 +486,6 @@
       drawKamon(140, 780, 120, 12, 0.16);
       drawKamon(920, 720, 130, 12, 0.18);
 
-      // 右上 BANDAI 赤ロゴ
       ctx.fillStyle = '#dc2626';
       ctx.beginPath();
       ctx.roundRect(830, 40, 150, 68, 12);
@@ -498,26 +495,24 @@
       ctx.textAlign = 'center';
       ctx.fillText('BANDAI', 905, 87);
 
-      // 中央上部家紋「鬼滅」
       ctx.save();
       ctx.translate(512, 160);
       ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
       ctx.beginPath();
       ctx.arc(0, 0, 68, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = '#0065a3';
+      ctx.strokeStyle = '#00609d';
       ctx.lineWidth = 4;
       ctx.stroke();
-      ctx.fillStyle = '#005488';
+      ctx.fillStyle = '#005082';
       ctx.font = '900 38px "Hiragino Mincho ProN", serif';
       ctx.fillText('鬼滅', 0, 14);
       ctx.restore();
 
-      // メインタイトル「ならぶんです。２」
       ctx.save();
       ctx.textAlign = 'center';
       ctx.font = '900 76px "Hiragino Kaku Gothic ProN", sans-serif';
-      ctx.strokeStyle = '#002944';
+      ctx.strokeStyle = '#002238';
       ctx.lineWidth = 14;
       ctx.strokeText('ならぶんです。２', 512, 320);
       ctx.fillStyle = '#ffffff';
@@ -529,7 +524,6 @@
       ctx.fillText('NARABUNDESU 2', 512, 365);
       ctx.restore();
 
-      // 5体のキャラクターイラスト
       const characters = [
         { name: '不死川実弥', hair: '#f1f5f9', haori: '#ffffff', accent: '#10b981' },
         { name: '冨岡 義勇', hair: '#0f172a', haori: '#991b1b', accent: '#eab308' },
@@ -624,12 +618,11 @@
         ctx.restore();
       });
 
-      // 下部告知インフォメーション帯
       const infoY = 880;
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(30, infoY, 964, 350);
 
-      ctx.fillStyle = '#0072b0';
+      ctx.fillStyle = '#006ea8';
       ctx.beginPath();
       ctx.roundRect(50, infoY + 25, 270, 300, 20);
       ctx.fill();
@@ -734,18 +727,18 @@
     headerSign.position.set(0, 2.1, 0.92);
     gachaMachine.add(headerSign);
 
-    // クリアアクリルウィンドウケース（白ボケ・反射曇りを抑えた高透明度ガラス仕様）
+    // クリアアクリルウィンドウケース（透明度を高め、白ボケ・反射曇りを最小限に）
     const acrylicMat = new THREE.MeshPhysicalMaterial({
       color: 0xffffff,
-      transmission: 0.97, // 透過率を高めて中の台紙をハッキリ見せる
+      transmission: 0.99,
       opacity: 1,
       transparent: true,
       roughness: 0.0,
-      ior: 1.48,
-      reflectivity: 0.25, // 前面ガラスの反射を上品に抑え、台紙が白く曇るのを防止
-      clearcoat: 0.4,
-      clearcoatRoughness: 0.02,
-      envMapIntensity: 0.7
+      ior: 1.46,
+      reflectivity: 0.12,
+      clearcoat: 0.2,
+      clearcoatRoughness: 0.0,
+      envMapIntensity: 0.35
     });
 
     const acrylicCase = new THREE.Mesh(new THREE.BoxGeometry(2.0, 1.8, 1.6), acrylicMat);
@@ -766,38 +759,55 @@
     });
 
     // -------------------------------------------------------------
-    // 【正面POP台紙】白飛びを防止し、濃くハッキリ見せるマテリアル設定
+    // 【正面POP台紙】色彩の鮮明化・白飛び抑制＆下部デザインが隠れない最適配置
     // -------------------------------------------------------------
-    const maxPopWidth = 1.76;
-    const maxPopHeight = 1.58;
+    // 表示可能エリアの定義：上端 1.86、下端 0.44（トレイのフチに乗せる）
+    const POP_MAX_WIDTH = 1.78;
+    const POP_MAX_HEIGHT = 1.40;
+    const POP_BOTTOM_Y = 0.44; // トレイのヘリの上端
 
     const providedTexture = createExactProvidedPopTexture();
 
-    // 白光りを抑え、印刷ポスター本来の濃いコントラストを保つマテリアル
-    const popCardMat = new THREE.MeshStandardMaterial({
+    // ライティングの白飛びを受けず、鮮明・高コントラストに発色するマテリアル
+    const popCardMat = new THREE.MeshBasicMaterial({
       map: providedTexture,
-      roughness: 0.85, // 強いライトによる白飛びテカリをカット
-      metalness: 0.0,
-      envMapIntensity: 0.15 // 周囲の反射光による白ボケを抑制
+      toneMapped: false // トーンマッピング圧縮をバイパスし、元の鮮やかな色彩を100%忠実発色
     });
 
-    const initialAspect = 1024 / 1280;
-    const initH = maxPopHeight;
-    const initW = maxPopHeight * initialAspect;
+    // アスペクト比に応じた台紙の寸法と位置を更新する関数
+    function updatePopCardLayout(aspectRatio) {
+      let finalW = POP_MAX_WIDTH;
+      let finalH = POP_MAX_HEIGHT;
+
+      if (aspectRatio > (POP_MAX_WIDTH / POP_MAX_HEIGHT)) {
+        // 横長の場合
+        finalW = POP_MAX_WIDTH;
+        finalH = POP_MAX_WIDTH / aspectRatio;
+      } else {
+        // 縦長の場合：高さを枠に合わせ、幅をアスペクト比で決定
+        finalH = POP_MAX_HEIGHT;
+        finalW = POP_MAX_HEIGHT * aspectRatio;
+      }
+
+      popCard.geometry.dispose();
+      popCard.geometry = new THREE.PlaneGeometry(finalW, finalH);
+
+      // 下端をトレイのヘリ（POP_BOTTOM_Y）の上にピッタリ配置し、下部デザインの隠れを完全解消！
+      popCard.position.set(0, POP_BOTTOM_Y + (finalH / 2), 0.76);
+    }
 
     const popCard = new THREE.Mesh(
-      new THREE.PlaneGeometry(initW, initH),
+      new THREE.PlaneGeometry(POP_MAX_HEIGHT * (1024 / 1280), POP_MAX_HEIGHT),
       popCardMat
     );
-    popCard.position.set(0, 1.18, 0.76);
     gachaMachine.add(popCard);
+    updatePopCardLayout(1024 / 1280);
 
-    // top.jpg 自動読み込み時：sRGBカラースペースを適用して濃く鮮明に反映
+    // top.jpg 自動読み込み時：sRGBカラーエンコーディング適用＆アスペクト比自動調整
     const popTextureLoader = new THREE.TextureLoader();
     popTextureLoader.load(
       'top.jpg',
       (texture) => {
-        // 【最重要】テクスチャにsRGBエンコーディングを設定（白飛び・退色を解消）
         texture.encoding = THREE.sRGBEncoding;
         texture.generateMipmaps = true;
         texture.minFilter = THREE.LinearMipmapLinearFilter;
@@ -806,21 +816,7 @@
 
         if (texture.image && texture.image.width && texture.image.height) {
           const imgAspect = texture.image.width / texture.image.height;
-          const frameAspect = maxPopWidth / maxPopHeight;
-
-          let finalW = maxPopWidth;
-          let finalH = maxPopHeight;
-
-          if (imgAspect > frameAspect) {
-            finalW = maxPopWidth;
-            finalH = maxPopWidth / imgAspect;
-          } else {
-            finalH = maxPopHeight;
-            finalW = maxPopHeight * imgAspect;
-          }
-
-          popCard.geometry.dispose();
-          popCard.geometry = new THREE.PlaneGeometry(finalW, finalH);
+          updatePopCardLayout(imgAspect);
         }
       },
       undefined,
@@ -983,7 +979,7 @@
       const capGrp = new THREE.Group();
       const x = (Math.random() - 0.5) * 1.62;
       const y = 0.42 + Math.random() * 1.46;
-      const z = -0.62 + Math.random() * 1.10; // 台紙(z=0.76)より奥に配置して貫通防止
+      const z = -0.62 + Math.random() * 1.10;
 
       capGrp.position.set(x, y, z);
       capGrp.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
@@ -1067,7 +1063,7 @@
     chuteFlap.rotation.x = -0.2;
     gachaMachine.add(chuteFlap);
 
-    // ハンドルユニット（高級サテンメタル＆クローム削り出し）
+    // ハンドルユニット
     const handleMountGroup = new THREE.Group();
     handleMountGroup.position.set(0, -0.68, 0.92);
     gachaMachine.add(handleMountGroup);
@@ -1474,7 +1470,7 @@
         }
       });
 
-      // マシンの振動演出（POP台紙を突き抜けない安全範囲で微動）
+      // マシンの振動演出
       if (shakeIntensity > 0.001) {
         gachaMachine.position.x = (Math.random() - 0.5) * shakeIntensity;
         gachaMachine.position.z = (Math.random() - 0.5) * shakeIntensity;
