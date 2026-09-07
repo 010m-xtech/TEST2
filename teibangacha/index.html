@@ -21,7 +21,7 @@
     }
 
     .modal-enter {
-      animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
     }
 
     @keyframes popIn {
@@ -37,11 +37,28 @@
     .pulse-peek {
       animation: pulseHint 2.4s infinite;
     }
+
+    /* 1〜3等の金色の光線回転エフェクト */
+    @keyframes raySpin {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+    .sunburst {
+      animation: raySpin 12s linear infinite;
+    }
   </style>
 </head>
 <body class="w-screen h-screen m-0 p-0 text-white relative">
   <!-- 3D Canvas Container -->
   <div id="canvas-container" class="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing"></div>
+
+  <!-- 全画面フラッシュアウト演出レイヤー -->
+  <div id="flash-overlay" class="fixed inset-0 pointer-events-none z-40 opacity-0 transition-opacity duration-300"></div>
+
+  <!-- 1〜3等用の金色の放射光線エフェクト -->
+  <div id="gold-ray-overlay" class="fixed inset-0 pointer-events-none z-35 opacity-0 transition-opacity duration-500 flex items-center justify-center overflow-hidden">
+    <div class="w-[200vw] h-[200vw] sunburst bg-[radial-gradient(circle,_rgba(251,191,36,0.35)_0%,_rgba(245,158,11,0.15)_35%,_transparent_70%)]"></div>
+  </div>
 
   <!-- Minimal Guide Overlay -->
   <div id="guide-bubble" class="absolute top-4 left-0 right-0 flex justify-center pointer-events-none z-30 transition-opacity duration-300">
@@ -66,20 +83,24 @@
   <!-- Capsule Open Result Modal -->
   <div id="reward-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 hidden p-4 cursor-pointer">
     <div class="bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-950 border-2 border-white/20 rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl relative modal-enter overflow-hidden pointer-events-auto">
-      <div id="modal-glow" class="absolute -inset-20 bg-amber-500/20 rounded-full blur-3xl pointer-events-none"></div>
+      <div id="modal-glow" class="absolute -inset-20 bg-amber-500/25 rounded-full blur-3xl pointer-events-none"></div>
 
       <div class="relative z-10">
-        <span id="reward-rarity" class="inline-block px-3 py-1 rounded-full text-xs font-black tracking-wider uppercase mb-2 bg-yellow-400 text-black shadow">
-          SUPER RARE
+        <!-- 等級バッジ -->
+        <span id="reward-rarity" class="inline-block px-4 py-1.5 rounded-full text-xs font-black tracking-widest uppercase mb-2 bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 shadow-lg border border-yellow-200/50">
+          1等
         </span>
-        <div id="reward-icon" class="text-7xl my-3 filter drop-shadow-lg transform transition hover:scale-110 select-none">
-          🦄
+        <!-- 賞品アイコン -->
+        <div id="reward-icon" class="text-7xl my-3 filter drop-shadow-2xl transform transition hover:scale-110 select-none">
+          👑
         </div>
-        <h2 id="reward-name" class="text-2xl font-black tracking-wide text-white mb-1">
-          ファンタジーユニコーン
+        <!-- 賞品名 -->
+        <h2 id="reward-name" class="text-2xl font-black tracking-wide text-white mb-2 drop-shadow">
+          1等：超豪華特賞ギフト
         </h2>
-        <p id="reward-flavor" class="text-xs text-white/70 px-2 min-h-[36px] mb-4">
-          虹の彼方からやってきた伝説の生き物。幸運をもたらすと言われている。
+        <!-- 説明文 -->
+        <p id="reward-flavor" class="text-xs text-white/75 px-2 min-h-[40px] mb-4 leading-relaxed">
+          おめでとうございます！最高峰のプレミアム特賞が当たりました！
         </p>
         
         <div class="text-[11px] text-white/50 animate-pulse">
@@ -91,10 +112,19 @@
 
   <script>
     // Confetti burst fallback
-    function triggerConfettiBurst() {
+    function triggerConfettiBurst(isGoldTier) {
+      const colors = isGoldTier
+        ? ['#f59e0b', '#fbbf24', '#fef08a', '#d97706', '#ffffff', '#eab308']
+        : ['#ffffff', '#e2e8f0', '#93c5fd', '#38bdf8', '#cbd5e1'];
+
       if (typeof confetti === 'function') {
         try {
-          confetti({ particleCount: 85, spread: 75, origin: { y: 0.6 } });
+          confetti({
+            particleCount: isGoldTier ? 120 : 60,
+            spread: isGoldTier ? 90 : 65,
+            origin: { y: 0.6 },
+            colors: colors
+          });
           return;
         } catch (e) {}
       }
@@ -106,18 +136,18 @@
       document.body.appendChild(canvas);
       const ctx = canvas.getContext('2d');
 
-      const colors = ['#f59e0b', '#ec4899', '#3b82f6', '#10b981', '#a855f7', '#fbbf24', '#06b6d4'];
       const particles = [];
-      for (let i = 0; i < 70; i++) {
+      const count = isGoldTier ? 100 : 50;
+      for (let i = 0; i < count; i++) {
         particles.push({
           x: window.innerWidth * (0.35 + Math.random() * 0.3),
           y: window.innerHeight * 0.6,
-          vx: (Math.random() - 0.5) * 14,
-          vy: -(Math.random() * 12 + 6),
-          size: Math.random() * 9 + 5,
+          vx: (Math.random() - 0.5) * (isGoldTier ? 16 : 12),
+          vy: -(Math.random() * 14 + 6),
+          size: Math.random() * 10 + 5,
           color: colors[Math.floor(Math.random() * colors.length)],
           rotation: Math.random() * 360,
-          rotSpeed: (Math.random() - 0.5) * 12,
+          rotSpeed: (Math.random() - 0.5) * 14,
           alpha: 1
         });
       }
@@ -155,38 +185,73 @@
       requestAnimationFrame(renderParticles);
     }
 
-    // Items database: 16 items
+    // =============================================================
+    // 等級データ（1等〜5等）
+    // =============================================================
     const ITEMS = [
-      // Normal
-      { id: 'n1', name: 'おにぎりペンギン', icon: '🐧', rarity: 'N', desc: 'いつでもシャケおにぎりを抱えているペンギン。' },
-      { id: 'n2', name: 'まるっこハムスター', icon: '🐹', rarity: 'N', desc: 'ほっぺたにヒマワリの種を限界まで詰めている。' },
-      { id: 'n3', name: 'レトロゲームカセット', icon: '🎮', rarity: 'N', desc: '息を吹きかけると起動する不思議なカセット。' },
-      { id: 'n4', name: 'たいやきキーホルダー', icon: '🐟', rarity: 'N', desc: 'しっぽの先まであんこがたっぷり入っている。' },
-      { id: 'n5', name: '宇宙どんぐり', icon: '🌰', rarity: 'N', desc: '夜になるとほんのり青白く光る謎のどんぐり。' },
-      { id: 'n6', name: 'のんびりカピバラ', icon: '♨️', rarity: 'N', desc: 'ゆず湯に浸かるのが何よりの至福。' },
-      
-      // Rare
-      { id: 'r1', name: 'マジカルクロック', icon: '⏰', rarity: 'R', desc: '5分だけ時間を巻き戻せるかもしれない時計。' },
-      { id: 'r2', name: 'サイバーにゃんこ', icon: '🐱', rarity: 'R', desc: '肉球からホログラムを投影できる近未来猫。' },
-      { id: 'r3', name: 'クリスタルキノコ', icon: '🍄', rarity: 'R', desc: '洞窟の最深部に自生する透き通ったキノコ。' },
-      { id: 'r4', name: '金平糖の惑星', icon: '🪐', rarity: 'R', desc: '甘い香りのするミニチュア天体模型。' },
-
-      // Super Rare
-      { id: 'sr1', name: 'ドラゴンのたまご', icon: '🥚', rarity: 'SR', desc: '触るとポカポカ温かい。もうすぐ生まれそう！' },
-      { id: 'sr2', name: 'フェニックスの羽', icon: '🪶', rarity: 'SR', desc: '決して燃え尽きることのない神秘の紅蓮の羽。' },
-      { id: 'sr3', name: '星くずの砂時計', icon: '⏳', rarity: 'SR', desc: '流れる砂が美しい銀河の瞬きを刻む。' },
-
-      // Legend
-      { id: 'ur1', name: '黄金のまねきねこ', icon: '🏆', rarity: 'UR', desc: '持ち主に莫大な富と福徳をもたらす伝説の黄金像。' },
-      { id: 'ur2', name: '幻獣レインボーユニコーン', icon: '🦄', rarity: 'UR', desc: '純粋な心を持つ者にだけ姿を現す虹色の角を持つ馬。' },
-      { id: 'ur3', name: '時の支配者の宝冠', icon: '👑', rarity: 'UR', desc: 'すべての時空を統べる古代の王冠。圧倒的な威光。' }
+      {
+        id: 'rank1',
+        rank: 1,
+        rarity: '1等',
+        name: '1等：超豪華プレミアム特賞',
+        icon: '👑',
+        desc: 'おめでとうございます！！燦然と輝く最高峰の超豪華特賞です！',
+        color: 0xf59e0b,
+        tier: 'gold',
+        rate: 5
+      },
+      {
+        id: 'rank2',
+        rank: 2,
+        rarity: '2等',
+        name: '2等：特選ゴールドギフト賞',
+        icon: '🏆',
+        desc: '大当選！贅沢なひとときをお届けするスペシャル賞品です！',
+        color: 0xf59e0b,
+        tier: 'gold',
+        rate: 10
+      },
+      {
+        id: 'rank3',
+        rank: 3,
+        rarity: '3等',
+        name: '3等：スペシャルセレクト賞',
+        icon: '🎁',
+        desc: '大当たり！選りすぐりの人気アイテムをプレゼント！',
+        color: 0xf59e0b,
+        tier: 'gold',
+        rate: 15
+      },
+      {
+        id: 'rank4',
+        rank: 4,
+        rarity: '4等',
+        name: '4等：ハッピーギフト賞',
+        icon: '🎉',
+        desc: '当選おめでとうございます！日常を彩る嬉しいアイテムです！',
+        color: 0x38bdf8,
+        tier: 'white',
+        rate: 35
+      },
+      {
+        id: 'rank5',
+        rank: 5,
+        rarity: '5等',
+        name: '5等：ラッキー参加賞',
+        icon: '✨',
+        desc: 'ナイスチャレンジ！次回もワクワクをお楽しみに！',
+        color: 0xffffff,
+        tier: 'white',
+        rate: 35
+      }
     ];
 
     const RARITY_INFO = {
-      'N': { label: 'NORMAL', bg: 'bg-slate-500', text: 'text-slate-200', color: 0x3b82f6, glow: 'rgba(59, 130, 246, 0.4)' },
-      'R': { label: 'RARE', bg: 'bg-sky-500', text: 'text-sky-100', color: 0x06b6d4, glow: 'rgba(6, 182, 212, 0.6)' },
-      'SR': { label: 'SUPER RARE', bg: 'bg-purple-600', text: 'text-purple-100', color: 0xa855f7, glow: 'rgba(168, 85, 247, 0.8)' },
-      'UR': { label: 'LEGENDARY', bg: 'bg-amber-400', text: 'text-amber-950', color: 0xf59e0b, glow: 'rgba(245, 158, 11, 0.95)' }
+      '1等': { label: '★ 1等 特賞 ★', bg: 'bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500', text: 'text-amber-950', color: 0xf59e0b, glow: 'rgba(251, 191, 36, 0.95)' },
+      '2等': { label: '★ 2等 ★', bg: 'bg-gradient-to-r from-amber-400 to-yellow-400', text: 'text-amber-950', color: 0xf59e0b, glow: 'rgba(245, 158, 11, 0.85)' },
+      '3等': { label: '★ 3等 ★', bg: 'bg-gradient-to-r from-yellow-300 to-amber-400', text: 'text-amber-950', color: 0xf59e0b, glow: 'rgba(252, 211, 77, 0.75)' },
+      '4等': { label: '4等', bg: 'bg-sky-500', text: 'text-white', color: 0x38bdf8, glow: 'rgba(56, 189, 248, 0.6)' },
+      '5等': { label: '5等', bg: 'bg-slate-400', text: 'text-slate-950', color: 0xffffff, glow: 'rgba(255, 255, 255, 0.5)' }
     };
 
     // Tone.js Sound Synthesizer
@@ -218,7 +283,7 @@
             oscillator: { type: "sine" },
             envelope: { attack: 0.02, decay: 0.2, sustain: 0.3, release: 0.8 }
           }).toDestination();
-          fanfareSynth.volume.value = -4;
+          fanfareSynth.volume.value = -3;
 
           audioReady = true;
         }
@@ -244,20 +309,23 @@
       } catch (e) {}
     }
 
-    function playOpenFanfare(rarity) {
+    function playOpenFanfare(rank) {
       if (!audioReady) return;
       try {
         const now = Tone.now();
-        if (rarity === 'UR' && fanfareSynth) {
-          fanfareSynth.triggerAttackRelease(["D5", "F#5", "A5", "D6"], "4n", now);
-          fanfareSynth.triggerAttackRelease(["G5", "B5", "D6", "G6"], "2n", now + 0.25);
-        } else if (rarity === 'SR' && fanfareSynth) {
-          fanfareSynth.triggerAttackRelease(["E5", "G#5", "B5"], "8n", now);
-          fanfareSynth.triggerAttackRelease(["A5", "C#6", "E6"], "4n", now + 0.15);
-        } else if (rarity === 'R' && synth) {
-          synth.triggerAttackRelease(["F#5", "A5", "C#6"], "8n", now);
+        if (rank === 1 && fanfareSynth) {
+          fanfareSynth.triggerAttackRelease(["D5", "F#5", "A5", "D6"], "8n", now);
+          fanfareSynth.triggerAttackRelease(["E5", "G#5", "B5", "E6"], "8n", now + 0.18);
+          fanfareSynth.triggerAttackRelease(["F#5", "A#5", "C#6", "F#6"], "8n", now + 0.36);
+          fanfareSynth.triggerAttackRelease(["G5", "B5", "D6", "G6"], "2n", now + 0.54);
+        } else if ((rank === 2 || rank === 3) && fanfareSynth) {
+          fanfareSynth.triggerAttackRelease(["D5", "F#5", "A5"], "8n", now);
+          fanfareSynth.triggerAttackRelease(["G5", "B5", "D6", "G6"], "4n", now + 0.2);
+        } else if (rank === 4 && synth) {
+          synth.triggerAttackRelease(["E5", "G5", "C6"], "8n", now);
+          synth.triggerAttackRelease(["G5", "C6", "E6"], "8n", now + 0.15);
         } else if (synth) {
-          synth.triggerAttackRelease(["D5", "F#5"], "16n", now);
+          synth.triggerAttackRelease(["C5", "E5", "G5"], "16n", now);
         }
       } catch (e) {}
     }
@@ -277,7 +345,7 @@
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.0;
-    renderer.outputEncoding = THREE.sRGBEncoding; // sRGBカラースペース
+    renderer.outputEncoding = THREE.sRGBEncoding;
     container.appendChild(renderer.domElement);
 
     // 高級スタジオ環境反射マップ
@@ -338,10 +406,15 @@
     innerLight.position.set(0.35, 1.25, -0.2);
     scene.add(innerLight);
 
+    // カプセル開封時に放たれるダイナミック光源
+    const burstPointLight = new THREE.PointLight(0xffffff, 0, 12);
+    burstPointLight.position.set(0, -1.35, 1.7);
+    scene.add(burstPointLight);
+
     const gachaMachine = new THREE.Group();
     scene.add(gachaMachine);
 
-    // Materials（重厚なダイキャスト塗装・削り出し金属・サテンメッキ）
+    // Materials
     const ivoryMat = new THREE.MeshPhysicalMaterial({
       color: 0xf4f1ea,
       roughness: 0.28,
@@ -400,7 +473,7 @@
       envMapIntensity: 2.2
     });
 
-    // Handle Dial Texture（青い円形ガイドマーク）
+    // Handle Dial Texture
     function createHandleDialTexture() {
       const cv = document.createElement('canvas');
       cv.width = 512;
@@ -727,7 +800,7 @@
     headerSign.position.set(0, 2.1, 0.92);
     gachaMachine.add(headerSign);
 
-    // クリアアクリルウィンドウケース（透明度を高め、白ボケ・反射曇りを最小限に）
+    // クリアアクリルウィンドウケース
     const acrylicMat = new THREE.MeshPhysicalMaterial({
       color: 0xffffff,
       transmission: 0.99,
@@ -759,40 +832,34 @@
     });
 
     // -------------------------------------------------------------
-    // 【正面POP台紙】色彩の鮮明化・白飛び抑制＆下部デザインが隠れない最適配置
+    // 【正面POP台紙】前面に邪魔なパーツが一切被らないクッキリ配置
     // -------------------------------------------------------------
-    // 表示可能エリアの定義：上端 1.86、下端 0.44（トレイのフチに乗せる）
     const POP_MAX_WIDTH = 1.78;
-    const POP_MAX_HEIGHT = 1.40;
-    const POP_BOTTOM_Y = 0.44; // トレイのヘリの上端
+    const POP_MAX_HEIGHT = 1.48;
+    const POP_BOTTOM_Y = 0.32; // 下部まで見渡せるよう低めにセット
 
     const providedTexture = createExactProvidedPopTexture();
 
-    // ライティングの白飛びを受けず、鮮明・高コントラストに発色するマテリアル
     const popCardMat = new THREE.MeshBasicMaterial({
       map: providedTexture,
-      toneMapped: false // トーンマッピング圧縮をバイパスし、元の鮮やかな色彩を100%忠実発色
+      toneMapped: false
     });
 
-    // アスペクト比に応じた台紙の寸法と位置を更新する関数
     function updatePopCardLayout(aspectRatio) {
       let finalW = POP_MAX_WIDTH;
       let finalH = POP_MAX_HEIGHT;
 
       if (aspectRatio > (POP_MAX_WIDTH / POP_MAX_HEIGHT)) {
-        // 横長の場合
         finalW = POP_MAX_WIDTH;
         finalH = POP_MAX_WIDTH / aspectRatio;
       } else {
-        // 縦長の場合：高さを枠に合わせ、幅をアスペクト比で決定
         finalH = POP_MAX_HEIGHT;
         finalW = POP_MAX_HEIGHT * aspectRatio;
       }
 
       popCard.geometry.dispose();
       popCard.geometry = new THREE.PlaneGeometry(finalW, finalH);
-
-      // 下端をトレイのヘリ（POP_BOTTOM_Y）の上にピッタリ配置し、下部デザインの隠れを完全解消！
+      // 台紙位置を z = 0.76 に設定（前面アクリルの直前）
       popCard.position.set(0, POP_BOTTOM_Y + (finalH / 2), 0.76);
     }
 
@@ -803,7 +870,6 @@
     gachaMachine.add(popCard);
     updatePopCardLayout(1024 / 1280);
 
-    // top.jpg 自動読み込み時：sRGBカラーエンコーディング適用＆アスペクト比自動調整
     const popTextureLoader = new THREE.TextureLoader();
     popTextureLoader.load(
       'top.jpg',
@@ -824,27 +890,32 @@
     );
 
     // -------------------------------------------------------------
-    // 【実機構造】回転ドラム ＆ 正面奥の落下穴
+    // 【内部ドラム機構】POP台紙の手前に被らないよう奥側へ適正配置！
     // -------------------------------------------------------------
-    const drumFloorPlateGeo = new THREE.CylinderGeometry(0.88, 0.88, 0.08, 36);
+    // ドラムの中心を奥（z = -0.22）に配置し、半径を0.70にすることで
+    // 最前面でも z = -0.22 + 0.70 = 0.48 となり、POP台紙（z = 0.76）の手前へ絶対に飛び出さない
+    const DRUM_CENTER_Z = -0.22;
+    const DRUM_RADIUS = 0.70;
+    const POCKET_RADIUS = 0.46;
+
+    const drumFloorPlateGeo = new THREE.CylinderGeometry(DRUM_RADIUS + 0.04, DRUM_RADIUS + 0.04, 0.08, 36);
     const drumFloorPlate = new THREE.Mesh(drumFloorPlateGeo, ivoryBevelMat);
-    drumFloorPlate.position.set(0, 0.35, 0.0);
+    drumFloorPlate.position.set(0, 0.35, DRUM_CENTER_Z);
     gachaMachine.add(drumFloorPlate);
 
-    const POCKET_RADIUS = 0.54;
-    const DROP_HOLE_ANGLE = -Math.PI * 0.38;
+    const DROP_HOLE_ANGLE = -Math.PI * 0.40;
     const dropHolePos = new THREE.Vector3(
       Math.cos(DROP_HOLE_ANGLE) * POCKET_RADIUS,
       0.355,
-      Math.sin(DROP_HOLE_ANGLE) * POCKET_RADIUS
+      DRUM_CENTER_Z + Math.sin(DROP_HOLE_ANGLE) * POCKET_RADIUS
     );
 
-    const dropHoleGeo = new THREE.CylinderGeometry(0.22, 0.22, 0.09, 24);
+    const dropHoleGeo = new THREE.CylinderGeometry(0.20, 0.20, 0.09, 24);
     const dropHole = new THREE.Mesh(dropHoleGeo, darkPlasticMat);
     dropHole.position.copy(dropHolePos);
     gachaMachine.add(dropHole);
 
-    const holeRimGeo = new THREE.TorusGeometry(0.23, 0.02, 12, 32);
+    const holeRimGeo = new THREE.TorusGeometry(0.21, 0.02, 12, 32);
     holeRimGeo.rotateX(Math.PI / 2);
     const holeRim = new THREE.Mesh(holeRimGeo, new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.3 }));
     holeRim.position.copy(dropHolePos);
@@ -856,26 +927,26 @@
     const chuteStart = new THREE.Vector3(dropHolePos.x, dropHolePos.y - 0.1, dropHolePos.z);
     const chuteEnd = new THREE.Vector3(0.44, -1.35, 0.82);
     const chuteDist = chuteStart.distanceTo(chuteEnd);
-    const chuteTubeGeo = new THREE.CylinderGeometry(0.24, 0.26, chuteDist, 20);
+    const chuteTubeGeo = new THREE.CylinderGeometry(0.22, 0.24, chuteDist, 20);
     const chuteTube = new THREE.Mesh(chuteTubeGeo, chuteTubeMat);
     chuteTube.position.lerpVectors(chuteStart, chuteEnd, 0.5);
     chuteTube.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), chuteEnd.clone().sub(chuteStart).normalize());
     gachaMachine.add(chuteTube);
 
-    // 回転ドラムローター本体
+    // 回転ドラムローター本体（台紙の手前にはみ出ない奥側配置）
     const drumRotorGroup = new THREE.Group();
-    drumRotorGroup.position.set(0, 0.42, 0.0);
+    drumRotorGroup.position.set(0, 0.42, DRUM_CENTER_Z);
     gachaMachine.add(drumRotorGroup);
 
-    const outerRingGeo = new THREE.CylinderGeometry(0.85, 0.85, 0.28, 36, 1, true);
+    const outerRingGeo = new THREE.CylinderGeometry(DRUM_RADIUS, DRUM_RADIUS, 0.26, 36, 1, true);
     const outerRing = new THREE.Mesh(outerRingGeo, rotorPlasticMat);
     drumRotorGroup.add(outerRing);
 
-    const hubGeo = new THREE.CylinderGeometry(0.22, 0.24, 0.35, 24);
+    const hubGeo = new THREE.CylinderGeometry(0.18, 0.20, 0.32, 24);
     const hub = new THREE.Mesh(hubGeo, rotorPlasticMat);
     drumRotorGroup.add(hub);
 
-    const centralRodGeo = new THREE.CylinderGeometry(0.025, 0.025, 1.4, 16);
+    const centralRodGeo = new THREE.CylinderGeometry(0.022, 0.022, 1.4, 16);
     const centralRod = new THREE.Mesh(centralRodGeo, chromeMat);
     centralRod.position.y = 0.7;
     drumRotorGroup.add(centralRod);
@@ -888,46 +959,46 @@
       const angle = (i / NUM_POCKETS) * Math.PI * 2;
       pocketAngles.push(angle);
 
-      const ribGeo = new THREE.BoxGeometry(0.04, 0.28, 0.48);
+      const ribGeo = new THREE.BoxGeometry(0.035, 0.26, 0.40);
       const rib = new THREE.Mesh(ribGeo, rotorPlasticMat);
       rib.position.set(
-        Math.cos(angle + Math.PI / NUM_POCKETS) * 0.46,
+        Math.cos(angle + Math.PI / NUM_POCKETS) * 0.40,
         0,
-        Math.sin(angle + Math.PI / NUM_POCKETS) * 0.46
+        Math.sin(angle + Math.PI / NUM_POCKETS) * 0.40
       );
       rib.rotation.y = - (angle + Math.PI / NUM_POCKETS);
       drumRotorGroup.add(rib);
 
-      const springArmGeo = new THREE.CylinderGeometry(0.035, 0.035, 0.52, 16);
+      const springArmGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.44, 16);
       springArmGeo.rotateZ(Math.PI / 2);
       const springArm = new THREE.Mesh(springArmGeo, springMetalMat);
-      springArm.position.set(Math.cos(angle) * 0.42, 0.22, Math.sin(angle) * 0.42);
+      springArm.position.set(Math.cos(angle) * 0.36, 0.20, Math.sin(angle) * 0.36);
       springArm.rotation.y = -angle;
       drumRotorGroup.add(springArm);
 
-      const screwHeadGeo = new THREE.CylinderGeometry(0.045, 0.045, 0.03, 12);
+      const screwHeadGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.025, 12);
       const screw = new THREE.Mesh(screwHeadGeo, chromeMat);
-      screw.position.set(Math.cos(angle) * 0.66, 0.22, Math.sin(angle) * 0.66);
+      screw.position.set(Math.cos(angle) * 0.58, 0.20, Math.sin(angle) * 0.58);
       drumRotorGroup.add(screw);
     }
 
     // ポケット内カプセル配置（5個）: Pocket 0 が穴の真上にスタンバイ
     const rotorCapsules = [];
-    const capSphereRadius = 0.17;
+    const capSphereRadius = 0.16;
     const capGeoTop = new THREE.SphereGeometry(capSphereRadius, 18, 16, 0, Math.PI * 2, 0, Math.PI / 2);
     const capGeoBottom = new THREE.SphereGeometry(capSphereRadius, 18, 16, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2);
     const capBottomSharedMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.25 });
 
     function drawItemByRate() {
       const rand = Math.random() * 100;
-      let targetTier = 'N';
-      if (rand < 4) targetTier = 'UR';
-      else if (rand < 18) targetTier = 'SR';
-      else if (rand < 50) targetTier = 'R';
-      else targetTier = 'N';
-
-      const pool = ITEMS.filter(item => item.rarity === targetTier);
-      return pool[Math.floor(Math.random() * pool.length)];
+      let accumulated = 0;
+      for (const item of ITEMS) {
+        accumulated += item.rate;
+        if (rand <= accumulated) {
+          return item;
+        }
+      }
+      return ITEMS[ITEMS.length - 1];
     }
 
     function createRotorCapsule(item) {
@@ -935,7 +1006,7 @@
       const topMat = new THREE.MeshStandardMaterial({
         color: RARITY_INFO[item.rarity].color,
         roughness: 0.2,
-        metalness: 0.1
+        metalness: item.tier === 'gold' ? 0.35 : 0.05
       });
       grp.add(new THREE.Mesh(capGeoTop, topMat));
       grp.add(new THREE.Mesh(capGeoBottom, capBottomSharedMat));
@@ -967,25 +1038,31 @@
       });
     }
 
-    // ストックカプセル群（95個）: ドラム5個と合わせて【合計100個】
+    // ストックカプセル群（95個）: POP台紙より奥のスペースに配置
     const stockCapsules = [];
     const stockColors = [
-      0xef4444, 0x3b82f6, 0x10b981, 0xf59e0b, 0x8b5cf6, 0xec4899,
-      0x06b6d4, 0xffffff, 0xf97316, 0x14b8a6, 0xa855f7, 0xeab308
+      0xf59e0b, 0xfbbf24, 0x38bdf8, 0xffffff, 0x60a5fa, 0xe2e8f0,
+      0xf59e0b, 0x0284c7, 0xfef08a, 0xffffff, 0x38bdf8, 0xd97706
     ];
     const numStockCapsules = 95;
 
     for (let i = 0; i < numStockCapsules; i++) {
       const capGrp = new THREE.Group();
-      const x = (Math.random() - 0.5) * 1.62;
+      const x = (Math.random() - 0.5) * 1.55;
       const y = 0.42 + Math.random() * 1.46;
-      const z = -0.62 + Math.random() * 1.10;
+      // 台紙(z=0.76)より奥側（-0.65 〜 0.45）に確実に収める
+      const z = -0.65 + Math.random() * 1.05;
 
       capGrp.position.set(x, y, z);
       capGrp.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
 
       const color = stockColors[i % stockColors.length];
-      const topMat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.25 });
+      const isGold = color === 0xf59e0b || color === 0xfbbf24 || color === 0xd97706;
+      const topMat = new THREE.MeshStandardMaterial({
+        color: color,
+        roughness: 0.25,
+        metalness: isGold ? 0.35 : 0.05
+      });
       capGrp.add(new THREE.Mesh(capGeoTop, topMat));
       capGrp.add(new THREE.Mesh(capGeoBottom, capBottomSharedMat));
 
@@ -1163,7 +1240,7 @@
     const mainCapScale = 0.34;
     const mainCapsuleTop = new THREE.Mesh(
       new THREE.SphereGeometry(mainCapScale, 28, 20, 0, Math.PI * 2, 0, Math.PI / 2),
-      new THREE.MeshStandardMaterial({ color: 0x3b82f6, roughness: 0.2, metalness: 0.1 })
+      new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.2, metalness: 0.3 })
     );
     const mainCapsuleBottom = new THREE.Mesh(
       new THREE.SphereGeometry(mainCapScale, 28, 20, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2),
@@ -1312,6 +1389,9 @@
     let activePocketIndex = 0;
 
     const guideText = document.getElementById('guide-text');
+    const flashOverlay = document.getElementById('flash-overlay');
+    const goldRayOverlay = document.getElementById('gold-ray-overlay');
+
     function updateGuide(text) {
       guideText.textContent = text;
     }
@@ -1351,6 +1431,7 @@
       shakeIntensity = 0.09;
 
       mainCapsuleTop.material.color.setHex(RARITY_INFO[currentDispensedReward.rarity].color);
+      mainCapsuleTop.material.metalness = currentDispensedReward.tier === 'gold' ? 0.35 : 0.05;
 
       playCrankSound();
       setTimeout(playRotorClackSound, 140);
@@ -1388,6 +1469,7 @@
           const newItem = drawItemByRate();
           dispensedCapData.item = newItem;
           targetMesh.topMat.color.setHex(RARITY_INFO[newItem.rarity].color);
+          targetMesh.topMat.metalness = newItem.tier === 'gold' ? 0.35 : 0.05;
           targetMesh.position.y = 0.55;
           targetMesh.visible = true;
 
@@ -1396,21 +1478,44 @@
       }, 360);
     }
 
+    // =============================================================
+    // 【豪華演出】カプセル開封＆等級別フラッシュアウト
+    // =============================================================
     function openCurrentCapsule() {
       if (capsuleAnimationState !== 'ready_to_open') return;
       capsuleAnimationState = 'opening';
       openProgress = 0;
-      updateGuide("パカッ！");
-      
-      playOpenFanfare(currentDispensedReward.rarity);
-      
-      if (currentDispensedReward.rarity === 'UR' || currentDispensedReward.rarity === 'SR') {
-        triggerConfettiBurst();
+      updateGuide("パカッ！！");
+
+      const isGoldTier = currentDispensedReward.tier === 'gold';
+
+      burstPointLight.color.setHex(isGoldTier ? 0xfbbf24 : 0xffffff);
+      burstPointLight.intensity = isGoldTier ? 7.0 : 4.5;
+      burstPointLight.position.set(dispensedCapsuleGroup.position.x, dispensedCapsuleGroup.position.y, dispensedCapsuleGroup.position.z + 0.3);
+
+      if (isGoldTier) {
+        flashOverlay.style.background = 'radial-gradient(circle at 50% 65%, rgba(254,240,138,1) 0%, rgba(245,158,11,0.95) 45%, rgba(255,255,255,1) 100%)';
+        goldRayOverlay.classList.remove('opacity-0');
+        goldRayOverlay.classList.add('opacity-100');
+      } else {
+        flashOverlay.style.background = 'radial-gradient(circle at 50% 65%, rgba(255,255,255,1) 0%, rgba(241,245,249,0.95) 55%, rgba(255,255,255,1) 100%)';
       }
 
+      flashOverlay.classList.remove('opacity-0');
+      flashOverlay.classList.add('opacity-100');
+
+      playOpenFanfare(currentDispensedReward.rank);
+      triggerConfettiBurst(isGoldTier);
+
       setTimeout(() => {
+        burstPointLight.intensity = 0;
+        flashOverlay.classList.remove('opacity-100');
+        flashOverlay.classList.add('opacity-0');
+        goldRayOverlay.classList.remove('opacity-100');
+        goldRayOverlay.classList.add('opacity-0');
+
         showRewardModal(currentDispensedReward);
-      }, 400);
+      }, 550);
     }
 
     // Modal UI
@@ -1424,7 +1529,7 @@
     function showRewardModal(item) {
       const rarityMeta = RARITY_INFO[item.rarity];
       rewardRarity.textContent = rarityMeta.label;
-      rewardRarity.className = `inline-block px-3 py-1 rounded-full text-xs font-black tracking-wider uppercase mb-2 ${rarityMeta.bg} ${rarityMeta.text} shadow-md`;
+      rewardRarity.className = `inline-block px-4 py-1.5 rounded-full text-xs font-black tracking-widest uppercase mb-2 ${rarityMeta.bg} ${rarityMeta.text} shadow-lg border border-white/30`;
       rewardIcon.textContent = item.icon;
       rewardName.textContent = item.name;
       rewardFlavor.textContent = item.desc;
@@ -1451,26 +1556,20 @@
       const delta = clock.getDelta();
       const elapsedTime = clock.getElapsedTime();
 
-      // カメラ補間
       cameraAngle += (targetAngle - cameraAngle) * 0.12;
       cameraPitch += (targetPitch - cameraPitch) * 0.12;
       cameraDistance += (targetDistance - cameraDistance) * 0.12;
       updateCamera();
 
-      // ハンドル回転補間
       rotatingHandle.rotation.z += (handleRotationTarget - rotatingHandle.rotation.z) * 0.14;
-
-      // 内部ドラムローター補間
       drumRotorGroup.rotation.y += (drumRotationTarget - drumRotorGroup.rotation.y) * 0.12;
 
-      // 補充カプセルの着地アニメーション
       rotorCapsules.forEach(cap => {
         if (cap.mesh.position.y > 0.05) {
           cap.mesh.position.y = Math.max(0.05, cap.mesh.position.y - delta * 2.0);
         }
       });
 
-      // マシンの振動演出
       if (shakeIntensity > 0.001) {
         gachaMachine.position.x = (Math.random() - 0.5) * shakeIntensity;
         gachaMachine.position.z = (Math.random() - 0.5) * shakeIntensity;
@@ -1490,7 +1589,6 @@
         });
       }
 
-      // 排出カプセルのアニメーション
       if (capsuleAnimationState === 'dispensing') {
         dropProgress += delta * 2.2;
         const t = Math.min(1.0, dropProgress);
