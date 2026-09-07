@@ -47,70 +47,55 @@
       z-index: 1;
     }
 
-    /* 【ド迫力「ドーン！」着地アニメーション】 */
-    .modal-enter {
-      animation: slamDown 0.5s cubic-bezier(0.12, 1.15, 0.28, 1) forwards;
+    /* 【たくさんの湯気の中からふわっと料理が現れる演出アニメーション】 */
+    .modal-enter-gentle {
+      animation: dishFloatUp 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       transform-origin: center center;
     }
 
-    @keyframes slamDown {
+    @keyframes dishFloatUp {
       0% {
         opacity: 0;
-        transform: scale(2.6) translateY(-50px);
-        filter: brightness(2.5) drop-shadow(0 0 50px rgba(255,255,255,1));
+        transform: translateY(40px) scale(0.88);
+        filter: blur(14px) brightness(1.2);
       }
-      45% {
-        opacity: 1;
-        transform: scale(0.92) translateY(5px);
-        filter: brightness(1.4);
-      }
-      70% {
-        transform: scale(1.06) translateY(-2px);
+      40% {
+        opacity: 0.85;
+        filter: blur(4px) brightness(1.05);
       }
       100% {
         opacity: 1;
-        transform: scale(1) translateY(0);
-        filter: brightness(1);
+        transform: translateY(0) scale(1);
+        filter: blur(0px) brightness(1);
       }
     }
 
-    /* 画面全体が「ドーン！」と激震するスクリーンシェイク */
-    @keyframes screenSlamShake {
-      0% { transform: translate(0, 0) rotate(0deg); }
-      15% { transform: translate(-10px, 8px) rotate(-0.5deg); }
-      30% { transform: translate(10px, -8px) rotate(0.5deg); }
-      45% { transform: translate(-6px, -4px) rotate(-0.2deg); }
-      65% { transform: translate(5px, 3px) rotate(0.2deg); }
-      85% { transform: translate(-2px, 1px); }
-      100% { transform: translate(0, 0) rotate(0deg); }
-    }
-    .screen-slam {
-      animation: screenSlamShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-    }
-
-    /* 「ドーン！」の瞬間に広がる光の衝撃波リング */
-    @keyframes shockwaveExpand {
+    /* 画面一面に立ち込める湯気の幕（スチームカーテン） */
+    @keyframes steamCurtainAnim {
       0% {
-        transform: translate(-50%, -50%) scale(0.2);
-        opacity: 1;
-        border-width: 14px;
+        opacity: 0;
+        transform: scale(0.7) translateY(30px);
+      }
+      25% {
+        opacity: 0.95;
+      }
+      65% {
+        opacity: 0.75;
+        transform: scale(1.3) translateY(-40px);
       }
       100% {
-        transform: translate(-50%, -50%) scale(2.8);
         opacity: 0;
-        border-width: 1px;
+        transform: scale(1.6) translateY(-90px);
       }
     }
-    .shockwave-ring {
+
+    .steam-veil {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 80vw;
-      height: 80vw;
       border-radius: 50%;
-      border-style: solid;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, rgba(254, 243, 199, 0.6) 35%, rgba(255, 255, 255, 0) 70%);
+      filter: blur(24px);
       pointer-events-none;
-      animation: shockwaveExpand 0.75s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+      animation: steamCurtainAnim 2.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
     }
 
     @keyframes pulseHint {
@@ -206,6 +191,53 @@
     .sunburst {
       animation: raySpin 12s linear infinite;
     }
+    /* 【料理の提供を彷彿とさせる高級大皿プレート＆湯気演出】 */
+    .dish-platter {
+      background: radial-gradient(circle at 50% 45%, #fffdfa 0%, #f7f3ea 60%, #e8dec8 85%, #d4af37 98%, #996515 100%);
+      box-shadow: 
+        0 25px 60px rgba(0, 0, 0, 0.95),
+        0 0 45px rgba(245, 158, 11, 0.4),
+        inset 0 4px 10px rgba(255, 255, 255, 0.9),
+        inset 0 -8px 20px rgba(161, 98, 7, 0.45);
+      border: 6px solid #d4af37;
+      position: relative;
+    }
+
+    .dish-inner-ring {
+      position: absolute;
+      inset: 12px;
+      border: 1.5px dashed rgba(180, 83, 9, 0.35);
+      border-radius: inherit;
+      pointer-events-none;
+    }
+
+    /* ふわふわと立ち上るアツアツの湯気（スチーム）アニメーション */
+    @keyframes steamFloat {
+      0% {
+        transform: translateY(0) scaleX(0.8) scaleY(0.8);
+        opacity: 0;
+      }
+      25% {
+        opacity: 0.65;
+      }
+      65% {
+        opacity: 0.4;
+        transform: translateY(-45px) scaleX(1.3) scaleY(1.2) translateX(4px);
+      }
+      100% {
+        transform: translateY(-90px) scaleX(1.8) scaleY(1.6) translateX(-6px);
+        opacity: 0;
+      }
+    }
+
+    .steam-cloud {
+      position: absolute;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.4) 40%, rgba(255, 255, 255, 0) 75%);
+      border-radius: 50%;
+      filter: blur(8px);
+      pointer-events-none;
+      animation: steamFloat 2.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
   </style>
 </head>
 <body class="w-screen h-screen m-0 p-0 text-white relative bg-black">
@@ -227,9 +259,12 @@
   <!-- 【純白フラッシュアウト演出レイヤー】 -->
   <div id="flash-overlay" class="fixed inset-0 pointer-events-none z-[90] opacity-0 transition-opacity duration-300 bg-white" style="display: none;"></div>
 
-  <!-- 「ドーン！」の衝撃波エフェクトコンテナ -->
-  <div id="impact-container" class="fixed inset-0 pointer-events-none z-[108] overflow-hidden" style="display: none;">
-    <div id="shockwave-element" class="shockwave-ring border-amber-300 shadow-[0_0_50px_rgba(251,191,36,0.9)]"></div>
+  <!-- 【新設】一面に立ち込める湯気の幕（スチームカーテン）コンテナ -->
+  <div id="steam-curtain-container" class="fixed inset-0 pointer-events-none z-[108] overflow-hidden flex items-center justify-center" style="display: none;">
+    <div class="steam-veil w-[120vw] h-[120vw] -top-[10%] left-[-10%] [animation-delay:0s]"></div>
+    <div class="steam-veil w-[110vw] h-[110vw] top-[5%] -right-[15%] [animation-delay:0.15s]"></div>
+    <div class="steam-veil w-[130vw] h-[130vw] -bottom-[10%] left-[5%] [animation-delay:0.28s]"></div>
+    <div class="steam-veil w-[90vw] h-[90vw] top-[20%] left-[10%] [animation-delay:0.4s]"></div>
   </div>
 
   <!-- 1〜3等用の金色の放射光線エフェクト -->
@@ -254,24 +289,66 @@
     </div>
   </div>
 
-  <!-- 【当選結果モーダル：最前面 z-[110] で確実に表示】 -->
+  <!-- 【当選結果モーダル：料理の提供を彷彿とさせる高級大皿演出】 -->
   <div id="reward-modal" class="fixed inset-0 bg-black/95 backdrop-blur-2xl items-center justify-center z-[110] p-4" style="display: none;">
-    <div class="bg-gradient-to-b from-red-950 via-slate-900 to-black border-2 border-amber-400/70 rounded-3xl p-7 max-w-sm w-full text-center shadow-[0_0_70px_rgba(220,38,38,0.7)] relative modal-enter overflow-hidden pointer-events-auto">
-      <div id="modal-glow" class="absolute -inset-20 bg-amber-500/30 rounded-full blur-3xl pointer-events-none"></div>
+    <div id="modal-content-card" class="relative max-w-sm sm:max-w-md w-full text-center pointer-events-auto">
+      
+      <!-- お皿の下に敷かれた中華ランチョン折敷台座 -->
+      <div class="absolute -inset-4 bg-gradient-to-b from-[#3b0808] to-[#150202] rounded-[36px] border-2 border-amber-600/60 shadow-[0_20px_50px_rgba(0,0,0,0.9)] -z-10 transform rotate-1"></div>
 
-      <div class="relative z-10 font-mincho">
-        <span id="reward-rarity" class="inline-block px-5 py-1.5 rounded-full text-xs font-black tracking-widest uppercase mb-3 bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 shadow-lg border border-yellow-200/60">
-          1等
-        </span>
-        <div id="reward-icon" class="text-7xl my-4 filter drop-shadow-2xl transform transition hover:scale-110 select-none">
-          👑
+      <!-- メインの金彩陶磁器大皿（プレート） -->
+      <div class="dish-platter rounded-[32px] p-6 sm:p-8 relative overflow-hidden">
+        <div class="dish-inner-ring"></div>
+        <div id="modal-glow" class="absolute -inset-20 bg-amber-500/25 rounded-full blur-3xl pointer-events-none"></div>
+
+        <!-- 立ち上るアツアツの湯気エフェクト（大皿の上でゆらゆら継続） -->
+        <div class="absolute inset-0 pointer-events-none overflow-hidden z-20">
+          <div class="steam-cloud w-28 h-28 left-[15%] top-[40%] [animation-delay:0s]"></div>
+          <div class="steam-cloud w-32 h-32 left-[35%] top-[32%] [animation-delay:0.7s]"></div>
+          <div class="steam-cloud w-36 h-36 left-[52%] top-[30%] [animation-delay:1.4s]"></div>
+          <div class="steam-cloud w-28 h-28 left-[70%] top-[42%] [animation-delay:2.1s]"></div>
         </div>
-        <h2 id="reward-name" class="text-2xl font-black tracking-wide text-amber-200 mb-2 drop-shadow">
-          1等：超豪華特賞ギフト
-        </h2>
-        <p id="reward-flavor" class="text-xs text-amber-100/90 px-2 min-h-[40px] mb-2 leading-relaxed font-sans">
-          おめでとうございます！最高峰のプレミアム特賞が当たりました！
-        </p>
+
+        <div class="relative z-10 font-mincho text-slate-900">
+          <!-- 料理提供の短冊札・挨拶 -->
+          <div class="flex items-center justify-center gap-2 mb-2">
+            <span class="inline-block w-8 h-[1px] bg-amber-700/60"></span>
+            <span class="text-xs tracking-[0.25em] font-black text-amber-900 uppercase">
+              お待たせいたしました
+            </span>
+            <span class="inline-block w-8 h-[1px] bg-amber-700/60"></span>
+          </div>
+
+          <!-- 等級お品書きバッジ -->
+          <div class="inline-block mb-2">
+            <span id="reward-rarity" class="inline-block px-5 py-1.5 rounded-full text-xs font-black tracking-widest uppercase shadow-md border border-white/60">
+              1等
+            </span>
+          </div>
+
+          <!-- 盛り付けられたメイン賞品アイコン -->
+          <div class="relative my-2">
+            <div id="reward-icon" class="text-7xl filter drop-shadow-[0_12px_18px_rgba(0,0,0,0.35)] transform transition hover:scale-110 select-none inline-block">
+              👑
+            </div>
+            <!-- お皿の盛り付け敷き葉風アクセント -->
+            <div class="text-xs text-amber-800/60 tracking-widest mt-1 select-none font-bold">
+              〜 本日の極上逸品 〜
+            </div>
+          </div>
+
+          <!-- 賞品メニュー名 -->
+          <h2 id="reward-name" class="text-2xl font-black tracking-wide text-amber-950 mb-2 drop-shadow-sm">
+            1等：超豪華特賞ギフト
+          </h2>
+
+          <!-- メニュー説明（お品書き風味） -->
+          <div class="bg-amber-950/5 border border-amber-800/20 rounded-xl p-3 mb-1">
+            <p id="reward-flavor" class="text-xs text-stone-800 leading-relaxed font-sans font-medium">
+              おめでとうございます！最高峰のプレミアム特賞が当たりました！
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -366,7 +443,7 @@
       '5等': { label: '5等', bg: 'bg-slate-400', text: 'text-slate-950', color: 0xffffff, glow: 'rgba(255, 255, 255, 0.5)' }
     };
 
-    let synth, metalSynth, fanfareSynth, impactSynth;
+    let synth, metalSynth, fanfareSynth, serveChimeSynth;
     let audioReady = false;
 
     function initAudio() {
@@ -396,32 +473,25 @@
           }).toDestination();
           fanfareSynth.volume.value = -3;
 
-          // 「ドーン！」と腹に響く重低音インパクトシンセ
-          impactSynth = new Tone.MembraneSynth({
-            pitchDecay: 0.07,
-            octaves: 6,
+          // せいろを開けた時のような、温かく澄んだおもてなしのチャイム
+          serveChimeSynth = new Tone.PolySynth(Tone.Synth, {
             oscillator: { type: "sine" },
-            envelope: { attack: 0.001, decay: 0.7, sustain: 0.01, release: 1.2 }
+            envelope: { attack: 0.08, decay: 0.8, sustain: 0.2, release: 1.4 }
           }).toDestination();
-          impactSynth.volume.value = 2; // パワフルな音量
+          serveChimeSynth.volume.value = -4;
 
           audioReady = true;
         }
       } catch (e) {}
     }
 
-    function playImpactSlamSound(isGold) {
-      if (!audioReady) return;
+    function playServeWarmSound() {
+      if (!audioReady || !serveChimeSynth) return;
       try {
         const now = Tone.now();
-        // ズドォォン！という重低音バスドラム
-        if (impactSynth) {
-          impactSynth.triggerAttackRelease("C1", "1n", now);
-        }
-        // 1〜3等なら重厚なメタルゴング・シンバルも同時に響かせる
-        if (isGold && metalSynth) {
-          metalSynth.triggerAttackRelease("G2", "2n", now, 0.85);
-        }
+        // 湯気が立ち込めるときに流れる温かく穏やかな和音
+        serveChimeSynth.triggerAttackRelease(["C5", "G5", "C6"], "2n", now);
+        serveChimeSynth.triggerAttackRelease(["E5", "B5", "E6"], "2n", now + 0.15);
       } catch (e) {}
     }
 
@@ -1777,7 +1847,7 @@
       transitionToResultOnly();
     });
 
-    // 【5秒経過時：ドーンと衝撃とともに結果画面を表示する関数】
+    // 【5秒経過時：たくさんの湯気の中からふわっと料理が現れる演出】
     function transitionToResultOnly() {
       if (hasTransitionedToResult || !currentDispensedReward) return;
       hasTransitionedToResult = true;
@@ -1800,29 +1870,19 @@
 
       const isGoldTier = currentDispensedReward.tier === 'gold';
 
-      // 3. 【ドーン！演出①】画面全体が激震（スクリーンシェイク）
-      document.body.classList.remove('screen-slam');
-      void document.body.offsetWidth; // リフロー強制
-      document.body.classList.add('screen-slam');
-      setTimeout(() => {
-        document.body.classList.remove('screen-slam');
-      }, 500);
-
-      // 4. 【ドーン！演出②】重低音「ズドォォン！」インパクト音
-      playImpactSlamSound(isGoldTier);
-
-      // 5. 【ドーン！演出③】光の衝撃波リング展開
-      const impactContainer = document.getElementById('impact-container');
-      const shockwave = document.getElementById('shockwave-element');
-      if (impactContainer && shockwave) {
-        shockwave.className = `shockwave-ring ${isGoldTier ? 'border-amber-300 shadow-[0_0_60px_rgba(251,191,36,1)]' : 'border-white shadow-[0_0_60px_rgba(255,255,255,1)]'}`;
-        impactContainer.style.display = 'block';
+      // 3. 【湯気演出①】画面全体に広がるたくさんの湯気の幕（スチームカーテン）を展開！
+      const steamContainer = document.getElementById('steam-curtain-container');
+      if (steamContainer) {
+        steamContainer.style.display = 'flex';
         setTimeout(() => {
-          impactContainer.style.display = 'none';
-        }, 800);
+          steamContainer.style.display = 'none';
+        }, 2200);
       }
 
-      // 6. 等級に応じた光彩演出
+      // 4. 【湯気演出②】やさしいおもてなしの温かなチャイムを響かせる
+      playServeWarmSound();
+
+      // 5. 等級に応じたやわらかな金色の光彩演出
       if (isGoldTier) {
         goldRayOverlay.style.display = 'flex';
         requestAnimationFrame(() => {
@@ -1831,17 +1891,20 @@
         });
       }
 
-      // 7. ファンファーレ・大量紙吹雪
+      // 6. 湯気がふわりと晴れていく中、ファンファーレ・やさしい紙吹雪
       setTimeout(() => {
         playOpenFanfare(currentDispensedReward.rank);
-      }, 80);
-      triggerConfettiBurst(isGoldTier);
+      }, 350);
+      setTimeout(() => {
+        triggerConfettiBurst(isGoldTier);
+      }, 400);
 
-      // 8. 結果モーダルを最前面にド迫力で着地表示
+      // 7. たくさんの湯気の中からお皿がふわっと優雅に浮き上がる
       showRewardModal(currentDispensedReward);
     }
 
     const rewardModal = document.getElementById('reward-modal');
+    const modalContentCard = document.getElementById('modal-content-card');
     const rewardRarity = document.getElementById('reward-rarity');
     const rewardIcon = document.getElementById('reward-icon');
     const rewardName = document.getElementById('reward-name');
@@ -1850,14 +1913,21 @@
 
     function showRewardModal(item) {
       const rarityMeta = RARITY_INFO[item.rarity];
-      rewardRarity.textContent = rarityMeta.label;
-      rewardRarity.className = `inline-block px-5 py-1.5 rounded-full text-xs font-black tracking-widest uppercase mb-3 ${rarityMeta.bg} ${rarityMeta.text} shadow-lg border border-white/30`;
+      rewardRarity.textContent = `特選御品：${rarityMeta.label}`;
+      rewardRarity.className = `inline-block px-5 py-1.5 rounded-full text-xs font-black tracking-widest uppercase mb-1 ${rarityMeta.bg} ${rarityMeta.text} shadow-md border border-amber-900/20`;
       rewardIcon.textContent = item.icon;
       rewardName.textContent = item.name;
       rewardFlavor.textContent = item.desc;
       rewardGlow.style.backgroundColor = rarityMeta.glow;
 
-      // display: flex と opacity を確実に指定して最前面表示
+      // ふわっと湯気の中から浮き上がるアニメーションを付与
+      if (modalContentCard) {
+        modalContentCard.classList.remove('modal-enter-gentle');
+        void modalContentCard.offsetWidth;
+        modalContentCard.classList.add('modal-enter-gentle');
+      }
+
+      // 最前面表示
       rewardModal.style.display = 'flex';
       rewardModal.style.opacity = '1';
       rewardModal.style.zIndex = '110';
