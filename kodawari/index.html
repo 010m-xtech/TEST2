@@ -176,7 +176,7 @@
             <span class="w-2.5 h-2.5 rounded-full bg-[#b84433] animate-ping"></span>
             <span class="text-xs font-bold tracking-widest text-[#b84433] font-serif">公開中！名物と逸品</span>
           </div>
-          <span class="text-[11px] text-stone-500 font-serif">タップでこだわりを開く</span>
+          <span class="text-[11px] text-[#b84433] font-bold font-serif">動く〇ををタップしてね☝</span>
         </div>
 
         <!-- 丸が滑らかに滑り回るインタラクティブステージ（背景にhaikei.jpgを自動調整適用） -->
@@ -184,17 +184,8 @@
           <!-- 背景透過オーバーレイで視認性向上 -->
           <div class="absolute inset-0 bg-white/20 backdrop-blur-[0.5px] pointer-events-none"></div>
 
-          <!-- バブル要素群（12個のメニュー ＋ 2個のロゴ） -->
+          <!-- バブル要素群（12個のメニュー ＋ 1個のロゴ） -->
           <div id="bubblesContainer" class="absolute inset-0"></div>
-        </div>
-
-        <!-- 操作ガイドの補足 -->
-        <div class="mt-2.5 flex items-center justify-between text-[11px] text-stone-600 font-serif border-t border-stone-200/90 pt-2">
-          <span class="flex items-center gap-1">
-            <span class="inline-block w-1.5 h-1.5 rounded-full bg-[#b84433]"></span>
-            指で弾いて遊べます
-          </span>
-          <span class="text-[#b84433] font-semibold">気になる丸を押してみてね ↗</span>
         </div>
       </section>
 
@@ -780,6 +771,7 @@
       animationFrameId = requestAnimationFrame(loop);
     }
     // ステージ初期化（全12品 ＋ ロゴ2個 = 計14個のバブル生成）
+    // ステージ初期化（全12品 ＋ ロゴ1個 = 計13個のバブル生成）
     function initFloatingBubbles() {
       const stage = document.getElementById("bubbleStage");
       const container = document.getElementById("bubblesContainer");
@@ -791,10 +783,9 @@
       stageWidth = stage.clientWidth || 320;
       stageHeight = stage.clientHeight || 380;
 
-      // 12メニュー ＋ 2ロゴの混成リスト作成
+      // 12メニュー ＋ 1ロゴのリスト作成
       const allBubbleItems = [...menuData];
-      allBubbleItems.splice(3, 0, { id: "brand_1", isBrand: true, title: "オハラマーラ" });
-      allBubbleItems.splice(8, 0, { id: "brand_2", isBrand: true, title: "オハラマーラ" });
+      allBubbleItems.splice(4, 0, { id: "brand_1", isBrand: true, title: "オハラマーラ" });
 
       allBubbleItems.forEach((item, index) => {
         const bubble = new DynamicBubble(item, index, allBubbleItems.length);
