@@ -81,24 +81,65 @@
     .bubble-item:active {
       transform: scale(0.92);
     }
+
+    /* 導入動画フェードアウト */
+    .video-fade-out {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease-out;
+    }
   </style>
 </head>
 <body class="font-sans antialiased min-h-screen flex flex-col items-center">
 
+  <!-- ======================================================== -->
+  <!-- 導入オープニング動画オーバーレイ (dounyuu.mp4) -->
+  <!-- ======================================================== -->
+  <div id="introOverlay" class="fixed inset-0 z-50 bg-black flex items-center justify-center overflow-hidden transition-opacity duration-500">
+    <video 
+      id="introVideo" 
+      src="dounyuu.mp4" 
+      playsinline 
+      webkit-playsinline 
+      autoplay 
+      muted 
+      class="w-full h-full object-cover"
+    ></video>
+
+    <!-- わかりやすいスキップボタン（右上に配置） -->
+    <button 
+      id="skipVideoBtn" 
+      onclick="endIntroVideo()"
+      class="absolute top-5 right-5 z-20 px-4 py-2.5 bg-black/60 hover:bg-black/80 text-white rounded-full text-xs font-serif font-bold tracking-widest border border-white/40 shadow-xl backdrop-blur-md flex items-center gap-1.5 active:scale-95 transition-all"
+    >
+      <span>スキップ</span>
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
+      </svg>
+    </button>
+
+    <!-- 下部インフォメーション -->
+    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 text-center pointer-events-none px-4">
+      <span class="text-white/80 font-serif text-[11px] tracking-[0.25em] bg-black/40 px-3 py-1.5 rounded-full border border-white/15 backdrop-blur-xs">
+        オハラマーラーStorybook
+      </span>
+    </div>
+  </div>
+
   <!-- スマホ枠コンテナ -->
   <div class="w-full max-w-md min-h-screen terracotta-bg shadow-2xl relative flex flex-col pb-20 border-x border-orange-950/20 text-stone-900">
 
-    <!-- トップヘッダー（左側にロゴ＋タイトル・右側に音ONボタン） -->
+    <!-- トップヘッダー（左側に logo-footer.png ＋タイトル・右側に音ONボタン） -->
     <header class="sticky top-0 z-30 bg-[#b84433]/90 backdrop-blur-md border-b border-orange-950/20 px-4 py-3 flex items-center justify-between shadow-sm">
       <div class="flex items-center gap-2.5 min-w-0">
-        <!-- ヘッダーロゴ枠（差し替える際は下記imgタグのsrcをご変更ください） -->
+        <!-- ヘッダーロゴ（logo-footer.png） -->
         <div class="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-white/40 p-0.5 bg-white shadow-sm flex items-center justify-center">
           <img 
             id="headerLogoImg"
-            src="https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=150&q=80" 
+            src="logo-footer.png" 
             alt="オハラマーラ ロゴ" 
-            class="w-full h-full object-cover rounded-full"
-            onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'w-full h-full bg-[#b84433] text-white rounded-full flex flex-col items-center justify-center text-[8px] font-bold font-serif leading-tight\'><span>OHARA</span><span>MALA</span></div>';"
+            class="w-full h-full object-contain rounded-full"
+            onerror="this.onerror=null; this.src='https://placehold.co/100x100/b84433/fff?text=OHARA';"
           >
         </div>
         <div class="min-w-0">
@@ -117,7 +158,7 @@
     <!-- メインコンテンツ -->
     <main class="flex-1 p-4 space-y-6">
 
-      <!-- 動的バブルステージ（写真のみの洗練された円形アイコンが動き回るエリア） -->
+      <!-- 動的バブルステージ（全12品の丸いアイコンが優雅に動き回るエリア） -->
       <section class="relative rounded-2xl bg-[#f5f3ef] p-4 overflow-hidden border border-white/80 shadow-lg">
         <div class="flex justify-between items-baseline mb-2">
           <div class="flex items-center gap-2">
@@ -128,14 +169,14 @@
         </div>
 
         <!-- 丸が元気に動き回るインタラクティブステージ -->
-        <div id="bubbleStage" class="relative w-full h-80 rounded-xl overflow-hidden bg-[#ece8e1]/50 border border-stone-200/80 cursor-grab active:cursor-grabbing">
+        <div id="bubbleStage" class="relative w-full h-84 rounded-xl overflow-hidden bg-[#ece8e1]/50 border border-stone-200/80 cursor-grab active:cursor-grabbing">
           <!-- 背景装飾文字 -->
           <div class="absolute inset-0 flex flex-col items-center justify-center opacity-10 pointer-events-none select-none">
             <span class="font-serif text-4xl font-extrabold tracking-[0.35em] text-stone-900">OHARA MALA</span>
             <span class="text-xs font-serif tracking-[0.2em] text-stone-700 mt-1">麻辣・旬味探訪</span>
           </div>
 
-          <!-- バブル要素群（文字やバッジのないシンプルな円形写真） -->
+          <!-- バブル要素群（12個の円形写真） -->
           <div id="bubblesContainer" class="absolute inset-0"></div>
         </div>
 
@@ -152,14 +193,14 @@
       <!-- コンセプト案内バナー（待機時間に読んでもらうための導入） -->
       <section class="bg-washi/95 rounded-xl p-4 border border-orange-950/10 shadow-md">
         <div class="flex items-start gap-3.5">
-          <!-- お店ロゴエリア -->
+          <!-- お店ロゴエリア（logo-footer.png） -->
           <div class="w-12 h-12 rounded-full overflow-hidden shrink-0 border-2 border-[#b84433]/30 p-0.5 bg-white shadow-sm flex items-center justify-center">
             <img 
               id="shopLogoImg"
-              src="https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=150&q=80" 
+              src="logo-footer.png" 
               alt="オハラマーラ ロゴ" 
-              class="w-full h-full object-cover rounded-full"
-              onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'w-full h-full bg-[#b84433] text-white rounded-full flex flex-col items-center justify-center text-[10px] font-bold font-serif leading-none\'><span>OHARA</span><span class=\'text-[8px] tracking-tighter mt-0.5\'>MALA</span></div>';"
+              class="w-full h-full object-contain rounded-full"
+              onerror="this.onerror=null; this.src='https://placehold.co/120x120/b84433/fff?text=OHARA';"
             >
           </div>
 
@@ -174,7 +215,7 @@
         </div>
       </section>
 
-      <!-- 雑誌スタイル・メニューカード一覧（2分割グリッドレイアウト） -->
+      <!-- 雑誌スタイル・メニューカード一覧（全12品の2分割グリッドレイアウト） -->
       <section class="space-y-3">
         <!-- 見出しと注釈エリア（中央揃え） -->
         <div class="border-b border-white/25 pb-2.5 text-center flex flex-col items-center justify-center">
@@ -191,9 +232,9 @@
           </div>
         </div>
 
-        <!-- 2列に並ぶボタンメニューグリッド -->
+        <!-- 2列に並ぶボタンメニューグリッド（全12品） -->
         <div id="menuCardsList" class="grid grid-cols-2 gap-2.5">
-          <!-- JSでメニューカードを動的生成 -->
+          <!-- JSで12品のメニューカードを動的生成 -->
         </div>
       </section>
 
@@ -269,86 +310,219 @@
   </div>
 
   <script>
-    // 写真2枚目のオハラマーラ様のお料理・こだわりメニューデータ
+    // ========================================================
+    // オープニング動画の制御（スキップ & 再生完了でメインへ）
+    // ========================================================
+    const introOverlay = document.getElementById("introOverlay");
+    const introVideo = document.getElementById("introVideo");
+    let isIntroEnded = false;
+
+    function endIntroVideo() {
+      if (isIntroEnded) return;
+      isIntroEnded = true;
+      introOverlay.classList.add("video-fade-out");
+      setTimeout(() => {
+        introOverlay.style.display = "none";
+        try { introVideo.pause(); } catch(e){}
+      }, 500);
+    }
+
+    introVideo.addEventListener("ended", endIntroVideo);
+    // 動画読み込みエラー時も自動でスキップ
+    introVideo.addEventListener("error", () => {
+      console.warn("dounyuu.mp4の読み込みができなかったためスキップします");
+      endIntroVideo();
+    });
+
+    // ========================================================
+    // ご指定の全12品メニューデータ（画像ファイル名と完全連動）
+    // ========================================================
     const menuData = [
+      {
+        id: "yoiebi",
+        title: "特製 紹興酒漬け 酔っ払い海老",
+        subtitle: "芳醇な古越龍山と十種の香辛料。トロリと甘い活海老の饗宴",
+        verticalPoem: "熟成古酒の薫香。\nとろりとほどける甘み、\n透き通る生海老の官能。",
+        pairingName: "紹興貴酒 10年 または ドラゴンハイボール",
+        image: "yoiebi.jpg",
+        story: "新鮮な活海老を、厳選した三年熟成の紹興酒と特製生薬ダレにじっくりと漬け込みました。一口吸い込めば、ねっとりとした身の甘みと味噌の濃厚なコク、華やかなスパイスの香りが鼻腔をくすぐる至極の冷菜です。",
+        sake: {
+          title: "古越龍山 善醸仕込み",
+          brewery: "浙江省紹興",
+          desc: "上品な甘味と豊かな旨味が、海老の持つ芳醇な甘みと絶妙に響き合います。",
+          image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=400&q=80"
+        }
+      },
+      {
+        id: "monaka",
+        title: "自家製白レバーパテの最中",
+        subtitle: "パリッと香ばしい皮と滑らかペースト。和洋中の技巧が光る前菜",
+        verticalPoem: "香ばしき薄皮に包む、\n濃厚なコクの余韻。\nひとくちの贅沢。",
+        pairingName: "純米大吟醸 または オレンジワイン",
+        image: "monaka.jpg",
+        story: "厳選した鶏白レバーを丁寧に血抜きし、紹興酒と中華スパイスで上品な薫香を纏わせた自家製パテ。注文ごとに炙る香ばしい最中種に挟むことで、サクッとした食感と濃厚な口どけのコントラストをお愉しみいただけます。",
+        sake: {
+          title: "醸し人九平次 純米大吟醸",
+          brewery: "萬乗醸造（愛知県）",
+          desc: "瑞々しい酸と洗練された旨味が、濃厚なレバーパテのコクを軽やかに引き立てます。",
+          image: "https://images.unsplash.com/photo-1527061011665-3652c757a4d4?auto=format&fit=crop&w=400&q=80"
+        }
+      },
+      {
+        id: "masukatto",
+        title: "シャインマスカットの果実冷菜",
+        subtitle: "はじける果汁と香味ジュレ。爽やかな甘酸っぱさが箸を休ませる",
+        verticalPoem: "プチッと弾ける果汁。\n爽涼な香味ジュレが導く、\n清々しき口福。",
+        pairingName: "スパークリングワイン または 凍結レモンサワー",
+        image: "masukatto.jpg",
+        story: "大粒の旬のシャインマスカットに、白ワインと桂花陳酒（キンモクセイのお酒）を効かせた特製ジュレを纏わせました。麻辣の痺れと辛味の合間に挟むことで、驚くほど口内が爽快にリセットされます。",
+        sake: {
+          title: "勝沼醸造 クラノオト",
+          brewery: "勝沼醸造（山梨県）",
+          desc: "もぎたての葡萄のようなフレッシュな果実味が、爽やかなジュレと見事に同調します。",
+          image: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=400&q=80"
+        }
+      },
+      {
+        id: "maramen",
+        title: "自家製辣油の極上麻辣麺",
+        subtitle: "漢方生薬の奥深い辛味と四川花椒。特製手揉み麺が絡む一杯",
+        verticalPoem: "鮮烈なる赤の衝撃。\n幾重にも重なる生薬、\n咽び泣くほどの旨辛。",
+        pairingName: "強炭酸ハイボール または チンタオビール",
+        image: "maramen.jpg",
+        story: "八角・桂皮・丁子など十数種のスパイスを低温でじっくり炊き上げた自家製麻辣油。鶏ガラと豚骨を丸一日炊いた清湯スープに合わせ、コシのある特注麺にしっかり絡みます。辛さの奥にある重厚な旨味をご体感ください。",
+        sake: {
+          title: "凍結レモン超炭酸ハイボール",
+          brewery: "オハラマーラ特製",
+          desc: "喉を突き抜ける爽快な炭酸とレモンの酸味が、熱く燃える辛さを心地よく受け止めます。",
+          image: "https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=400&q=80"
+        }
+      },
       {
         id: "mabo",
         title: "名物！石鍋麻婆豆腐",
         subtitle: "沸き立つ土鍋と四川花椒。自家製辣油が引き出す本物のシビ辛",
         verticalPoem: "煮えたぎる土鍋。\n四川花椒の痺れと、\n重厚な豆板醤の余韻。",
-        pairingName: "強炭酸ハイボール または 甕出し紹興酒",
-        image: "https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=600&q=80",
-        story: "熱した石鍋でグツグツと煮えたぎる状態で運ばれる当店の絶対的看板メニュー。本場四川から取り寄せた熟成豆板醤に、数種の唐辛子と八角・桂皮をじっくり低温抽出した自家製辣油を合わせました。仕上げに目の前で削りかける青花椒の鮮烈なアロマと、木綿豆腐の芯まで染み渡る濃厚な挽き肉の旨味をご堪能ください。",
+        pairingName: "甕出し紹興酒 または プレミアムモルツ生",
+        image: "mabo.jpg",
+        story: "熱した石鍋でグツグツと煮えたぎる状態で運ばれる当店の絶対的看板メニュー。本場四川から取り寄せた熟成豆板醤に、数種の唐辛子と八角・桂皮をじっくり低温抽出した自家製辣油を合わせました。仕上げの青花椒が鮮烈に香ります。",
         sake: {
-          title: "凍結レモン強炭酸ハイボール",
-          brewery: "オハラマーラ特製",
-          desc: "喉を刺激する超炭酸とレモンの爽快感が、麻婆豆腐の心地よいシビ辛（麻・辣）をリフレッシュ。",
-          image: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=400&q=80"
-        }
-      },
-      {
-        id: "chicken",
-        title: "骨付きチューリップ唐揚げ",
-        subtitle: "ガブッとかぶりつく快感。特製スパイスとカリカリ極薄衣",
-        verticalPoem: "ガブッとかぶりつく。\n骨まわりの濃厚な肉汁、\n秘伝スパイスの躍動。",
-        pairingName: "サッポロ赤星ラガー瓶ビール",
-        image: "https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=600&q=80",
-        story: "一本一本丁寧に手仕込みでチューリップ状に丸めた手羽先。外側は薄衣でクリスピーに、中は骨周りの一番ジューシーな旨味を閉じ込めています。門外不出のオハラマーラスパイス（クミン、花椒、生姜、黒胡椒など）が鼻を抜け、何本でも手が伸びるやみつきの仕上がりです。",
-        sake: {
-          title: "サッポロ生ビール 黒ラベル / 赤星",
+          title: "サッポロ生ビール 黒ラベル",
           brewery: "サッポロビール",
-          desc: "しっかりとした苦味と麦の旨味が、スパイスの効いたジューシーな揚げ肉と鉄板の相性。",
+          desc: "麦の豊かな旨味とキレ味が、麻婆豆腐の心地よいシビ辛（麻・辣）と抜群の相性。",
           image: "https://images.unsplash.com/photo-1608270586620-248524c67de9?auto=format&fit=crop&w=400&q=80"
         }
       },
       {
-        id: "pepper",
-        title: "氷結パリパリ生ピーマン肉味噌",
-        subtitle: "氷水でキンキンに締めた極上食感。自家製麻辣肉味噌をのせて",
-        verticalPoem: "氷水で極限まで澄ませた、\n瑞々しいパリパリ感。\n濃厚な肉味噌を添えて。",
-        pairingName: "スッキリ辛口 純米酒 または レモンサワー",
-        image: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80",
-        story: "ピーマンの概念が変わるひと皿。収穫したての新鮮なピーマンを種ごと丁寧に掃除し、氷水に丸2日間浸すことで、苦味が抜け驚くほど瑞々しく甘い「パリッパリ」の食感に生まれ変わります。八丁味噌と甜麺醤をベースに山椒を効かせた自家製肉味噌をたっぷり詰めてどうぞ。",
+        id: "mabodohu",
+        title: "四川本流 痺れる麻婆豆腐",
+        subtitle: "粗挽き肉の旨味ととろける豆腐。旨味・辛味・痺れが三位一体",
+        verticalPoem: "舌を震わす麻辣。\n奥深き熟成豆豉と、\n豆腐が織りなす本流。",
+        pairingName: "白ワイン（ゲヴュルツトラミネール）",
+        image: "mabodohu.jpg",
+        story: "昆布出汁で下茹でして水分を抜き、味の染み込みを極限まで高めた木綿豆腐。熟成豆板醤と豆豉（トウチ）のコクをベースに、葉にんにくの力強い香りを添えて仕上げた、麻辣の王道を往く一皿です。",
         sake: {
-          title: "日高見 純米 辛口",
-          brewery: "平孝酒造（宮城県）",
-          desc: "瑞々しい生野菜の青みと、コクのある肉味噌の後味を綺麗に流してくれるキレ味。",
+          title: "アルザス ゲヴュルツトラミネール",
+          brewery: "フランス・アルザス",
+          desc: "ライチやバラのようなエキゾチックなアロマが、スパイシーな麻婆豆腐を華やかに包みます。",
           image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=400&q=80"
         }
       },
       {
-        id: "springroll",
-        title: "海老と大葉のサクサク春巻き",
-        subtitle: "薄皮一本巻き。プリプリの海老と爽やかな大葉のコントラスト",
-        verticalPoem: "薄皮一枚の軽快な音。\nプリッと弾ける海老の甘みと、\n大葉の清涼感。",
-        pairingName: "青島ビール または 白ワイン",
-        image: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80",
-        story: "一般的なとろみ餡の春巻きとは異なり、天然海老の身を粗叩きにして大葉とともに一本ずつ丁寧に巻き上げた特製春巻き。ひとくち噛めば「サクッ」と心地よい音が響き、中からジューシーな海老の甘味と大葉の香りが一気に広がります。自家製のスパイスマヨディップで。",
+        id: "goza",
+        title: "肉汁溢れる 黄金焼き餃子",
+        subtitle: "自家製薄皮とジューシーな粗挽き餡。パリッともっちり食感",
+        verticalPoem: "パリッと弾ける羽。\nジュワリと溢れ出す、\n国産豚肉と葱の雫。",
+        pairingName: "サッポロ赤星ラガー瓶ビール",
+        image: "goza.jpg",
+        story: "国産豚の腕肉とバラ肉を絶妙な比率で配合し、噛んだ瞬間に芳醇な肉汁が溢れるよう仕込みました。大葉と生姜を効かせることで、何個でも食べたくなる軽やかな後味を実現しています。",
         sake: {
-          title: "青島ビール（プレミアムゴールド）",
-          brewery: "青島麦酒",
-          desc: "軽やかな喉越しとホップの爽やかさが、揚げ春巻きの軽快なクリスピー感を際立たせます。",
+          title: "サッポロラガービール「赤星」",
+          brewery: "サッポロビール",
+          desc: "伝統の熱処理ビールならではのドッシリとした苦味が、焼き立て餃子の脂をスッキリ流します。",
+          image: "https://images.unsplash.com/photo-1608270586620-248524c67de9?auto=format&fit=crop&w=400&q=80"
+        }
+      },
+      {
+        id: "ebimayo",
+        title: "大海老の特製エビマヨ",
+        subtitle: "大ぶり天然海老のプリプリ感。練乳と柑橘を隠し味にした特製ソース",
+        verticalPoem: "大輪の花咲く衣。\n濃厚マヨネーズと、\n弾ける天然海老の甘み。",
+        pairingName: "爽快ハイボール または フルーティな純米酒",
+        image: "ebimayo.jpg",
+        story: "天然の大正海老を贅沢に使用。軽やかなフリッター衣でサクッと揚げ、自家製マヨネーズに練乳とライム果汁を合わせた特製オーロラソースで素早く絡めました。濃厚なのに驚くほど後味爽やかです。",
+        sake: {
+          title: "伯楽星 特別純米",
+          brewery: "新澤醸造店（宮城県）",
+          desc: "究極の食中酒。クリーミーなマヨネーズの旨味を引き立てつつ、喉を綺麗に潤します。",
           image: "https://images.unsplash.com/photo-1527061011665-3652c757a4d4?auto=format&fit=crop&w=400&q=80"
         }
       },
       {
-        id: "annin",
-        title: "とろける自家製 濃厚杏仁豆腐",
-        subtitle: "本物の南杏と生クリーム仕立て。舌の上ですっと消える贅沢スイーツ",
-        verticalPoem: "舌の上ですっと消える。\n本物の杏仁が香る、\n至福の締めくくり。",
-        pairingName: "ジャスミン茶 または 桂花陳酒",
-        image: "https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=600&q=80",
-        story: "中華スパイスや肉料理を楽しんだ夜の結びには、極上の甘味を。杏の種から作られる本物の「南杏（ナンシン）」を丁寧に煮出し、純生クリームと合わせた滑らかなとろける食感。香料に頼らない、杏仁本来の上品なアロマが鼻をくすぐります。",
+        id: "churip",
+        title: "骨付きチューリップ唐揚げ",
+        subtitle: "ガブッとかぶりつく快感。特製スパイスとカリカリ極薄衣",
+        verticalPoem: "ガブッとかぶりつく。\n骨まわりの濃厚な肉汁、\n秘伝スパイスの躍動。",
+        pairingName: "生ビール または レモンサワー",
+        image: "churip.jpg",
+        story: "一本一本丁寧に手仕込みでチューリップ状に丸めた手羽先。外側は薄衣でクリスピーに、中は骨周りの一番ジューシーな旨味を閉じ込めています。クミンや花椒など門外不出のオハラマーラスパイスが香ります。",
         sake: {
-          title: "特選 茉莉花（ジャスミン茶）",
-          brewery: "厳選台湾茶葉",
-          desc: "華やかな白花のアロマが口の中をリフレッシュし、杏仁の甘美な余韻を引き立てます。",
+          title: "氷結レモンサワー",
+          brewery: "オハラマーラ特製",
+          desc: "キリッと冷えた柑橘の酸味が、スパイスの効いた揚げたてチキンの肉汁と鉄板の相性。",
+          image: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=400&q=80"
+        }
+      },
+      {
+        id: "chahan",
+        title: "強火仕上げの黄金炒飯",
+        subtitle: "中華鍋で一気に踊らせる米粒。自家製叉焼の旨味が染み渡る逸品",
+        verticalPoem: "中華鍋の轟音。\n黄金に輝くひと粒ひと粒、\n香ばしき炎の記憶。",
+        pairingName: "ジャスミンハイ または 辛口ウーロンハイ",
+        image: "chahan.jpg",
+        story: "厳選した国産米を一粒一粒卵でコーティングし、中華鍋の超強火で素早くパラパラに仕上げました。じっくり煮込んだ自家製チャーシューの角切りと香味ネギ油の香ばしさが食欲を刺激します。",
+        sake: {
+          title: "特選 茉莉花（ジャスミン茶ハイ）",
+          brewery: "厳選茶葉仕立て",
+          desc: "爽快なジャスミンのアロマが、香ばしい炒飯の脂をスッキリと洗い流してくれます。",
           image: "https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=400&q=80"
+        }
+      },
+      {
+        id: "budoutizu",
+        title: "葡萄と濃厚チーズの前菜仕立て",
+        subtitle: "みずみずしい葡萄と芳醇なチーズ。スパイスの効いた料理前の序章",
+        verticalPoem: "深紫の果実と白き恵み。\n静かに広がるまろやかさ、\n美味なる宴の始まり。",
+        pairingName: "軽やかな赤ワイン または シードル",
+        image: "budoutizu.jpg",
+        story: "糖度の高い完熟葡萄に、ミルキーな特選フレッシュチーズを和え、隠し味に自家製の山椒オイルを一滴。甘味と酸味、チーズの塩気が口の中でまろやかに溶け合う、洗練されたスターターです。",
+        sake: {
+          title: "自然派ピノ・ノワール",
+          brewery: "厳選オーガニックワイン",
+          desc: "果実味豊かな軽やかな酸味が、フレッシュチーズと葡萄の瑞々しさを引き立てます。",
+          image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=400&q=80"
+        }
+      },
+      {
+        id: "asupara",
+        title: "極太アスパラの香草一本揚げ",
+        subtitle: "朝採れ極太アスパラの瑞々しさ。サクサクの薄衣と特製スパイス塩",
+        verticalPoem: "大地が育む瑞々しさ。\nサクッとほどける薄衣に、\nあふれる甘き雫。",
+        pairingName: "ソーヴィニヨン・ブラン または 生ビール",
+        image: "asupara.jpg",
+        story: "繊維が柔らかく甘味の強い極太アスパラガスを丸ごと一本豪快に使用。水分を逃さないよう極薄の衣で短時間でカラリと揚げました。ひと噛みごとにジューシーな大地の甘みがジュワッと広がります。",
+        sake: {
+          title: "NZ産 ソーヴィニヨン・ブラン",
+          brewery: "ニュージーランド",
+          desc: "ハーブや青草のような爽やかな香味が、旬のアスパラガスの瑞々しい甘味と完璧に調和。",
+          image: "https://images.unsplash.com/photo-1527061011665-3652c757a4d4?auto=format&fit=crop&w=400&q=80"
         }
       }
     ];
 
+    // ========================================================
     // 音声効果（Tone.js）
+    // ========================================================
     let soundEnabled = true;
     let synth = null;
 
@@ -406,14 +580,15 @@
       }, 2000);
     }
 
-    // ==========================================
-    // 均一な丸が枠内を元気に跳ね回る物理シミュレーション
-    // ==========================================
+    // ========================================================
+    // 12個の均一な丸が枠内を元気に跳ね回る物理シミュレーション
+    // ========================================================
     let bubbles = [];
     let animationFrameId = null;
     let stageWidth = 320;
-    let stageHeight = 320;
-    const BUBBLE_RADIUS = 38; // 直径 76px の完全均一な正円
+    let stageHeight = 336;
+    // 12個が窮屈にならず動き回れる最適な半径
+    const BUBBLE_RADIUS = 30; 
     const BUBBLE_DIAMETER = BUBBLE_RADIUS * 2;
 
     class DynamicBubble {
@@ -421,18 +596,19 @@
         this.item = item;
         this.radius = BUBBLE_RADIUS;
         
-        // 初期配置
-        const padding = 15;
-        const cols = 3;
+        // 12個の初期配置（4列×3行のグリッド状に均等分散）
+        const padding = 12;
+        const cols = 4;
         const col = index % cols;
         const row = Math.floor(index / cols);
         
         const availableW = Math.max(160, stageWidth - padding * 2);
-        this.x = padding + this.radius + col * (availableW / cols) + (Math.random() * 8 - 4);
-        this.y = padding + this.radius + row * 95 + (Math.random() * 8 - 4);
+        const availableH = Math.max(160, stageHeight - padding * 2);
+        this.x = padding + this.radius + col * ((availableW - this.radius * 2) / (cols - 1 || 1)) + (Math.random() * 6 - 3);
+        this.y = padding + this.radius + row * ((availableH - this.radius * 2) / 2) + (Math.random() * 6 - 3);
 
         // 浮遊・跳ね回り速度
-        const speed = 1.1 + Math.random() * 0.7;
+        const speed = 1.0 + Math.random() * 0.7;
         const angle = Math.random() * Math.PI * 2;
         this.vx = Math.cos(angle) * speed;
         this.vy = Math.sin(angle) * speed;
@@ -444,15 +620,15 @@
         this.dragStartY = 0;
         this.hasMoved = false;
 
-        // DOM要素（写真のみの正円バブル）
+        // DOM要素（12個の画像バブル）
         this.element = document.createElement("div");
         this.element.className = "bubble-item absolute select-none cursor-pointer";
         this.element.style.width = `${BUBBLE_DIAMETER}px`;
         this.element.style.height = `${BUBBLE_DIAMETER}px`;
 
         this.element.innerHTML = `
-          <div class="relative w-full h-full rounded-full bg-white p-[3px] shadow-[0_6px_18px_rgba(0,0,0,0.18)] border-2 border-white hover:border-[#b84433] hover:shadow-[0_8px_24px_rgba(184,68,51,0.3)] transition-all overflow-hidden">
-            <img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover rounded-full pointer-events-none filter saturate-[1.08]">
+          <div class="relative w-full h-full rounded-full bg-white p-[2.5px] shadow-[0_4px_14px_rgba(0,0,0,0.18)] border-2 border-white hover:border-[#b84433] hover:shadow-[0_6px_20px_rgba(184,68,51,0.35)] transition-all overflow-hidden">
+            <img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover rounded-full pointer-events-none filter saturate-[1.08]" onerror="this.src='https://placehold.co/120x120/b84433/fff?text=逸品'">
           </div>
         `;
 
@@ -515,16 +691,16 @@
       update() {
         if (!this.isDragging) {
           this.noiseOffset += 0.02;
-          this.vx += Math.sin(this.noiseOffset) * 0.04;
-          this.vy += Math.cos(this.noiseOffset) * 0.04;
+          this.vx += Math.sin(this.noiseOffset) * 0.035;
+          this.vy += Math.cos(this.noiseOffset) * 0.035;
 
           const speed = Math.hypot(this.vx, this.vy);
-          if (speed > 2.5) {
-            this.vx = (this.vx / speed) * 2.5;
-            this.vy = (this.vy / speed) * 2.5;
-          } else if (speed < 0.6) {
-            this.vx = (this.vx / (speed || 1)) * 0.8;
-            this.vy = (this.vy / (speed || 1)) * 0.8;
+          if (speed > 2.2) {
+            this.vx = (this.vx / speed) * 2.2;
+            this.vy = (this.vy / speed) * 2.2;
+          } else if (speed < 0.5) {
+            this.vx = (this.vx / (speed || 1)) * 0.7;
+            this.vy = (this.vy / (speed || 1)) * 0.7;
           }
 
           this.x += this.vx;
@@ -567,7 +743,7 @@
           const dx = b2.x - b1.x;
           const dy = b2.y - b1.y;
           const dist = Math.hypot(dx, dy);
-          const minDist = b1.radius + b2.radius + 4;
+          const minDist = b1.radius + b2.radius + 3;
 
           if (dist < minDist && dist > 0) {
             const overlap = (minDist - dist) * 0.5;
@@ -602,7 +778,7 @@
       animationFrameId = requestAnimationFrame(loop);
     }
 
-    // ステージ初期化
+    // ステージ初期化（12個のバブル生成）
     function initFloatingBubbles() {
       const stage = document.getElementById("bubbleStage");
       const container = document.getElementById("bubblesContainer");
@@ -612,7 +788,7 @@
       bubbles = [];
 
       stageWidth = stage.clientWidth || 320;
-      stageHeight = stage.clientHeight || 320;
+      stageHeight = stage.clientHeight || 336;
 
       menuData.forEach((item, index) => {
         const bubble = new DynamicBubble(item, index, menuData.length);
@@ -623,7 +799,7 @@
       startBubbleLoop();
     }
 
-    // メニューカード一覧の描画（写真を四角形に変更し、料理がより美味しそうに見えるデザインへ）
+    // メニューカード一覧の描画（全12品の四角形サムネイル 2列グリッド）
     function renderMenuCards() {
       const container = document.getElementById("menuCardsList");
       if (!container) return;
@@ -636,7 +812,7 @@
         card.innerHTML = `
           <!-- 四角形（角丸長方形）のお料理写真 -->
           <div class="w-full aspect-[4/3] rounded-lg overflow-hidden shrink-0 relative bg-stone-100 border border-stone-100 shadow-inner mb-2.5">
-            <img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" onerror="this.src='https://placehold.co/300x225/ddd/333?text=逸品'">
+            <img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" onerror="this.src='https://placehold.co/300x225/b84433/fff?text=逸品'">
           </div>
 
           <!-- メニュー名 -->
@@ -707,7 +883,7 @@
       const stage = document.getElementById("bubbleStage");
       if (stage) {
         stageWidth = stage.clientWidth || 320;
-        stageHeight = stage.clientHeight || 320;
+        stageHeight = stage.clientHeight || 336;
       }
     });
 
