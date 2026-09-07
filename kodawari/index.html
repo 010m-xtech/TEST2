@@ -8,7 +8,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&family=Shippori+Mincho:wght@400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
 
   <script>
     tailwind.config = {
@@ -129,8 +128,8 @@
   <!-- スマホ枠コンテナ -->
   <div class="w-full max-w-md min-h-screen terracotta-bg shadow-2xl relative flex flex-col pb-20 border-x border-orange-950/20 text-stone-900">
 
-    <!-- トップヘッダー（左側に logo-footer.png ＋タイトル・右側に音ONボタン） -->
-    <header class="sticky top-0 z-30 bg-[#b84433]/90 backdrop-blur-md border-b border-orange-950/20 px-4 py-3 flex items-center justify-between shadow-sm">
+    <!-- トップヘッダー（左側に logo-footer.png ＋ タイトル） -->
+    <header class="sticky top-0 z-30 bg-[#b84433]/90 backdrop-blur-md border-b border-orange-950/20 px-4 py-3 flex items-center shadow-sm">
       <div class="flex items-center gap-2.5 min-w-0">
         <!-- ヘッダーロゴ（logo-footer.png） -->
         <div class="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-white/40 p-0.5 bg-white shadow-sm flex items-center justify-center">
@@ -139,7 +138,7 @@
             src="logo-footer.png" 
             alt="オハラマーラ ロゴ" 
             class="w-full h-full object-contain rounded-full"
-            onerror="this.onerror=null; this.src='https://placehold.co/100x100/b84433/fff?text=OHARA';"
+            onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=150&q=80';"
           >
         </div>
         <div class="min-w-0">
@@ -147,18 +146,12 @@
           <h1 class="font-serif text-lg font-bold text-white tracking-wider drop-shadow-sm truncate leading-snug">オハラマーラーStorybook</h1>
         </div>
       </div>
-      <button id="soundToggleBtn" onclick="toggleSound()" class="px-2.5 py-1.5 text-xs border border-white/30 rounded-full text-white bg-black/20 flex items-center gap-1.5 hover:bg-black/35 transition-colors shrink-0 ml-2">
-        <svg id="soundIconOn" class="w-3.5 h-3.5 text-amber-300" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.784L4.854 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.854l3.529-3.784a1 1 0 011.0-.14zM14.657 5.343a1 1 0 011.414 0A9.972 9.972 0 0119 12a9.972 9.972 0 01-2.929 6.657 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 12a7.971 7.971 0 00-2.343-5.243 1 1 0 010-1.414z"/>
-        </svg>
-        <span class="text-[11px] font-medium" id="soundLabel">音ON</span>
-      </button>
     </header>
 
     <!-- メインコンテンツ -->
     <main class="flex-1 p-4 space-y-6">
 
-      <!-- 動的バブルステージ（全12品の丸いアイコンが優雅に動き回るエリア） -->
+      <!-- 動的バブルステージ（大きくなった丸アイコンが優雅に動き回るエリア） -->
       <section class="relative rounded-2xl bg-[#f5f3ef] p-4 overflow-hidden border border-white/80 shadow-lg">
         <div class="flex justify-between items-baseline mb-2">
           <div class="flex items-center gap-2">
@@ -169,14 +162,14 @@
         </div>
 
         <!-- 丸が元気に動き回るインタラクティブステージ -->
-        <div id="bubbleStage" class="relative w-full h-84 rounded-xl overflow-hidden bg-[#ece8e1]/50 border border-stone-200/80 cursor-grab active:cursor-grabbing">
+        <div id="bubbleStage" style="height: 380px; min-height: 380px;" class="relative w-full rounded-xl overflow-hidden bg-[#ece8e1]/60 border border-stone-200/80 cursor-grab active:cursor-grabbing">
           <!-- 背景装飾文字 -->
           <div class="absolute inset-0 flex flex-col items-center justify-center opacity-10 pointer-events-none select-none">
             <span class="font-serif text-4xl font-extrabold tracking-[0.35em] text-stone-900">OHARA MALA</span>
             <span class="text-xs font-serif tracking-[0.2em] text-stone-700 mt-1">麻辣・旬味探訪</span>
           </div>
 
-          <!-- バブル要素群（12個の円形写真） -->
+          <!-- バブル要素群（12個の大きめ円形写真） -->
           <div id="bubblesContainer" class="absolute inset-0"></div>
         </div>
 
@@ -200,7 +193,7 @@
               src="logo-footer.png" 
               alt="オハラマーラ ロゴ" 
               class="w-full h-full object-contain rounded-full"
-              onerror="this.onerror=null; this.src='https://placehold.co/120x120/b84433/fff?text=OHARA';"
+              onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=150&q=80';"
             >
           </div>
 
@@ -302,11 +295,6 @@
       </div>
     </div>
 
-    <!-- トースト通知 -->
-    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-stone-900/90 text-white px-4 py-2 rounded-full text-xs font-serif shadow-lg transition-opacity duration-300 opacity-0 pointer-events-none">
-      音声をONにしました
-    </div>
-
   </div>
 
   <script>
@@ -324,18 +312,37 @@
       setTimeout(() => {
         introOverlay.style.display = "none";
         try { introVideo.pause(); } catch(e){}
+        // 動画終了時にステージのサイズを同期・再描画
+        initFloatingBubbles();
       }, 500);
     }
 
     introVideo.addEventListener("ended", endIntroVideo);
-    // 動画読み込みエラー時も自動でスキップ
     introVideo.addEventListener("error", () => {
       console.warn("dounyuu.mp4の読み込みができなかったためスキップします");
       endIntroVideo();
     });
 
     // ========================================================
-    // ご指定の全12品メニューデータ（画像ファイル名と完全連動）
+    // 画像読み込みフォールバック用マップ
+    // ========================================================
+    const fallbackImages = {
+      yoiebi: "https://images.unsplash.com/photo-1559737558-2f5a35f4523b?auto=format&fit=crop&w=400&q=80",
+      monaka: "https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=400&q=80",
+      masukatto: "https://images.unsplash.com/photo-1596363505729-4190a9506133?auto=format&fit=crop&w=400&q=80",
+      maramen: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=400&q=80",
+      mabo: "https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=400&q=80",
+      mabodohu: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80",
+      goza: "https://images.unsplash.com/photo-1498654896293-37aacf113fd9?auto=format&fit=crop&w=400&q=80",
+      ebimayo: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=400&q=80",
+      churip: "https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=400&q=80",
+      chahan: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=400&q=80",
+      budoutizu: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=400&q=80",
+      asupara: "https://images.unsplash.com/photo-1515543237350-b3eea1ec8082?auto=format&fit=crop&w=400&q=80"
+    };
+
+    // ========================================================
+    // 全12品メニューデータ
     // ========================================================
     const menuData = [
       {
@@ -521,74 +528,13 @@
     ];
 
     // ========================================================
-    // 音声効果（Tone.js）
-    // ========================================================
-    let soundEnabled = true;
-    let synth = null;
-
-    function initAudio() {
-      if (!synth && window.Tone) {
-        synth = new Tone.PolySynth(Tone.Synth, {
-          oscillator: { type: "sine" },
-          envelope: { attack: 0.01, decay: 0.15, sustain: 0.1, release: 0.6 }
-        }).toDestination();
-        synth.volume.value = -12;
-      }
-    }
-
-    function playTone(note = "C5") {
-      if (!soundEnabled) return;
-      try {
-        if (Tone.context.state !== 'running') {
-          Tone.start();
-        }
-        initAudio();
-        synth.triggerAttackRelease(note, "16n");
-      } catch (e) {
-        console.warn("Audio not ready yet", e);
-      }
-    }
-
-    function toggleSound() {
-      soundEnabled = !soundEnabled;
-      const label = document.getElementById("soundLabel");
-      const icon = document.getElementById("soundIconOn");
-      if (soundEnabled) {
-        Tone.start();
-        initAudio();
-        playTone("E5");
-        label.innerText = "音ON";
-        icon.classList.remove("text-stone-400");
-        icon.classList.add("text-amber-300");
-        showToast("心地よい操作音をONにしました");
-      } else {
-        label.innerText = "音OFF";
-        icon.classList.remove("text-amber-300");
-        icon.classList.add("text-stone-400");
-        showToast("音声をOFFにしました");
-      }
-    }
-
-    function showToast(msg) {
-      const t = document.getElementById("toast");
-      t.innerText = msg;
-      t.classList.remove("opacity-0");
-      t.classList.add("opacity-100");
-      setTimeout(() => {
-        t.classList.remove("opacity-100");
-        t.classList.add("opacity-0");
-      }, 2000);
-    }
-
-    // ========================================================
-    // 12個の均一な丸が枠内を元気に跳ね回る物理シミュレーション
+    // 大きくなった丸が枠内を元気に跳ね回る物理シミュレーション
     // ========================================================
     let bubbles = [];
     let animationFrameId = null;
     let stageWidth = 320;
-    let stageHeight = 336;
-    // 12個が窮屈にならず動き回れる最適な半径
-    const BUBBLE_RADIUS = 30; 
+    let stageHeight = 380;
+    const BUBBLE_RADIUS = 35;
     const BUBBLE_DIAMETER = BUBBLE_RADIUS * 2;
 
     class DynamicBubble {
@@ -596,19 +542,20 @@
         this.item = item;
         this.radius = BUBBLE_RADIUS;
         
-        // 12個の初期配置（4列×3行のグリッド状に均等分散）
+        // 12個の初期配置
         const padding = 12;
         const cols = 4;
         const col = index % cols;
         const row = Math.floor(index / cols);
         
-        const availableW = Math.max(160, stageWidth - padding * 2);
-        const availableH = Math.max(160, stageHeight - padding * 2);
-        this.x = padding + this.radius + col * ((availableW - this.radius * 2) / (cols - 1 || 1)) + (Math.random() * 6 - 3);
-        this.y = padding + this.radius + row * ((availableH - this.radius * 2) / 2) + (Math.random() * 6 - 3);
+        const usableW = Math.max(160, stageWidth - padding * 2 - this.radius * 2);
+        const usableH = Math.max(180, stageHeight - padding * 2 - this.radius * 2);
+
+        this.x = padding + this.radius + col * (usableW / (cols - 1 || 1)) + (Math.random() * 6 - 3);
+        this.y = padding + this.radius + row * (usableH / 2) + (Math.random() * 6 - 3);
 
         // 浮遊・跳ね回り速度
-        const speed = 1.0 + Math.random() * 0.7;
+        const speed = 1.0 + Math.random() * 0.6;
         const angle = Math.random() * Math.PI * 2;
         this.vx = Math.cos(angle) * speed;
         this.vy = Math.sin(angle) * speed;
@@ -620,15 +567,22 @@
         this.dragStartY = 0;
         this.hasMoved = false;
 
-        // DOM要素（12個の画像バブル）
+        // DOM要素
         this.element = document.createElement("div");
         this.element.className = "bubble-item absolute select-none cursor-pointer";
         this.element.style.width = `${BUBBLE_DIAMETER}px`;
         this.element.style.height = `${BUBBLE_DIAMETER}px`;
 
+        const fallback = fallbackImages[item.id] || 'https://placehold.co/140x140/b84433/fff?text=逸品';
+
         this.element.innerHTML = `
-          <div class="relative w-full h-full rounded-full bg-white p-[2.5px] shadow-[0_4px_14px_rgba(0,0,0,0.18)] border-2 border-white hover:border-[#b84433] hover:shadow-[0_6px_20px_rgba(184,68,51,0.35)] transition-all overflow-hidden">
-            <img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover rounded-full pointer-events-none filter saturate-[1.08]" onerror="this.src='https://placehold.co/120x120/b84433/fff?text=逸品'">
+          <div class="relative w-full h-full rounded-full bg-white p-[2.5px] shadow-[0_5px_15px_rgba(0,0,0,0.22)] border-2 border-white hover:border-[#b84433] hover:shadow-[0_8px_22px_rgba(184,68,51,0.4)] transition-all overflow-hidden">
+            <img 
+              src="${item.image}" 
+              alt="${item.title}" 
+              class="w-full h-full object-cover rounded-full pointer-events-none filter saturate-[1.08]" 
+              onerror="this.onerror=null; this.src='${fallback}';"
+            >
           </div>
         `;
 
@@ -647,7 +601,6 @@
           startClientY = point.clientY;
           this.dragStartX = point.clientX;
           this.dragStartY = point.clientY;
-          playTone("G5");
         };
 
         const onPointerMove = (e) => {
@@ -673,7 +626,6 @@
           if (this.isDragging) {
             this.isDragging = false;
             if (!this.hasMoved) {
-              playTone("C6");
               openModal(this.item.id);
             }
           }
@@ -691,8 +643,8 @@
       update() {
         if (!this.isDragging) {
           this.noiseOffset += 0.02;
-          this.vx += Math.sin(this.noiseOffset) * 0.035;
-          this.vy += Math.cos(this.noiseOffset) * 0.035;
+          this.vx += Math.sin(this.noiseOffset) * 0.04;
+          this.vy += Math.cos(this.noiseOffset) * 0.04;
 
           const speed = Math.hypot(this.vx, this.vy);
           if (speed > 2.2) {
@@ -758,9 +710,9 @@
             }
             if (!b2.isDragging) {
               b2.x += nx * overlap;
-              b2.y += ny * overlap;
+              b2.y -= ny * overlap;
               b2.vx += nx * 0.3;
-              b2.vy += ny * 0.3;
+              b2.vy -= ny * 0.3;
             }
           }
         }
@@ -778,7 +730,7 @@
       animationFrameId = requestAnimationFrame(loop);
     }
 
-    // ステージ初期化（12個のバブル生成）
+    // ステージ初期化
     function initFloatingBubbles() {
       const stage = document.getElementById("bubbleStage");
       const container = document.getElementById("bubblesContainer");
@@ -788,7 +740,7 @@
       bubbles = [];
 
       stageWidth = stage.clientWidth || 320;
-      stageHeight = stage.clientHeight || 336;
+      stageHeight = stage.clientHeight || 380;
 
       menuData.forEach((item, index) => {
         const bubble = new DynamicBubble(item, index, menuData.length);
@@ -799,7 +751,7 @@
       startBubbleLoop();
     }
 
-    // メニューカード一覧の描画（全12品の四角形サムネイル 2列グリッド）
+    // メニューカード一覧の描画
     function renderMenuCards() {
       const container = document.getElementById("menuCardsList");
       if (!container) return;
@@ -809,10 +761,17 @@
         const card = document.createElement("article");
         card.className = "group bg-white rounded-xl p-2.5 border border-stone-200 shadow-sm hover:shadow-md transition-all active:scale-[0.97] cursor-pointer flex flex-col justify-between overflow-hidden";
         
+        const fallback = fallbackImages[item.id] || 'https://placehold.co/300x225/b84433/fff?text=逸品';
+
         card.innerHTML = `
           <!-- 四角形（角丸長方形）のお料理写真 -->
           <div class="w-full aspect-[4/3] rounded-lg overflow-hidden shrink-0 relative bg-stone-100 border border-stone-100 shadow-inner mb-2.5">
-            <img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" onerror="this.src='https://placehold.co/300x225/b84433/fff?text=逸品'">
+            <img 
+              src="${item.image}" 
+              alt="${item.title}" 
+              class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" 
+              onerror="this.onerror=null; this.src='${fallback}';"
+            >
           </div>
 
           <!-- メニュー名 -->
@@ -834,7 +793,6 @@
         `;
 
         card.addEventListener("click", () => {
-          playTone("C5");
           openModal(item.id);
         });
 
@@ -849,7 +807,14 @@
 
       document.getElementById("modalTitle").innerText = item.title;
       document.getElementById("modalPairingName").innerText = item.pairingName;
-      document.getElementById("modalImage").src = item.image;
+      
+      const modalImg = document.getElementById("modalImage");
+      modalImg.src = item.image;
+      modalImg.onerror = () => {
+        modalImg.onerror = null;
+        modalImg.src = fallbackImages[item.id] || 'https://placehold.co/600x400/222/fff?text=料理写真';
+      };
+
       document.getElementById("modalStory").innerText = item.story;
       document.getElementById("modalVerticalPoem").innerText = item.verticalPoem;
 
@@ -867,7 +832,6 @@
 
     // モーダルクローズ
     function closeModal() {
-      playTone("A4");
       const modal = document.getElementById("detailModal");
       modal.classList.add("hidden");
       document.body.style.overflow = "";
@@ -883,7 +847,7 @@
       const stage = document.getElementById("bubbleStage");
       if (stage) {
         stageWidth = stage.clientWidth || 320;
-        stageHeight = stage.clientHeight || 336;
+        stageHeight = stage.clientHeight || 380;
       }
     });
 
