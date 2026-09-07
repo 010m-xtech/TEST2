@@ -123,7 +123,7 @@
     }
   </style>
 </head>
-<body class="w-screen h-screen m-0 p-0 text-white relative">
+<body class="w-screen h-screen m-0 p-0 text-white relative bg-black">
   <!-- 華やかな中華風背景グラデーション＆文様 -->
   <div class="chinese-bg-glow"></div>
   <div class="chinese-pattern-overlay"></div>
@@ -131,50 +131,50 @@
   <!-- 3D Canvas Container -->
   <div id="canvas-container" class="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing z-10"></div>
 
-  <!-- 【新設】ensyutu.mp4 演出動画オーバーレイ（光の粒子とともにふわっと表示） -->
-  <div id="video-overlay" class="fixed inset-0 z-45 flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-700 bg-black/95 backdrop-blur-md">
-    <video id="ensyutu-video" src="ensyutu.mp4" playsinline preload="auto" class="w-full h-full object-contain max-w-5xl max-h-[90vh] rounded-2xl shadow-[0_0_60px_rgba(0,0,0,0.9)] transition-transform duration-700 scale-95"></video>
+  <!-- 【演出動画専用レイヤー：画面全体を完全に覆い、純粋に動画だけを上映】 -->
+  <div id="video-overlay" class="fixed inset-0 z-[60] flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-500 bg-black">
+    <video id="ensyutu-video" src="ensyutu.mp4" playsinline preload="auto" class="w-full h-full object-contain bg-black select-none pointer-events-none"></video>
   </div>
 
-  <!-- 全画面フラッシュアウト演出レイヤー -->
-  <div id="flash-overlay" class="fixed inset-0 pointer-events-none z-50 opacity-0 transition-opacity duration-400"></div>
+  <!-- 【純白フラッシュアウト演出レイヤー】カプセル開封時に画面全体が真っ白に発光 -->
+  <div id="flash-overlay" class="fixed inset-0 pointer-events-none z-[70] opacity-0 transition-opacity duration-300 bg-white"></div>
 
   <!-- 1〜3等用の金色の放射光線エフェクト -->
   <div id="gold-ray-overlay" class="fixed inset-0 pointer-events-none z-35 opacity-0 transition-opacity duration-500 flex items-center justify-center overflow-hidden">
     <div class="w-[200vw] h-[200vw] sunburst bg-[radial-gradient(circle,_rgba(251,191,36,0.42)_0%,_rgba(245,158,11,0.20)_35%,_transparent_70%)]"></div>
   </div>
 
-  <!-- 操作ボタンエリア -->
-  <!-- 1. Bottom Left: 横からのぞくボタン -->
-  <div class="absolute bottom-5 left-4 sm:left-6 z-20">
-    <button id="btn-peek" class="pulse-peek font-mincho px-4 py-2.5 rounded-full bg-gradient-to-b from-red-950 via-[#2d0505] to-[#150202] hover:brightness-110 active:scale-95 backdrop-blur-md border border-amber-400/50 text-xs sm:text-sm font-bold text-amber-200 tracking-wider shadow-[0_6px_16px_rgba(0,0,0,0.6)] flex items-center transition-all cursor-pointer">
-      <span id="btn-peek-text">横からのぞく</span>
-    </button>
-  </div>
-
-  <!-- 2. ハンドル直上の真ん中：【濃いえんじ色＆金縁の重厚メタル仕様】明朝体・特大太字固定ボタン -->
-  <div class="absolute top-[58%] sm:top-[57%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-auto">
-    <!-- 外周の重厚な真鍮ベゼル台座（四角形） -->
-    <div class="lux-metal-bezel-rect p-2 sm:p-2.5 border-2 border-amber-400/80 shadow-[0_12px_30px_rgba(0,0,0,0.85)]">
-      <!-- メインの3D立体大型四角形ボタン（濃いえんじ色＆金文字・特大太字） -->
-      <button id="btn-spin" class="lux-3d-button-rect font-mincho px-10 sm:px-14 py-4 sm:py-5 min-w-[260px] sm:min-w-[340px] text-amber-200 font-black text-xl sm:text-2xl tracking-[0.25em] flex items-center justify-center cursor-pointer whitespace-nowrap">
-        <span id="btn-spin-text" class="font-black drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">タップして回す</span>
+  <!-- 操作ボタンエリア（演出中はフェードアウトして非表示化） -->
+  <div id="ui-layer" class="transition-opacity duration-300">
+    <!-- 1. Bottom Left: 横からのぞくボタン -->
+    <div id="peek-btn-container" class="absolute bottom-5 left-4 sm:left-6 z-20 transition-opacity duration-300">
+      <button id="btn-peek" class="pulse-peek font-mincho px-4 py-2.5 rounded-full bg-gradient-to-b from-red-950 via-[#2d0505] to-[#150202] hover:brightness-110 active:scale-95 backdrop-blur-md border border-amber-400/50 text-xs sm:text-sm font-bold text-amber-200 tracking-wider shadow-[0_6px_16px_rgba(0,0,0,0.6)] flex items-center transition-all cursor-pointer">
+        <span id="btn-peek-text">横からのぞく</span>
       </button>
+    </div>
+
+    <!-- 2. ハンドル直上の真ん中：【濃いえんじ色＆金縁の重厚メタル仕様】明朝体・特大太字固定ボタン -->
+    <div id="spin-btn-container" class="absolute top-[58%] sm:top-[57%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-auto transition-opacity duration-300">
+      <div class="lux-metal-bezel-rect p-2 sm:p-2.5 border-2 border-amber-400/80 shadow-[0_12px_30px_rgba(0,0,0,0.85)]">
+        <button id="btn-spin" class="lux-3d-button-rect font-mincho px-10 sm:px-14 py-4 sm:py-5 min-w-[260px] sm:min-w-[340px] text-amber-200 font-black text-xl sm:text-2xl tracking-[0.25em] flex items-center justify-center cursor-pointer whitespace-nowrap">
+          <span id="btn-spin-text" class="font-black drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">タップして回す</span>
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- Capsule Open Result Modal -->
-  <div id="reward-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-55 hidden p-4 cursor-pointer">
-    <div class="bg-gradient-to-b from-red-950 via-slate-900 to-black border-2 border-amber-400/50 rounded-3xl p-6 max-w-sm w-full text-center shadow-[0_0_50px_rgba(220,38,38,0.5)] relative modal-enter overflow-hidden pointer-events-auto">
+  <!-- Capsule Open Result Modal（動画終了後に結果だけを映し出す全画面モーダル） -->
+  <div id="reward-modal" class="fixed inset-0 bg-black/95 backdrop-blur-2xl flex items-center justify-center z-[80] hidden p-4 cursor-pointer">
+    <div class="bg-gradient-to-b from-red-950 via-slate-900 to-black border-2 border-amber-400/70 rounded-3xl p-7 max-w-sm w-full text-center shadow-[0_0_70px_rgba(220,38,38,0.7)] relative modal-enter overflow-hidden pointer-events-auto">
       <div id="modal-glow" class="absolute -inset-20 bg-amber-500/30 rounded-full blur-3xl pointer-events-none"></div>
 
       <div class="relative z-10 font-mincho">
         <!-- 等級バッジ -->
-        <span id="reward-rarity" class="inline-block px-4 py-1.5 rounded-full text-xs font-black tracking-widest uppercase mb-2 bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 shadow-lg border border-yellow-200/60">
+        <span id="reward-rarity" class="inline-block px-5 py-1.5 rounded-full text-xs font-black tracking-widest uppercase mb-3 bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 shadow-lg border border-yellow-200/60">
           1等
         </span>
         <!-- 賞品アイコン -->
-        <div id="reward-icon" class="text-7xl my-3 filter drop-shadow-2xl transform transition hover:scale-110 select-none">
+        <div id="reward-icon" class="text-7xl my-4 filter drop-shadow-2xl transform transition hover:scale-110 select-none">
           👑
         </div>
         <!-- 賞品名 -->
@@ -182,11 +182,11 @@
           1等：超豪華特賞ギフト
         </h2>
         <!-- 説明文 -->
-        <p id="reward-flavor" class="text-xs text-amber-100/80 px-2 min-h-[40px] mb-4 leading-relaxed font-sans">
+        <p id="reward-flavor" class="text-xs text-amber-100/90 px-2 min-h-[40px] mb-5 leading-relaxed font-sans">
           おめでとうございます！最高峰のプレミアム特賞が当たりました！
         </p>
         
-        <div class="text-[11px] text-amber-300/60 animate-pulse">
+        <div class="text-xs text-amber-300/70 tracking-widest animate-pulse">
           タップして閉じる
         </div>
       </div>
@@ -213,7 +213,7 @@
       }
 
       const canvas = document.createElement('canvas');
-      canvas.className = 'fixed inset-0 pointer-events-none z-50';
+      canvas.className = 'fixed inset-0 pointer-events-none z-[85]';
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       document.body.appendChild(canvas);
@@ -485,7 +485,7 @@
     innerLight.position.set(0.35, 1.25, -0.2);
     scene.add(innerLight);
 
-    const burstPointLight = new THREE.PointLight(0xffffff, 0, 12);
+    const burstPointLight = new THREE.PointLight(0xffffff, 0, 15);
     burstPointLight.position.set(0, -1.35, 1.7);
     scene.add(burstPointLight);
 
@@ -790,7 +790,7 @@
       return tex;
     }
 
-    // 【提供画像（鬼滅の刃 ならぶんです。2）の美麗POP台紙テクスチャ】
+    // POP台紙テクスチャ
     function createExactProvidedPopTexture() {
       const cv = document.createElement('canvas');
       cv.width = 1024;
@@ -1027,7 +1027,7 @@
       return tex;
     }
 
-    // 筐体基本構造
+    // 筐体構造
     const lowerBody = new THREE.Mesh(new THREE.BoxGeometry(2.1, 2.3, 1.7), ivoryMat);
     lowerBody.position.set(0, -0.9, 0);
     lowerBody.castShadow = true;
@@ -1101,9 +1101,6 @@
       gachaMachine.add(pil);
     });
 
-    // -------------------------------------------------------------
-    // 【正面POP台紙】
-    // -------------------------------------------------------------
     const POP_MAX_WIDTH = 1.78;
     const POP_MAX_HEIGHT = 1.48;
     const POP_BOTTOM_Y = 0.32;
@@ -1158,9 +1155,7 @@
       () => {}
     );
 
-    // -------------------------------------------------------------
-    // 【内部ドラム機構】
-    // -------------------------------------------------------------
+    // 内部ドラム機構
     const DRUM_CENTER_Z = -0.22;
     const DRUM_RADIUS = 0.70;
     const POCKET_RADIUS = 0.46;
@@ -1466,7 +1461,7 @@
     handleHitBox.position.set(0, -0.68, 0.95);
     gachaMachine.add(handleHitBox);
 
-    // 重厚な鋳鉄ダイキャストベーススタンド
+    // スタンド
     const floorStandGroup = new THREE.Group();
     floorStandGroup.position.y = -2.15;
     gachaMachine.add(floorStandGroup);
@@ -1595,11 +1590,11 @@
     const goldRayOverlay = document.getElementById('gold-ray-overlay');
     const videoOverlay = document.getElementById('video-overlay');
     const ensyutuVideo = document.getElementById('ensyutu-video');
+    const uiLayer = document.getElementById('ui-layer');
 
     const btnSpin = document.getElementById('btn-spin');
     const btnSpinText = document.getElementById('btn-spin-text');
 
-    // ボタンのテキストと状態制御
     function updateSpinButtonState() {
       if (capsuleAnimationState === 'dispensing' || isSpinning) {
         btnSpin.classList.add('cursor-not-allowed', 'pointer-events-none');
@@ -1704,7 +1699,7 @@
     }
 
     // =============================================================
-    // 【シームレス演出】カプセル開封 → ensyutu.mp4 → 結果画面
+    // 【厳密演出フロー】カプセル開く → 純白フラッシュアウト → 完全に動画だけ上映 → 結果画面
     // =============================================================
     let isVideoPlaying = false;
 
@@ -1714,111 +1709,97 @@
       openProgress = 0;
       updateSpinButtonState();
 
-      const isGoldTier = currentDispensedReward?.tier === 'gold';
+      // 操作UIレイヤーを速やかにフェードアウト（動画上映の邪魔にならないように消す）
+      uiLayer.classList.add('opacity-0', 'pointer-events-none');
 
-      // 1. カプセルから眩しい光を解き放つ
-      burstPointLight.color.setHex(isGoldTier ? 0xfbbf24 : 0xffffff);
-      burstPointLight.intensity = isGoldTier ? 7.0 : 4.5;
-      burstPointLight.position.set(dispensedCapsuleGroup.position.x, dispensedCapsuleGroup.position.y, dispensedCapsuleGroup.position.z + 0.3);
+      // 1. カプセルから眩しい純白の光を放出
+      burstPointLight.color.setHex(0xffffff);
+      burstPointLight.intensity = 8.5;
+      burstPointLight.position.set(
+        dispensedCapsuleGroup.position.x,
+        dispensedCapsuleGroup.position.y,
+        dispensedCapsuleGroup.position.z + 0.3
+      );
 
-      // 光のフラッシュアウト（カプセル開封の瞬間）
-      if (isGoldTier) {
-        flashOverlay.style.background = 'radial-gradient(circle at 50% 65%, rgba(254,240,138,1) 0%, rgba(245,158,11,0.95) 45%, rgba(220,38,38,0.95) 100%)';
-        goldRayOverlay.classList.remove('opacity-0');
-        goldRayOverlay.classList.add('opacity-100');
-      } else {
-        flashOverlay.style.background = 'radial-gradient(circle at 50% 65%, rgba(255,255,255,1) 0%, rgba(241,245,249,0.95) 55%, rgba(254,226,226,0.95) 100%)';
-      }
-
+      // 2. 画面全体が真っ白にフラッシュアウト
+      flashOverlay.style.background = '#ffffff';
       flashOverlay.classList.remove('opacity-0');
       flashOverlay.classList.add('opacity-100');
 
-      // 2. 光の広がりの中から動画（ensyutu.mp4）をふわっとクロスフェード再生
+      // フラッシュアウトの光の極大に合わせて動画へ完全移行
       setTimeout(() => {
-        startVideoSequence();
-      }, 320);
+        startPureVideoPlayback();
+      }, 280);
     }
 
-    function startVideoSequence() {
+    function startPureVideoPlayback() {
       if (!currentDispensedReward) return;
       isVideoPlaying = true;
+
+      // 画面上には「動画だけ」が表示されるように全画面ブラックオーバーレイを展開
+      videoOverlay.classList.remove('opacity-0');
+      videoOverlay.classList.add('opacity-100');
+
       try {
         ensyutuVideo.currentTime = 0;
       } catch (e) {}
 
-      // 動画再生を試行
       const playPromise = ensyutuVideo.play();
 
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            // 動画再生成功：ふわっとオーバーレイを表示
-            videoOverlay.classList.remove('opacity-0');
-            videoOverlay.classList.add('opacity-100');
-            ensyutuVideo.classList.remove('scale-95');
-            ensyutuVideo.classList.add('scale-100');
+      // 白い光をスッと引いて「完全に動画だけ」を映し出す
+      setTimeout(() => {
+        flashOverlay.classList.remove('opacity-100');
+        flashOverlay.classList.add('opacity-0');
+      }, 200);
 
-            // 背景フラッシュの光を徐々に引いて動画を際立たせる
-            setTimeout(() => {
-              flashOverlay.classList.remove('opacity-100');
-              flashOverlay.classList.add('opacity-0');
-            }, 300);
-          })
-          .catch((err) => {
-            console.warn("動画の自動再生がブロックされたか、ファイルが存在しないためフォールバックします:", err);
-            finishSequenceToReward();
-          });
-      } else {
-        finishSequenceToReward();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.warn("動画の自動再生が制限されたか、ファイルが未配置のため結果画面へ直接遷移します:", err);
+          transitionToResultOnly();
+        });
       }
     }
 
-    // 動画終了イベントハンドラ（再生中のみ処理）
+    // 動画終了時に結果画面だけへシームレスに移行
     ensyutuVideo.onended = () => {
       if (isVideoPlaying || capsuleAnimationState === 'opening') {
-        finishSequenceToReward();
+        transitionToResultOnly();
       }
     };
 
-    // 動画読み込みエラー時の安全フォールバック（初期ロード時の発火を無視し、演出中のみフォールバック）
+    // 動画エラー時の安全フォールバック
     ensyutuVideo.onerror = () => {
       if (isVideoPlaying || capsuleAnimationState === 'opening') {
-        console.warn("ensyutu.mp4 の読み込みまたは再生に失敗したため、直接結果画面へ遷移します。");
-        finishSequenceToReward();
+        console.warn("ensyutu.mp4 読み込みエラーのため結果画面へ移行します。");
+        transitionToResultOnly();
       }
     };
 
-    // 3. 動画終了 → 光のディゾルブとともに結果モーダルへ移行
-    function finishSequenceToReward() {
+    // 4. 動画終了 → 完全に結果画面だけの状態へ
+    function transitionToResultOnly() {
       if (!currentDispensedReward) return;
-      if (!isVideoPlaying && capsuleAnimationState !== 'opening' && !rewardModal.classList.contains('hidden')) return;
       isVideoPlaying = false;
 
       const isGoldTier = currentDispensedReward.tier === 'gold';
 
-      // 動画をふわっとフェードアウト
+      // 動画オーバーレイをスムーズにフェードアウト
       videoOverlay.classList.remove('opacity-100');
       videoOverlay.classList.add('opacity-0');
-      ensyutuVideo.classList.remove('scale-100');
-      ensyutuVideo.classList.add('scale-95');
 
-      // 柔らかな光とともにファンファーレと紙吹雪が炸裂！
-      flashOverlay.classList.remove('opacity-0');
-      flashOverlay.classList.add('opacity-80');
+      // 1〜3等の場合は金色の光線オーバーレイを点灯
+      if (isGoldTier) {
+        goldRayOverlay.classList.remove('opacity-0');
+        goldRayOverlay.classList.add('opacity-100');
+      }
 
+      // 歓声・ファンファーレ・紙吹雪
       playOpenFanfare(currentDispensedReward.rank);
       triggerConfettiBurst(isGoldTier);
 
-      setTimeout(() => {
-        burstPointLight.intensity = 0;
-        flashOverlay.classList.remove('opacity-80');
-        flashOverlay.classList.add('opacity-0');
-        goldRayOverlay.classList.remove('opacity-100');
-        goldRayOverlay.classList.add('opacity-0');
+      // 暗転された全画面に「結果画面だけ」を映し出す
+      showRewardModal(currentDispensedReward);
 
-        // 結果モーダルの表示
-        showRewardModal(currentDispensedReward);
-      }, 450);
+      burstPointLight.intensity = 0;
     }
 
     // Modal UI
@@ -1832,7 +1813,7 @@
     function showRewardModal(item) {
       const rarityMeta = RARITY_INFO[item.rarity];
       rewardRarity.textContent = rarityMeta.label;
-      rewardRarity.className = `inline-block px-4 py-1.5 rounded-full text-xs font-black tracking-widest uppercase mb-2 ${rarityMeta.bg} ${rarityMeta.text} shadow-lg border border-white/30`;
+      rewardRarity.className = `inline-block px-5 py-1.5 rounded-full text-xs font-black tracking-widest uppercase mb-3 ${rarityMeta.bg} ${rarityMeta.text} shadow-lg border border-white/30`;
       rewardIcon.textContent = item.icon;
       rewardName.textContent = item.name;
       rewardFlavor.textContent = item.desc;
@@ -1841,12 +1822,19 @@
       rewardModal.classList.remove('hidden');
     }
 
+    // 結果画面をタップして閉じた時：元のマシン画面とボタンがスムーズに復帰
     rewardModal.addEventListener('click', () => {
       rewardModal.classList.add('hidden');
+      goldRayOverlay.classList.remove('opacity-100');
+      goldRayOverlay.classList.add('opacity-0');
+
       dispensedCapsuleGroup.visible = false;
       capsuleAnimationState = 'idle';
       isSpinning = false;
       currentDispensedReward = null;
+
+      // ボタンUIレイヤーを元通りフェードイン表示
+      uiLayer.classList.remove('opacity-0', 'pointer-events-none');
       updateSpinButtonState();
     });
 
