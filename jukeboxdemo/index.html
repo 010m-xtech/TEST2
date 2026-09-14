@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ご案内</title>
+  
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      /* ベースのbodyはスクロール不可にしておく */
+      overflow: hidden; 
+    }
+    
+    #promoVideo {
+      width: 100%;
+      max-width: 600px;
+      max-height: 100vh;
+      object-fit: contain;
+      transition: opacity 1s ease; /* 暗転用のフェードアウト */
+    }
+
+    /* アンケート背景画像専用のレイヤー */
+    #bgImage {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      /* スマホ(特にiPhone/Safari)での背景画像の不具合を防ぐための記述 */
+      background: url('https://github.com/user-attachments/assets/f6ce8ad9-9db9-43ad-ad44-fba8180c53e0') no-repeat center center;
+      background-size: cover;
+      
+      /* 初期状態：透明、真ん中だけに絞る、少しぼかす、少し拡大 */
+      opacity: 0; 
+      -webkit-clip-path: circle(0% at 50% 50%);
+      clip-path: circle(0% at 50% 50%);
+      filter: blur(10px);
+      transform: scale(1.1);
+      
+      /* 真ん中からじわじわ広がるアニメーション設定 */
+      transition: opacity 4s ease-in-out, -webkit-clip-path 4.5s ease-in-out, clip-path 4.5s ease-in-out, filter 4s ease-in-out, transform 6s ease-out; 
+      z-index: 1;
+      display: none;
+    }
+    
+    /* クラス付与時の表示状態 */
+    #bgImage.show-bg {
+      opacity: 1;
+      -webkit-clip-path: circle(150% at 50% 50%);
+      clip-path: circle(150% at 50% 50%); /* 画面の四隅までしっかり覆うように150% */
+      filter: blur(0px);
+      transform: scale(1);
+    }
+
+    /* アンケート全体を覆うラッパー */
+    #surveyWrapper {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 10;
+      display: none; /* 初期状態は非表示 */
+      opacity: 0;
+      transition: opacity 1.5s ease;
+      align-items: flex-start; 
+      justify-content: center;
+      overflow-y: auto; 
+      padding: 40px 20px; 
+      box-sizing: border-box;
+      background: rgba(0, 0, 0, 0.4); /* 背景を少し暗くするフィルター */
+    }
+
+    .survey-container { 
+      margin: auto; 
+      /* 初期状態は透明で少し下に配置 */
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 1.5s ease, transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+      
+      background: linear-gradient(135deg, rgba(232, 245, 233, 0.65), rgba(200, 230, 201, 0.65), rgba(255, 249, 196, 0.65));
+      backdrop-filter: blur(16px); 
+      -webkit-backdrop-filter: blur(16px);
+      padding: 30px 20px; 
+      border-radius: 20px; 
+      width: 100%;
+      max-width: 450px; 
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); 
+      border: 1px solid rgba(255,255,255,0.6); 
+      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+      color: #333;
+    }
+    
+    /* アンケート表示クラスがついたとき、元の位置・不透明に戻る */
+    #surveyWrapper.show-survey {
+      opacity: 1;
+    }
+    #surveyWrapper.show-survey .survey-container {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .hidden { display: none !important; }
+    
+    .intro-text { text-align: left; font-size: 0.95em; line-height: 1.5; margin-bottom: 20px; padding: 15px; background: rgba(255, 255, 255, 0.6); border-radius: 10px; }
+    .intro-text p { margin: 5px 0; }
+    .note { font-size: 0.85em; color: #d32f2f; font-weight: bold; }
+    
+    .q-title { font-weight: bold; margin-top: 20px; display: block; text-align: left; }
+    .q-desc { font-size: 0.85em; color: #666; margin-top: 5px; margin-bottom: 5px; text-align: left; display: block; line-height: 1.4; }
+    .req-label { color: white; background: #e53935; padding: 2px 6px; border-radius: 4px; font-size: 0.7em; vertical-align: middle; margin-left: 5px; }
+    .opt-label { color: #666; background: #e0e0e0; padding: 2px 6px; border-radius: 4px; font-size: 0.7em; vertical-align: middle; margin-left: 5px; }
+    
+    .radio-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .radio-group label {
+        display: inline-flex;
+        align-items: center;
+        margin: 0;
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.7);
+        padding: 8px 12px;
+        border-radius: 20px;
+        border: 1px solid rgba(0,0,0,0.1);
+        transition: background 0.2s, border-color 0.2s;
+        font-size: 0.9em;
+    }
+
+    .radio-group label:hover {
+        background: rgba(255, 255, 255, 0.9);
+    }
+    
+    .radio-group input[type="radio"] {
+        margin-right: 8px;
+        accent-color: #8bc34a;
+    }
+
+    label { display: block; text-align: left; margin: 8px 0; cursor: pointer; }
+    textarea, select, input[type="text"], input[type="number"] { width: 100%; box-sizing: border-box; padding: 12px; margin-top: 5px; border-radius: 8px; border: 1px solid #ccc; background: rgba(255, 255, 255, 0.95); font-size: 1em; color: #333; margin-bottom: 15px; }
+    textarea:focus, input[type="text"]:focus { outline: none; background: #fff; border-color: #8bc34a; box-shadow: 0 0 8px rgba(139, 195, 74, 0.4); }
+    textarea { height: 100px; resize: vertical; }
+
+    .submit-btn { 
+        display: block; 
+        width: 100%; 
+        box-sizing: border-box; 
+        text-decoration: none; 
+        padding: 20px; 
+        margin-top: 30px; 
+        background: linear-gradient(45deg, #4caf50, #8bc34a); 
+        color: white; 
+        border-radius: 50px; 
+        font-weight: 900; 
+        font-size: 1.3em; 
+        text-align: center; 
+        transition: transform 0.2s, box-shadow 0.2s, background 0.2s; 
+        border: none; 
+        cursor: pointer; 
+        font-family: sans-serif; 
+        box-shadow: 0 8px 20px rgba(76, 175, 80, 0.4); 
+        letter-spacing: 1px;
+    }
+    .submit-btn:hover:not(:disabled) { 
+        transform: translateY(-3px) scale(1.02); 
+        box-shadow: 0 12px 25px rgba(76, 175, 80, 0.6); 
+    }
+    .submit-btn:disabled { 
+        background: #e0e0e0 !important; 
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); 
+        color: #999; 
+        cursor: not-allowed; 
+        opacity: 0.9; 
+        transform: none; 
+    }
+
+    .notice-text { font-size: 10px; color: #777; text-align: left; margin-top: 30px; line-height: 1.4; border-top: 1px dashed #ddd; padding-top: 10px; }
+    
+    #step-complete { 
+      background: linear-gradient(45deg, #66bb6a, #cddc39);
+      padding: 50px 20px; 
+      border-radius: 15px; 
+      text-align: center; 
+      box-shadow: 0 4px 15px rgba(102, 187, 106, 0.3);
+    }
+    #step-complete h2 { 
+      color: white; 
+      font-size: 1.8em; 
+      margin: 0 0 20px 0; 
+      line-height: 1.4; 
+      filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.2)); 
+    }
+    #step-complete .complete-note { 
+      font-size: 1em; 
+      color: white; 
+      line-height: 1.5; 
+      margin: 0; 
+      font-weight: bold; 
+      text-shadow: 0px 1px 2px rgba(0,0,0,0.2); 
+    }
+  </style>
+</head>
+<body>
+
+  <!-- スマホ(iOS)で勝手に全画面になるのを防ぐための属性(webkit-playsinline)を付与 -->
+  <video id="promoVideo" src="https://github.com/user-attachments/assets/351c5c73-0fff-45ed-844a-25c965657a72" autoplay muted playsinline webkit-playsinline></video>
+
+  <div id="bgImage"></div>
+
+  <div id="surveyWrapper">
+    <div class="survey-container">
+      <div id="step-survey">
+        <h2>🎵 本日のBGMリクエスト</h2>
+        
+        <div class="intro-text">
+            <p>リクエスト曲をセレクトしてオンエアします！<br>思い出の1曲を教えてください。</p>
+            <p class="note">※混雑時や内容によっては、リクエストにお応えできない場合がございますのでご了承ください。</p>
+        </div>
+
+        <span class="q-title">1. あなたの性別を教えてください <span class="req-label">必須</span></span>
+        <div class="radio-group" id="gender-group">
+            <label><input type="radio" name="gender" value="男性"> 男性</label>
+            <label><input type="radio" name="gender" value="女性"> 女性</label>
+            <label><input type="radio" name="gender" value="選択しない"> 選択しない</label>
+        </div>
+
+        <span class="q-title">2. あなたの年齢を教えてください <span class="req-label">必須</span></span>
+        <div class="radio-group" id="age-group">
+            <label><input type="radio" name="age" value="20代以下"> 20代以下</label>
+            <label><input type="radio" name="age" value="30-40代"> 30-40代</label>
+            <label><input type="radio" name="age" value="50-60代"> 50-60代</label>
+            <label><input type="radio" name="age" value="60代以上"> 60代以上</label>
+        </div>
+
+        <span class="q-title">3. 一緒に来店された方との関係性を教えてください <span class="req-label">必須</span></span>
+        <div class="radio-group" id="relation-group">
+            <label><input type="radio" name="relation" value="家族"> 家族</label>
+            <label><input type="radio" name="relation" value="友人"> 友人</label>
+            <label><input type="radio" name="relation" value="仕事仲間"> 仕事仲間</label>
+            <label><input type="radio" name="relation" value="他"> 他</label>
+        </div>
+
+        <span class="q-title">4. 曲名 <span class="req-label">必須</span></span>
+        <span class="q-desc">曲のタイトルをご記入ください。</span>
+        <input type="text" id="song-title">
+
+        <span class="q-title">5. アーティスト名 <span class="req-label">必須</span></span>
+        <span class="q-desc">その曲を歌っている・演奏しているアーティスト名をご記入ください。</span>
+        <input type="text" id="artist-name">
+
+        <span class="q-title">6. 何かあれば自由に書いてください <span class="opt-label">任意</span></span>
+        <span class="q-desc">この曲にまつわるエピソードや、お店へのメッセージなど、お気軽にどうぞ！</span>
+        <textarea id="comment" placeholder="曲との思い出・当店の感想等をご記入ください"></textarea>
+        
+        <div>
+            <button id="submit-btn" class="submit-btn" disabled onclick="submitRequest()">リクエストを送信する</button>
+        </div>
+
+        <div class="notice-text">
+            ※当システムではローカルストレージを使用しこのアプリ専用の識別番号を発行しています。個人を特定する情報は一切取得いたしません。
+        </div>
+      </div>
+
+      <div id="step-complete" class="hidden">
+        <h2>ありがとうございました<br>リクエスト完了です！</h2>
+        <p class="complete-note">※混雑時、内容によって反映されませんのであらかじめご了承ください。</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const video = document.getElementById('promoVideo');
+    const bgImage = document.getElementById('bgImage');
+    const surveyWrapper = document.getElementById('surveyWrapper');
+
+    // 動画終了時の処理
+    video.addEventListener('ended', () => {
+      // 1. 動画を1秒かけてフェードアウトし、真っ黒な画面にする
+      video.style.opacity = '0';
+
+      // 動画が見えなくなった後（1秒後）の処理
+      setTimeout(() => {
+        video.style.display = 'none'; // 裏で動画要素を非表示にする
+        
+        // 2. 背景画像を表示状態にして、真ん中からじわじわ浮かび上がらせる
+        bgImage.style.display = 'block';
+        setTimeout(() => {
+          bgImage.classList.add('show-bg');
+        }, 50);
+
+        // 3. 画像がゆっくり現れるのに合わせて、6秒後にアンケート本体を表示する
+        setTimeout(() => {
+          surveyWrapper.style.display = 'flex';
+          setTimeout(() => {
+            surveyWrapper.classList.add('show-survey');
+          }, 50);
+        }, 6000); 
+
+      }, 1000); // 1秒間だけ真っ黒（暗転）な時間を作る
+    });
+
+    // 画面タップで動画再生（自動再生が途中で止まってしまった場合等の保険機能）
+    const playVideo = () => {
+      if (video.paused && video.style.display !== 'none') {
+        video.play();
+      }
+    };
+    document.body.addEventListener('click', playVideo);
+    document.body.addEventListener('touchstart', playVideo, { passive: true });
+
+    let deviceId = ""; 
+
+    function checkFormValidity() {
+        const gender = document.querySelector('input[name="gender"]:checked');
+        const age = document.querySelector('input[name="age"]:checked');
+        const relation = document.querySelector('input[name="relation"]:checked');
+        const songTitle = document.getElementById('song-title').value.trim();
+        const artistName = document.getElementById('artist-name').value.trim();
+        
+        const isValid = gender !== null && 
+                        age !== null && 
+                        relation !== null && 
+                        songTitle !== "" && 
+                        artistName !== "";
+                        
+        document.getElementById('submit-btn').disabled = !isValid;
+    }
+
+    window.onload = () => {
+        let savedId = localStorage.getItem('beer_app_device_id');
+        if (!savedId) {
+            savedId = 'dev_' + Date.now() + '_' + Math.random().toString(36).substring(2, 11);
+            localStorage.setItem('beer_app_device_id', savedId);
+        }
+        deviceId = savedId; 
+
+        const inputIds = ['song-title', 'artist-name'];
+        inputIds.forEach(id => {
+            document.getElementById(id).addEventListener('input', checkFormValidity);
+            document.getElementById(id).addEventListener('change', checkFormValidity);
+        });
+        
+        const radioNames = ['gender', 'age', 'relation'];
+        radioNames.forEach(name => {
+            const radios = document.querySelectorAll(`input[name="${name}"]`);
+            radios.forEach(radio => {
+                radio.addEventListener('change', checkFormValidity);
+            });
+        });
+        
+        checkFormValidity();
+    };
+
+    function submitRequest() {
+        const btn = document.getElementById('submit-btn');
+        btn.disabled = true;
+        btn.innerText = "送信完了";
+
+        // 外部送信は行わず、完了画面へ切り替え
+        document.getElementById('step-survey').classList.add('hidden');
+        document.getElementById('step-complete').classList.remove('hidden');
+    }
+  </script>
+
+</body>
+</html>
