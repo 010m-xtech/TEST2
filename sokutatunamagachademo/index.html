@@ -212,30 +212,7 @@
 
           useEffect(() => {
               const urlParams = new URLSearchParams(window.location.search);
-              
-              if (urlParams.get('action') === 'reset') {
-                  localStorage.removeItem('beer_app_gacha_result_v2');
-                  localStorage.removeItem('beer_app_gacha_result');
-                  
-                  const shopParam = urlParams.get('shop');
-                  const newUrl = window.location.pathname + (shopParam ? `?shop=${shopParam}` : '');
-                  window.history.replaceState({}, document.title, newUrl);
-              }
-
               setShopName(urlParams.get('shop') || "店舗");
-
-              // 古いデータのクリーンアップ
-              if (localStorage.getItem('beer_app_gacha_result')) {
-                  localStorage.removeItem('beer_app_gacha_result');
-                  localStorage.removeItem('beer_app_survey_completed');
-              }
-
-              const savedPrizeId = localStorage.getItem('beer_app_gacha_result_v2');
-              if (savedPrizeId) {
-                  setPrizeId(parseInt(savedPrizeId, 10));
-                  setStage('result');
-              }
-              
               setIsLoaded(true);
           }, []);
 
@@ -314,7 +291,6 @@
             
             const prize = drawPrize();
             setPrizeId(prize.id);
-            localStorage.setItem('beer_app_gacha_result_v2', prize.id.toString());
             setStage('playing_video');
             
             if (videoRef.current) {
