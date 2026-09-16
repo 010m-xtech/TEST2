@@ -411,6 +411,7 @@
 
     function handleResize() {
       const container = document.getElementById('tank-container');
+      if (!container) return;
       const rect = container.getBoundingClientRect();
       const rawDim = Math.max(120, Math.min(rect.width || 260, rect.height || 260));
       
@@ -426,18 +427,6 @@
       // Adaptive capsule radius relative to sphere
       const adaptiveRadius = Math.max(12, Math.min(22, tankRadius * 0.12));
       capsules.forEach(c => c.radius = adaptiveRadius);
-
-      // Automatic viewport fit
-      const availableH = window.innerHeight;
-      const scaler = document.getElementById('machine-wrapper');
-      if (scaler) {
-        if (availableH < 640) {
-          const s = Math.max(0.75, availableH / 680);
-          scaler.style.transform = `scale(${s})`;
-        } else {
-          scaler.style.transform = 'scale(1)';
-        }
-      }
     }
     window.addEventListener('resize', handleResize);
 
@@ -937,74 +926,93 @@
     let lastX = null, lastY = null, lastZ = null;
     let lastShakeTime = 0;
 
+    // 高精度・高互換性シェイク検知ロジック (iOS / Android 両対応)
     function handleMotion(e) {
-      const acc = e.acceleration || e.accelerationIncludingGravity;
+      // 重力込み加速度、または純加速度のどちらでも取得
+      const acc = e.accelerationIncludingGravity || e.acceleration;
       if (!acc) return;
 
       const now = performance.now();
-      if (lastX !== null && (now - lastShakeTime > 65)) {
-        const dx = (acc.x || 0) - lastX;
-        const dy = (acc.y || 0) - lastY;
-        const dz = (acc.z || 0) - lastZ;
+      if (now - lastShakeTime < 70) return; // 最小インターバル
+
+      const curX = acc.x ?? 0;
+      const curY = acc.y ?? 0;
+      const curZ = acc.z ?? 0;
+
+      if (lastX !== null) {
+        const dx = curX - lastX;
+        const dy = curY - lastY;
+        const dz = curZ - lastZ;
         const delta = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
-        if (delta > 14) {
-          // Moderate rise rate for an enjoyable shaking experience
-          const gain = Math.min(2.0, (delta - 14) * 0.16 + 0.5);
-          shakeVelocity.x += (Math.random() - 0.5) * 8;
-          shakeVelocity.y -= 5;
+        // 閾値を超えたらシェイクと判定（軽快に反応するよう感度を調整）
+        if (delta > 8.0) {
+          const gain = Math.min(2.2, (delta - 8.0) * 0.18 + 0.6);
+          shakeVelocity.x += (Math.random() - 0.5) * 10;
+          shakeVelocity.y -= 6;
           addBubblePower(gain, true);
           lastShakeTime = now;
         }
       }
-      lastX = acc.x || 0;
-      lastY = acc.y || 0;
-      lastZ = acc.z || 0;
+
+      lastX = curX;
+      lastY = curY;
+      lastZ = curZ;
     }
 
     function handleOrientation(e) {
-      if (e.gamma !== null) {
+      if (e.gamma !== null && e.gamma !== undefined) {
         // Gamma: Left to Right (-90 to +90) -> responsive, fluid tilt
         const rad = (e.gamma * Math.PI) / 180;
         targetLiquidAngle = Math.max(-1.25, Math.min(1.25, rad * 1.4));
         targetTiltX = Math.max(-1.5, Math.min(1.5, rad * 1.6));
       }
-      if (e.beta !== null) {
+      if (e.beta !== null && e.beta !== undefined) {
         // Beta: Front to Back (-180 to +180)
         targetTiltY = (e.beta - 45) * 0.02;
       }
     }
 
-    // Seamless automatic permission bindings
-    let sensorInitialized = false;
-    function tryEnableSensors() {
-      if (sensorInitialized) return;
+    // センサー確実起動マネージャー
+    let sensorActive = false;
+    async function activateSensors() {
       initAudio();
+      if (sensorActive) return;
 
-      if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-        DeviceMotionEvent.requestPermission().then(state => {
-          if (state === 'granted') {
+      try {
+        // iOS 13+ Safari Permission API
+        if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+          const permissionState = await DeviceMotionEvent.requestPermission();
+          if (permissionState === 'granted') {
             window.addEventListener('devicemotion', handleMotion, { passive: true });
+            sensorActive = true;
+
             if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-              DeviceOrientationEvent.requestPermission().then(orState => {
-                if (orState === 'granted') {
+              try {
+                const orientState = await DeviceOrientationEvent.requestPermission();
+                if (orientState === 'granted') {
                   window.addEventListener('deviceorientation', handleOrientation, { passive: true });
                 }
-              }).catch(() => {});
+              } catch (err) {}
             }
           }
-        }).catch(() => {});
-      } else {
-        window.addEventListener('devicemotion', handleMotion, { passive: true });
-        window.addEventListener('deviceorientation', handleOrientation, { passive: true });
+        } else {
+          // Android / PC / 非iOS環境
+          window.addEventListener('devicemotion', handleMotion, { passive: true });
+          window.addEventListener('deviceorientation', handleOrientation, { passive: true });
+          sensorActive = true;
+        }
+      } catch (err) {
+        console.warn('Sensor request error:', err);
       }
-      sensorInitialized = true;
     }
 
-    window.addEventListener('touchstart', tryEnableSensors, { once: true });
-    window.addEventListener('click', tryEnableSensors, { once: true });
-    window.addEventListener('devicemotion', handleMotion, { passive: true });
-    window.addEventListener('deviceorientation', handleOrientation, { passive: true });
+    // ユーザーの画面ファーストタッチ・クリックで確実にセンサーを有効化
+    window.addEventListener('touchstart', activateSensors, { passive: true });
+    window.addEventListener('click', activateSensors);
+    
+    // 即時バインドも試行（Android等は初回から即座に動作）
+    activateSensors();
 
     // Desktop mouse tilt simulation
     window.addEventListener('mousemove', (e) => {
@@ -1015,17 +1023,29 @@
       targetTiltY = normY * 0.6;
     });
 
-    // Sphere tap handler: shake fallback when filling
+    // Sphere / Body tap handler: shake fallback when filling
     const tankContainer = document.getElementById('tank-container');
-    tankContainer.addEventListener('click', (e) => {
-      initAudio();
+    if (tankContainer) {
+      tankContainer.addEventListener('click', (e) => {
+        activateSensors();
+        if (!isFull) {
+          shakeVelocity.x = (Math.random() - 0.5) * 12;
+          shakeVelocity.y = -8;
+          addBubblePower(3.0, false);
+        }
+      });
+    }
 
-      if (!isFull) {
-        shakeVelocity.x = (Math.random() - 0.5) * 12;
-        shakeVelocity.y = -8;
-        addBubblePower(2.5, false);
-      }
-    });
+    // ガイダンスバーのタップでもセンサーをアクティブ化し泡を注入
+    const shakeInstruction = document.getElementById('shake-instruction');
+    if (shakeInstruction) {
+      shakeInstruction.addEventListener('click', () => {
+        activateSensors();
+        if (!isFull) {
+          addBubblePower(3.5, false);
+        }
+      });
+    }
 
     // --- Crank Handle Interaction (赤丸部分タップ) ---
     const crankHandle = document.getElementById('crank-handle');
