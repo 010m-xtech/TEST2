@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>顔はめ＆お絵描きミニゲーム集</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden; 
+            background-color: #ffedd6; 
+            color: #5c3a21; 
+            font-family: 'Hiragino Maru Gothic ProN', sans-serif; 
+            -webkit-tap-highlight-color: transparent; 
+            width: 100vw;
+            /* スマホの上下バーを考慮して常に画面内に収める魔法の単位 (Dynamic Viewport Height) */
+            height: 100dvh;
+            touch-action: none; 
+        }
+
+        @keyframes shakeScreen {
+            0% { transform: translate(0, 0); }
+            20% { transform: translate(-15px, 10px); }
+            40% { transform: translate(15px, -10px); }
+            60% { transform: translate(-15px, 10px); }
+            80% { transform: translate(15px, -10px); }
+            100% { transform: translate(0, 0); }
+        }
+        .shake-screen {
+            animation: shakeScreen 0.2s ease-in-out;
+        }
+
+        #setup-screen {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0; left: 0;
+            z-index: 100;
+            background-color: #ffedd6;
+        }
+
+        /* キャラクター作成エリア */
+        #character-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden; 
+        }
+
+        #character {
+            width: 300px; 
+            height: 420px;
+            position: relative;
+            pointer-events: none;
+            transition: transform 0.4s ease; 
+            transform: scale(1.7); /* 初期は大きく */
+            transform-origin: top center;
+        }
+        
+        #face-frame {
+            width: 120px; 
+            height: 160px;
+            border-radius: 50% 50% 50% 50% / 25% 25% 75% 75%;
+            border: 5px dashed #ff9800; 
+            overflow: hidden;
+            position: absolute;
+            top: 20px; 
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: transparent;
+            z-index: 2;
+        }
+
+        #photo-canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; 
+            transform: scaleX(-1);
+        }
+
+        #webcam {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; 
+            /* カメラ映像を1.5倍ズーム */
+            transform: scaleX(-1) scale(1.5);
+        }
+
+        #drawing-canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 5;
+            transition: background-color 0.3s;
+        }
+
+        #character.drawing-mode {
+            pointer-events: auto;
+            transform: scale(1) translateY(0);
+        }
+        #character.drawing-mode #face-frame {
+            border-color: transparent;
+        }
+        #character.drawing-mode #drawing-canvas {
+            background-color: rgba(255,255,255,0.4);
+            border: 3px dashed #ff9800;
+            border-radius: 30px; 
+        }
+
+        #character.playing-mode {
+            transform-origin: top left;
+            pointer-events: none;
+            border: none;
+            transition: none !important;
+            z-index: 20; /* アイテムより手前に表示 */
+        }
+        #character.playing-mode #face-frame {
+            border-color: transparent; 
+        }
+        #character.playing-mode #drawing-canvas {
+            background-color: transparent;
+            border: none;
+        }
+
+        /* らくがきキャンバスの下に配置するパレット */
+        #bottom-palette {
+            display: none;
+            flex-direction: row; 
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 20px;
+            margin-bottom: 15px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .palette-section {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .palette-divider {
+            width: 2px;
+            height: 30px;
+            background-color: #ddd;
+            margin: 0 5px;
+            border-radius: 2px;
+        }
+
+        #ui-area {
+            background: #fff;
+            padding: 15px 20px 20px;
+            border-top-left-radius: 30px;
+            border-top-right-radius: 30px;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* UIエリアが広がりすぎないように制限 */
+            max-height: 45vh;
+            overflow-y: auto;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .btn:active { transform: scale(0.95); }
+        .btn.small { padding: 10px 20px; font-size: 1rem; }
+
+        .color-btn {
+            width: 32px; height: 32px; /* 少し大きく */
+            border-radius: 50%;
+            border: 3px solid #f0f0f0;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .color-btn.active {
+            border-color: #333;
+            transform: scale(1.15);
+        }
+
+        .size-btn {
+            background-color: #555;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s;
+            border: 2px solid transparent;
+        }
+        .size-btn.active {
+            background-color: #ff9800;
+            transform: scale(1.3);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        /* ゲーム選択画面を上下バーがあっても収まるように調整 */
+        #game-select-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-evenly; /* 隙間を均等に */
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0; left: 0;
+            background-color: #ffeaa7;
+            z-index: 90;
+            padding: 5vh 0; /* 上下に少し余白 */
+            box-sizing: border-box;
+        }
+        
+        .game-btn {
+            width: 90%;
+            max-width: 340px;
+            padding: 10px 15px; /* 上下のパディングを少し狭く */
+            background-color: #ff9800;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            /* スマホでボタンが潰れないための設定 */
+            flex-shrink: 1; 
+        }
+        .game-btn-img {
+            width: 100%;
+            max-height: 25vh; /* 画面の高さの25%まで。見切れ防止の要 */
+            height: auto;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+        .game-btn-title {
+            font-size: 1.2rem;
+            margin: 2px 0;
+        }
+        .game-btn-desc {
+            font-size: 0.85rem;
+            font-weight: normal;
+            line-height: 1.4;
+            white-space: nowrap; 
+        }
+
+        .game-screen {
+            display: none;
+            width: 100%; height: 100%;
+            position: absolute;
+            top: 0; left: 0;
+            overflow: hidden;
+        }
+        .score-board {
+            position: absolute;
+            top: 10px; left: 10px;
+            display: flex;
+            gap: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: rgba(255,255,255,0.8);
+            padding: 10px 15px;
+            border-radius: 20px;
+            z-index: 30; /* スコアは一番上に */
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .back-btn {
+            position: absolute;
+            top: 10px; right: 10px;
+            background-color: #95a5a6;
+            z-index: 30;
+        }
+
+        .result-popup {
+            display: none;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 15px;
+            border-radius: 20px;
+            text-align: center;
+            z-index: 50;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            width: 85%;
+            max-width: 320px;
+            max-height: 90vh;
+            overflow-y: auto; 
+            box-sizing: border-box;
+        }
+
+        .result-avatar-container {
+            width: 140px; 
+            height: 196px; 
+            margin: 5px auto 0;
+            position: relative;
+            border: 2px solid #ccc;
+            border-radius: 15px;
+            background-color: #fff;
+            overflow: hidden;
+        }
+        .result-avatar-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* キャッチゲームの木と空の背景 */
+        #catch-screen { 
+            background-color: #e1f5fe; /* 爽やかな空の色 */
+            position: relative;
+        }
+        #catch-screen::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; /* 木を一番奥の背景として設定 */
+            pointer-events: none;
+            /* オリジナルの画像を背景に設定 */
+            background-image: url('haikeikyachi.png');
+            background-size: cover; /* 画面いっぱいに余白なく広げる */
+            background-position: center; /* 常に画像の中央を基準に表示 */
+            background-repeat: no-repeat;
+        }
+
+        .falling-item {
+            position: absolute;
+            font-size: 40px;
+            z-index: 15; /* アイテムは木(0)より手前 */
+            user-select: none;
+        }
+
+        #whack-screen { background-color: #a3e4d7; }
+        
+        #whack-holes {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 10px;
+            width: 100%;
+            height: calc(100% - 90px); 
+            max-width: none;
+            margin: 80px auto 10px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        
+        .whack-hole {
+            position: relative;
+            background-color: #76d7c4; 
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .hole-inner {
+            position: absolute;
+            bottom: 10%;
+            left: 10%;
+            width: 80%;
+            height: 30%;
+            background-color: #3e2723;
+            border-radius: 50%;
+            box-shadow: inset 0 5px 10px rgba(0,0,0,0.8);
+        }
+
+        .mole {
+            position: absolute;
+            bottom: 5%; 
+            left: 50%;
+            cursor: pointer;
+            transition: transform 0.15s ease-out; 
+        }
+        
+        /* 飛び出す高さ（translateY）を小さくして、高くジャンプさせる */
+        .food-mole {
+            font-size: 60px;
+            transform: translateX(-50%) translateY(-30px);
+        }
+        .food-mole.hidden {
+            transform: translateX(-50%) translateY(150px);
+        }
+
+        .character-mole {
+            width: 300px;
+            height: 420px;
+            transform-origin: bottom center;
+            transform: translateX(-50%) scale(0.35) translateY(30px); 
+        }
+        .character-mole.hidden {
+            transform: translateX(-50%) scale(0.35) translateY(450px);
+        }
+
+        .clone-face-frame {
+            width: 120px; 
+            height: 160px;
+            border-radius: 50% 50% 50% 50% / 25% 25% 75% 75%;
+            overflow: hidden;
+            position: absolute;
+            top: 20px; 
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+        }
+        .clone-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+        .clone-drawing {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 5;
+        }
+    </style>
+</head>
+<body>
+    <div id="setup-screen">
+        <!-- 画面上部の1行タイトル -->
+        <div style="text-align:center; padding:15px 10px 5px; background-color:#ffedd6; z-index:110;">
+            <h1 style="color:#e74c3c; font-size:clamp(1rem, 5vw, 1.5rem); margin:0; font-weight:bold; white-space:nowrap; text-shadow: 1px 1px 0 #fff;">自分のアバターを作ってゲームで遊ぼう！！</h1>
+        </div>
+
+        <div id="character-area">
+            <div id="character">
+                <canvas id="drawing-canvas" width="300" height="420"></canvas>
+                <div id="face-frame">
+                    <video id="webcam" autoplay playsinline></video>
+                    <canvas id="photo-canvas" style="display:none;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div id="ui-area">
+            <div id="ui-shooting" style="text-align:center;">
+                <!-- タイトルは上部に移動したので、ここはシンプルに -->
+                <p style="margin:0 0 15px 0; color:#d35400; font-size:1.1rem; font-weight:bold;">顔の形に合わせて撮影！</p>
+                <button id="shoot-btn" class="btn" style="background-color:#ff9800; width:200px;">撮影する！</button>
+            </div>
+
+            <div id="ui-drawing" style="display:none; width:100%; max-width:350px;">
+                <p style="text-align:center; color:#e74c3c; font-weight:bold; margin-top:0; margin-bottom:10px; font-size:1.1rem;">写真にらくがきしてみよう！</p>
+                
+                <!-- 横から下に移動したパレット -->
+                <div id="bottom-palette">
+                    <div class="palette-section">
+                        <div class="color-btn active" data-color="#000000" style="background-color:#000;"></div>
+                        <div class="color-btn" data-color="#e74c3c" style="background-color:#e74c3c;"></div>
+                        <div class="color-btn" data-color="#3498db" style="background-color:#3498db;"></div>
+                        <div class="color-btn" data-color="#2ecc71" style="background-color:#2ecc71;"></div>
+                        <div class="color-btn" data-color="#f1c40f" style="background-color:#f1c40f;"></div>
+                    </div>
+                    <div class="palette-divider"></div>
+                    <div class="palette-section">
+                        <div class="size-btn" data-size="5" style="width:6px; height:6px;"></div>
+                        <div class="size-btn active" data-size="12" style="width:12px; height:12px;"></div>
+                        <div class="size-btn" data-size="25" style="width:20px; height:20px;"></div>
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; gap: 8px; margin-bottom:20px;">
+                    <button id="retake-btn" class="btn small" style="flex:1; background-color:#95a5a6; padding:12px 5px; font-size:0.95rem;">撮り直す</button>
+                    <button id="undo-btn" class="btn small" style="flex:1; background-color:#34495e; padding:12px 5px; font-size:0.95rem;">1つ戻す</button>
+                    <button id="clear-btn" class="btn small" style="flex:1; background-color:#e74c3c; padding:12px 5px; font-size:0.95rem;">全消し</button>
+                </div>
+                <button id="start-btn" class="btn" style="width:100%; background-color:#2ecc71; padding:15px; font-size:1.4rem;">完成！遊ぶ！</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-select-screen">
+        <h2 style="color:#d35400; margin:0; font-size: 1.3rem;">どのゲームで遊ぶ？</h2>
+        
+        <button id="btn-play-catch" class="btn game-btn">
+            <img src="kyachi.png" alt="メニューキャッチ" class="game-btn-img">
+            <div class="game-btn-title">メニューキャッチ</div>
+            <div class="game-btn-desc">落ちてくるメニューをたくさんとろう。<br>爆弾にはきをつけて</div>
+        </button>
+        
+        <button id="btn-play-whack" class="btn game-btn" style="background-color:#e74c3c;">
+            <img src="mogura.png" alt="モグラたたき" class="game-btn-img">
+            <div class="game-btn-title">モグラたたき</div>
+            <div class="game-btn-desc">とびだすメニューをタップしてたくさんとろう。<br>自分をとったらだめだよ</div>
+        </button>
+        
+        <button id="btn-remake" class="btn small" style="background-color:#95a5a6; margin-top: 5px;">キャラを作り直す</button>
+    </div>
+
+    <div id="catch-screen" class="game-screen">
+        <div class="score-board">
+            <span>スコア: <span id="catch-score">0</span></span>
+            <span style="color:#e74c3c">残り: <span id="catch-time">30</span>秒</span>
+        </div>
+        <button class="btn small back-btn" onclick="backToMenu()">戻る</button>
+        
+        <div id="catch-result" class="result-popup">
+            <h2 style="color:#e74c3c; margin-top:0; margin-bottom:5px; font-size:1.1rem;">タイムアップ！</h2>
+            <p style="font-size:1rem; font-weight:bold; margin:0 0 5px 0;">最終スコア: <span id="catch-final-score"></span>点</p>
+            
+            <div id="catch-best-food" style="margin-bottom: 5px; display: none; flex-direction: column; align-items: center;">
+                <span style="font-size: 0.8rem; font-weight: bold; color: #555; white-space: nowrap;">たくさん集めた今日のおすすめメニューは</span>
+                <img id="catch-best-food-img" src="" style="width: 130px; height: 130px; object-fit: contain; margin: 5px 0; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                <span id="catch-best-food-name" style="font-size: 1.2rem; font-weight: bold; color: #d35400;">商品名</span>
+            </div>
+
+            <div class="result-avatar-container">
+                <canvas id="result-catch-canvas" class="result-avatar-canvas" width="300" height="420"></canvas>
+            </div>
+            <!-- もう一度ボタンで resetToStart を呼ぶ -->
+            <button class="btn" style="background-color:#ff9800; width:100%; margin-top:15px;" onclick="resetToStart()">もう一度</button>
+        </div>
+    </div>
+
+    <div id="whack-screen" class="game-screen">
+        <div class="score-board">
+            <span>スコア: <span id="whack-score">0</span></span>
+            <span style="color:#e74c3c">残り: <span id="whack-time">30</span>秒</span>
+        </div>
+        <button class="btn small back-btn" onclick="backToMenu()">戻る</button>
+        
+        <div id="whack-holes"></div>
+
+        <div id="whack-result" class="result-popup">
+            <h2 style="color:#e74c3c; margin-top:0; margin-bottom:5px; font-size:1.1rem;">タイムアップ！</h2>
+            <p style="font-size:1rem; font-weight:bold; margin:0 0 5px 0;">最終スコア: <span id="whack-final-score"></span>点</p>
+            
+            <div id="whack-best-food" style="margin-bottom: 5px; display: none; flex-direction: column; align-items: center;">
+                <span style="font-size: 0.8rem; font-weight: bold; color: #555; white-space: nowrap;">たくさん集めた今日のおすすめメニューは</span>
+                <img id="whack-best-food-img" src="" style="width: 130px; height: 130px; object-fit: contain; margin: 5px 0; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                <span id="whack-best-food-name" style="font-size: 1.2rem; font-weight: bold; color: #d35400;">商品名</span>
+            </div>
+
+            <div class="result-avatar-container">
+                <canvas id="result-whack-canvas" class="result-avatar-canvas" width="300" height="420"></canvas>
+            </div>
+            <!-- もう一度ボタンで resetToStart を呼ぶ -->
+            <button class="btn" style="background-color:#ff9800; width:100%; margin-top:15px;" onclick="resetToStart()">もう一度</button>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('webcam');
+        const photoCanvas = document.getElementById('photo-canvas');
+        const pCtx = photoCanvas.getContext('2d');
+        const drawCanvas = document.getElementById('drawing-canvas');
+        const dCtx = drawCanvas.getContext('2d');
+        
+        const character = document.getElementById('character');
+        const setupScreen = document.getElementById('setup-screen');
+        const selectScreen = document.getElementById('game-select-screen');
+        const catchScreen = document.getElementById('catch-screen');
+        const whackScreen = document.getElementById('whack-screen');
+        
+        const uiShooting = document.getElementById('ui-shooting');
+        const uiDrawing = document.getElementById('ui-drawing');
+
+        const goodFoods = [
+            { name: "商品名1を入力", src: "S__22593553_0.jpg" },
+            { name: "商品名2を入力", src: "S__22593554_0.jpg" },
+            { name: "チキン南蛮", src: "チキン南蛮.jpg" },
+            { name: "海ぶどう", src: "海ぶどう.jpg" },
+            { name: "紅イモコロッケ", src: "紅イモコロッケ.jpg" }
+        ]; 
+        // 爆弾のみに統一
+        const badItems = ['💣']; 
+
+        let caughtFoods = {};
+        
+        // カメラストリームを保持する変数
+        let currentStream = null;
+
+        function startCamera() {
+            // 既にストリームがあれば停止
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false })
+            .then(stream => { 
+                currentStream = stream;
+                video.srcObject = stream; 
+                video.play(); 
+            })
+            .catch(err => { alert("カメラの起動に失敗しました。ブラウザの設定でカメラを許可してください。"); });
+        }
+
+        // 初回起動時
+        startCamera();
+
+        document.getElementById('shoot-btn').addEventListener('click', () => {
+            if (video.videoWidth === 0) return; 
+            photoCanvas.width = video.videoWidth;
+            photoCanvas.height = video.videoHeight;
+            
+            // 映像の中心部分を1.5倍にズームしてキャンバスに焼き付ける（ズーム設定反映）
+            const zoom = 1.5;
+            const sx = video.videoWidth / 2 - (video.videoWidth / zoom) / 2;
+            const sy = video.videoHeight / 2 - (video.videoHeight / zoom) / 2;
+            const sw = video.videoWidth / zoom;
+            const sh = video.videoHeight / zoom;
+            
+            pCtx.drawImage(video, sx, sy, sw, sh, 0, 0, photoCanvas.width, photoCanvas.height);
+            
+            video.style.display = 'none';
+            photoCanvas.style.display = 'block';
+            uiShooting.style.display = 'none';
+            uiDrawing.style.display = 'block';
+            document.getElementById('bottom-palette').style.display = 'flex'; 
+            
+            character.classList.add('drawing-mode');
+        });
+
+        let drawingHistory = [];
+        document.getElementById('retake-btn').addEventListener('click', resetToShooting);
+        document.getElementById('undo-btn').addEventListener('click', () => {
+            if (drawingHistory.length > 0) {
+                dCtx.putImageData(drawingHistory.pop(), 0, 0);
+            } else {
+                dCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+            }
+        });
+        document.getElementById('clear-btn').addEventListener('click', () => {
+            dCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+            drawingHistory = [];
+        });
+
+        function resetToShooting() {
+            video.style.display = 'block';
+            photoCanvas.style.display = 'none';
+            uiShooting.style.display = 'block';
+            uiDrawing.style.display = 'none';
+            document.getElementById('bottom-palette').style.display = 'none';
+            
+            // ★アバターを確実に元の場所（撮影エリア）に戻してリセットする
+            document.getElementById('character-area').appendChild(character);
+            character.style.transform = ''; 
+            character.classList.remove('playing-mode');
+            
+            character.classList.remove('drawing-mode');
+            dCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+            drawingHistory = []; 
+            // カメラを再起動
+            startCamera();
+        }
+
+        let isDrawing = false;
+        let currentColor = '#000000';
+        let currentSize = 12;
+
+        function getPos(e) {
+            const rect = drawCanvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const scaleX = drawCanvas.width / rect.width;
+            const scaleY = drawCanvas.height / rect.height;
+            return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+        }
+
+        function startDrawing(e) {
+            if (!character.classList.contains('drawing-mode')) return;
+            e.preventDefault(); 
+            isDrawing = true;
+            drawingHistory.push(dCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height));
+            if (drawingHistory.length > 20) drawingHistory.shift();
+            const pos = getPos(e);
+            dCtx.beginPath();
+            dCtx.moveTo(pos.x, pos.y);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            e.preventDefault();
+            const pos = getPos(e);
+            dCtx.lineTo(pos.x, pos.y);
+            dCtx.strokeStyle = currentColor;
+            dCtx.lineWidth = currentSize;
+            dCtx.lineCap = 'round';
+            dCtx.lineJoin = 'round';
+            dCtx.stroke();
+        }
+        function endDrawing() { isDrawing = false; }
+
+        drawCanvas.addEventListener('touchstart', startDrawing, {passive: false});
+        drawCanvas.addEventListener('touchmove', draw, {passive: false});
+        drawCanvas.addEventListener('touchend', endDrawing);
+        drawCanvas.addEventListener('mousedown', startDrawing);
+        drawCanvas.addEventListener('mousemove', draw);
+        drawCanvas.addEventListener('mouseup', endDrawing);
+        drawCanvas.addEventListener('mouseout', endDrawing);
+
+        document.querySelectorAll('.color-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentColor = this.dataset.color;
+            });
+        });
+        document.querySelectorAll('.size-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentSize = parseInt(this.dataset.size);
+            });
+        });
+
+        document.getElementById('start-btn').addEventListener('click', () => {
+            character.classList.remove('drawing-mode');
+            setupScreen.style.display = 'none';
+            selectScreen.style.display = 'flex';
+            setupWhackHoles();
+        });
+
+        document.getElementById('btn-remake').addEventListener('click', () => {
+            selectScreen.style.display = 'none';
+            setupScreen.style.display = 'flex';
+            resetToShooting();
+        });
+
+        // 最初のカメラ画面へ完全に戻る関数
+        function resetToStart() {
+            selectScreen.style.display = 'none';
+            catchScreen.style.display = 'none';
+            whackScreen.style.display = 'none';
+            document.getElementById('catch-result').style.display = 'none';
+            document.getElementById('whack-result').style.display = 'none';
+
+            setupScreen.style.display = 'flex';
+            resetToShooting();
+        }
+
+        // ゲーム選択画面に戻る関数
+        function backToMenu() {
+            cancelAnimationFrame(catchAnimationId);
+            clearInterval(catchTimerId);
+            clearInterval(catchSpawnerId);
+            clearInterval(whackTimerId);
+            clearTimeout(whackSpawnerId);
+            whackHoles.forEach(h => clearTimeout(h.timeoutId));
+            
+            catchScreen.style.display = 'none';
+            whackScreen.style.display = 'none';
+            document.getElementById('catch-result').style.display = 'none';
+            document.getElementById('whack-result').style.display = 'none';
+            selectScreen.style.display = 'flex';
+        }
+
+        function showGameResult(gameType, finalScore) {
+            let resultScreenId = gameType + '-result';
+            let scoreId = gameType + '-final-score';
+            let bestFoodContainerId = gameType + '-best-food';
+            let bestFoodImgId = gameType + '-best-food-img';
+            let bestFoodNameId = gameType + '-best-food-name';
+
+            document.getElementById(scoreId).innerText = finalScore;
+
+            let maxCount = 0;
+            let mostCaughtIndex = -1;
+            for (const [index, count] of Object.entries(caughtFoods)) {
+                if (count > maxCount) {
+                    maxCount = count;
+                    mostCaughtIndex = parseInt(index);
+                }
+            }
+
+            let bestFoodContainer = document.getElementById(bestFoodContainerId);
+            if (mostCaughtIndex !== -1) {
+                let bestFood = goodFoods[mostCaughtIndex];
+                document.getElementById(bestFoodImgId).src = bestFood.src;
+                document.getElementById(bestFoodNameId).innerText = bestFood.name;
+                bestFoodContainer.style.display = 'flex';
+            } else {
+                bestFoodContainer.style.display = 'none';
+            }
+
+            updateResultAvatar(resultScreenId);
+            document.getElementById(resultScreenId).style.display = 'block';
+        }
+
+        function updateResultAvatar(resultScreenId) {
+            let canvasId = resultScreenId === 'catch-result' ? 'result-catch-canvas' : 'result-whack-canvas';
+            let targetCanvas = document.getElementById(canvasId);
+            let ctx = targetCanvas.getContext('2d');
+            
+            ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
+            
+            let faceX = 90; let faceY = 20; let faceW = 120; let faceH = 160;
+            ctx.save();
+            ctx.beginPath();
+            ctx.ellipse(faceX + faceW/2, faceY + faceH/2, faceW/2, faceH/2, 0, 0, 2 * Math.PI);
+            ctx.clip();
+            ctx.drawImage(photoCanvas, faceX, faceY, faceW, faceH);
+            ctx.restore();
+            
+            ctx.drawImage(drawCanvas, 0, 0, targetCanvas.width, targetCanvas.height);
+        }
+
+        let gameScale = 0.42; // キャッチゲームのキャラサイズを42%に少し大きく
+        let catchScore = 0;
+        let catchTime = 30;
+        let catchTimerId, catchSpawnerId, catchAnimationId;
+        let fallingItems = [];
+        let charX = 0;
+        let charY = 0;
+
+        document.getElementById('btn-play-catch').addEventListener('click', () => {
+            selectScreen.style.display = 'none';
+            catchScreen.style.display = 'block';
+            catchScreen.appendChild(character);
+            character.style.display = 'block';
+            character.classList.add('playing-mode');
+            startCatchGame();
+        });
+
+        function startCatchGame() {
+            catchScore = 0;
+            catchTime = 30;
+            caughtFoods = {}; 
+            fallingItems.forEach(item => item.element.remove());
+            fallingItems = [];
+            
+            document.getElementById('catch-score').innerText = catchScore;
+            document.getElementById('catch-time').innerText = catchTime;
+            
+            charX = window.innerWidth / 2 - (character.offsetWidth * gameScale) / 2;
+            charY = window.innerHeight - (character.offsetHeight * gameScale) - 20;
+            character.style.transform = `translate(${charX}px, ${charY}px) scale(${gameScale})`;
+
+            catchTimerId = setInterval(() => {
+                catchTime--;
+                document.getElementById('catch-time').innerText = catchTime;
+                if (catchTime <= 0) {
+                    clearInterval(catchTimerId);
+                    clearInterval(catchSpawnerId);
+                    cancelAnimationFrame(catchAnimationId);
+                    showGameResult('catch', catchScore); 
+                }
+            }, 1000);
+
+            catchSpawnerId = setInterval(spawnItem, 600);
+            catchLoop();
+        }
+
+        function spawnItem() {
+            const isGood = Math.random() > 0.45; // 爆弾の確率45%
+            let htmlContent = '';
+            let foodIndex = -1;
+
+            if (isGood) {
+                foodIndex = Math.floor(Math.random() * goodFoods.length);
+                let food = goodFoods[foodIndex];
+                htmlContent = `<img src="${food.src}" style="width:80px; height:80px; object-fit:contain; border-radius:10px;">`;
+            } else {
+                htmlContent = badItems[0]; // 爆弾のみ
+            }
+            
+            const el = document.createElement('div');
+            el.className = 'falling-item';
+            el.innerHTML = htmlContent; 
+            
+            const startX = Math.random() * (window.innerWidth - 80);
+            el.style.left = startX + 'px';
+            el.style.top = '-80px';
+            catchScreen.appendChild(el);
+
+            // 残り時間に応じた速度の増加を計算 (経過するほど速くなる)
+            const speedMultiplier = (30 - catchTime) / 30; // 最初は0、最後は1になる
+            const extraSpeed = speedMultiplier * 6; // 後半になるほど最大で+6のスピードを追加
+
+            fallingItems.push({
+                element: el,
+                y: -80,
+                x: startX,
+                speed: Math.random() * 3 + 4 + extraSpeed, // 基本速度 + 時間経過による追加速度
+                isGood: isGood,
+                foodIndex: foodIndex 
+            });
+        }
+
+        function catchLoop() {
+            character.style.transform = `translate(${charX}px, ${charY}px) scale(${gameScale})`;
+            const charRect = character.getBoundingClientRect();
+
+            for (let i = fallingItems.length - 1; i >= 0; i--) {
+                let item = fallingItems[i];
+                item.y += item.speed;
+                item.element.style.top = item.y + 'px';
+
+                const itemRect = item.element.getBoundingClientRect();
+                
+                if (itemRect.bottom > charRect.top + 30 && 
+                    itemRect.top < charRect.bottom &&
+                    itemRect.right > charRect.left + 30 && 
+                    itemRect.left < charRect.right - 30) {
+                    
+                    if (item.isGood) {
+                        catchScore += 10;
+                        caughtFoods[item.foodIndex] = (caughtFoods[item.foodIndex] || 0) + 1;
+                    } else {
+                        catchScore -= 10;
+                    }
+                    document.getElementById('catch-score').innerText = catchScore;
+                    
+                    item.element.innerHTML = item.isGood ? '✨' : '💥';
+                    setTimeout(() => item.element.remove(), 200);
+                    fallingItems.splice(i, 1);
+                    continue;
+                }
+                if (item.y > window.innerHeight) {
+                    item.element.remove();
+                    fallingItems.splice(i, 1);
+                }
+            }
+            catchAnimationId = requestAnimationFrame(catchLoop);
+        }
+
+        function onCatchMove(e) {
+            if (catchTime <= 0) return;
+            if (e.target.tagName.toLowerCase() === 'button') return;
+            
+            e.preventDefault(); 
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            
+            let newX = clientX - (character.offsetWidth * gameScale) / 2;
+            const maxRight = window.innerWidth - (character.offsetWidth * gameScale);
+            
+            if (newX < 0) newX = 0;
+            if (newX > maxRight) newX = maxRight;
+            charX = newX;
+        }
+
+        catchScreen.addEventListener('touchmove', onCatchMove, {passive: false});
+        catchScreen.addEventListener('mousemove', onCatchMove);
+        catchScreen.addEventListener('touchstart', onCatchMove, {passive: false});
+        catchScreen.addEventListener('mousedown', onCatchMove);
+
+        document.getElementById('btn-play-whack').addEventListener('click', () => {
+            selectScreen.style.display = 'none';
+            whackScreen.style.display = 'block';
+            startWhackGame();
+        });
+
+        let whackHoles = [];
+        let whackScore = 0;
+        let whackTime = 30;
+        let whackTimerId, whackSpawnerId;
+        let currentSpawnInterval = 1000;
+
+        function setupWhackHoles() {
+            const container = document.getElementById('whack-holes');
+            container.innerHTML = '';
+            whackHoles = [];
+
+            for (let i = 0; i < 9; i++) {
+                const holeDiv = document.createElement('div');
+                holeDiv.className = 'whack-hole';
+                holeDiv.innerHTML = `
+                    <div class="hole-inner"></div>
+                    <div class="mole character-mole hidden">
+                        <canvas class="clone-drawing" width="300" height="420"></canvas>
+                        <div class="clone-face-frame">
+                            <canvas class="clone-photo" width="${photoCanvas.width}" height="${photoCanvas.height}"></canvas>
+                        </div>
+                    </div>
+                    <div class="mole food-mole hidden"></div>
+                `;
+                container.appendChild(holeDiv);
+                
+                const cloneDraw = holeDiv.querySelector('.clone-drawing');
+                const clonePhoto = holeDiv.querySelector('.clone-photo');
+                cloneDraw.getContext('2d').drawImage(drawCanvas, 0, 0);
+                clonePhoto.getContext('2d').drawImage(photoCanvas, 0, 0);
+
+                const charMole = holeDiv.querySelector('.character-mole');
+                const foodMole = holeDiv.querySelector('.food-mole');
+
+                const tapAction = (e, isChar) => {
+                    e.preventDefault();
+                    tapMole(i, isChar);
+                };
+                charMole.addEventListener('touchstart', (e) => tapAction(e, true), {passive: false});
+                charMole.addEventListener('mousedown', (e) => tapAction(e, true));
+                foodMole.addEventListener('touchstart', (e) => tapAction(e, false), {passive: false});
+                foodMole.addEventListener('mousedown', (e) => tapAction(e, false));
+
+                whackHoles.push({
+                    charMole: charMole,
+                    foodMole: foodMole,
+                    isActive: false,
+                    timeoutId: null,
+                    isCharacter: false,
+                    foodIndex: -1
+                });
+            }
+        }
+
+        function startWhackGame() {
+            whackScore = 0;
+            whackTime = 30;
+            currentSpawnInterval = 1000;
+            caughtFoods = {}; 
+            document.getElementById('whack-score').innerText = whackScore;
+            document.getElementById('whack-time').innerText = whackTime;
+            document.getElementById('whack-result').style.display = 'none';
+
+            whackHoles.forEach(h => {
+                h.isActive = false;
+                h.charMole.classList.add('hidden');
+                h.foodMole.classList.add('hidden');
+                clearTimeout(h.timeoutId);
+            });
+
+            whackTimerId = setInterval(() => {
+                whackTime--;
+                document.getElementById('whack-time').innerText = whackTime;
+                if (whackTime <= 0) {
+                    clearInterval(whackTimerId);
+                    clearTimeout(whackSpawnerId);
+                    showGameResult('whack', whackScore); 
+                }
+            }, 1000);
+
+            scheduleNextSpawn();
+        }
+
+        function scheduleNextSpawn() {
+            if (whackTime <= 0) return;
+            spawnMoles();
+            let ratio = whackTime / 30; 
+            currentSpawnInterval = 300 + (700 * ratio); 
+            whackSpawnerId = setTimeout(scheduleNextSpawn, currentSpawnInterval);
+        }
+
+        function spawnMoles() {
+            let spawnCount = 1;
+            if (whackTime <= 22) spawnCount = 2;
+            if (whackTime <= 14) spawnCount = 3;
+            if (whackTime <= 6) spawnCount = 4;
+
+            let available = whackHoles.map((h, i) => ({h, i})).filter(obj => !obj.h.isActive);
+            for (let i = available.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [available[i], available[j]] = [available[j], available[i]];
+            }
+            for (let i = 0; i < Math.min(spawnCount, available.length); i++) {
+                showMole(available[i].i);
+            }
+        }
+
+        function showMole(index) {
+            let hole = whackHoles[index];
+            hole.isActive = true;
+            
+            let isCharacter = Math.random() < 0.3;
+            
+            if (isCharacter) {
+                hole.charMole.classList.remove('hidden');
+                hole.isCharacter = true;
+            } else {
+                let foodIndex = Math.floor(Math.random() * goodFoods.length);
+                let food = goodFoods[foodIndex];
+                hole.foodMole.innerHTML = `<img src="${food.src}" style="width:80px; height:80px; object-fit:contain; border-radius:10px;">`;
+                hole.foodMole.classList.remove('hidden');
+                hole.isCharacter = false;
+                hole.foodIndex = foodIndex; 
+            }
+            
+            let displayTime = currentSpawnInterval * 0.9; 
+            hole.timeoutId = setTimeout(() => {
+                if (hole.isActive) {
+                    hole.isActive = false;
+                    hole.charMole.classList.add('hidden');
+                    hole.foodMole.classList.add('hidden');
+                }
+            }, displayTime);
+        }
+
+        function tapMole(index, isCharacter) {
+            let hole = whackHoles[index];
+            if (!hole.isActive) return;
+
+            hole.isActive = false;
+            clearTimeout(hole.timeoutId); 
+            
+            if (isCharacter) {
+                whackScore -= 10; 
+                document.body.classList.add('shake-screen');
+                setTimeout(() => document.body.classList.remove('shake-screen'), 200);
+            } else {
+                whackScore += 10; 
+                caughtFoods[hole.foodIndex] = (caughtFoods[hole.foodIndex] || 0) + 1; 
+            }
+            document.getElementById('whack-score').innerText = whackScore;
+
+            hole.charMole.classList.add('hidden');
+            hole.foodMole.classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
