@@ -104,25 +104,16 @@
       </div>
       
       <!-- Transparent Beer Glass Tank Dome Container -->
-      <div class="relative w-[280px] sm:w-[320px] h-[280px] sm:h-[320px] rounded-full border-4 border-white/90 glass-dome overflow-hidden shadow-inner flex items-center justify-center">
-        <!-- Canvas for dynamic golden beer, creamy white head, and rising bubbles -->
+      <div id="tank-container" class="relative w-[280px] sm:w-[320px] h-[280px] sm:h-[320px] rounded-full border-4 border-white/90 glass-dome overflow-hidden shadow-inner flex items-center justify-center cursor-pointer">
+        <!-- Canvas for dynamic golden beer, creamy white head, tilt liquid, and 10 capsules -->
         <canvas id="bubble-canvas" class="w-full h-full block"></canvas>
-        
-        <!-- Center Capsule preview inside machine -->
-        <div id="dome-capsule" class="absolute pointer-events-none transition-transform duration-300 transform scale-90">
-          <div class="w-16 h-16 rounded-full border-2 border-white/90 shadow-lg relative overflow-hidden bg-gradient-to-br from-amber-400 via-yellow-200 to-amber-600 opacity-90 animate-bounce">
-            <div class="absolute inset-0 bg-white/70 rounded-t-full h-1/2"></div>
-            <div class="absolute top-1/2 left-0 right-0 h-[2px] bg-amber-800/30"></div>
-            <div class="absolute inset-0 flex items-center justify-center text-lg">🍺</div>
-          </div>
-        </div>
 
         <!-- Glass highlights and reflection overlays -->
         <div class="absolute top-4 left-7 w-20 h-10 rounded-full bg-gradient-to-b from-white/70 to-transparent transform -rotate-45 pointer-events-none"></div>
         <div class="absolute bottom-5 right-7 w-12 h-6 rounded-full bg-gradient-to-t from-white/40 to-transparent transform -rotate-45 pointer-events-none"></div>
         
         <!-- Beer Foam meter overlay floating indicator -->
-        <div class="absolute bottom-4 bg-amber-950/70 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-black tracking-wider flex items-center gap-1.5 shadow-md border border-amber-300/30">
+        <div class="absolute bottom-4 bg-amber-950/70 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-black tracking-wider flex items-center gap-1.5 shadow-md border border-amber-300/30 pointer-events-none">
           <span class="inline-block w-2 h-2 rounded-full bg-yellow-300 animate-ping"></span>
           泡＆ビール注ぎ率: <span id="bubble-percent" class="text-amber-300 text-sm font-extrabold w-10 text-right">0%</span>
         </div>
@@ -373,11 +364,221 @@
     let liquidLevel = 0.12; // normalized from 0.10 to 0.82
     let shakeVelocity = { x: 0, y: 0 };
 
+    // Tilt state for gyroscope / orientation and mouse tracking
+    let currentTilt = { x: 0, y: 0 };
+    let targetTilt = { x: 0, y: 0 };
+    let liquidAngle = 0; // Current liquid inclination angle
+
+    // Capsule class representing 10 buoyant capsules inside the tank
+    class TankCapsule {
+      constructor(index) {
+        this.index = index;
+        this.radius = 16;
+        this.x = 0;
+        this.y = 0;
+        this.vx = (Math.random() - 0.5) * 2;
+        this.vy = (Math.random() - 0.5) * 2;
+        this.angle = Math.random() * Math.PI * 2;
+        this.vAngle = (Math.random() - 0.5) * 0.05;
+        // Density variation (0.76 - 0.94) so capsules naturally settle semi-submerged in beer
+        this.density = 0.76 + (index % 4) * 0.06;
+        this.beerColors = [
+          ['#f59e0b', '#d97706'],
+          ['#fbbf24', '#b45309'],
+          ['#eab308', '#ca8a04'],
+          ['#78350f', '#451a03'], // dark beer capsule
+          ['#f97316', '#c2410c']
+        ];
+        this.colorPair = this.beerColors[index % this.beerColors.length];
+      }
+
+      initPosition(cx, cy, tankRadius) {
+        // Distribute within the lower circular tank initially
+        const spawnRadius = tankRadius * 0.55;
+        const angle = (this.index / 10) * Math.PI * 2;
+        this.x = cx + Math.cos(angle) * (spawnRadius * (0.4 + Math.random() * 0.5));
+        this.y = cy + Math.sin(angle) * (spawnRadius * 0.5) + (tankRadius * 0.2);
+      }
+
+      update(cx, cy, tankRadius, surfaceYFunc) {
+        // Enhanced gravity and tilt responsiveness based on smartphone orientation
+        const tiltXForce = currentTilt.x * 0.78;
+        const tiltYForce = currentTilt.y * 0.45;
+        const gy = 0.38 + Math.max(-0.25, tiltYForce);
+
+        this.vx += tiltXForce + (shakeVelocity.x * 0.08);
+        this.vy += gy + (shakeVelocity.y * 0.08);
+
+        // Buoyancy calculation: measure how deep the capsule is submerged
+        const surfaceY = surfaceYFunc(this.x);
+        const bottomY = this.y + this.radius;
+
+        if (bottomY > surfaceY) {
+          // Submerged in beer liquid: smooth partial sinking equilibrium (approx 65% submerged)
+          const submergence = Math.min(this.radius * 2, bottomY - surfaceY);
+          const submergedRatio = submergence / (this.radius * 2); // 0.0 to 1.0
+
+          const buoyancy = (submergedRatio / this.density) * 0.78;
+          this.vy -= buoyancy;
+
+          // Slope gravity: slide down the tilted beer liquid surface
+          this.vx += Math.sin(liquidAngle) * 0.65;
+
+          // Viscous drag of beer liquid
+          this.vx *= 0.93;
+          this.vy *= 0.92;
+
+          // Rolling rotation linked to horizontal rolling velocity in liquid
+          this.angle += this.vx * 0.06;
+        } else {
+          // In air above the beer head
+          this.vx *= 0.985;
+          this.vy *= 0.985;
+          this.angle += this.vAngle;
+        }
+
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vAngle *= 0.96;
+
+        // Keep inside circular glass dome boundary
+        const dx = this.x - cx;
+        const dy = this.y - cy;
+        const dist = Math.hypot(dx, dy);
+        const maxDist = tankRadius - this.radius - 2;
+
+        if (dist > maxDist) {
+          const normalX = dx / dist;
+          const normalY = dy / dist;
+          this.x = cx + normalX * maxDist;
+          this.y = cy + normalY * maxDist;
+
+          // Bounce reflection
+          const dot = this.vx * normalX + this.vy * normalY;
+          this.vx = (this.vx - 1.6 * dot * normalX) * 0.62;
+          this.vy = (this.vy - 1.6 * dot * normalY) * 0.62;
+        }
+      }
+
+      draw(c) {
+        c.save();
+        c.translate(this.x, this.y);
+        c.rotate(this.angle);
+
+        // Soft drop shadow in liquid
+        c.beginPath();
+        c.arc(1.5, 2.5, this.radius, 0, Math.PI * 2);
+        c.fillStyle = 'rgba(0, 0, 0, 0.16)';
+        c.fill();
+
+        // White Creamy Foam Top Half
+        c.beginPath();
+        c.arc(0, 0, this.radius, Math.PI, 0, false);
+        c.closePath();
+        const foamGrad = c.createLinearGradient(0, -this.radius, 0, 0);
+        foamGrad.addColorStop(0, '#ffffff');
+        foamGrad.addColorStop(0.7, '#fffbeb');
+        foamGrad.addColorStop(1, '#fef3c7');
+        c.fillStyle = foamGrad;
+        c.fill();
+
+        // Golden Beer Bottom Half
+        c.beginPath();
+        c.arc(0, 0, this.radius, 0, Math.PI, false);
+        c.closePath();
+        const beerGrad = c.createLinearGradient(0, 0, 0, this.radius);
+        beerGrad.addColorStop(0, this.colorPair[0]);
+        beerGrad.addColorStop(1, this.colorPair[1]);
+        c.fillStyle = beerGrad;
+        c.fill();
+
+        // Capsule Center Seam
+        c.beginPath();
+        c.rect(-this.radius, -1.2, this.radius * 2, 2.4);
+        c.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        c.fill();
+        c.strokeStyle = 'rgba(180, 83, 9, 0.35)';
+        c.lineWidth = 0.8;
+        c.stroke();
+
+        // Glass Gloss reflection highlight
+        c.beginPath();
+        c.arc(-this.radius * 0.35, -this.radius * 0.35, this.radius * 0.38, 0, Math.PI * 2);
+        c.fillStyle = 'rgba(255, 255, 255, 0.55)';
+        c.fill();
+
+        // Outer rim highlight
+        c.beginPath();
+        c.arc(0, 0, this.radius, 0, Math.PI * 2);
+        c.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+        c.lineWidth = 1.2;
+        c.stroke();
+
+        c.restore();
+      }
+    }
+
+    let capsules = [];
+    function initCapsules() {
+      capsules = [];
+      const dpr = window.devicePixelRatio || 1;
+      const w = width > 0 ? (width / dpr) : (canvas.clientWidth || 300);
+      const h = height > 0 ? (height / dpr) : (canvas.clientHeight || 300);
+      const cx = w / 2;
+      const cy = h / 2;
+      const tankRadius = Math.max(10, Math.min(w, h) / 2 - 6);
+
+      for (let i = 0; i < 10; i++) {
+        const cap = new TankCapsule(i);
+        cap.initPosition(cx, cy, tankRadius);
+        capsules.push(cap);
+      }
+    }
+
+    function resolveCapsuleCollisions() {
+      for (let i = 0; i < capsules.length; i++) {
+        for (let j = i + 1; j < capsules.length; j++) {
+          const c1 = capsules[i];
+          const c2 = capsules[j];
+          const dx = c2.x - c1.x;
+          const dy = c2.y - c1.y;
+          const dist = Math.hypot(dx, dy);
+          const minDist = c1.radius + c2.radius;
+
+          if (dist < minDist && dist > 0.001) {
+            const overlap = (minDist - dist) * 0.5;
+            const nx = dx / dist;
+            const ny = dy / dist;
+
+            c1.x -= nx * overlap;
+            c1.y -= ny * overlap;
+            c2.x += nx * overlap;
+            c2.y += ny * overlap;
+
+            // Separate velocities
+            const dvx = c2.vx - c1.vx;
+            const dvy = c2.vy - c1.vy;
+            const p = (dvx * nx + dvy * ny) * 0.55;
+
+            c1.vx += p * nx;
+            c1.vy += p * ny;
+            c2.vx -= p * nx;
+            c2.vy -= p * ny;
+          }
+        }
+      }
+    }
+
     function resizeCanvas() {
       const rect = canvas.getBoundingClientRect();
-      width = canvas.width = rect.width * (window.devicePixelRatio || 1);
-      height = canvas.height = rect.height * (window.devicePixelRatio || 1);
-      ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+      const container = document.getElementById('tank-container');
+      const dpr = window.devicePixelRatio || 1;
+      const displayWidth = Math.max(rect.width || (container ? container.clientWidth : 0) || 300, 50);
+      const displayHeight = Math.max(rect.height || (container ? container.clientHeight : 0) || 300, 50);
+
+      width = canvas.width = Math.floor(displayWidth * dpr);
+      height = canvas.height = Math.floor(displayHeight * dpr);
+      initCapsules();
     }
     window.addEventListener('resize', resizeCanvas);
 
@@ -386,8 +587,9 @@
         this.reset(isBurst);
       }
       reset(isBurst = false) {
-        const w = width / (window.devicePixelRatio || 1);
-        const h = height / (window.devicePixelRatio || 1);
+        const dpr = window.devicePixelRatio || 1;
+        const w = width > 0 ? (width / dpr) : (canvas.clientWidth || 300);
+        const h = height > 0 ? (height / dpr) : (canvas.clientHeight || 300);
         const currentLiquidHeight = h * liquidLevel;
         
         this.x = Math.random() * (w * 0.84) + (w * 0.08);
@@ -405,8 +607,9 @@
         this.x += Math.sin(this.wobble) * 0.7 + this.speedX + forceX * 0.2;
         this.y += this.speedY + forceY * 0.2;
 
-        const h = height / (window.devicePixelRatio || 1);
-        const w = width / (window.devicePixelRatio || 1);
+        const dpr = window.devicePixelRatio || 1;
+        const w = width > 0 ? (width / dpr) : (canvas.clientWidth || 300);
+        const h = height > 0 ? (height / dpr) : (canvas.clientHeight || 300);
         const surfaceY = h - (h * liquidLevel);
 
         if (this.y < surfaceY - 8 || this.y > h || this.x < 0 || this.x > w) {
@@ -416,7 +619,7 @@
       draw(c) {
         c.save();
         c.beginPath();
-        c.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        c.arc(this.x, this.y, Math.max(0.1, this.radius), 0, Math.PI * 2);
         if (this.isFoam) {
           c.fillStyle = `rgba(255, 255, 255, ${this.alpha * 1.1})`;
         } else {
@@ -429,7 +632,7 @@
 
         // Shimmer highlight
         c.beginPath();
-        c.arc(this.x - this.radius * 0.3, this.y - this.radius * 0.3, this.radius * 0.25, 0, Math.PI * 2);
+        c.arc(this.x - this.radius * 0.3, this.y - this.radius * 0.3, Math.max(0.1, this.radius * 0.25), 0, Math.PI * 2);
         c.fillStyle = 'rgba(255, 255, 255, 0.9)';
         c.fill();
         c.restore();
@@ -446,89 +649,128 @@
 
     let waveTime = 0;
     function render() {
-      const w = width / (window.devicePixelRatio || 1);
-      const h = height / (window.devicePixelRatio || 1);
+      const dpr = window.devicePixelRatio || 1;
+      const w = width > 0 ? (width / dpr) : (canvas.clientWidth || 300);
+      const h = height > 0 ? (height / dpr) : (canvas.clientHeight || 300);
 
+      if (w <= 20 || h <= 20) {
+        requestAnimationFrame(render);
+        return;
+      }
+
+      const cx = w / 2;
+      const cy = h / 2;
+      const tankRadius = Math.max(10, Math.min(w, h) / 2 - 4);
+
+      ctx.save();
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, w, h);
+
+      // Smooth tilt smoothing
+      currentTilt.x += (targetTilt.x - currentTilt.x) * 0.1;
+      currentTilt.y += (targetTilt.y - currentTilt.y) * 0.1;
 
       // Target liquid level moves with bubblePower (15% to 80% full)
       const targetLevel = 0.15 + (bubblePower / MAX_POWER) * 0.68;
       liquidLevel += (targetLevel - liquidLevel) * 0.08;
 
       waveTime += 0.05 + Math.abs(shakeVelocity.x) * 0.02;
-      const surfaceY = h - (h * liquidLevel);
 
-      // 1. Draw Golden Beer Body
+      // Liquid inclination angle (-0.45 to +0.45 rad based on device roll)
+      const targetAngle = Math.max(-0.45, Math.min(0.45, currentTilt.x * 0.5));
+      liquidAngle += (targetAngle - liquidAngle) * 0.08;
+
+      // Surface height calculator at any horizontal X position accounting for tilt & waves
+      const baseSurfaceY = h - (h * liquidLevel);
+      const getSurfaceY = (x) => {
+        const tiltOffset = (x - cx) * Math.tan(liquidAngle);
+        const wave = Math.sin(x * 0.035 + waveTime) * (3.5 + (Math.abs(shakeVelocity.x) * 2.0)) +
+                     Math.cos(x * 0.02 - waveTime) * 2.2;
+        return baseSurfaceY + tiltOffset + wave;
+      };
+
+      // Clip all liquid and capsules strictly inside circular beer glass dome
       ctx.save();
       ctx.beginPath();
-      ctx.moveTo(0, h);
-      ctx.lineTo(0, surfaceY);
+      ctx.arc(cx, cy, tankRadius, 0, Math.PI * 2);
+      ctx.clip();
 
-      // Liquid wave surface calculation
+      // 1. Draw Golden Beer Body with Tilt
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(-10, h + 10);
+      ctx.lineTo(-10, getSurfaceY(-10));
+
       for (let x = 0; x <= w; x += 10) {
-        const wave = Math.sin(x * 0.035 + waveTime) * (3.5 + (shakeVelocity.x * 2.2)) +
-                     Math.cos(x * 0.02 - waveTime) * 2.5;
-        ctx.lineTo(x, surfaceY + wave);
+        ctx.lineTo(x, getSurfaceY(x));
       }
-      ctx.lineTo(w, h);
+      ctx.lineTo(w + 10, getSurfaceY(w + 10));
+      ctx.lineTo(w + 10, h + 10);
       ctx.closePath();
 
-      // Rich Golden Beer gradient
-      const liquidGrad = ctx.createLinearGradient(0, surfaceY, 0, h);
+      // Rich Golden Beer gradient aligned with liquid inclination
+      const liquidGrad = ctx.createLinearGradient(0, baseSurfaceY - 20, 0, h);
       if (bubblePower >= MAX_POWER) {
-        // Supreme Sparkling Amber Gold
-        liquidGrad.addColorStop(0, 'rgba(251, 191, 36, 0.92)');
-        liquidGrad.addColorStop(0.4, 'rgba(245, 158, 11, 0.95)');
+        liquidGrad.addColorStop(0, 'rgba(251, 191, 36, 0.94)');
+        liquidGrad.addColorStop(0.4, 'rgba(245, 158, 11, 0.96)');
         liquidGrad.addColorStop(1, 'rgba(180, 83, 9, 0.98)');
       } else {
-        liquidGrad.addColorStop(0, 'rgba(253, 224, 71, 0.85)');
-        liquidGrad.addColorStop(0.5, 'rgba(245, 158, 11, 0.9)');
-        liquidGrad.addColorStop(1, 'rgba(217, 119, 6, 0.95)');
+        liquidGrad.addColorStop(0, 'rgba(253, 224, 71, 0.88)');
+        liquidGrad.addColorStop(0.5, 'rgba(245, 158, 11, 0.92)');
+        liquidGrad.addColorStop(1, 'rgba(217, 119, 6, 0.96)');
       }
       ctx.fillStyle = liquidGrad;
       ctx.fill();
       ctx.restore();
 
-      // 2. Draw Thick Creamy White Foam Head (ビール泡層)
+      // 2. Update and Draw 10 Floating Capsules
+      resolveCapsuleCollisions();
+      for (let cap of capsules) {
+        cap.update(cx, cy, tankRadius, getSurfaceY);
+        cap.draw(ctx);
+      }
+
+      // 3. Draw Thick Creamy White Foam Head (ビール泡層)
       const foamThickness = 16 + (bubblePower / MAX_POWER) * 22;
       ctx.save();
       ctx.beginPath();
-      ctx.moveTo(0, surfaceY + 6);
+      ctx.moveTo(-10, getSurfaceY(-10) + 6);
 
       for (let x = 0; x <= w; x += 10) {
-        const wave = Math.sin(x * 0.035 + waveTime) * (3.5 + (shakeVelocity.x * 2.2)) +
-                     Math.cos(x * 0.02 - waveTime) * 2.5;
-        ctx.lineTo(x, (surfaceY - foamThickness) + wave);
+        ctx.lineTo(x, getSurfaceY(x) - foamThickness);
       }
+      ctx.lineTo(w + 10, getSurfaceY(w + 10) - foamThickness);
+      ctx.lineTo(w + 10, getSurfaceY(w + 10) + 6);
       for (let x = w; x >= 0; x -= 10) {
-        const wave = Math.sin(x * 0.035 + waveTime) * (3.5 + (shakeVelocity.x * 2.2)) +
-                     Math.cos(x * 0.02 - waveTime) * 2.5;
-        ctx.lineTo(x, surfaceY + 6 + wave);
+        ctx.lineTo(x, getSurfaceY(x) + 6);
       }
       ctx.closePath();
       
-      const foamGrad = ctx.createLinearGradient(0, surfaceY - foamThickness, 0, surfaceY + 6);
+      const foamGrad = ctx.createLinearGradient(0, baseSurfaceY - foamThickness, 0, baseSurfaceY + 8);
       foamGrad.addColorStop(0, 'rgba(255, 255, 255, 0.98)');
       foamGrad.addColorStop(0.7, 'rgba(254, 252, 232, 0.92)');
-      foamGrad.addColorStop(1, 'rgba(254, 240, 138, 0.4)');
+      foamGrad.addColorStop(1, 'rgba(254, 240, 138, 0.45)');
       ctx.fillStyle = foamGrad;
       ctx.fill();
 
-      // Creamy foam crown cloud bumps
-      for (let x = 15; x < w; x += 28) {
-        const wave = Math.sin(x * 0.035 + waveTime) * (3.5 + (shakeVelocity.x * 2.2));
+      // Creamy foam crown cloud bumps along the tilted surface
+      for (let x = 12; x < w; x += 26) {
+        const sy = getSurfaceY(x);
         ctx.beginPath();
-        ctx.arc(x, surfaceY - foamThickness + wave + 2, 10, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+        ctx.arc(x, sy - foamThickness + 2, 9, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
         ctx.fill();
       }
       ctx.restore();
 
-      // 3. Update and draw carbonation bubbles
+      // 4. Update and draw carbonation bubbles
       for (let b of bubbles) {
-        b.update(shakeVelocity.x, shakeVelocity.y);
+        b.update(shakeVelocity.x + (currentTilt.x * 2), shakeVelocity.y);
         b.draw(ctx);
       }
+
+      ctx.restore(); // Restore clip
+      ctx.restore(); // Restore transform
 
       // Decay shake momentum
       shakeVelocity.x *= 0.92;
@@ -601,9 +843,32 @@
     let lastShakeTime = 0;
     const SHAKE_THRESHOLD = 15;
 
+    function handleOrientation(event) {
+      // Gamma: Left-to-right tilt in degrees [-90, 90]
+      // Beta: Front-to-back tilt in degrees [-180, 180]
+      if (event.gamma !== null) {
+        // Natural smartphone portrait orientation mapping
+        targetTilt.x = Math.max(-1, Math.min(1, event.gamma / 40));
+      }
+      if (event.beta !== null) {
+        // Default holding angle is approx 45 degrees
+        targetTilt.y = Math.max(-1, Math.min(1, (event.beta - 45) / 40));
+      }
+    }
+
     function handleMotion(event) {
       const current = event.accelerationIncludingGravity || event.acceleration;
       if (!current || current.x === null) return;
+
+      // Also extract tilt from gravity vector if orientation is not firing
+      if (event.accelerationIncludingGravity) {
+        const ag = event.accelerationIncludingGravity;
+        if (ag.x !== null && ag.y !== null) {
+          // Normalize gravity: x ranges roughly -9.8 to 9.8
+          targetTilt.x = Math.max(-1, Math.min(1, -ag.x / 8.5));
+          targetTilt.y = Math.max(-1, Math.min(1, (ag.y - 4.5) / 8.5));
+        }
+      }
 
       const currentTime = Date.now();
       if ((currentTime - lastShakeTime) < 55) return;
@@ -639,13 +904,28 @@
 
     function requestSensorAccess() {
       initAudio();
+
+      // DeviceOrientation permission (iOS 13+)
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+          .then(state => {
+            if (state === 'granted') {
+              window.addEventListener('deviceorientation', handleOrientation);
+            }
+          })
+          .catch(console.error);
+      } else {
+        window.addEventListener('deviceorientation', handleOrientation);
+      }
+
+      // DeviceMotion permission (iOS 13+)
       if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
         DeviceMotionEvent.requestPermission()
           .then(permissionState => {
             if (permissionState === 'granted') {
               window.addEventListener('devicemotion', handleMotion);
               sensorBox.classList.add('hidden');
-              document.getElementById('shake-instruction').textContent = '✅ スマホを振って黄金ビール泡を注ぎ入れよう！';
+              document.getElementById('shake-instruction').textContent = '✅ スマホを振って黄金ビール泡を注ぎ入れよう！（傾けると液体も動くよ）';
             }
           })
           .catch(err => {
@@ -656,7 +936,7 @@
       } else {
         window.addEventListener('devicemotion', handleMotion);
         sensorBox.classList.add('hidden');
-        document.getElementById('shake-instruction').textContent = '✅ スマホを振って黄金ビール泡を注ぎ入れよう！';
+        document.getElementById('shake-instruction').textContent = '✅ スマホを振って黄金ビール泡を注ぎ入れよう！（傾けると液体も動くよ）';
       }
     }
 
@@ -664,8 +944,17 @@
 
     if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission !== 'function') {
       window.addEventListener('devicemotion', handleMotion);
+      window.addEventListener('deviceorientation', handleOrientation);
       sensorBox.classList.add('hidden');
     }
+
+    // Mouse tilt simulation on desktop
+    window.addEventListener('mousemove', (e) => {
+      const normX = (e.clientX / window.innerWidth) * 2 - 1;
+      const normY = (e.clientY / window.innerHeight) * 2 - 1;
+      targetTilt.x = normX * 0.7;
+      targetTilt.y = normY * 0.5;
+    });
 
     const crankBtn = document.getElementById('gacha-crank-btn');
     const crankDisc = document.getElementById('crank-disc');
