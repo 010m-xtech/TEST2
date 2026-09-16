@@ -193,7 +193,7 @@
 
   <footer class="w-full max-w-md text-center py-2">
     <p id="shake-instruction" class="text-xs font-bold text-amber-950 bg-white/70 backdrop-blur-sm py-1.5 px-3.5 rounded-full inline-block shadow-sm border border-amber-200">
-      💡 スマホをシャカシャカ振って、極上の黄金ビール泡を注ごう！
+      💡 スマホをたくさんシャカシャカ振って、極上の黄金ビール泡をじっくり注ごう！
     </p>
   </footer>
 
@@ -606,7 +606,7 @@
       if (!current || current.x === null) return;
 
       const currentTime = Date.now();
-      if ((currentTime - lastShakeTime) < 60) return;
+      if ((currentTime - lastShakeTime) < 55) return;
 
       if (lastX !== null) {
         const deltaX = Math.abs(current.x - lastX);
@@ -615,15 +615,16 @@
         const totalDelta = deltaX + deltaY + deltaZ;
 
         if (totalDelta > SHAKE_THRESHOLD) {
-          const powerGain = Math.min(8.5, (totalDelta / SHAKE_THRESHOLD) * 2.6);
+          // ビールが急に溜まりすぎないようマイルドに調整（何十回もしっかり振って注ぐ楽しさを演出）
+          const powerGain = Math.min(2.2, (totalDelta / SHAKE_THRESHOLD) * 0.65);
           shakeVelocity.x = (current.x - lastX) * 1.3;
           shakeVelocity.y = (current.y - lastY) * 1.3;
 
           addBubblePower(powerGain, true);
           lastShakeTime = currentTime;
 
-          if (navigator.vibrate && Math.random() > 0.6) {
-            navigator.vibrate(25);
+          if (navigator.vibrate && Math.random() > 0.4) {
+            navigator.vibrate(20);
           }
         }
       }
@@ -695,13 +696,15 @@
       initAudio();
       shakeVelocity.x = (Math.random() - 0.5) * 16;
       shakeVelocity.y = -9;
-      addBubblePower(7.5, false);
+      // 手動タップ時も少しずつ溜まるように調整
+      addBubblePower(2.5, false);
     });
 
     document.getElementById('bubble-canvas').addEventListener('click', (e) => {
       initAudio();
       shakeVelocity.x = (Math.random() - 0.5) * 10;
-      addBubblePower(4.5, false);
+      // ジョッキタップ時の上昇量も調整
+      addBubblePower(1.5, false);
     });
 
     function rollGachaItem() {
@@ -792,7 +795,7 @@
       isFull = false;
       isCranking = false;
       updateUI();
-      document.getElementById('shake-instruction').textContent = '💡 スマホをシャカシャカ振って、極上の黄金ビール泡を注ごう！';
+      document.getElementById('shake-instruction').textContent = '💡 スマホをたくさんシャカシャカ振って、極上の黄金ビール泡をじっくり注ごう！';
     });
 
     function updateCollectionBadge() {
