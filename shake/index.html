@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Gourmet Magazine - 今夜の運命メニュー</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tone.js for dynamic synthesized sound effects -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+  <!-- Google Fonts: Inter & Shippori Mincho -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=M+PLUS+Rounded+1c:wght@800&family=Noto+Sans+JP:wght@400;700;900&family=Shippori+Mincho:wght@700;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans JP"', 'sans-serif'],
+            serif: ['"Shippori Mincho"', 'serif'],
+            magazine: ['"Cinzel"', 'serif'],
+            pop: ['"M PLUS Rounded 1c"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              yellow: '#FFE600',
+              red: '#FF2A2A',
+              dark: '#111111',
+              cream: '#FAF7EE',
+            }
+          },
+          animation: {
+            'card-flip': 'cardFlip 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+            'wiggle': 'wiggle 0.3s ease-in-out infinite',
+            'violent-shake': 'violentShake 0.08s ease-in-out infinite alternate',
+            'pulse-fast': 'pulse 0.8s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          },
+          keyframes: {
+            cardFlip: {
+              '0%': { transform: 'scale(0.88) rotate(-6deg)', opacity: '0.3', filter: 'blur(4px)' },
+              '60%': { transform: 'scale(1.04) rotate(2deg)', opacity: '1', filter: 'blur(0px)' },
+              '100%': { transform: 'scale(1) rotate(0deg)', opacity: '1' },
+            },
+            violentShake: {
+              '0%': { transform: 'translate(-8px, -4px) rotate(-3deg) scale(0.97)' },
+              '50%': { transform: 'translate(6px, 7px) rotate(3deg) scale(1.02)' },
+              '100%': { transform: 'translate(-5px, 5px) rotate(-2deg) scale(0.99)' }
+            },
+            wiggle: {
+              '0%, 100%': { transform: 'rotate(-2deg)' },
+              '50%': { transform: 'rotate(2deg)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Paper Texture & Print feel */
+    body {
+      background-color: #0d0d0f;
+      background-image: radial-gradient(#222 1px, transparent 1px);
+      background-size: 16px 16px;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .magazine-paper {
+      box-shadow: 0 20px 40px -15px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.08);
+      transition: transform 0.06s ease-out;
+      will-change: transform;
+    }
+    .barcode-strip {
+      background-image: repeating-linear-gradient(90deg, #111, #111 2px, transparent 2px, transparent 5px, #111 5px, #111 9px);
+    }
+    /* Carbonation and bubble styles */
+    .bubble {
+      position: absolute;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(255,215,0,0.3) 60%, rgba(255,80,0,0.8));
+      border-radius: 50%;
+      pointer-events: none;
+      box-shadow: 0 0 8px rgba(255, 230, 0, 0.6);
+      animation: riseAndPop 1.2s ease-in forwards;
+    }
+    @keyframes riseAndPop {
+      0% { transform: translateY(0) scale(0.3); opacity: 0.2; }
+      50% { opacity: 0.9; }
+      90% { opacity: 1; transform: translateY(-160px) scale(1.2); }
+      100% { transform: translateY(-190px) scale(1.6); opacity: 0; }
+    }
+    @keyframes cardBurstOut {
+      0% { transform: scale(0.5) translateY(60px) rotate(-10deg); opacity: 0; filter: brightness(2.5) blur(6px); }
+      60% { transform: scale(1.08) translateY(-10px) rotate(2deg); opacity: 1; filter: brightness(1.2) blur(0px); }
+      100% { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; filter: brightness(1); }
+    }
+    .card-burst {
+      animation: cardBurstOut 0.7s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+    }
+    /* Speedline effect during shake */
+    .speedlines {
+      background: repeating-radial-gradient(
+        circle,
+        transparent 0,
+        transparent 40%,
+        rgba(255, 230, 0, 0.12) 41%,
+        transparent 43%
+      );
+    }
+  </style>
+</head>
+<body class="text-neutral-900 min-h-screen flex flex-col items-center justify-start p-3 sm:p-6 overflow-x-hidden">
+
+  <!-- Fullscreen Soda Eruption Splash Overlay -->
+  <div id="explosionSplash" class="fixed inset-0 pointer-events-none z-50 opacity-0 transition-opacity duration-200 flex flex-col items-center justify-center overflow-hidden bg-amber-500/20 backdrop-blur-[2px]">
+    <div id="burstText" class="text-center transform scale-50 transition-transform duration-300">
+      <div class="text-4xl sm:text-6xl font-black text-white drop-shadow-[0_8px_16px_rgba(0,0,0,0.9)] font-pop animate-bounce">
+        🍾💥 BOOM! 炭酸大噴出!!
+      </div>
+      <div class="text-brand-yellow font-black tracking-widest text-lg sm:text-2xl mt-1 uppercase drop-shadow-md">
+        運命の一皿が飛び出しました！
+      </div>
+    </div>
+  </div>
+
+  <!-- Continuous Bubbles Layer Container -->
+  <div id="fizzContainer" class="fixed inset-0 pointer-events-none z-20 overflow-hidden"></div>
+
+  <!-- Shake Speedline & Particle Backdrop -->
+  <div id="shakeOverlay" class="fixed inset-0 pointer-events-none z-30 opacity-0 transition-opacity duration-150 speedlines flex items-center justify-center">
+    <div class="px-5 py-2 bg-gradient-to-r from-brand-red via-amber-500 to-brand-red text-white font-pop font-black text-sm sm:text-lg tracking-widest uppercase rounded-full shadow-2xl animate-pulse border-2 border-white rotate-[-4deg]">
+      🔥 もっと振って！炭酸充填中... 💨
+    </div>
+  </div>
+
+  <header class="w-full max-w-md flex items-center justify-between py-2 text-white text-xs font-mono tracking-widest border-b border-neutral-800 mb-3">
+    <div class="flex items-center gap-2">
+      <span class="inline-block w-2.5 h-2.5 rounded-full bg-brand-red animate-pulse"></span>
+      <span>TABLE ISSUE #402</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <button id="soundToggleBtn" onclick="toggleSound()" class="px-2 py-1 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded text-[10px] uppercase transition-colors">
+        🔊 Sound: ON
+      </button>
+      <span class="text-neutral-500">2026 EDITION</span>
+    </div>
+  </header>
+
+  <main class="w-full max-w-md flex-1 flex flex-col items-center">
+    
+    <!-- MAGAZINE COVER CONTAINER -->
+    <div id="magazineCard" class="magazine-paper relative w-full bg-brand-cream rounded-2xl overflow-hidden border-2 border-neutral-800 transition-all duration-300 transform">
+      
+      <!-- Top Magazine Header Badge -->
+      <div class="bg-brand-dark text-brand-yellow px-4 py-2 flex justify-between items-center border-b-2 border-brand-yellow">
+        <div>
+          <span class="font-magazine text-xl tracking-tighter font-black uppercase">GASTRONOME</span>
+          <span class="text-[10px] ml-1 tracking-widest text-neutral-400">MAGAZINE</span>
+        </div>
+        <span class="bg-brand-red text-white text-[10px] font-bold px-2 py-0.5 rounded-full tracking-wider animate-pulse">
+          今宵の運命の一皿
+        </span>
+      </div>
+
+      <!-- Main Visual Container -->
+      <div class="relative w-full h-56 sm:h-64 bg-neutral-900 overflow-hidden group">
+        <img id="menuImage" 
+             src="https://images.unsplash.com/photo-1544025162-d76694265947?w=800&auto=format&fit=crop&q=80" 
+             alt="料理写真"
+             class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+             onerror="this.src='https://placehold.co/600x400/222222/ffffff?text=FOOD+PHOTO'" />
+        
+        <!-- Shuffling Fast Blur Sheet -->
+        <div id="shuffleRiffleMask" class="absolute inset-0 bg-brand-yellow/30 backdrop-blur-[2px] opacity-0 pointer-events-none transition-opacity duration-100 flex items-center justify-center">
+          <span class="text-white font-black text-4xl drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] font-magazine">SHUFFLE</span>
+        </div>
+
+        <!-- Big Magazine Overlay Catchphrases -->
+        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-4 text-white">
+          <div class="inline-flex items-center gap-1.5 self-start px-2 py-0.5 bg-brand-yellow text-brand-dark font-pop font-black text-xs rounded mb-1 shadow-sm">
+            <span id="menuBadge">巻頭特選</span>
+          </div>
+          <h2 id="menuCatch" class="text-xl sm:text-2xl font-serif font-black leading-tight drop-shadow-md text-amber-100">
+            滴る肉汁の暴力。噛み締める幸福をあなたに。
+          </h2>
+        </div>
+
+        <!-- Edition Number / Price Ribbon -->
+        <div class="absolute top-3 right-3 bg-white/90 backdrop-blur text-brand-dark font-black px-2.5 py-1 rounded-lg shadow-lg border border-neutral-200 text-sm">
+          <span id="menuPrice">¥1,680</span>
+        </div>
+      </div>
+
+      <!-- Article / Food Description Area -->
+      <div class="p-4 sm:p-5 bg-white space-y-3">
+        <!-- Title & Category -->
+        <div class="border-b border-neutral-200 pb-2.5">
+          <div class="flex items-center gap-2 text-xs text-brand-red font-bold tracking-wider uppercase mb-0.5">
+            <span id="menuCategory">Chef's Signature</span>
+            <span class="text-neutral-300">•</span>
+            <span id="menuCalorie">満足度 ★★★★★</span>
+          </div>
+          <h1 id="menuTitle" class="text-xl font-bold font-sans text-neutral-900">
+            極厚黒毛和牛のレア炭火ハンバーグ
+          </h1>
+        </div>
+
+        <!-- Editorial Review Body -->
+        <p id="menuDesc" class="text-neutral-600 text-sm leading-relaxed font-sans line-clamp-3">
+          外はカリッと香ばしく、中は驚くほどジューシー。ナイフを入れた瞬間に溢れ出す特製デミグラスソースの香りが食欲の限界を突破する。迷ったら頼むべき不朽の金字塔。
+        </p>
+
+        <!-- Pairing & Foodie Note Box -->
+        <div class="bg-neutral-50 rounded-xl p-3 border border-neutral-200/80 flex items-center justify-between text-xs">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center text-sm shadow-inner">🍷</span>
+            <div>
+              <p class="text-[10px] text-neutral-400 font-bold uppercase">雑誌推奨ペアリング</p>
+              <p id="menuPairing" class="font-bold text-neutral-800">濃厚シラー または 樽生エール</p>
+            </div>
+          </div>
+          <button onclick="addToOrderClip()" class="px-3 py-1.5 bg-neutral-900 hover:bg-brand-red text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-1">
+            <span>＋ 頼むメモ</span>
+          </button>
+        </div>
+
+        <div id="fukurotoji" class="relative overflow-hidden rounded-xl border-2 border-dashed border-amber-400 bg-amber-50/80 p-3 transition-all duration-300">
+          <div id="fukuroContent" class="hidden text-center space-y-1">
+            <div class="inline-block px-2 py-0.5 bg-brand-red text-white text-[10px] font-black rounded-full uppercase tracking-wider animate-bounce">
+              袋とじ開封成功！
+            </div>
+            <p id="secretText" class="text-xs font-bold text-neutral-800">
+              「スタッフに合言葉【シェイク】で本日のプチタパス無料進呈！」
+            </p>
+          </div>
+          <button id="fukuroCover" onclick="openFukurotoji()" class="w-full py-2 flex items-center justify-center gap-2 text-amber-900 font-black text-xs hover:text-brand-red transition-colors">
+            <svg class="w-4 h-4 text-brand-red animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+            </svg>
+            <span>【袋とじ】タップして本日の裏特典を破って開ける</span>
+          </button>
+        </div>
+
+        <!-- Magazine Footer & Barcode Motif -->
+        <div class="pt-2 flex items-center justify-between border-t border-neutral-100 text-[10px] text-neutral-400">
+          <div class="barcode-strip w-24 h-6 opacity-60"></div>
+          <div class="text-right">
+            <span>SHUFFLE TO REDISCOVER</span>
+            <div class="font-mono text-neutral-300">PAGE <span id="pageNo">01</span> / 06</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="w-full mt-4 space-y-3">
+      
+      <!-- Carbonation Pressure & Bottle Level Gauge -->
+      <div class="bg-neutral-900 border-2 border-neutral-800 rounded-2xl p-3.5 shadow-xl relative overflow-hidden">
+        <!-- Background Fizz Glow -->
+        <div id="pressureGlow" class="absolute inset-0 bg-gradient-to-r from-brand-yellow/10 to-brand-red/20 opacity-0 transition-opacity duration-200 pointer-events-none"></div>
+
+        <div class="flex items-center justify-between text-xs mb-2">
+          <div class="flex items-center gap-1.5 font-bold text-white">
+            <span class="text-base animate-bounce">🍾</span>
+            <span class="tracking-wide">炭酸プレッシャー (勢いよく振れ！)</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <span id="pressureStatus" class="text-[11px] font-bold text-neutral-400">静穏</span>
+            <span id="pressurePercent" class="font-mono font-black text-brand-yellow text-sm">0%</span>
+          </div>
+        </div>
+
+        <!-- Coca-Cola Style Fizzy Liquid Tube -->
+        <div class="relative w-full h-5 bg-neutral-950 rounded-full p-1 border border-neutral-700 overflow-hidden shadow-inner">
+          <!-- Rising Liquid Level -->
+          <div id="pressureFillBar" class="h-full rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-brand-red w-0 transition-all duration-75 relative">
+            <div class="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,0.25)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.25)_50%,rgba(255,255,255,0.25)_75%,transparent_75%,transparent)] bg-[length:16px_16px] animate-[spin_4s_linear_infinite]"></div>
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center text-[10px] text-neutral-500 mt-1 font-mono">
+          <span>0% CHILL</span>
+          <span>50% FIZZING</span>
+          <span class="text-brand-red font-bold">100% POP!!</span>
+        </div>
+      </div>
+
+      <!-- Primary Action: Shake Buttons -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <button onclick="pumpPressure(18)" 
+                id="mainShuffleBtn"
+                class="w-full py-3.5 px-4 bg-gradient-to-r from-brand-red via-orange-500 to-amber-400 hover:from-red-500 hover:to-yellow-300 active:scale-95 text-white font-black rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all group">
+          <span class="text-lg group-hover:scale-125 transition-transform">💥</span>
+          <span>連打でシェイク！(振って加圧)</span>
+        </button>
+
+        <button onclick="requestMotionPermission()" 
+                id="sensorBtn"
+                class="w-full py-3.5 px-4 bg-neutral-800 hover:bg-neutral-700 active:scale-95 text-neutral-200 font-bold rounded-xl border border-neutral-700 flex items-center justify-center gap-2 transition-all text-xs">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+          <span id="sensorBtnLabel">📱 実機シェイク検知をON</span>
+        </button>
+      </div>
+
+      <!-- Real-time Shake Sensitivity Meter & Info Banner -->
+      <div class="bg-neutral-900/90 border border-neutral-800 rounded-xl p-3 text-neutral-400 text-xs">
+        <div class="flex items-center justify-between mb-1.5">
+          <span class="flex items-center gap-1.5">
+            <span class="text-amber-400">⚡</span>
+            <span>シェイク感知メーター (実機で振ると反応)</span>
+          </span>
+          <span id="shakeForce" class="font-mono text-white text-[11px]">G-Force: 0.0</span>
+        </div>
+        <!-- Meter Bar -->
+        <div class="w-full bg-neutral-800 h-2 rounded-full overflow-hidden">
+          <div id="meterBar" class="bg-gradient-to-r from-amber-500 to-brand-red h-full w-0 transition-all duration-150"></div>
+        </div>
+      </div>
+
+      <!-- Orders Clip Shelf (Saved Items) -->
+      <div id="orderListSection" class="hidden bg-neutral-900 border border-neutral-800 rounded-xl p-3 text-white">
+        <div class="flex items-center justify-between text-xs font-bold text-neutral-400 mb-2">
+          <span>📋 本日の検討中クリップ (<span id="clipCount">0</span>)</span>
+          <button onclick="clearClip()" class="text-[10px] text-neutral-500 hover:text-neutral-300 underline">リセット</button>
+        </div>
+        <ul id="clipList" class="text-xs space-y-1 text-neutral-200">
+        </ul>
+      </div>
+
+    </div>
+
+  </main>
+
+  <div id="toast" class="fixed bottom-4 inset-x-0 mx-auto w-fit max-w-[90%] bg-neutral-950 text-white text-xs px-4 py-2.5 rounded-full shadow-2xl border border-neutral-700 flex items-center gap-2 transform translate-y-16 opacity-0 transition-all duration-300 pointer-events-none z-50">
+    <span id="toastIcon">✨</span>
+    <span id="toastMsg">通知メッセージ</span>
+  </div>
+
+  <script>
+    // Audio engine using Tone.js for tactile feedback
+    let soundEnabled = true;
+    let synth = null;
+    let noiseSynth = null;
+    let popSynth = null;
+
+    function initAudio() {
+      try {
+        if (!synth && window.Tone) {
+          synth = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: 'triangle' },
+            envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.2 }
+          }).toDestination();
+          synth.volume.value = -6;
+
+          // Noise synth for fizzing carbonation & page rustle
+          noiseSynth = new Tone.NoiseSynth({
+            noise: { type: 'pink' },
+            envelope: { attack: 0.01, decay: 0.12, sustain: 0.04, release: 0.08 }
+          }).toDestination();
+          noiseSynth.volume.value = -10;
+
+          // High pop synth for sparkling bubbles
+          popSynth = new Tone.MembraneSynth({
+            pitchDecay: 0.05,
+            octaves: 4,
+            envelope: { attack: 0.001, decay: 0.15, sustain: 0 }
+          }).toDestination();
+          popSynth.volume.value = -4;
+        }
+        if (Tone.context.state !== 'running') {
+          Tone.start();
+        }
+      } catch (e) {
+        console.warn("Audio init deferred:", e);
+      }
+    }
+
+    function playSound(type, freq = 0) {
+      if (!soundEnabled) return;
+      initAudio();
+
+      try {
+        const now = Tone.now();
+        if (type === 'fizz') {
+          if (noiseSynth) {
+            noiseSynth.triggerAttackRelease('16n', now);
+          }
+          if (popSynth && Math.random() > 0.4) {
+            // Rising pitch as pressure increases
+            const pitches = ['C5', 'E5', 'G5', 'B5', 'C6', 'E6'];
+            const pitch = pitches[Math.min(pitches.length - 1, Math.floor(freq / 20))];
+            popSynth.triggerAttackRelease(pitch, '32n', now);
+          }
+        } else if (type === 'popBurst') {
+          if (popSynth) {
+            popSynth.triggerAttackRelease('C2', '8n', now);
+          }
+          if (synth) {
+            synth.triggerAttackRelease(['C4', 'E4', 'G4', 'C5'], '16n', now + 0.05);
+            synth.triggerAttackRelease(['G4', 'B4', 'D5', 'G5'], '8n', now + 0.15);
+          }
+          if (noiseSynth) {
+            noiseSynth.triggerAttackRelease('4n', now);
+          }
+        } else if (type === 'pop') {
+          if (synth) synth.triggerAttackRelease('A5', '32n', now);
+        } else if (type === 'secret') {
+          if (synth) synth.triggerAttackRelease(['G4', 'C5', 'E5', 'G5'], '8n', now);
+        }
+      } catch (err) {
+        console.warn("Tone error:", err);
+      }
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const btn = document.getElementById('soundToggleBtn');
+      btn.innerText = soundEnabled ? '🔊 Sound: ON' : '🔈 Sound: OFF';
+      showToast(soundEnabled ? 'サウンドをONにしました' : 'サウンドをミュートしました', '🔊');
+    }
+
+    const magazineArticles = [
+      {
+        page: "01",
+        badge: "巻頭特選",
+        category: "Chef's Signature",
+        satisfaction: "満足度 ★★★★★",
+        title: "極厚黒毛和牛のレア炭火ハンバーグ",
+        price: "¥1,680",
+        catch: "滴る肉汁の暴力。噛み締める幸福をあなたに。",
+        desc: "外はカリッと香ばしく、中は驚くほどジューシー。ナイフを入れた瞬間に溢れ出す特製デミグラスソースの香りが食欲の限界を突破する。迷ったら頼むべき不朽の金字塔。",
+        pairing: "濃厚シラー または 樽生クラフトエール",
+        secret: "スタッフに「合言葉：赤身の極み」と伝えると、追いチーズトッピングが無料！",
+        image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=800&auto=format&fit=crop&q=80"
+      },
+      {
+        page: "02",
+        badge: "夜の背徳",
+        category: "Hidden gem",
+        satisfaction: "中毒性 ★★★★★",
+        title: "焦がしニンニクと燻製ブッラータの極上パスタ",
+        price: "¥1,480",
+        catch: "香りで酔わせる。深夜の胃袋を満たす背徳の逸品。",
+        desc: "丸ごと燻製したブッラータチーズを大胆に崩し、濃厚なオイルソースと絡めて味わう。一口食べた瞬間、罪悪感すら快感に変わるリピート率No.1メニュー。",
+        pairing: "辛口シャルドネ または 自家製ジンジャーハイボール",
+        secret: "スタッフに「合言葉：ニンニクマシマシ」で特製ガーリックバゲット2枚進呈！",
+        image: "https://images.unsplash.com/photo-1621996346565-e3d5d6281691?w=800&auto=format&fit=crop&q=80"
+      },
+      {
+        page: "03",
+        badge: "海の宝石",
+        category: "Seafood Market",
+        satisfaction: "鮮度 ★★★★★",
+        title: "朝獲れ鮮魚とすだちのカルパッチョ・パレット",
+        price: "¥1,280",
+        catch: "皿の上に描かれた、海と柑橘のコントラスト。",
+        desc: "本日水揚げされた白身魚を薄造りにし、徳島産すだちと特製エクストラバージンオリーブオイルで華やかに仕上げました。白ワインの相棒として外せません。",
+        pairing: "ソーヴィニヨン・ブラン または スプリッツァー",
+        secret: "スタッフに「合言葉：カルパッチョ最高」でイクラのプチ乗せサービス！",
+        image: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=800&auto=format&fit=crop&q=80"
+      },
+      {
+        page: "04",
+        badge: "幻の裏企画",
+        category: "Staff Favorite",
+        satisfaction: "希少度 ★★★★★",
+        title: "低温調理ポークのスパイス麻婆豆腐",
+        price: "¥1,180",
+        catch: "痺れる花椒。中華×バルの前衛的マリアージュ。",
+        desc: "8時間じっくり火を通した豚バラ肉がゴロゴロ入った特製麻婆。爽快なシビれと肉の甘みが織りなすハーモニーは、お酒も白米も止まらなくなる危険な味わいです。",
+        pairing: "スパイシーなハイボール または 甕出し紹興酒",
+        secret: "スタッフに「合言葉：麻婆シビ辛」で山椒オイル追いがけ＆温玉無料！",
+        image: "https://images.unsplash.com/photo-1541544741938-0af808871cc0?w=800&auto=format&fit=crop&q=80"
+      },
+      {
+        page: "05",
+        badge: "禁断スイーツ",
+        category: "Final Chapter",
+        satisfaction: "癒やし ★★★★★",
+        title: "焦がしキャラメルと燻製塩の特製カタラーナ",
+        price: "¥720",
+        catch: "パリッ、とろり。甘美な夜を締めくくる甘美な余韻。",
+        desc: "ご注文を受けてから表面をバーナーでパリパリにキャラメリゼ。濃厚なカスタードクリームに散らした燻製岩塩が、大人の舌を唸らせる魅惑のデザート。",
+        pairing: "エスプレッソ または アイラ・シングルモルト",
+        secret: "スタッフに「合言葉：あまあま」でバニラアイス1ディップおまけ！",
+        image: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=800&auto=format&fit=crop&q=80"
+      },
+      {
+        page: "06",
+        badge: "今夜の乾杯",
+        category: "Craft Drink",
+        satisfaction: "爽快度 ★★★★★",
+        title: "すりおろし生檸檬とローズマリーの生クラフトサワー",
+        price: "¥680",
+        catch: "香りの波が押し寄せる。果実丸ごとビタミンチャージ。",
+        desc: "ノーワックス国産レモンを皮ごと丸ごとすりおろし。フレッシュローズマリーを軽く叩いて香りを立たせた、喉を鳴らして飲み干したい最強の乾杯酒。",
+        pairing: "すべての肉・揚げ物料理との無限ループ",
+        secret: "スタッフに「合言葉：追いレモン」でレモン果汁2倍搾り増量！",
+        image: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=800&auto=format&fit=crop&q=80"
+      }
+    ];
+
+    let currentIndex = 0;
+    let isFlipping = false;
+    let clipOrders = [];
+
+    // Carbonation & Pressure System Variables
+    let currentPressure = 0;
+    let isErupting = false;
+    let lastPumpTime = Date.now();
+
+    // Spawn fizzy floating bubble particles on screen
+    function spawnFizzBubbles(count = 3) {
+      const container = document.getElementById('fizzContainer');
+      const card = document.getElementById('magazineCard');
+      const rect = card.getBoundingClientRect();
+
+      for (let i = 0; i < count; i++) {
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        const size = Math.random() * 18 + 8;
+        bubble.style.width = `${size}px`;
+        bubble.style.height = `${size}px`;
+        // Emerge around the bottom-to-middle of the card
+        const startX = rect.left + Math.random() * rect.width;
+        const startY = rect.bottom - (Math.random() * (rect.height * 0.4));
+        bubble.style.left = `${startX}px`;
+        bubble.style.top = `${startY}px`;
+
+        container.appendChild(bubble);
+        setTimeout(() => bubble.remove(), 1200);
+      }
+    }
+
+    // Add pressure when shaken or tapped
+    function pumpPressure(amount = 12) {
+      if (isErupting) return;
+      lastPumpTime = Date.now();
+      currentPressure = Math.min(100, currentPressure + amount);
+
+      // Play rising fizz sound
+      playSound('fizz', currentPressure);
+
+      // Spawn bubbles proportional to current pressure
+      spawnFizzBubbles(Math.ceil(currentPressure / 20) + 1);
+
+      // Card vibration intensifies with pressure
+      const card = document.getElementById('magazineCard');
+      const shakeOverlay = document.getElementById('shakeOverlay');
+      const intensity = (currentPressure / 100) * 10;
+      const rot = (Math.random() - 0.5) * intensity;
+      const transX = (Math.random() - 0.5) * intensity * 1.5;
+      const transY = (Math.random() - 0.5) * intensity * 1.5;
+      card.style.transform = `translate3d(${transX}px, ${transY}px, 0) rotate(${rot}deg) scale(${1 + (currentPressure / 100) * 0.05})`;
+
+      if (currentPressure > 35) {
+        shakeOverlay.classList.remove('opacity-0');
+      }
+
+      updatePressureUI();
+
+      // Explode when pressure reaches 100%!
+      if (currentPressure >= 100) {
+        eruptAndReveal();
+      }
+    }
+
+    // Update UI elements representing carbonation pressure
+    function updatePressureUI() {
+      const fillBar = document.getElementById('pressureFillBar');
+      const percentLabel = document.getElementById('pressurePercent');
+      const statusLabel = document.getElementById('pressureStatus');
+      const glow = document.getElementById('pressureGlow');
+
+      fillBar.style.width = `${currentPressure}%`;
+      percentLabel.innerText = `${Math.round(currentPressure)}%`;
+      glow.style.opacity = (currentPressure / 100).toString();
+
+      if (currentPressure < 30) {
+        statusLabel.innerText = '微炭酸 (もっと振って！)';
+        statusLabel.className = 'text-[11px] font-bold text-neutral-400';
+      } else if (currentPressure < 70) {
+        statusLabel.innerText = 'シュワシュワ上昇中！🫧';
+        statusLabel.className = 'text-[11px] font-bold text-amber-400 animate-pulse';
+      } else if (currentPressure < 95) {
+        statusLabel.innerText = '⚠️ 限界寸前！爆発注意！🔥';
+        statusLabel.className = 'text-[11px] font-bold text-brand-red animate-bounce';
+      } else {
+        statusLabel.innerText = '🍾 大噴出カウントダウン！';
+        statusLabel.className = 'text-[11px] font-black text-brand-yellow animate-ping';
+      }
+    }
+
+    // Passive pressure decay if user stops shaking/tapping
+    setInterval(() => {
+      if (isErupting) return;
+      const idleTime = Date.now() - lastPumpTime;
+      if (idleTime > 250 && currentPressure > 0) {
+        // Natural fizz decompression
+        currentPressure = Math.max(0, currentPressure - 3.5);
+        updatePressureUI();
+
+        if (currentPressure === 0) {
+          const card = document.getElementById('magazineCard');
+          card.style.transform = 'translate3d(0, 0, 0) rotate(0deg) scale(1)';
+          document.getElementById('shakeOverlay').classList.add('opacity-0');
+        }
+      }
+    }, 100);
+
+    // Grand Eruption: Explosive card reveal
+    function eruptAndReveal() {
+      if (isErupting) return;
+      isErupting = true;
+
+      const card = document.getElementById('magazineCard');
+      const splash = document.getElementById('explosionSplash');
+      const burstText = document.getElementById('burstText');
+      const shakeOverlay = document.getElementById('shakeOverlay');
+
+      // Massive celebration sound effect
+      playSound('popBurst');
+
+      // Flash eruption splash banner
+      splash.classList.remove('opacity-0');
+      burstText.classList.remove('scale-50');
+      burstText.classList.add('scale-100');
+
+      // Spawn fountain of 35 eruption bubbles
+      spawnFizzBubbles(35);
+
+      // Switch to next exciting menu article
+      let nextIndex = Math.floor(Math.random() * magazineArticles.length);
+      if (nextIndex === currentIndex) {
+        nextIndex = (currentIndex + 1) % magazineArticles.length;
+      }
+      currentIndex = nextIndex;
+
+      // Pop out magazine card in front
+      card.classList.remove('animate-card-flip', 'animate-violent-shake');
+      void card.offsetWidth;
+      card.classList.add('card-burst');
+      renderCurrentArticle();
+
+      showToast('🍾 プシュッ！大噴出！運命の一皿が登場しました！', '💥');
+
+      // Reset pressure state after dramatic pop
+      setTimeout(() => {
+        splash.classList.add('opacity-0');
+        burstText.classList.add('scale-50');
+        burstText.classList.remove('scale-100');
+        shakeOverlay.classList.add('opacity-0');
+
+        currentPressure = 0;
+        updatePressureUI();
+        isErupting = false;
+        card.style.transform = 'translate3d(0, 0, 0) rotate(0deg) scale(1)';
+      }, 1200);
+    }
+
+    function renderCurrentArticle() {
+      const data = magazineArticles[currentIndex];
+      const card = document.getElementById('magazineCard');
+
+      // Update text and image
+      document.getElementById('pageNo').innerText = data.page;
+      document.getElementById('menuBadge').innerText = data.badge;
+      document.getElementById('menuCategory').innerText = data.category;
+      document.getElementById('menuCalorie').innerText = data.satisfaction;
+      document.getElementById('menuTitle').innerText = data.title;
+      document.getElementById('menuPrice').innerText = data.price;
+      document.getElementById('menuCatch').innerText = data.catch;
+      document.getElementById('menuDesc').innerText = data.desc;
+      document.getElementById('menuPairing').innerText = data.pairing;
+      document.getElementById('secretText').innerText = data.secret;
+      document.getElementById('menuImage').src = data.image;
+
+      // Reset Fukurotoji state for each article
+      const fukuroCover = document.getElementById('fukuroCover');
+      const fukuroContent = document.getElementById('fukuroContent');
+      fukuroCover.classList.remove('hidden');
+      fukuroContent.classList.add('hidden');
+    }
+
+    // Trigger dynamic shuffle action (fallback/legacy alias)
+    function triggerShuffle(triggerSource) {
+      pumpPressure(30);
+    }
+
+    // Trigger dynamic shuffle action with visual shake build-up
+    function triggerShuffle(triggerSource) {
+      if (isFlipping) return;
+      isFlipping = true;
+
+      const card = document.getElementById('magazineCard');
+      const shakeOverlay = document.getElementById('shakeOverlay');
+      const riffleMask = document.getElementById('shuffleRiffleMask');
+
+      // 1. Enter violent shake & page-riffle visual state
+      card.classList.add('animate-violent-shake');
+      shakeOverlay.classList.remove('opacity-0');
+      riffleMask.classList.remove('opacity-0');
+
+      // Rapidly flicker pages & play sounds for 500ms
+      let riffleCount = 0;
+      const riffleInterval = setInterval(() => {
+        playSound('riffle');
+        // Flash random temporary catchphrases while shaking
+        const tempArticle = magazineArticles[Math.floor(Math.random() * magazineArticles.length)];
+        document.getElementById('menuTitle').innerText = tempArticle.title;
+        document.getElementById('pageNo').innerText = '??';
+        riffleCount++;
+        if (riffleCount >= 6) {
+          clearInterval(riffleInterval);
+        }
+      }, 70);
+
+      setTimeout(() => {
+        // 2. Resolve to the new page with celebratory sound
+        card.classList.remove('animate-violent-shake');
+        shakeOverlay.classList.add('opacity-0');
+        riffleMask.classList.add('opacity-0');
+
+        let nextIndex = Math.floor(Math.random() * magazineArticles.length);
+        if (nextIndex === currentIndex) {
+          nextIndex = (currentIndex + 1) % magazineArticles.length;
+        }
+        currentIndex = nextIndex;
+
+        renderCurrentArticle();
+        playSound('shuffleEnd');
+
+        if (triggerSource === 'shake') {
+          showToast('実機シェイク検知！運命の一皿をめくりました 📖💥', '🎲');
+        } else {
+          showToast('シェイク完了！新しい特選ページを開きました！', '✨');
+        }
+
+        setTimeout(() => {
+          isFlipping = false;
+        }, 300);
+      }, 550);
+    }
+
+    // Open Fukurotoji secret
+    function openFukurotoji() {
+      playSound('secret');
+      document.getElementById('fukuroCover').classList.add('hidden');
+      document.getElementById('fukuroContent').classList.remove('hidden');
+      showToast('裏特典の袋とじを破って開封しました！', '🎁');
+    }
+
+    // Add to orders clip
+    function addToOrderClip() {
+      const item = magazineArticles[currentIndex];
+      clipOrders.push(item.title);
+      playSound('pop');
+
+      const clipSection = document.getElementById('orderListSection');
+      const clipList = document.getElementById('clipList');
+      const clipCount = document.getElementById('clipCount');
+
+      clipSection.classList.remove('hidden');
+      clipCount.innerText = clipOrders.length;
+
+      const li = document.createElement('li');
+      li.className = "flex items-center justify-between bg-neutral-800/80 px-2.5 py-1.5 rounded";
+      li.innerHTML = `<span>・ ${item.title}</span><span class="text-amber-400 font-bold">${item.price}</span>`;
+      clipList.appendChild(li);
+
+      showToast(`「${item.title}」をメモに追加しました`, '📌');
+    }
+
+    function clearClip() {
+      clipOrders = [];
+      document.getElementById('clipList').innerHTML = '';
+      document.getElementById('clipCount').innerText = '0';
+      document.getElementById('orderListSection').classList.add('hidden');
+      showToast('メモをリセットしました', '🗑️');
+    }
+
+    let toastTimer = null;
+    function showToast(message, icon = '✨') {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMsg');
+      const toastIcon = document.getElementById('toastIcon');
+
+      toastMsg.innerText = message;
+      toastIcon.innerText = icon;
+
+      toast.classList.remove('translate-y-16', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-16', 'opacity-0');
+      }, 2500);
+    }
+
+    let lastX = 0, lastY = 0, lastZ = 0;
+    let lastTime = 0;
+    const SHAKE_THRESHOLD = 18; // Sensitivity parameter
+    let sensorActive = false;
+
+    function handleDeviceMotion(event) {
+      const current = event.accelerationIncludingGravity || event.acceleration;
+      if (!current || current.x === null) return;
+
+      const now = Date.now();
+      if ((now - lastTime) > 60) {
+        lastTime = now;
+
+        const deltaX = Math.abs(lastX - current.x);
+        const deltaY = Math.abs(lastY - current.y);
+        const deltaZ = Math.abs(lastZ - current.z);
+        const totalDelta = deltaX + deltaY + deltaZ;
+
+        // Update G-force display
+        const meterBar = document.getElementById('meterBar');
+        const shakeForceLabel = document.getElementById('shakeForce');
+        const percentage = Math.min(100, Math.round((totalDelta / SHAKE_THRESHOLD) * 100));
+        meterBar.style.width = percentage + '%';
+        shakeForceLabel.innerText = `G-Force: ${totalDelta.toFixed(1)}`;
+
+        // Convert physical vigor into carbonation pressure!
+        if (totalDelta > 10) {
+          const pressureGained = Math.min(25, (totalDelta / SHAKE_THRESHOLD) * 14);
+          pumpPressure(pressureGained);
+        }
+
+        lastX = current.x;
+        lastY = current.y;
+        lastZ = current.z;
+      }
+    }
+
+    // Motion permission handler (iOS 13+ & Modern Android/Desktops)
+    function requestMotionPermission() {
+      initAudio();
+
+      if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+        // iOS 13+ Permission Workflow
+        DeviceMotionEvent.requestPermission()
+          .then(permissionState => {
+            if (permissionState === 'granted') {
+              window.addEventListener('devicemotion', handleDeviceMotion, false);
+              sensorActive = true;
+              updateSensorUI(true);
+              showToast('シェイクセンサーが起動しました！スマホを振ってください', '📱');
+            } else {
+              showToast('センサー利用が拒否されました。ボタンタップで遊べます', '⚠️');
+            }
+          })
+          .catch(err => {
+            console.error(err);
+            showToast('センサー許可でエラーが発生しました', '⚠️');
+          });
+      } else {
+        // Non-iOS or Standard DeviceMotionEvent browsers
+        try {
+          window.addEventListener('devicemotion', handleDeviceMotion, false);
+          sensorActive = true;
+          updateSensorUI(true);
+          showToast('シェイク検知待機中！スマホを振ってみてください', '📱');
+        } catch (e) {
+          showToast('お使いの環境ではセンサーが利用できません。ボタンで楽しめます', '💡');
+        }
+      }
+    }
+
+    function updateSensorUI(active) {
+      const btn = document.getElementById('sensorBtn');
+      const label = document.getElementById('sensorBtnLabel');
+      if (active) {
+        btn.classList.add('border-emerald-500', 'bg-neutral-900');
+        label.innerHTML = `<span class="text-emerald-400">● センサー検知中！振ってみてね</span>`;
+      }
+    }
+
+    // Initialize initial article render on load
+    window.addEventListener('DOMContentLoaded', () => {
+      renderCurrentArticle();
+    });
+  </script>
+</body>
+</html>
