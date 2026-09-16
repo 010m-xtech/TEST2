@@ -151,11 +151,12 @@
 
       <!-- お子様向けアバターゲーム誘導ボタン -->
       <section class="w-full">
-        <!-- ※ リンク先URLは href="..." の部分をご希望のURLに差し替えてください -->
         <a 
-          href="https://example.com/avatar-game" 
+          id="gameLinkBtn"
+          href="https://010m-xtech.github.io/TEST2/kaohame_743000" 
           target="_blank" 
           rel="noopener noreferrer"
+          onclick="handleGameLinkClick(event)"
           class="group relative block w-full rounded-2xl bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 p-1 shadow-[0_8px_20px_-4px_rgba(245,158,11,0.5),0_6px_0_#b45309] active:translate-y-1.5 active:shadow-[0_2px_0_#b45309] transition-all overflow-hidden cursor-pointer select-none"
         >
           <!-- 背景のキラキラ動く光沢ハイライト -->
@@ -230,15 +231,15 @@
         </button>
 
         <!-- モーダル本文 -->
-        <div class="overflow-y-auto flex-1 p-4 sm:p-5 space-y-4 font-serif">
+        <div class="overflow-y-auto flex-1 p-3.5 sm:p-4 space-y-3 font-serif">
 
-          <!-- タイトル -->
-          <div class="border-b border-stone-300 pb-2.5 pr-9">
-            <h2 id="modalTitle" class="text-xl sm:text-2xl font-extrabold text-sumi tracking-tight leading-snug auto-phrase text-balance"></h2>
+          <!-- タイトル（余白をすっきり最適化） -->
+          <div class="border-b border-stone-200 pb-2 pr-8">
+            <h2 id="modalTitle" class="text-base sm:text-lg font-extrabold text-sumi tracking-tight leading-snug auto-phrase text-balance"></h2>
           </div>
 
           <!-- 料理ビジュアル＆エモーショナルコピーエリア -->
-          <div class="relative w-full aspect-[4/3] rounded-xl overflow-hidden shadow-md bg-stone-900">
+          <div class="relative w-full aspect-[4/3] rounded-xl overflow-hidden shadow-sm bg-stone-900">
             <img id="modalImage" src="" alt="料理写真" class="w-full h-full object-cover opacity-90 transition-transform duration-700 hover:scale-105" onerror="this.src='https://placehold.co/600x400/222/fff?text=料理写真'">
             <!-- 動画メニュー用プレーヤー -->
             <video id="modalVideo" src="" playsinline webkit-playsinline autoplay loop muted class="hidden w-full h-full object-cover"></video>
@@ -249,9 +250,9 @@
             </div>
           </div>
 
-          <!-- ストーリー＆こだわり解説 -->
-          <div class="bg-kinari/60 p-3.5 sm:p-4 rounded-xl border border-stone-200">
-            <p id="modalStory" class="text-xs sm:text-[13px] text-stone-700 leading-relaxed auto-phrase text-pretty text-left"></p>
+          <!-- ストーリー＆こだわり解説（余白を自然に自動調整・改行を最適化） -->
+          <div class="bg-kinari/70 p-3 sm:p-3.5 rounded-xl border border-stone-200/80">
+            <p id="modalStory" class="text-xs sm:text-[12.5px] text-stone-700 leading-relaxed auto-phrase text-pretty text-left whitespace-pre-line"></p>
           </div>
 
         </div>
@@ -387,7 +388,6 @@
     class DynamicBubble {
       constructor(data, index, total) {
         this.data = data;
-        this.isBrand = data.isBrand || false;
         this.radius = BUBBLE_RADIUS;
         
         const padding = 12;
@@ -416,30 +416,17 @@
         this.element.style.width = `${BUBBLE_DIAMETER}px`;
         this.element.style.height = `${BUBBLE_DIAMETER}px`;
 
-        if (this.isBrand) {
-          this.element.innerHTML = `
-            <div class="relative w-full h-full rounded-full bg-white p-[2.5px] shadow-[0_5px_15px_rgba(0,0,0,0.22)] border-2 border-amber-300 hover:border-[#b84433] hover:shadow-[0_8px_22px_rgba(184,68,51,0.4)] transition-all overflow-hidden flex items-center justify-center">
-              <img 
-                src="logo-footer.png" 
-                alt="好味家" 
-                class="w-full h-full object-contain rounded-full pointer-events-none p-1" 
-                onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=150&q=80';"
-              >
-            </div>
-          `;
-        } else {
-          const isVideo = data.mediaType === 'video' || (data.image && data.image.endsWith('.mp4'));
-          const fallbackSrc = fallbackImages[data.id] || 'https://placehold.co/140x140/b84433/fff?text=逸品';
-          const mediaHtml = isVideo
-            ? `<video src="${data.image}" autoplay loop muted playsinline webkit-playsinline class="w-full h-full object-cover rounded-full pointer-events-none" onerror="this.onerror=null; this.outerHTML='<img src=\\'${fallbackSrc}\\' class=\\'w-full h-full object-cover rounded-full pointer-events-none\\'>';"></video>`
-            : `<img src="${data.image}" alt="${data.title}" class="w-full h-full object-cover rounded-full pointer-events-none filter saturate-[1.08]" onerror="this.onerror=null; this.src='${fallbackSrc}';">`;
+        const isVideo = data.mediaType === 'video' || (data.image && data.image.endsWith('.mp4'));
+        const fallbackSrc = fallbackImages[data.id] || 'https://placehold.co/140x140/b84433/fff?text=逸品';
+        const mediaHtml = isVideo
+          ? `<video src="${data.image}" autoplay loop muted playsinline webkit-playsinline class="w-full h-full object-cover rounded-full pointer-events-none" onerror="this.onerror=null; this.outerHTML='<img src=\\'${fallbackSrc}\\' class=\\'w-full h-full object-cover rounded-full pointer-events-none\\'>';"></video>`
+          : `<img src="${data.image}" alt="${data.title}" class="w-full h-full object-cover rounded-full pointer-events-none filter saturate-[1.08]" onerror="this.onerror=null; this.src='${fallbackSrc}';">`;
 
-          this.element.innerHTML = `
-            <div class="relative w-full h-full rounded-full bg-white p-[2.5px] shadow-[0_5px_15px_rgba(0,0,0,0.22)] border-2 border-white hover:border-[#b84433] hover:shadow-[0_8px_22px_rgba(184,68,51,0.4)] transition-all overflow-hidden flex items-center justify-center">
-              ${mediaHtml}
-            </div>
-          `;
-        }
+        this.element.innerHTML = `
+          <div class="relative w-full h-full rounded-full bg-white p-[2.5px] shadow-[0_5px_15px_rgba(0,0,0,0.22)] border-2 border-white hover:border-[#b84433] hover:shadow-[0_8px_22px_rgba(184,68,51,0.4)] transition-all overflow-hidden flex items-center justify-center">
+            ${mediaHtml}
+          </div>
+        `;
 
         this.setupEvents();
       }
@@ -481,11 +468,7 @@
           if (this.isDragging) {
             this.isDragging = false;
             if (!this.hasMoved) {
-              if (this.isBrand) {
-                openBrandModal();
-              } else {
-                openModal(this.data.id);
-              }
+              openModal(this.data.id);
             }
           }
         };
@@ -612,11 +595,9 @@
       stageWidth = stage.clientWidth || 320;
       stageHeight = stage.clientHeight || 380;
 
-      const allBubbleItems = [...menuData];
-      allBubbleItems.splice(4, 0, { id: "brand_1", isBrand: true, title: "好味家" });
-
-      allBubbleItems.forEach((item, index) => {
-        const bubble = new DynamicBubble(item, index, allBubbleItems.length);
+      // 重複していたロゴ用の空丸を削除し、メニューデータの丸（好味家外観写真含む）のみで展開
+      menuData.forEach((item, index) => {
+        const bubble = new DynamicBubble(item, index, menuData.length);
         bubbles.push(bubble);
         container.appendChild(bubble.element);
       });
@@ -640,12 +621,12 @@
           : `<img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" onerror="this.onerror=null; this.src='${fallbackSrc}';">`;
 
         card.innerHTML = `
-          <div class="w-full aspect-[4/3] rounded-lg overflow-hidden shrink-0 relative bg-stone-100 border border-stone-100 shadow-inner mb-2.5 flex items-center justify-center">
+          <div class="w-full aspect-[4/3] rounded-lg overflow-hidden shrink-0 relative bg-stone-100 border border-stone-100 shadow-inner mb-2 flex items-center justify-center">
             ${mediaHtml}
           </div>
 
-          <div class="w-full mb-2 text-center px-0.5">
-            <h4 class="font-serif font-bold text-sumi text-xs leading-snug line-clamp-2 auto-phrase text-balance">
+          <div class="w-full h-9 mb-1.5 flex items-center justify-center px-0.5">
+            <h4 class="font-serif font-bold text-sumi text-xs leading-snug line-clamp-2 text-center auto-phrase text-balance">
               ${item.title}
             </h4>
           </div>
@@ -715,31 +696,6 @@
       document.body.style.overflow = "hidden";
     }
 
-    function openBrandModal() {
-      document.getElementById("modalTitle").innerText = "好味家について";
-
-      const modalImg = document.getElementById("modalImage");
-      const modalVid = document.getElementById("modalVideo");
-      if (modalVid) {
-        modalVid.classList.add("hidden");
-        try { modalVid.pause(); } catch(e){}
-      }
-      modalImg.classList.remove("hidden");
-      modalImg.className = "w-full h-full object-contain p-6 bg-stone-900";
-      modalImg.src = "logo-footer.png";
-      modalImg.onerror = () => {
-        modalImg.onerror = null;
-        modalImg.src = 'https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=600&q=80';
-      };
-
-      document.getElementById("modalStory").innerText = "昭和三十二年に創業の好味家。本場関西仕込みのお好み焼をはじめ、ご当地グルメ「へきなん焼きそば」や「チーズお好み焼き」もおすすめメニュー。温かな接客でお腹も心も満たすよう心掛けています。";
-      document.getElementById("modalVerticalPoem").innerText = "昭和三十二年創業の\n伝統ある味と空間を\nお楽しみください";
-
-      const modal = document.getElementById("detailModal");
-      modal.classList.remove("hidden");
-      document.body.style.overflow = "hidden";
-    }
-
     function closeModal() {
       const modal = document.getElementById("detailModal");
       const modalVid = document.getElementById("modalVideo");
@@ -770,6 +726,29 @@
       initFloatingBubbles();
       renderMenuCards();
     });
+
+    // ゲーム誘導ボタンのクリック処理（スマホアプリ内ブラウザ・ポップアップ制限対策）
+    function handleGameLinkClick(event) {
+      const targetUrl = "https://010m-xtech.github.io/TEST2/kaohame_743000";
+      
+      // 通常のリンク動作を一度防止して確実に指定URLを開く
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+
+      // 新規タブで開くことを試みる
+      const newTab = window.open(targetUrl, "_blank", "noopener,noreferrer");
+      
+      // LINEやブラウザのポップアップ制限でブロックされた場合は現在の画面で確実に遷移
+      if (!newTab || newTab.closed || typeof newTab.closed === "undefined") {
+        try {
+          window.top.location.href = targetUrl;
+        } catch (e) {
+          window.location.href = targetUrl;
+        }
+      }
+    }
   </script>
 </body>
 </html>
