@@ -47,7 +47,7 @@
             border: 2px solid #ffb74d;
             border-radius: 20px;
             padding: 5px 12px;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             font-weight: bold;
             text-decoration: none;
             box-shadow: 0 2px 8px rgba(0,0,0,0.12);
@@ -518,8 +518,8 @@
             <span>‹</span> おすすめ本に戻る
         </a>
 
-        <div style="display:flex; flex-direction:column; align-items:center; padding:38px 10px 4px; background-color:#ffedd6; z-index:110;">
-            <h1 style="color:#e74c3c; font-size:clamp(0.95rem, 4.2vw, 1.35rem); margin:0; font-weight:bold; white-space:nowrap; text-shadow: 1px 1px 0 #fff;">
+        <div style="display:flex; flex-direction:column; align-items:center; padding:48px 12px 6px; background-color:#ffedd6; z-index:110;">
+            <h1 style="color:#e74c3c; font-size:clamp(0.9rem, 4vw, 1.3rem); margin:0; font-weight:bold; text-align:center; text-shadow: 1px 1px 0 #fff; line-height:1.3;">
                 自分のアバターを作ってゲームで遊ぼう！！
             </h1>
         </div>
@@ -1046,17 +1046,22 @@
                 item.y += item.speed;
                 item.element.style.top = item.y + 'px';
 
-                // メニューは取りやすく広め(65px)、爆弾は一回り小さく当たり判定を狭める(36px・中心寄せ)
-                const hitSize = item.isGood ? 65 : 36;
-                const offset = item.isGood ? 0 : 16;
+                // メニューはキャッチしやすく広め(65px)、爆弾の判定は中心部(22px)に絞って回避しやすく
+                const hitSize = item.isGood ? 65 : 22;
+                const offset = item.isGood ? 0 : 25; // 爆弾の中心部(72px中の真ん中22px)
                 const itemLeft = item.x + offset;
                 const itemRight = itemLeft + hitSize;
                 const itemTop = item.y + offset;
                 const itemBottom = itemTop + hitSize;
 
+                // 爆弾の場合はキャラ側の当たり判定も少しタイトにして理不尽なかすり当たりを防止
+                const cLeft = item.isGood ? basketLeft : basketLeft + 15;
+                const cRight = item.isGood ? basketRight : basketRight - 15;
+                const cTop = item.isGood ? basketTop : basketTop + 10;
+
                 // AABB collision with basket zone
-                if (itemBottom >= basketTop && itemTop <= basketBottom &&
-                    itemRight >= basketLeft && itemLeft <= basketRight) {
+                if (itemBottom >= cTop && itemTop <= basketBottom &&
+                    itemRight >= cLeft && itemLeft <= cRight) {
                     
                     if (item.isGood) {
                         catchScore += 10;
