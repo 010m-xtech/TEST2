@@ -148,12 +148,12 @@
     }
   </style>
 </head>
-<body class="h-[100dvh] w-screen text-slate-100 flex flex-col items-center justify-between p-2 select-none box-border bar-lighting overflow-hidden">
+<body class="h-[100dvh] w-screen text-slate-100 flex flex-col items-center justify-center p-0 m-0 select-none box-border bg-[#080503] overflow-hidden">
 
-  <main id="main-stage" class="w-full flex-1 flex flex-col items-center justify-center relative overflow-hidden">
+  <main id="main-stage" class="w-full h-[100dvh] flex items-center justify-center relative overflow-hidden">
     
     <!-- Machine Stage: gacha.png as backdrop with layered fluid sphere -->
-    <div id="machine-wrapper" class="relative max-h-[85dvh] max-w-[92vw] sm:max-w-[460px] flex items-center justify-center transition-transform duration-200">
+    <div id="machine-wrapper" class="relative h-[100dvh] max-w-full flex items-center justify-center transition-transform duration-200">
       
       <!-- Gacha Machine & Background Image -->
       <img 
@@ -161,7 +161,7 @@
         src="./gacha.png" 
         alt="Gacha Machine" 
         onerror="this.onerror=null; this.src='https://raw.githubusercontent.com/010m-xtech/TEST2/main/shake/gacha.png';"
-        class="max-h-[82dvh] w-auto object-contain pointer-events-none drop-shadow-[0_20px_40px_rgba(0,0,0,0.85)]"
+        class="h-[100dvh] w-auto max-w-full object-contain pointer-events-none drop-shadow-[0_15px_35px_rgba(0,0,0,0.9)]"
       />
 
       <!-- Dynamic Beer Glass Sphere Layered over Machine Image -->
@@ -230,14 +230,19 @@
         </div>
       </div>
 
-    </div>
-  </main>
+      <!-- Instruction Guide positioned directly above the sphere on the machine -->
+      <div 
+        class="absolute left-1/2 -translate-x-1/2 z-40 pointer-events-none w-full max-w-[95%] text-center px-1"
+        style="top: max(3.8%, calc(var(--safe-top) + 6px));"
+      >
+        <p id="shake-instruction" class="text-[11px] sm:text-xs md:text-sm font-bold text-amber-200 bg-stone-950/85 backdrop-blur-md py-1.5 px-3 sm:px-4 rounded-full inline-block shadow-2xl border border-amber-500/40 transition-all duration-300 pointer-events-auto tracking-tight sm:tracking-wide whitespace-nowrap">
+          スマホを振って黄金の生ビールを満タンに注ごう！
+        </p>
+      </div>
 
-  <footer class="w-full max-w-md text-center py-2 z-20 shrink-0 pb-[max(0.5rem,var(--safe-bottom))]">
-    <p id="shake-instruction" class="text-xs sm:text-sm font-semibold text-amber-200/90 bg-stone-900/90 backdrop-blur-md py-2 px-5 rounded-full inline-block shadow-xl border border-amber-600/30 transition-all duration-300">
-      スマホを振って黄金の生ビールを満タンに注ごう！
-    </p>
-  </footer>
+    </div>
+
+  </main>
 
   <!-- Result Modal: Craft Beer Tasting Card -->
   <div id="result-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex-col items-center justify-center p-4">
@@ -410,6 +415,18 @@
     }
 
     function handleResize() {
+      const gachaBg = document.getElementById('gacha-bg');
+      const machineWrapper = document.getElementById('machine-wrapper');
+      
+      // 画像の実際の描画サイズに合わせてラッパーを完全一致させる（位置ズレ防止）
+      if (gachaBg && machineWrapper) {
+        const bgRect = gachaBg.getBoundingClientRect();
+        if (bgRect.width > 0 && bgRect.height > 0) {
+          machineWrapper.style.width = `${bgRect.width}px`;
+          machineWrapper.style.height = `${bgRect.height}px`;
+        }
+      }
+
       const container = document.getElementById('tank-container');
       if (!container) return;
       const rect = container.getBoundingClientRect();
