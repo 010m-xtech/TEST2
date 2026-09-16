@@ -1,754 +1,1235 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>好味家おすすめ本 - こだわりのひとさらを</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&family=Shippori+Mincho:wght@400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            serif: ['"Shippori Mincho"', '"Noto Serif JP"', 'serif'],
-            sans: ['"Inter"', 'sans-serif'],
-          },
-          colors: {
-            sumi: '#1c1b1a',
-            washi: '#fcfaf6',
-            kinari: '#f4efe6',
-            accent: '#c85a32',
-            sakeGold: '#d4af37',
-            bengara: '#b84433',
-            bengaraDark: '#9e3626',
-            bengaraLight: '#c9513f',
-          }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>顔はめ＆お絵描きミニゲーム集</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
         }
-      }
-    }
-  </script>
-  <style>
-    /* 縦書きテキスト用 */
-    .vertical-rl {
-      writing-mode: vertical-rl;
-      text-orientation: mixed;
-    }
-    /* スマホでの美しい日本語タイポグラフィと文節自動改行調整 */
-    .auto-phrase {
-      word-break: auto-phrase;
-      overflow-wrap: break-word;
-    }
-    .text-balance {
-      text-wrap: balance;
-    }
-    .text-pretty {
-      text-wrap: pretty;
-    }
 
-    /* 深みのある朱赤・テラコッタ背景 */
-    body {
-      background-color: #a43425;
-      color: #2b2826;
-      background-image: 
-        radial-gradient(rgba(0, 0, 0, 0.08) 0.8px, transparent 0.8px),
-        linear-gradient(160deg, #c54e3c 0%, #b84433 45%, #9b3223 100%);
-      background-size: 18px 18px, 100% 100%;
-      background-attachment: fixed;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-    }
-    .terracotta-bg {
-      background-color: #b84433;
-      background-image: 
-        radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
-        linear-gradient(175deg, #c64d3b 0%, #b84433 50%, #a83a2b 100%);
-      background-size: 20px 20px, 100% 100%;
-    }
-    html {
-      scroll-behavior: smooth;
-    }
-    
-    /* モーダル表示アニメーション */
-    .modal-enter {
-      animation: modalFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-    @keyframes modalFadeIn {
-      from { opacity: 0; transform: translateY(18px) scale(0.97); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    .magazine-shadow {
-      box-shadow: 0 20px 45px -15px rgba(28, 27, 26, 0.28), 0 0 1px 1px rgba(0, 0, 0, 0.05);
-    }
-    /* バブルのタッチエフェクト */
-    .bubble-item {
-      touch-action: none;
-      transition: transform 0.04s ease-out;
-      will-change: transform;
-    }
-    .bubble-item:active {
-      transform: scale(0.93);
-    }
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #ffedd6;
+            color: #5c3a21;
+            font-family: 'Hiragino Maru Gothic ProN', 'Meiryo', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            width: 100vw;
+            height: 100dvh;
+            touch-action: none;
+        }
 
-    /* gaikan.png を適用するステージ背景 */
-    .stage-haikei-bg {
-      background-image: url('gaikan.png');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      background-color: #ece8e1;
-    }
-  </style>
+        @keyframes shakeScreen {
+            0%, 100% { transform: translate(0, 0); }
+            20% { transform: translate(-12px, 8px); }
+            40% { transform: translate(12px, -8px); }
+            60% { transform: translate(-8px, 6px); }
+            80% { transform: translate(8px, -6px); }
+        }
+        .shake-screen {
+            animation: shakeScreen 0.25s ease-in-out;
+        }
+
+        #setup-screen {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0; left: 0;
+            z-index: 100;
+            background-color: #ffedd6;
+        }
+
+        #character-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #character {
+            width: 300px;
+            height: 420px;
+            position: relative;
+            pointer-events: none;
+            transition: transform 0.35s ease;
+            transform: scale(1.6);
+            transform-origin: top center;
+        }
+
+        #face-frame {
+            width: 120px;
+            height: 160px;
+            border-radius: 50% 50% 50% 50% / 25% 25% 75% 75%;
+            border: 5px dashed #ff9800;
+            overflow: hidden;
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: transparent;
+            z-index: 2;
+        }
+
+        #photo-canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+
+        #webcam {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1) scale(1.4);
+        }
+
+        #drawing-canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 5;
+            transition: background-color 0.3s;
+        }
+
+        #character.drawing-mode {
+            pointer-events: auto;
+            transform: scale(1) translateY(0);
+        }
+        #character.drawing-mode #face-frame {
+            border-color: transparent;
+        }
+        #character.drawing-mode #drawing-canvas {
+            background-color: rgba(255,255,255,0.3);
+            border: 3px dashed #ff9800;
+            border-radius: 28px;
+        }
+
+        #character.playing-mode {
+            position: absolute;
+            top: 0; left: 0;
+            transform-origin: top left;
+            pointer-events: none;
+            border: none;
+            transition: none !important;
+            z-index: 20;
+        }
+        #character.playing-mode #face-frame {
+            border-color: transparent;
+        }
+        #character.playing-mode #drawing-canvas {
+            background-color: transparent;
+            border: none;
+        }
+
+        #bottom-palette {
+            display: none;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 14px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 24px;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .palette-section {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .palette-divider {
+            width: 2px;
+            height: 28px;
+            background-color: #ddd;
+            margin: 0 4px;
+            border-radius: 2px;
+        }
+
+        #ui-area {
+            background: #fff;
+            padding: 12px 18px 20px;
+            border-top-left-radius: 28px;
+            border-top-right-radius: 28px;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-height: 48vh;
+            overflow-y: auto;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: transform 0.1s, filter 0.1s;
+        }
+        .btn:active { transform: scale(0.96); filter: brightness(0.95); }
+        .btn.small { padding: 8px 16px; font-size: 0.95rem; }
+
+        .color-btn {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            border: 3px solid #f0f0f0;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.18);
+            transition: transform 0.15s;
+        }
+        .color-btn.active {
+            border-color: #333;
+            transform: scale(1.2);
+        }
+
+        .size-btn {
+            background-color: #555;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.15s;
+            border: 2px solid transparent;
+        }
+        .size-btn.active {
+            background-color: #ff9800;
+            transform: scale(1.3);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        #game-select-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-evenly;
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0; left: 0;
+            background-color: #ffeaa7;
+            z-index: 90;
+            padding: 2vh 16px;
+        }
+
+        .game-btn {
+            width: 100%;
+            max-width: 320px;
+            padding: 0;
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background-color: #ff9800;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+            border: 3px solid #fff;
+            text-align: center;
+            flex-shrink: 1;
+        }
+        .game-btn.whack {
+            background-color: #e74c3c;
+        }
+
+        .game-btn-img-wrap {
+            width: 100%;
+            height: 135px;
+            max-height: 20vh;
+            overflow: hidden;
+            background-color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            box-sizing: border-box;
+        }
+        .game-btn-img {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            display: block;
+            margin: auto;
+        }
+        .game-btn-text-wrap {
+            padding: 8px 12px 10px;
+            color: #fff;
+        }
+        .game-btn-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 2px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.25);
+        }
+        .game-btn-desc {
+            font-size: 0.8rem;
+            font-weight: normal;
+            line-height: 1.35;
+            opacity: 0.95;
+        }
+
+        .game-screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0; left: 0;
+            overflow: hidden;
+        }
+        .score-board {
+            position: absolute;
+            top: 14px; left: 14px;
+            display: flex;
+            gap: 16px;
+            font-size: 1.15rem;
+            font-weight: bold;
+            background: rgba(255,255,255,0.92);
+            padding: 8px 16px;
+            border-radius: 24px;
+            z-index: 40;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .back-btn {
+            position: absolute;
+            top: 14px; right: 14px;
+            background-color: #7f8c8d;
+            z-index: 40;
+        }
+
+        .result-popup {
+            display: none;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 24px;
+            text-align: center;
+            z-index: 60;
+            box-shadow: 0 12px 36px rgba(0,0,0,0.35);
+            width: 86%;
+            max-width: 320px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .result-avatar-container {
+            width: 130px;
+            height: 182px;
+            margin: 8px auto 0;
+            position: relative;
+            border: 3px solid #ffb74d;
+            border-radius: 18px;
+            background-color: #fff;
+            overflow: hidden;
+        }
+        .result-avatar-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        #catch-screen {
+            background-color: #81d4fa;
+            position: relative;
+        }
+        #catch-screen::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            background-image: url('gaikan.png');
+            background-size: cover;
+            background-position: center bottom;
+            background-repeat: no-repeat;
+        }
+
+        .falling-item {
+            position: absolute;
+            z-index: 15;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        #whack-screen {
+            background-color: #80cbc4;
+        }
+
+        #whack-holes {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 12px;
+            width: 94%;
+            max-width: 420px;
+            height: calc(100% - 90px);
+            margin: 75px auto 10px;
+            padding: 8px;
+        }
+
+        .whack-hole {
+            position: relative;
+            background-color: #4db6ac;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 3px solid #b2dfdb;
+            box-shadow: inset 0 3px 8px rgba(0,0,0,0.15);
+        }
+
+        .hole-inner {
+            position: absolute;
+            bottom: 8%;
+            left: 10%;
+            width: 80%;
+            height: 28%;
+            background-color: #3e2723;
+            border-radius: 50%;
+            box-shadow: inset 0 6px 12px rgba(0,0,0,0.85);
+        }
+
+        .mole {
+            position: absolute;
+            bottom: 6%;
+            left: 50%;
+            cursor: pointer;
+            transition: transform 0.16s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+            will-change: transform;
+        }
+
+        .food-mole {
+            transform: translateX(-50%) translateY(-24px);
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .food-mole.hidden {
+            transform: translateX(-50%) translateY(160px);
+            pointer-events: none;
+        }
+
+        .character-mole {
+            width: 300px;
+            height: 420px;
+            transform-origin: bottom center;
+            transform: translateX(-50%) scale(0.34) translateY(26px);
+        }
+        .character-mole.hidden {
+            transform: translateX(-50%) scale(0.34) translateY(500px);
+            pointer-events: none;
+        }
+
+        .clone-face-frame {
+            width: 120px;
+            height: 160px;
+            border-radius: 50% 50% 50% 50% / 25% 25% 75% 75%;
+            overflow: hidden;
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+        }
+        .clone-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+        .clone-drawing {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 5;
+        }
+
+        #custom-modal {
+            display: none;
+            position: fixed;
+            top: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(33, 33, 33, 0.92);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 25px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+            z-index: 999;
+            font-size: 0.9rem;
+            text-align: center;
+            max-width: 90%;
+            pointer-events: none;
+            animation: fadeIn 0.25s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -8px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+    </style>
 </head>
-<body class="font-sans antialiased min-h-screen flex flex-col items-center">
-  <!-- スマホ枠コンテナ -->
-  <div class="w-full max-w-md min-h-screen terracotta-bg shadow-2xl relative flex flex-col pb-20 border-x border-orange-950/20 text-stone-900">
+<body>
+    <div id="custom-modal"></div>
 
-    <!-- トップヘッダー（タイトル中央配置） -->
-    <header class="sticky top-0 z-30 bg-[#b84433]/92 backdrop-blur-md border-b border-orange-950/20 px-4 py-3 flex items-center justify-center shadow-sm">
-      <div class="min-w-0 text-center">
-        <span class="text-[10px] tracking-[0.22em] text-white/90 font-serif font-semibold block truncate leading-tight">こだわりのひとさらを</span>
-        <h1 class="font-serif text-lg font-bold text-white tracking-wider drop-shadow-sm truncate leading-snug">好味家おすすめ本</h1>
-      </div>
-    </header>
-
-    <!-- メインコンテンツ -->
-    <main class="flex-1 p-4 space-y-5">
-
-      <!-- 動的バブルステージ（gaikan.png背景・丸がエアホッケーのようにすーっと滑るエリア） -->
-      <section class="relative rounded-2xl bg-[#f5f3ef] p-4 overflow-hidden border border-white/80 shadow-lg">
-        <div class="flex justify-between items-baseline mb-2">
-          <div class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-[#b84433] animate-ping"></span>
-            <span class="text-xs font-bold tracking-widest text-[#b84433] font-serif">公開中！名物と逸品</span>
-          </div>
-          <span class="text-[11px] text-[#b84433] font-bold font-serif">動く〇をタップしてね☝</span>
+    <div id="setup-screen">
+        <div style="text-align:center; padding:14px 10px 4px; background-color:#ffedd6; z-index:110;">
+            <h1 style="color:#e74c3c; font-size:clamp(0.95rem, 4.5vw, 1.4rem); margin:0; font-weight:bold; white-space:nowrap; text-shadow: 1px 1px 0 #fff;">
+                自分のアバターを作ってゲームで遊ぼう！！
+            </h1>
         </div>
 
-        <!-- 丸が滑らかに滑り回るインタラクティブステージ（背景にgaikan.pngを自動調整適用） -->
-        <div id="bubbleStage" style="height: 380px; min-height: 380px;" class="stage-haikei-bg relative w-full rounded-xl overflow-hidden border border-stone-200/80 cursor-grab active:cursor-grabbing shadow-inner">
-          <!-- 背景透過オーバーレイで視認性向上 -->
-          <div class="absolute inset-0 bg-white/20 backdrop-blur-[0.5px] pointer-events-none"></div>
-
-          <!-- バブル要素群 -->
-          <div id="bubblesContainer" class="absolute inset-0"></div>
+        <div id="character-area">
+            <div id="character">
+                <canvas id="drawing-canvas" width="300" height="420"></canvas>
+                <div id="face-frame">
+                    <video id="webcam" autoplay playsinline muted></video>
+                    <canvas id="photo-canvas" style="display:none;"></canvas>
+                </div>
+            </div>
         </div>
-      </section>
 
-      <!-- コンセプト案内バナー（3行バランス配置） -->
-      <section class="bg-washi/95 rounded-xl px-2.5 sm:px-5 py-3.5 sm:py-4 border border-orange-950/10 shadow-md flex items-center justify-center">
-        <div class="font-serif w-full text-center">
-          <p class="text-[11px] min-[360px]:text-[11.8px] sm:text-[13px] text-stone-800 leading-[1.8] sm:leading-[1.9] tracking-normal sm:tracking-wide font-medium">
-            <span class="block">昭和32年に創業した伝統ある好味家。</span>
-            <span class="block whitespace-nowrap">3世代で通うご家族も多く、老若男女を問わず愛され続けています。</span>
-            <span class="block">伝統あるこだわりとおすすめをご覧ください。</span>
-          </p>
-        </div>
-      </section>
-
-      <!-- お子様向けアバターゲーム誘導ボタン -->
-      <section class="w-full">
-        <a 
-          id="gameLinkBtn"
-          href="https://010m-xtech.github.io/TEST2/kaohame_743000/" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          onclick="handleGameLinkClick(event)"
-          class="group relative block w-full rounded-2xl bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 p-1 shadow-[0_8px_20px_-4px_rgba(245,158,11,0.5),0_6px_0_#b45309] active:translate-y-1.5 active:shadow-[0_2px_0_#b45309] transition-all overflow-hidden cursor-pointer select-none"
-        >
-          <!-- 背景のキラキラ動く光沢ハイライト -->
-          <div class="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/35 to-transparent pointer-events-none"></div>
-
-          <!-- ボタン内側コンテンツ -->
-          <div class="relative bg-gradient-to-b from-yellow-300/30 to-transparent rounded-[14px] px-4 py-3 border-2 border-dashed border-white/70 flex items-center justify-between gap-3">
-            
-            <!-- テキストエリア -->
-            <div class="flex-1 min-w-0 text-left">
-              <div class="flex items-center gap-1.5 mb-1">
-                <span class="bg-red-500 text-white font-extrabold text-[10px] px-2 py-0.5 rounded-full shadow-sm tracking-wider">
-                  まちじかんにあそべる！
-                </span>
-                <span class="text-xs">🎮</span>
-              </div>
-              <h3 class="text-[12.5px] sm:text-[13.5px] font-black text-amber-950 tracking-tight leading-snug whitespace-nowrap drop-shadow-[0_1px_0_rgba(255,255,255,0.8)]">
-                きみがゲームの中に！？<br>しゃしんをとって遊んでみよう！
-              </h3>
+        <div id="ui-area">
+            <div id="ui-shooting" style="text-align:center;">
+                <p style="margin:0 0 14px 0; color:#d35400; font-size:1.05rem; font-weight:bold;">顔の枠に合わせて撮影！</p>
+                <button id="shoot-btn" class="btn" style="background-color:#ff9800; width:210px;">撮影する！</button>
             </div>
 
-            <!-- 右側：タップしてあそぶ☝ボタン風バッジ -->
-            <div class="shrink-0 flex items-center justify-center bg-white text-orange-600 font-black text-[11px] sm:text-xs px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-xl shadow-md border-2 border-orange-300 group-hover:scale-105 active:scale-95 transition-all">
-              <span class="flex items-center gap-0.5 whitespace-nowrap tracking-tight">
-                タップしてあそぶ
-                <span class="text-xs sm:text-sm leading-none">☝</span>
-              </span>
+            <div id="ui-drawing" style="display:none; width:100%; max-width:340px;">
+                <p style="text-align:center; color:#e74c3c; font-weight:bold; margin-top:0; margin-bottom:8px; font-size:1rem;">写真にらくがきしてみよう！</p>
+                
+                <div id="bottom-palette">
+                    <div class="palette-section">
+                        <div class="color-btn active" data-color="#000000" style="background-color:#000;"></div>
+                        <div class="color-btn" data-color="#e74c3c" style="background-color:#e74c3c;"></div>
+                        <div class="color-btn" data-color="#3498db" style="background-color:#3498db;"></div>
+                        <div class="color-btn" data-color="#2ecc71" style="background-color:#2ecc71;"></div>
+                        <div class="color-btn" data-color="#f1c40f" style="background-color:#f1c40f;"></div>
+                    </div>
+                    <div class="palette-divider"></div>
+                    <div class="palette-section">
+                        <div class="size-btn" data-size="4" style="width:6px; height:6px;"></div>
+                        <div class="size-btn active" data-size="10" style="width:12px; height:12px;"></div>
+                        <div class="size-btn" data-size="22" style="width:20px; height:20px;"></div>
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; gap: 8px; margin-bottom:12px;">
+                    <button id="retake-btn" class="btn small" style="flex:1; background-color:#95a5a6; padding:10px 4px;">撮り直す</button>
+                    <button id="undo-btn" class="btn small" style="flex:1; background-color:#34495e; padding:10px 4px;">1つ戻す</button>
+                    <button id="clear-btn" class="btn small" style="flex:1; background-color:#e74c3c; padding:10px 4px;">全消し</button>
+                </div>
+                <button id="start-btn" class="btn" style="width:100%; background-color:#2ecc71; padding:14px; font-size:1.3rem;">完成！遊ぶ！</button>
             </div>
-
-          </div>
-        </a>
-      </section>
-
-      <!-- メニューカード一覧セクション -->
-      <section class="space-y-3.5">
-        <!-- 注釈エリア（中央揃え・視認性の高い大きめフォント） -->
-        <div class="text-center flex flex-col items-center justify-center pt-1 space-y-2">
-          <!-- おすすめ一覧 見出し -->
-          <div class="flex items-center justify-center gap-2.5">
-            <span class="w-6 h-[1.5px] bg-white/50 rounded-full"></span>
-            <h3 class="font-serif text-lg sm:text-xl font-extrabold text-white tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
-              おすすめ一覧
-            </h3>
-            <span class="w-6 h-[1.5px] bg-white/50 rounded-full"></span>
-          </div>
-
-          <div class="inline-flex items-center justify-center gap-2 bg-black/25 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-xl text-white shadow-sm mx-auto max-w-full">
-            <span class="text-amber-300 font-extrabold text-sm shrink-0 leading-none">※</span>
-            <p class="text-xs sm:text-[13px] font-bold leading-tight font-serif text-white tracking-wide text-center auto-phrase text-balance">
-              こちらからは注文できませんのでご注意ください。
-            </p>
-          </div>
         </div>
-
-        <!-- 2列に並ぶボタンメニューグリッド -->
-        <div id="menuCardsList" class="grid grid-cols-2 gap-2.5">
-          <!-- JSでメニューカードを動的生成 -->
-        </div>
-      </section>
-
-    </main>
-
-    <!-- 雑誌風こだわり解説モーダル -->
-    <div id="detailModal" class="fixed inset-0 z-50 bg-black/65 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-      <div id="modalCard" class="bg-washi w-full max-w-md rounded-2xl overflow-hidden magazine-shadow relative my-auto modal-enter border border-stone-200 flex flex-col max-h-[92vh]">
-
-        <!-- 右上の閉じる「×」ボタン -->
-        <button onclick="closeModal()" aria-label="閉じる" class="absolute top-3.5 right-3.5 z-30 w-8 h-8 rounded-full bg-stone-100/90 backdrop-blur-sm flex items-center justify-center hover:bg-stone-200 text-stone-700 transition-colors shadow-sm cursor-pointer">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
-        </button>
-
-        <!-- モーダル本文 -->
-        <div class="overflow-y-auto flex-1 p-3.5 sm:p-4 space-y-3 font-serif">
-
-          <!-- タイトル（余白をすっきり最適化） -->
-          <div class="border-b border-stone-200 pb-2 pr-8">
-            <h2 id="modalTitle" class="text-base sm:text-lg font-extrabold text-sumi tracking-tight leading-snug auto-phrase text-balance"></h2>
-          </div>
-
-          <!-- 料理ビジュアル＆エモーショナルコピーエリア -->
-          <div class="relative w-full aspect-[4/3] rounded-xl overflow-hidden shadow-sm bg-stone-900">
-            <img id="modalImage" src="" alt="料理写真" class="w-full h-full object-cover opacity-90 transition-transform duration-700 hover:scale-105" onerror="this.src='https://placehold.co/600x400/222/fff?text=料理写真'">
-            <!-- 動画メニュー用プレーヤー -->
-            <video id="modalVideo" src="" playsinline webkit-playsinline autoplay loop muted class="hidden w-full h-full object-cover"></video>
-            
-            <!-- 縦書き詩的コピー -->
-            <div class="absolute top-2.5 right-2.5 max-w-[55%] max-h-[calc(100%-1.25rem)] w-fit h-fit bg-black/65 backdrop-blur-sm px-2.5 py-2 rounded-lg border border-white/20 text-white shadow-lg pointer-events-none flex items-center justify-center">
-              <p id="modalVerticalPoem" class="vertical-rl text-[11px] sm:text-xs font-medium tracking-[0.18em] leading-[1.75] select-none whitespace-pre"></p>
-            </div>
-          </div>
-
-          <!-- ストーリー＆こだわり解説（余白を自然に自動調整・改行を最適化） -->
-          <div class="bg-kinari/70 p-3 sm:p-3.5 rounded-xl border border-stone-200/80">
-            <p id="modalStory" class="text-xs sm:text-[12.5px] text-stone-700 leading-relaxed auto-phrase text-pretty text-left whitespace-pre-line"></p>
-          </div>
-
-        </div>
-
-        <!-- フッターアクション -->
-        <div class="p-3 bg-stone-50 border-t border-stone-200 flex gap-2">
-          <button onclick="closeModal()" class="flex-1 py-2.5 rounded-xl bg-sumi text-white text-xs font-serif font-bold tracking-wider hover:bg-stone-800 active:scale-95 transition-all cursor-pointer">
-            メニュー一覧へ戻る
-          </button>
-        </div>
-
-      </div>
     </div>
 
-  </div>
-
-  <script>
-    // 動画読み込みエラー（NotSupportedError）による未処理のPromise拒否をキャッチして防止
-    window.addEventListener("unhandledrejection", (event) => {
-      if (event.reason && (event.reason.name === "NotSupportedError" || event.reason.name === "AbortError" || String(event.reason).includes("Failed to load"))) {
-        event.preventDefault();
-      }
-    });
-
-    // 画像読み込みフォールバック用マップ
-    const fallbackImages = {
-      oden: "https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=400&q=80",
-      cheesesauce: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=400&q=80",
-      okonomi: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=400&q=80",
-      hekinanyakisoba: "https://images.unsplash.com/photo-1617093727343-374698b1b08d?auto=format&fit=crop&w=400&q=80",
-      negiyaki: "https://images.unsplash.com/photo-1552611052-33e04de081de?auto=format&fit=crop&w=400&q=80",
-      gyuusuji: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=400&q=80",
-      hoiruyaki: "https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=400&q=80",
-      napoli: "https://images.unsplash.com/photo-1621996346565-e3d5d62816dc?auto=format&fit=crop&w=400&q=80",
-      beer: "https://images.unsplash.com/photo-1608270586620-248524c67de9?auto=format&fit=crop&w=400&q=80",
-      gaikan: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=400&q=80"
-    };
-
-    // メニューデータ
-    const menuData = [
-      {
-        id: "oden",
-        title: "関東煮おでん",
-        subtitle: "薄口醤油を使った甘めのだしでじっくり煮込んだ関東煮",
-        verticalPoem: "しみ込んだ深い味で\nほっとひといき",
-        image: "おでん.mp4",
-        mediaType: "video",
-        story: "薄口醤油を使った甘めのだしでじっくり煮込んだ関東煮。豊富な素材達に深い味わいがしみ込んでいます。"
-      },
-      {
-        id: "cheesesauce",
-        title: "お好み焼き/とろけるチーズソーストッピング",
-        subtitle: "チーズの濃厚な味わいとお好み焼の相性抜群",
-        verticalPoem: "チーズの濃厚な味わいと\nお好み焼の相性抜群",
-        image: "とろけるチーズソース.mp4",
-        mediaType: "video",
-        story: "お好み焼きの上にモッツァレラチーズを贅沢にかける『とろけるチーズソース』は、チーズのクリーミーで濃厚な味わいがお好み焼きと相性抜群です。新感覚のおすすめの一品。"
-      },
-      {
-        id: "okonomi",
-        title: "名物　お好み焼き",
-        subtitle: "昭和時代から引き継がれてきた伝統ある味",
-        verticalPoem: "昭和から引き継がれた\n伝統ある一品",
-        image: "okonomi.png",
-        story: "昭和時代から引き継がれてきた伝統ある味。デラックス/シーフード/まんぞく焼き等種類も豊富に揃っています。自分好みのお好み焼きが見つかるはずです。"
-      },
-      {
-        id: "hekinanyakisoba",
-        title: "名物へきなん焼きそば",
-        subtitle: "伝統の白醤油と太麺が絡み合う、碧南ならではの香ばしいご当地の味",
-        verticalPoem: "碧南発祥の\n伝統ある一品",
-        image: "hekinanyakisoba.png",
-        story: "碧南発祥の白醤油の味をベースに、ニンジンや玉ねぎ等の野菜をふんだんに使用したボリューム満点の伝統ある焼きそばです。"
-      },
-      {
-        id: "negiyaki",
-        title: "ねぎ玉/ねぎ焼き",
-        subtitle: "新鮮ねぎとさっぱりもちふわ触感。ねぎ玉・ねぎ焼きそれぞれの魅力を",
-        verticalPoem: "新鮮ねぎと\nさっぱりもちふわ触感",
-        image: "negiyaki.png",
-        story: "ねぎ玉：分厚い生地で大満足。ねぎの風味と触感が抜群な一品です。\nねぎ焼き：もちもち触感がクセになる。ねぎがちょうどいいアクセントになっています。"
-      },
-      {
-        id: "gyuusuji",
-        title: "自家製牛すじ煮込み",
-        subtitle: "不動の一番人気。じっくり煮込んだ深くとろける極上の味わい",
-        verticalPoem: "じっくり煮込んだ\n深くとろけるような味わい",
-        image: "gyuusuji.png",
-        story: "不動の一番人気の一品もの。じっくり時間をかけて煮込んだ自家製牛すじ煮込み。噛めば噛むほど美味しいお酒にもピッタリの味わいです。"
-      },
-      {
-        id: "hoiruyaki",
-        title: "アサリときのこのホイル焼き",
-        subtitle: "海と山の恵みが凝縮。バターと白醤油が香る贅沢な包み焼き",
-        verticalPoem: "海と山の風味を\n堪能できる贅沢な一品",
-        image: "hoiruyaki.png",
-        story: "大ぶりで身がしっかりとしたアサリとアサリの出汁が染み込んだきのこは相性抜群。バターや白醤油の深い味わいでお酒にも合う、贅沢な一品"
-      },
-      {
-        id: "napoli",
-        title: "鉄板ナポリタン",
-        subtitle: "ジュージュー鳴る玉子敷き鉄板。ケチャップの甘酸っぱさが懐かしい味わい",
-        verticalPoem: "鉄板の上から漂う\n懐かしい香り",
-        image: "napoli.png",
-        story: "もちもちの太麺で味わう濃厚なケチャップ風味のナポリタン焼きそば。"
-      },
-      {
-        id: "beer",
-        title: "厳格な審査をクリアした速達生ビール",
-        subtitle: "工場出荷2日以内の新鮮さ。徹底品質管理が生み出す究極の一杯",
-        verticalPoem: "新鮮さとクリーミーな泡に\nなめらかな口当たり。",
-        image: "beer.png",
-        story: "工場出荷2日以内の新鮮さ。グラスの洗浄、サーバーの温度管理、ガス圧の調整に至るまで一切の妥協を許さないこだわりの生ビール。きめ細やかなシルキーな泡が、鉄板料理の旨味を最高の状態に引き上げます。"
-      },
-      {
-        id: "gaikan",
-        title: "好味家について",
-        subtitle: "昭和三十二年創業の伝統ある味と空間をお楽しみください",
-        verticalPoem: "昭和三十二年創業の\n伝統ある味と空間を\nお楽しみください",
-        image: "gaikan.png",
-        story: "昭和三十二年に創業の好味家。本場関西仕込みのお好み焼をはじめ、ご当地グルメ「へきなん焼きそば」や「チーズお好み焼き」もおすすめメニュー。温かな接客でお腹も心も満たすよう心掛けています。"
-      }
-    ];
-
-    // エアホッケー物理シミュレーション
-    let bubbles = [];
-    let animationFrameId = null;
-    let stageWidth = 320;
-    let stageHeight = 380;
-    const BUBBLE_RADIUS = 35; // 直径70px
-    const BUBBLE_DIAMETER = BUBBLE_RADIUS * 2;
-
-    class DynamicBubble {
-      constructor(data, index, total) {
-        this.data = data;
-        this.radius = BUBBLE_RADIUS;
+    <div id="game-select-screen">
+        <h2 style="color:#d35400; margin:0; font-size: 1.35rem;">どのゲームで遊ぶ？</h2>
         
-        const padding = 12;
-        const cols = 4;
-        const col = index % cols;
-        const row = Math.floor(index / cols);
+        <button id="btn-play-catch" class="btn game-btn">
+            <div class="game-btn-img-wrap">
+                <img src="kyachi.png" alt="メニューキャッチ" class="game-btn-img" onerror="this.outerHTML='<div style=\'font-size:3rem;\'>🍎</div>'">
+            </div>
+            <div class="game-btn-text-wrap">
+                <div class="game-btn-title">メニューキャッチ</div>
+                <div class="game-btn-desc">落ちてくるメニューをたくさんとろう！<br>💣爆弾には気をつけて！</div>
+            </div>
+        </button>
         
-        const usableW = Math.max(160, stageWidth - padding * 2 - this.radius * 2);
-        const usableH = Math.max(180, stageHeight - padding * 2 - this.radius * 2);
+        <button id="btn-play-whack" class="btn game-btn whack">
+            <div class="game-btn-img-wrap">
+                <img src="mogura.png" alt="モグラたたき" class="game-btn-img" onerror="this.outerHTML='<div style=\'font-size:3rem;\'>🐹</div>'">
+            </div>
+            <div class="game-btn-text-wrap">
+                <div class="game-btn-title">モグラたたき</div>
+                <div class="game-btn-desc">とびだすメニューをタップしてゲット！<br>自分を叩いたら減点だよ！</div>
+            </div>
+        </button>
+        
+        <button id="btn-remake" class="btn small" style="background-color:#95a5a6; margin-top: 4px;">キャラを作り直す</button>
+    </div>
 
-        this.x = padding + this.radius + col * (usableW / (cols - 1 || 1)) + (Math.random() * 6 - 3);
-        this.y = padding + this.radius + row * (usableH / Math.max(1, Math.ceil(total / cols) - 1)) + (Math.random() * 6 - 3);
+    <div id="catch-screen" class="game-screen">
+        <div class="score-board">
+            <span>スコア: <span id="catch-score">0</span></span>
+            <span style="color:#e74c3c">残り: <span id="catch-time">30</span>秒</span>
+        </div>
+        <button class="btn small back-btn" onclick="backToMenu()">戻る</button>
+        
+        <div id="catch-result" class="result-popup">
+            <h2 style="color:#e74c3c; margin-top:0; margin-bottom:4px; font-size:1.2rem;">タイムアップ！</h2>
+            <p style="font-size:1.1rem; font-weight:bold; margin:0 0 6px 0;">最終スコア: <span id="catch-final-score">0</span>点</p>
+            
+            <div id="catch-best-food" style="margin-bottom: 6px; display: none; flex-direction: column; align-items: center;">
+                <span style="font-size: 0.8rem; font-weight: bold; color: #555;">たくさん集めた今日のおすすめメニューは</span>
+                <div style="margin:4px 0; width:110px; height:110px; display:flex; align-items:center; justify-content:center;">
+                    <img id="catch-best-food-img" src="" style="width: 100%; height: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                </div>
+                <span id="catch-best-food-name" style="font-size: 1.15rem; font-weight: bold; color: #d35400;">商品名</span>
+            </div>
 
-        this.baseSpeed = 0.95 + Math.random() * 0.35;
-        const angle = Math.random() * Math.PI * 2;
-        this.vx = Math.cos(angle) * this.baseSpeed;
-        this.vy = Math.sin(angle) * this.baseSpeed;
+            <div class="result-avatar-container">
+                <canvas id="result-catch-canvas" class="result-avatar-canvas" width="300" height="420"></canvas>
+            </div>
+            <button class="btn" style="background-color:#ff9800; width:100%; margin-top:14px;" onclick="resetToStart()">もう一度</button>
+        </div>
+    </div>
 
-        this.isDragging = false;
-        this.dragStartX = 0;
-        this.dragStartY = 0;
-        this.hasMoved = false;
+    <div id="whack-screen" class="game-screen">
+        <div class="score-board">
+            <span>スコア: <span id="whack-score">0</span></span>
+            <span style="color:#e74c3c">残り: <span id="whack-time">30</span>秒</span>
+        </div>
+        <button class="btn small back-btn" onclick="backToMenu()">戻る</button>
+        
+        <div id="whack-holes"></div>
 
-        this.element = document.createElement("div");
-        this.element.className = "bubble-item absolute select-none cursor-pointer";
-        this.element.style.width = `${BUBBLE_DIAMETER}px`;
-        this.element.style.height = `${BUBBLE_DIAMETER}px`;
+        <div id="whack-result" class="result-popup">
+            <h2 style="color:#e74c3c; margin-top:0; margin-bottom:4px; font-size:1.2rem;">タイムアップ！</h2>
+            <p style="font-size:1.1rem; font-weight:bold; margin:0 0 6px 0;">最終スコア: <span id="whack-final-score">0</span>点</p>
+            
+            <div id="whack-best-food" style="margin-bottom: 6px; display: none; flex-direction: column; align-items: center;">
+                <span style="font-size: 0.8rem; font-weight: bold; color: #555;">たくさん集めた今日のおすすめメニューは</span>
+                <div style="margin:4px 0; width:110px; height:110px; display:flex; align-items:center; justify-content:center;">
+                    <img id="whack-best-food-img" src="" style="width: 100%; height: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                </div>
+                <span id="whack-best-food-name" style="font-size: 1.15rem; font-weight: bold; color: #d35400;">商品名</span>
+            </div>
 
-        const isVideo = data.mediaType === 'video' || (data.image && data.image.endsWith('.mp4'));
-        const fallbackSrc = fallbackImages[data.id] || 'https://placehold.co/140x140/b84433/fff?text=逸品';
-        const mediaHtml = isVideo
-          ? `<video src="${data.image}" autoplay loop muted playsinline webkit-playsinline class="w-full h-full object-cover rounded-full pointer-events-none" onerror="this.onerror=null; this.outerHTML='<img src=\\'${fallbackSrc}\\' class=\\'w-full h-full object-cover rounded-full pointer-events-none\\'>';"></video>`
-          : `<img src="${data.image}" alt="${data.title}" class="w-full h-full object-cover rounded-full pointer-events-none filter saturate-[1.08]" onerror="this.onerror=null; this.src='${fallbackSrc}';">`;
+            <div class="result-avatar-container">
+                <canvas id="result-whack-canvas" class="result-avatar-canvas" width="300" height="420"></canvas>
+            </div>
+            <button class="btn" style="background-color:#ff9800; width:100%; margin-top:14px;" onclick="resetToStart()">もう一度</button>
+        </div>
+    </div>
 
-        this.element.innerHTML = `
-          <div class="relative w-full h-full rounded-full bg-white p-[2.5px] shadow-[0_5px_15px_rgba(0,0,0,0.22)] border-2 border-white hover:border-[#b84433] hover:shadow-[0_8px_22px_rgba(184,68,51,0.4)] transition-all overflow-hidden flex items-center justify-center">
-            ${mediaHtml}
-          </div>
-        `;
+    <script>
+        const video = document.getElementById('webcam');
+        const photoCanvas = document.getElementById('photo-canvas');
+        const pCtx = photoCanvas.getContext('2d');
+        const drawCanvas = document.getElementById('drawing-canvas');
+        const dCtx = drawCanvas.getContext('2d');
+        
+        const character = document.getElementById('character');
+        const setupScreen = document.getElementById('setup-screen');
+        const selectScreen = document.getElementById('game-select-screen');
+        const catchScreen = document.getElementById('catch-screen');
+        const whackScreen = document.getElementById('whack-screen');
+        
+        const uiShooting = document.getElementById('ui-shooting');
+        const uiDrawing = document.getElementById('ui-drawing');
 
-        this.setupEvents();
-      }
+        // 指定メニュー3種
+        const goodFoods = [
+            { name: "牛すじ", emoji: "🍲", src: "gyuusuji.png" },
+            { name: "碧南焼きそば", emoji: "🍜", src: "hekinanyakisoba.png" },
+            { name: "お好み焼き", emoji: "🥞", src: "okonomi.png" }
+        ];
 
-      setupEvents() {
-        let startClientX = 0;
-        let startClientY = 0;
+        let caughtFoods = {};
+        let currentStream = null;
 
-        const onPointerDown = (e) => {
-          this.isDragging = true;
-          this.hasMoved = false;
-          const point = e.touches ? e.touches[0] : e;
-          startClientX = point.clientX;
-          startClientY = point.clientY;
-          this.dragStartX = point.clientX;
-          this.dragStartY = point.clientY;
-        };
-
-        const onPointerMove = (e) => {
-          if (!this.isDragging) return;
-          const point = e.touches ? e.touches[0] : e;
-          const dx = point.clientX - this.dragStartX;
-          const dy = point.clientY - this.dragStartY;
-          
-          if (Math.hypot(point.clientX - startClientX, point.clientY - startClientY) > 6) {
-            this.hasMoved = true;
-          }
-
-          this.x += dx;
-          this.y += dy;
-          this.vx = dx * 0.35;
-          this.vy = dy * 0.35;
-
-          this.dragStartX = point.clientX;
-          this.dragStartY = point.clientY;
-        };
-
-        const onPointerUp = () => {
-          if (this.isDragging) {
-            this.isDragging = false;
-            if (!this.hasMoved) {
-              openModal(this.data.id);
-            }
-          }
-        };
-
-        this.element.addEventListener("mousedown", onPointerDown);
-        window.addEventListener("mousemove", onPointerMove);
-        window.addEventListener("mouseup", onPointerUp);
-
-        this.element.addEventListener("touchstart", onPointerDown, { passive: true });
-        window.addEventListener("touchmove", onPointerMove, { passive: true });
-        window.addEventListener("touchend", onPointerUp);
-      }
-
-      update() {
-        if (!this.isDragging) {
-          let speed = Math.hypot(this.vx, this.vy);
-
-          if (speed < 0.05) {
-            const angle = Math.random() * Math.PI * 2;
-            this.vx = Math.cos(angle) * this.baseSpeed;
-            this.vy = Math.sin(angle) * this.baseSpeed;
-            speed = this.baseSpeed;
-          }
-
-          if (speed > this.baseSpeed) {
-            this.vx *= 0.985;
-            this.vy *= 0.985;
-          } else if (speed < this.baseSpeed * 0.9) {
-            const ratio = this.baseSpeed / speed;
-            this.vx = this.vx * 0.98 + (this.vx * ratio) * 0.02;
-            this.vy = this.vy * 0.98 + (this.vy * ratio) * 0.02;
-          }
-
-          this.x += this.vx;
-          this.y += this.vy;
-
-          const leftWall = this.radius;
-          const rightWall = stageWidth - this.radius;
-          const topWall = this.radius;
-          const bottomWall = stageHeight - this.radius;
-
-          if (this.x < leftWall) {
-            this.x = leftWall;
-            this.vx = Math.abs(this.vx);
-          } else if (this.x > rightWall) {
-            this.x = rightWall;
-            this.vx = -Math.abs(this.vx);
-          }
-
-          if (this.y < topWall) {
-            this.y = topWall;
-            this.vy = Math.abs(this.vy);
-          } else if (this.y > bottomWall) {
-            this.y = bottomWall;
-            this.vy = -Math.abs(this.vy);
-          }
+        function showNotification(msg) {
+            const modal = document.getElementById('custom-modal');
+            modal.innerText = msg;
+            modal.style.display = 'block';
+            setTimeout(() => { modal.style.display = 'none'; }, 3000);
         }
 
-        const left = this.x - this.radius;
-        const top = this.y - this.radius;
-        this.element.style.transform = `translate3d(${left}px, ${top}px, 0)`;
-      }
-    }
-
-    function resolveBubbleCollisions() {
-      for (let i = 0; i < bubbles.length; i++) {
-        for (let j = i + 1; j < bubbles.length; j++) {
-          const b1 = bubbles[i];
-          const b2 = bubbles[j];
-          const dx = b2.x - b1.x;
-          const dy = b2.y - b1.y;
-          const dist = Math.hypot(dx, dy);
-          const minDist = b1.radius + b2.radius;
-
-          if (dist < minDist && dist > 0) {
-            const overlap = (minDist - dist) * 0.5;
-            const nx = dx / dist;
-            const ny = dy / dist;
-
-            if (!b1.isDragging) {
-              b1.x -= nx * overlap;
-              b1.y -= ny * overlap;
+        function startCamera() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
             }
-            if (!b2.isDragging) {
-              b2.x += nx * overlap;
-              b2.y += ny * overlap;
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                createMockPhoto();
+                return;
             }
-
-            const kx = b1.vx - b2.vx;
-            const ky = b1.vy - b2.vy;
-            const p = 2 * (nx * kx + ny * ky) / 2;
-
-            if (!b1.isDragging) {
-              b1.vx -= p * nx * 0.98;
-              b1.vy -= p * ny * 0.98;
-            }
-            if (!b2.isDragging) {
-              b2.vx += p * nx * 0.98;
-              b2.vy += p * ny * 0.98;
-            }
-          }
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false })
+            .then(stream => { 
+                currentStream = stream;
+                video.srcObject = stream; 
+                video.play().catch(() => {});
+            })
+            .catch(() => { 
+                createMockPhoto();
+            });
         }
-      }
-    }
 
-    function startBubbleLoop() {
-      function loop() {
-        resolveBubbleCollisions();
-        bubbles.forEach(b => b.update());
-        animationFrameId = requestAnimationFrame(loop);
-      }
-      if (animationFrameId) cancelAnimationFrame(animationFrameId);
-      animationFrameId = requestAnimationFrame(loop);
-    }
+        function createMockPhoto() {
+            photoCanvas.width = 300;
+            photoCanvas.height = 400;
+            pCtx.fillStyle = "#ffe0b2";
+            pCtx.fillRect(0, 0, photoCanvas.width, photoCanvas.height);
+            pCtx.fillStyle = "#d35400";
+            pCtx.font = "bold 24px sans-serif";
+            pCtx.textAlign = "center";
+            pCtx.fillText("😊 笑顔", 150, 200);
+        }
 
-    function initFloatingBubbles() {
-      const stage = document.getElementById("bubbleStage");
-      const container = document.getElementById("bubblesContainer");
-      if (!stage || !container) return;
-      
-      container.innerHTML = '';
-      bubbles = [];
+        startCamera();
 
-      stageWidth = stage.clientWidth || 320;
-      stageHeight = stage.clientHeight || 380;
-
-      // 重複していたロゴ用の空丸を削除し、メニューデータの丸（好味家外観写真含む）のみで展開
-      menuData.forEach((item, index) => {
-        const bubble = new DynamicBubble(item, index, menuData.length);
-        bubbles.push(bubble);
-        container.appendChild(bubble.element);
-      });
-
-      startBubbleLoop();
-    }
-
-    function renderMenuCards() {
-      const container = document.getElementById("menuCardsList");
-      if (!container) return;
-      container.innerHTML = '';
-
-      menuData.forEach((item) => {
-        const card = document.createElement("article");
-        card.className = "group bg-white rounded-xl p-2.5 border border-stone-200 shadow-sm hover:shadow-md transition-all active:scale-[0.97] cursor-pointer flex flex-col justify-between overflow-hidden";
-        
-        const isVideo = item.mediaType === 'video' || (item.image && item.image.endsWith('.mp4'));
-        const fallbackSrc = fallbackImages[item.id] || 'https://placehold.co/300x225/b84433/fff?text=逸品';
-        const mediaHtml = isVideo
-          ? `<video src="${item.image}" autoplay loop muted playsinline webkit-playsinline class="w-full h-full object-cover pointer-events-none" onerror="this.onerror=null; this.outerHTML='<img src=\\'${fallbackSrc}\\' class=\\'w-full h-full object-cover transition-transform duration-300 group-hover:scale-105\\'>';"></video>`
-          : `<img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" onerror="this.onerror=null; this.src='${fallbackSrc}';">`;
-
-        card.innerHTML = `
-          <div class="w-full aspect-[4/3] rounded-lg overflow-hidden shrink-0 relative bg-stone-100 border border-stone-100 shadow-inner mb-2 flex items-center justify-center">
-            ${mediaHtml}
-          </div>
-
-          <div class="w-full h-9 mb-1.5 flex items-center justify-center px-0.5">
-            <h4 class="font-serif font-bold text-sumi text-xs leading-snug line-clamp-2 text-center auto-phrase text-balance">
-              ${item.title}
-            </h4>
-          </div>
-
-          <div class="w-full pt-1.5 border-t border-stone-100 flex items-center justify-center mt-auto">
-            <span class="text-[10.5px] font-bold text-[#b84433] font-serif flex items-center gap-0.5 group-hover:underline">
-              こだわりを読む
-              <svg class="w-2.5 h-2.5 inline shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-              </svg>
-            </span>
-          </div>
-        `;
-
-        card.addEventListener("click", () => {
-          openModal(item.id);
+        document.getElementById('shoot-btn').addEventListener('click', () => {
+            if (!video.videoWidth) {
+                createMockPhoto();
+            } else {
+                photoCanvas.width = video.videoWidth;
+                photoCanvas.height = video.videoHeight;
+                
+                const zoom = 1.4;
+                const sx = (video.videoWidth - video.videoWidth / zoom) / 2;
+                const sy = (video.videoHeight - video.videoHeight / zoom) / 2;
+                const sw = video.videoWidth / zoom;
+                const sh = video.videoHeight / zoom;
+                
+                pCtx.drawImage(video, sx, sy, sw, sh, 0, 0, photoCanvas.width, photoCanvas.height);
+            }
+            
+            video.style.display = 'none';
+            photoCanvas.style.display = 'block';
+            uiShooting.style.display = 'none';
+            uiDrawing.style.display = 'block';
+            document.getElementById('bottom-palette').style.display = 'flex'; 
+            
+            character.classList.add('drawing-mode');
         });
 
-        container.appendChild(card);
-      });
-    }
+        let drawingHistory = [];
+        document.getElementById('retake-btn').addEventListener('click', resetToShooting);
+        document.getElementById('undo-btn').addEventListener('click', () => {
+            if (drawingHistory.length > 0) {
+                dCtx.putImageData(drawingHistory.pop(), 0, 0);
+            } else {
+                dCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+            }
+        });
+        document.getElementById('clear-btn').addEventListener('click', () => {
+            dCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+            drawingHistory = [];
+        });
 
-    function openModal(id) {
-      const item = menuData.find(m => m.id === id);
-      if (!item) return;
-
-      document.getElementById("modalTitle").innerText = item.title;
-      
-      const modalImg = document.getElementById("modalImage");
-      const modalVid = document.getElementById("modalVideo");
-      const isVideo = item.mediaType === 'video' || (item.image && item.image.endsWith('.mp4'));
-
-      if (isVideo) {
-        modalImg.classList.add("hidden");
-        modalVid.classList.remove("hidden");
-        modalVid.src = item.image;
-        modalVid.onerror = () => {
-          modalVid.classList.add("hidden");
-          modalImg.classList.remove("hidden");
-          modalImg.src = fallbackImages[item.id] || 'https://placehold.co/600x400/222/fff?text=料理写真';
-        };
-        const playPromise = modalVid.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(() => {
-            modalVid.classList.add("hidden");
-            modalImg.classList.remove("hidden");
-            modalImg.src = fallbackImages[item.id] || 'https://placehold.co/600x400/222/fff?text=料理写真';
-          });
+        function resetToShooting() {
+            video.style.display = 'block';
+            photoCanvas.style.display = 'none';
+            uiShooting.style.display = 'block';
+            uiDrawing.style.display = 'none';
+            document.getElementById('bottom-palette').style.display = 'none';
+            
+            document.getElementById('character-area').appendChild(character);
+            character.style.transform = ''; 
+            character.classList.remove('playing-mode');
+            character.classList.remove('drawing-mode');
+            dCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+            drawingHistory = []; 
+            startCamera();
         }
-      } else {
-        modalVid.classList.add("hidden");
-        try { modalVid.pause(); } catch(e){}
-        modalImg.classList.remove("hidden");
-        modalImg.className = "w-full h-full object-cover opacity-90 transition-transform duration-700 hover:scale-105";
-        modalImg.src = item.image;
-        modalImg.onerror = () => {
-          modalImg.onerror = null;
-          modalImg.src = fallbackImages[item.id] || 'https://placehold.co/600x400/222/fff?text=料理写真';
-        };
-      }
 
-      document.getElementById("modalStory").innerText = item.story;
-      document.getElementById("modalVerticalPoem").innerText = item.verticalPoem;
+        let isDrawing = false;
+        let currentColor = '#000000';
+        let currentSize = 10;
 
-      const modal = document.getElementById("detailModal");
-      modal.classList.remove("hidden");
-      document.body.style.overflow = "hidden";
-    }
-
-    function closeModal() {
-      const modal = document.getElementById("detailModal");
-      const modalVid = document.getElementById("modalVideo");
-      if (modalVid) {
-        try { modalVid.pause(); } catch(e){}
-      }
-      if (modal) {
-        modal.classList.add("hidden");
-        document.body.style.overflow = "";
-      }
-    }
-
-    document.getElementById("detailModal").addEventListener("click", (e) => {
-      if (e.target.id === "detailModal") {
-        closeModal();
-      }
-    });
-
-    window.addEventListener("resize", () => {
-      const stage = document.getElementById("bubbleStage");
-      if (stage) {
-        stageWidth = stage.clientWidth || 320;
-        stageHeight = stage.clientHeight || 380;
-      }
-    });
-
-    window.addEventListener("DOMContentLoaded", () => {
-      initFloatingBubbles();
-      renderMenuCards();
-    });
-
-    // ゲーム誘導ボタンのクリック処理（ポップアップ制限対策・確実な画面遷移）
-    function handleGameLinkClick(event) {
-      const targetUrl = "https://010m-xtech.github.io/TEST2/kaohame_743000/";
-      
-      // 通常のリンク動作を一度防止して確実に開く
-      if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-
-      // 新規タブで開くことを試みる
-      const newTab = window.open(targetUrl, "_blank", "noopener,noreferrer");
-      
-      // ポップアップがブロックされた環境やiframe内環境の場合は直接遷移
-      if (!newTab || newTab.closed || typeof newTab.closed === "undefined") {
-        try {
-          window.top.location.href = targetUrl;
-        } catch (e) {
-          window.location.href = targetUrl;
+        function getPos(e) {
+            const rect = drawCanvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const scaleX = drawCanvas.width / rect.width;
+            const scaleY = drawCanvas.height / rect.height;
+            return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
         }
-      }
-    }
-  </script>
+
+        function startDrawing(e) {
+            if (!character.classList.contains('drawing-mode')) return;
+            e.preventDefault(); 
+            isDrawing = true;
+            drawingHistory.push(dCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height));
+            if (drawingHistory.length > 20) drawingHistory.shift();
+            const pos = getPos(e);
+            dCtx.beginPath();
+            dCtx.moveTo(pos.x, pos.y);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            e.preventDefault();
+            const pos = getPos(e);
+            dCtx.lineTo(pos.x, pos.y);
+            dCtx.strokeStyle = currentColor;
+            dCtx.lineWidth = currentSize;
+            dCtx.lineCap = 'round';
+            dCtx.lineJoin = 'round';
+            dCtx.stroke();
+        }
+        function endDrawing() { isDrawing = false; }
+
+        drawCanvas.addEventListener('touchstart', startDrawing, {passive: false});
+        drawCanvas.addEventListener('touchmove', draw, {passive: false});
+        drawCanvas.addEventListener('touchend', endDrawing);
+        drawCanvas.addEventListener('mousedown', startDrawing);
+        drawCanvas.addEventListener('mousemove', draw);
+        drawCanvas.addEventListener('mouseup', endDrawing);
+        drawCanvas.addEventListener('mouseout', endDrawing);
+
+        document.querySelectorAll('.color-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentColor = this.dataset.color;
+            });
+        });
+        document.querySelectorAll('.size-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentSize = parseInt(this.dataset.size);
+            });
+        });
+
+        document.getElementById('start-btn').addEventListener('click', () => {
+            character.classList.remove('drawing-mode');
+            setupScreen.style.display = 'none';
+            selectScreen.style.display = 'flex';
+            setupWhackHoles();
+        });
+
+        document.getElementById('btn-remake').addEventListener('click', () => {
+            selectScreen.style.display = 'none';
+            setupScreen.style.display = 'flex';
+            resetToShooting();
+        });
+
+        function resetToStart() {
+            backToMenu();
+            selectScreen.style.display = 'none';
+            setupScreen.style.display = 'flex';
+            resetToShooting();
+        }
+
+        function stopAllGames() {
+            if (catchAnimationId) cancelAnimationFrame(catchAnimationId);
+            clearInterval(catchTimerId);
+            clearInterval(catchSpawnerId);
+            clearInterval(whackTimerId);
+            clearTimeout(whackSpawnerId);
+            whackHoles.forEach(h => clearTimeout(h.timeoutId));
+            
+            fallingItems.forEach(item => {
+                if (item.element && item.element.parentNode) {
+                    item.element.remove();
+                }
+            });
+            fallingItems = [];
+        }
+
+        function backToMenu() {
+            stopAllGames();
+            catchScreen.style.display = 'none';
+            whackScreen.style.display = 'none';
+            document.getElementById('catch-result').style.display = 'none';
+            document.getElementById('whack-result').style.display = 'none';
+            selectScreen.style.display = 'flex';
+        }
+
+        function showGameResult(gameType, finalScore) {
+            stopAllGames();
+            const resultScreenId = gameType + '-result';
+            const scoreId = gameType + '-final-score';
+            const bestFoodContainerId = gameType + '-best-food';
+            const bestFoodImgId = gameType + '-best-food-img';
+            const bestFoodNameId = gameType + '-best-food-name';
+
+            document.getElementById(scoreId).innerText = finalScore;
+
+            let maxCount = 0;
+            let mostCaughtIndex = -1;
+            for (const [index, count] of Object.entries(caughtFoods)) {
+                if (count > maxCount) {
+                    maxCount = count;
+                    mostCaughtIndex = parseInt(index);
+                }
+            }
+
+            const bestFoodContainer = document.getElementById(bestFoodContainerId);
+            if (mostCaughtIndex !== -1) {
+                const bestFood = goodFoods[mostCaughtIndex];
+                const imgEl = document.getElementById(bestFoodImgId);
+                imgEl.src = bestFood.src;
+                imgEl.onerror = () => {
+                    imgEl.style.display = 'none';
+                    let fallbackSpan = document.getElementById(gameType + '-best-fallback');
+                    if (!fallbackSpan) {
+                        fallbackSpan = document.createElement('div');
+                        fallbackSpan.id = gameType + '-best-fallback';
+                        fallbackSpan.style.fontSize = '70px';
+                        imgEl.parentNode.appendChild(fallbackSpan);
+                    }
+                    fallbackSpan.innerText = bestFood.emoji || '🍱';
+                    fallbackSpan.style.display = 'block';
+                };
+                imgEl.style.display = 'block';
+                const fb = document.getElementById(gameType + '-best-fallback');
+                if (fb) fb.style.display = 'none';
+
+                document.getElementById(bestFoodNameId).innerText = bestFood.name;
+                bestFoodContainer.style.display = 'flex';
+            } else {
+                bestFoodContainer.style.display = 'none';
+            }
+
+            updateResultAvatar(resultScreenId);
+            document.getElementById(resultScreenId).style.display = 'block';
+        }
+
+        function updateResultAvatar(resultScreenId) {
+            const canvasId = resultScreenId === 'catch-result' ? 'result-catch-canvas' : 'result-whack-canvas';
+            const targetCanvas = document.getElementById(canvasId);
+            const ctx = targetCanvas.getContext('2d');
+            
+            ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
+            
+            const faceX = 90; const faceY = 20; const faceW = 120; const faceH = 160;
+            ctx.save();
+            ctx.beginPath();
+            ctx.ellipse(faceX + faceW/2, faceY + faceH/2, faceW/2, faceH/2, 0, 0, 2 * Math.PI);
+            ctx.clip();
+            if (photoCanvas.width > 0) {
+                ctx.drawImage(photoCanvas, 0, 0, photoCanvas.width, photoCanvas.height, faceX, faceY, faceW, faceH);
+            }
+            ctx.restore();
+            
+            ctx.drawImage(drawCanvas, 0, 0, targetCanvas.width, targetCanvas.height);
+        }
+
+        let gameScale = 0.42;
+        let catchScore = 0;
+        let catchTime = 30;
+        let catchTimerId = null, catchSpawnerId = null, catchAnimationId = null;
+        let fallingItems = [];
+        let charX = 0;
+        let charY = 0;
+
+        document.getElementById('btn-play-catch').addEventListener('click', () => {
+            selectScreen.style.display = 'none';
+            catchScreen.style.display = 'block';
+            catchScreen.appendChild(character);
+            character.style.display = 'block';
+            character.classList.add('playing-mode');
+            startCatchGame();
+        });
+
+        function startCatchGame() {
+            stopAllGames();
+            catchScore = 0;
+            catchTime = 30;
+            caughtFoods = {}; 
+            document.getElementById('catch-score').innerText = catchScore;
+            document.getElementById('catch-time').innerText = catchTime;
+            document.getElementById('catch-result').style.display = 'none';
+            
+            const charW = 300 * gameScale;
+            const charH = 420 * gameScale;
+            charX = (window.innerWidth - charW) / 2;
+            charY = window.innerHeight - charH - 15;
+            character.style.transform = `translate(${charX}px, ${charY}px) scale(${gameScale})`;
+
+            catchTimerId = setInterval(() => {
+                catchTime--;
+                document.getElementById('catch-time').innerText = catchTime;
+                if (catchTime <= 0) {
+                    clearInterval(catchTimerId);
+                    showGameResult('catch', catchScore); 
+                }
+            }, 1000);
+
+            catchSpawnerId = setInterval(spawnItem, 650);
+            catchLoop();
+        }
+
+        function spawnItem() {
+            if (catchTime <= 0) return;
+            const isGood = Math.random() > 0.4;
+            let htmlContent = '';
+            let foodIndex = -1;
+
+            if (isGood) {
+                foodIndex = Math.floor(Math.random() * goodFoods.length);
+                const food = goodFoods[foodIndex];
+                htmlContent = `<img src="${food.src}" onerror="this.outerHTML='<span style=\\'font-size:55px;\\'>${food.emoji || '🍱'}</span>'" style="width:72px; height:72px; object-fit:contain;">`;
+            } else {
+                htmlContent = `<span style="font-size:54px;">💣</span>`;
+            }
+            
+            const el = document.createElement('div');
+            el.className = 'falling-item';
+            el.innerHTML = htmlContent; 
+            
+            const itemWidth = 72;
+            const startX = Math.random() * Math.max(10, window.innerWidth - itemWidth - 20) + 10;
+            el.style.left = startX + 'px';
+            el.style.top = '-80px';
+            catchScreen.appendChild(el);
+
+            const speedRatio = (30 - catchTime) / 30;
+            const speed = 4.2 + (Math.random() * 2.5) + (speedRatio * 5);
+
+            fallingItems.push({
+                element: el,
+                y: -80,
+                x: startX,
+                speed: speed,
+                isGood: isGood,
+                foodIndex: foodIndex 
+            });
+        }
+
+        function catchLoop() {
+            character.style.transform = `translate(${charX}px, ${charY}px) scale(${gameScale})`;
+            
+            const charW = 300 * gameScale;
+            const charH = 420 * gameScale;
+            const basketTop = charY + 20;
+            const basketBottom = charY + charH;
+            const basketLeft = charX + 10;
+            const basketRight = charX + charW - 10;
+
+            for (let i = fallingItems.length - 1; i >= 0; i--) {
+                const item = fallingItems[i];
+                item.y += item.speed;
+                item.element.style.top = item.y + 'px';
+
+                const itemSize = 65;
+                const itemBottom = item.y + itemSize;
+                const itemRight = item.x + itemSize;
+
+                // Simple AABB collision with basket zone
+                if (itemBottom >= basketTop && item.y <= basketBottom &&
+                    itemRight >= basketLeft && item.x <= basketRight) {
+                    
+                    if (item.isGood) {
+                        catchScore += 10;
+                        caughtFoods[item.foodIndex] = (caughtFoods[item.foodIndex] || 0) + 1;
+                        item.element.innerHTML = '<span style="font-size:45px;">✨</span>';
+                    } else {
+                        catchScore = Math.max(0, catchScore - 10);
+                        item.element.innerHTML = '<span style="font-size:45px;">💥</span>';
+                        document.body.classList.add('shake-screen');
+                        setTimeout(() => document.body.classList.remove('shake-screen'), 250);
+                    }
+                    document.getElementById('catch-score').innerText = catchScore;
+                    
+                    const el = item.element;
+                    setTimeout(() => { if (el && el.parentNode) el.remove(); }, 180);
+                    fallingItems.splice(i, 1);
+                    continue;
+                }
+
+                if (item.y > window.innerHeight + 10) {
+                    item.element.remove();
+                    fallingItems.splice(i, 1);
+                }
+            }
+            if (catchTime > 0) {
+                catchAnimationId = requestAnimationFrame(catchLoop);
+            }
+        }
+
+        function onCatchMove(e) {
+            if (catchTime <= 0) return;
+            if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === 'button') return;
+            
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const charW = 300 * gameScale;
+            let newX = clientX - (charW / 2);
+            const maxX = window.innerWidth - charW;
+            
+            if (newX < 0) newX = 0;
+            if (newX > maxX) newX = maxX;
+            charX = newX;
+        }
+
+        catchScreen.addEventListener('touchmove', onCatchMove, {passive: true});
+        catchScreen.addEventListener('mousemove', onCatchMove);
+        catchScreen.addEventListener('touchstart', onCatchMove, {passive: true});
+        catchScreen.addEventListener('mousedown', onCatchMove);
+
+        document.getElementById('btn-play-whack').addEventListener('click', () => {
+            selectScreen.style.display = 'none';
+            whackScreen.style.display = 'block';
+            startWhackGame();
+        });
+
+        let whackHoles = [];
+        let whackScore = 0;
+        let whackTime = 30;
+        let whackTimerId = null, whackSpawnerId = null;
+        let currentSpawnInterval = 1000;
+
+        function setupWhackHoles() {
+            const container = document.getElementById('whack-holes');
+            container.innerHTML = '';
+            whackHoles = [];
+
+            for (let i = 0; i < 9; i++) {
+                const holeDiv = document.createElement('div');
+                holeDiv.className = 'whack-hole';
+                holeDiv.innerHTML = `
+                    <div class="hole-inner"></div>
+                    <div class="mole character-mole hidden">
+                        <canvas class="clone-drawing" width="300" height="420"></canvas>
+                        <div class="clone-face-frame">
+                            <canvas class="clone-photo" width="300" height="420"></canvas>
+                        </div>
+                    </div>
+                    <div class="mole food-mole hidden"></div>
+                `;
+                container.appendChild(holeDiv);
+                
+                const cloneDraw = holeDiv.querySelector('.clone-drawing');
+                const clonePhoto = holeDiv.querySelector('.clone-photo');
+                cloneDraw.getContext('2d').drawImage(drawCanvas, 0, 0);
+                if (photoCanvas.width > 0) {
+                    clonePhoto.getContext('2d').drawImage(photoCanvas, 0, 0, clonePhoto.width, clonePhoto.height);
+                }
+
+                const charMole = holeDiv.querySelector('.character-mole');
+                const foodMole = holeDiv.querySelector('.food-mole');
+
+                const tapAction = (e, isChar) => {
+                    e.preventDefault();
+                    tapMole(i, isChar);
+                };
+                charMole.addEventListener('pointerdown', (e) => tapAction(e, true));
+                foodMole.addEventListener('pointerdown', (e) => tapAction(e, false));
+
+                whackHoles.push({
+                    charMole: charMole,
+                    foodMole: foodMole,
+                    isActive: false,
+                    timeoutId: null,
+                    isCharacter: false,
+                    foodIndex: -1
+                });
+            }
+        }
+
+        function startWhackGame() {
+            stopAllGames();
+            whackScore = 0;
+            whackTime = 30;
+            currentSpawnInterval = 1000;
+            caughtFoods = {}; 
+            document.getElementById('whack-score').innerText = whackScore;
+            document.getElementById('whack-time').innerText = whackTime;
+            document.getElementById('whack-result').style.display = 'none';
+
+            whackHoles.forEach(h => {
+                h.isActive = false;
+                h.charMole.classList.add('hidden');
+                h.foodMole.classList.add('hidden');
+                clearTimeout(h.timeoutId);
+            });
+
+            whackTimerId = setInterval(() => {
+                whackTime--;
+                document.getElementById('whack-time').innerText = whackTime;
+                if (whackTime <= 0) {
+                    clearInterval(whackTimerId);
+                    clearTimeout(whackSpawnerId);
+                    showGameResult('whack', whackScore); 
+                }
+            }, 1000);
+
+            scheduleNextSpawn();
+        }
+
+        function scheduleNextSpawn() {
+            if (whackTime <= 0) return;
+            spawnMoles();
+            const ratio = whackTime / 30; 
+            currentSpawnInterval = 400 + (600 * ratio); 
+            whackSpawnerId = setTimeout(scheduleNextSpawn, currentSpawnInterval);
+        }
+
+        function spawnMoles() {
+            let spawnCount = 1;
+            if (whackTime <= 20) spawnCount = 2;
+            if (whackTime <= 10) spawnCount = 3;
+
+            const available = whackHoles.map((h, i) => ({h, i})).filter(obj => !obj.h.isActive);
+            for (let i = available.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [available[i], available[j]] = [available[j], available[i]];
+            }
+            for (let i = 0; i < Math.min(spawnCount, available.length); i++) {
+                showMole(available[i].i);
+            }
+        }
+
+        function showMole(index) {
+            const hole = whackHoles[index];
+            hole.isActive = true;
+            
+            const isCharacter = Math.random() < 0.3;
+            
+            if (isCharacter) {
+                hole.charMole.classList.remove('hidden');
+                hole.foodMole.classList.add('hidden');
+                hole.isCharacter = true;
+            } else {
+                const foodIndex = Math.floor(Math.random() * goodFoods.length);
+                const food = goodFoods[foodIndex];
+                hole.foodMole.innerHTML = `<img src="${food.src}" onerror="this.outerHTML='<span style=\\'font-size:55px;\\'>${food.emoji || '🍱'}</span>'" style="width:72px; height:72px; object-fit:contain;">`;
+                hole.foodMole.classList.remove('hidden');
+                hole.charMole.classList.add('hidden');
+                hole.isCharacter = false;
+                hole.foodIndex = foodIndex; 
+            }
+            
+            const displayTime = Math.max(500, currentSpawnInterval * 0.88); 
+            hole.timeoutId = setTimeout(() => {
+                if (hole.isActive) {
+                    hole.isActive = false;
+                    hole.charMole.classList.add('hidden');
+                    hole.foodMole.classList.add('hidden');
+                }
+            }, displayTime);
+        }
+
+        function tapMole(index, isCharacter) {
+            const hole = whackHoles[index];
+            if (!hole.isActive) return;
+
+            hole.isActive = false;
+            clearTimeout(hole.timeoutId); 
+            
+            if (isCharacter) {
+                whackScore = Math.max(0, whackScore - 10); 
+                document.body.classList.add('shake-screen');
+                setTimeout(() => document.body.classList.remove('shake-screen'), 250);
+            } else {
+                whackScore += 10; 
+                caughtFoods[hole.foodIndex] = (caughtFoods[hole.foodIndex] || 0) + 1; 
+            }
+            document.getElementById('whack-score').innerText = whackScore;
+
+            hole.charMole.classList.add('hidden');
+            hole.foodMole.classList.add('hidden');
+        }
+    </script>
 </body>
 </html>
