@@ -1,1 +1,858 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>好味家おすすめ本 - こだわりのひとさらを</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&family=Shippori+Mincho:wght@400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['"Shippori Mincho"', '"Noto Serif JP"', 'serif'],
+            sans: ['"Inter"', 'sans-serif'],
+          },
+          colors: {
+            sumi: '#1c1b1a',
+            washi: '#fcfaf6',
+            kinari: '#f4efe6',
+            accent: '#c85a32',
+            sakeGold: '#d4af37',
+            bengara: '#b84433',
+            bengaraDark: '#9e3626',
+            bengaraLight: '#c9513f',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* 縦書きテキスト用 */
+    .vertical-rl {
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+    }
+    /* スマホでの美しい日本語タイポグラフィと文節自動改行調整 */
+    .auto-phrase {
+      word-break: auto-phrase;
+      overflow-wrap: break-word;
+    }
+    .text-balance {
+      text-wrap: balance;
+    }
+    .text-pretty {
+      text-wrap: pretty;
+    }
+
+    /* 深みのある朱赤・テラコッタ背景 */
+    body {
+      background-color: #a43425;
+      color: #2b2826;
+      background-image: 
+        radial-gradient(rgba(0, 0, 0, 0.08) 0.8px, transparent 0.8px),
+        linear-gradient(160deg, #c54e3c 0%, #b84433 45%, #9b3223 100%);
+      background-size: 18px 18px, 100% 100%;
+      background-attachment: fixed;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .terracotta-bg {
+      background-color: #b84433;
+      background-image: 
+        radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+        linear-gradient(175deg, #c64d3b 0%, #b84433 50%, #a83a2b 100%);
+      background-size: 20px 20px, 100% 100%;
+    }
+    html {
+      scroll-behavior: smooth;
+    }
+    
+    /* モーダル表示アニメーション */
+    .modal-enter {
+      animation: modalFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: translateY(18px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .magazine-shadow {
+      box-shadow: 0 20px 45px -15px rgba(28, 27, 26, 0.28), 0 0 1px 1px rgba(0, 0, 0, 0.05);
+    }
+    /* バブルのタッチエフェクト */
+    .bubble-item {
+      touch-action: none;
+      transition: transform 0.04s ease-out;
+      will-change: transform;
+    }
+    .bubble-item:active {
+      transform: scale(0.93);
+    }
+
+    /* haikei.jpg を適用するステージ背景 */
+    .stage-haikei-bg {
+      background-image: url('haikei.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-color: #ece8e1;
+    }
+  </style>
+</head>
+<body class="font-sans antialiased min-h-screen flex flex-col items-center">
+  <!-- スマホ枠コンテナ -->
+  <div class="w-full max-w-md min-h-screen terracotta-bg shadow-2xl relative flex flex-col pb-20 border-x border-orange-950/20 text-stone-900">
+
+    <!-- トップヘッダー（ロゴを削除し、タイトルを中央配置） -->
+    <header class="sticky top-0 z-30 bg-[#b84433]/92 backdrop-blur-md border-b border-orange-950/20 px-4 py-3 flex items-center justify-center shadow-sm">
+      <div class="min-w-0 text-center">
+        <span class="text-[10px] tracking-[0.22em] text-white/90 font-serif font-semibold block truncate leading-tight">こだわりのひとさらを</span>
+        <h1 class="font-serif text-lg font-bold text-white tracking-wider drop-shadow-sm truncate leading-snug">好味家おすすめ本</h1>
+      </div>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="flex-1 p-4 space-y-5">
+
+      <!-- 動的バブルステージ（haikei.jpg背景・丸がエアホッケーのようにすーっと滑るエリア） -->
+      <section class="relative rounded-2xl bg-[#f5f3ef] p-4 overflow-hidden border border-white/80 shadow-lg">
+        <div class="flex justify-between items-baseline mb-2">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#b84433] animate-ping"></span>
+            <span class="text-xs font-bold tracking-widest text-[#b84433] font-serif">公開中！名物と逸品</span>
+          </div>
+          <span class="text-[11px] text-[#b84433] font-bold font-serif">動く〇をタップしてね☝</span>
+        </div>
+
+        <!-- 丸が滑らかに滑り回るインタラクティブステージ（背景にhaikei.jpgを自動調整適用） -->
+        <div id="bubbleStage" style="height: 380px; min-height: 380px;" class="stage-haikei-bg relative w-full rounded-xl overflow-hidden border border-stone-200/80 cursor-grab active:cursor-grabbing shadow-inner">
+          <!-- 背景透過オーバーレイで視認性向上 -->
+          <div class="absolute inset-0 bg-white/20 backdrop-blur-[0.5px] pointer-events-none"></div>
+
+          <!-- バブル要素群（12個のメニュー ＋ 1個のロゴ） -->
+          <div id="bubblesContainer" class="absolute inset-0"></div>
+        </div>
+      </section>
+
+      <!-- コンセプト案内バナー（待機時間に読んでもらうための導入） -->
+      <section class="bg-washi/95 rounded-xl p-4 border border-orange-950/10 shadow-md">
+        <div class="flex items-start gap-3.5">
+          <!-- お店ロゴエリア（logo-footer.png） -->
+          <div class="w-12 h-12 rounded-full overflow-hidden shrink-0 border-2 border-[#b84433]/30 p-0.5 bg-white shadow-sm flex items-center justify-center">
+            <img 
+              id="shopLogoImg"
+              src="logo-footer.png" 
+              alt="オハラマーラ ロゴ" 
+              class="w-full h-full object-contain rounded-full"
+              onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=150&q=80';"
+            >
+          </div>
+
+          <div class="flex-1 min-w-0 font-serif">
+            <h2 class="text-xs font-bold text-sumi tracking-wider mb-1 auto-phrase text-balance">
+              「待つ時間」も贅沢なひとときに。
+            </h2>
+            <p class="text-[11.5px] text-stone-700 leading-relaxed auto-phrase text-pretty">
+              こだわりを知って食べる、知らずに食べるとでは大きな違いがあります。知って食べて頂くことでより美味しいを実感ください。
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- メニューカード一覧セクション（中央揃えの大きめ注釈 ＋ 2列グリッド） -->
+      <section class="space-y-3.5">
+        <!-- 注釈エリア（中央揃え・視認性の高い大きめフォント） -->
+        <div class="text-center flex flex-col items-center justify-center pt-1">
+          <div class="inline-flex items-center justify-center gap-2 bg-black/25 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-xl text-white shadow-sm mx-auto max-w-full">
+            <span class="text-amber-300 font-extrabold text-sm shrink-0 leading-none">※</span>
+            <p class="text-xs sm:text-[13px] font-bold leading-tight font-serif text-white tracking-wide text-center auto-phrase text-balance">
+              こちらからは注文できませんのでご注意ください。
+            </p>
+          </div>
+        </div>
+
+        <!-- 2列に並ぶボタンメニューグリッド（全12品） -->
+        <div id="menuCardsList" class="grid grid-cols-2 gap-2.5">
+          <!-- JSで12品のメニューカードを動的生成 -->
+        </div>
+      </section>
+
+    </main>
+
+    <!-- 雑誌風こだわり解説モーダル（スマホ幅に完全追従する自動バランス設計） -->
+    <div id="detailModal" class="fixed inset-0 z-50 bg-black/65 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+      <div id="modalCard" class="bg-washi w-full max-w-md rounded-2xl overflow-hidden magazine-shadow relative my-auto modal-enter border border-stone-200 flex flex-col max-h-[92vh]">
+
+        <!-- 右上の閉じる「×」ボタン -->
+        <button onclick="closeModal()" aria-label="閉じる" class="absolute top-3.5 right-3.5 z-30 w-8 h-8 rounded-full bg-stone-100/90 backdrop-blur-sm flex items-center justify-center hover:bg-stone-200 text-stone-700 transition-colors shadow-sm cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+
+        <!-- モーダル本文（スマホ幅に応じた自動改行・均等配置） -->
+        <div class="overflow-y-auto flex-1 p-4 sm:p-5 space-y-4 font-serif">
+
+          <!-- タイトル＆ペアリング酒名（auto-phrase & text-balanceで不自然な折り返しを根絶） -->
+          <div class="border-b border-stone-300 pb-2.5 pr-9">
+            <h2 id="modalTitle" class="text-xl sm:text-2xl font-extrabold text-sumi tracking-tight mb-1 leading-snug auto-phrase text-balance"></h2>
+            <div class="flex flex-wrap items-baseline gap-x-1.5 text-xs">
+              <span class="font-bold text-[#b84433] tracking-wider shrink-0">ペアリング酒・相性：</span>
+              <span id="modalPairingName" class="font-semibold text-stone-800 auto-phrase"></span>
+            </div>
+          </div>
+
+          <!-- 料理ビジュアル＆エモーショナルコピーエリア（スマホ縦横比崩れ防止） -->
+          <div class="relative w-full aspect-[4/3] rounded-xl overflow-hidden shadow-md bg-stone-900">
+            <img id="modalImage" src="" alt="料理写真" class="w-full h-full object-cover opacity-90 transition-transform duration-700 hover:scale-105" onerror="this.src='https://placehold.co/600x400/222/fff?text=料理写真'">
+            <!-- 動画メニュー用プレーヤー（自動ループ再生） -->
+            <video id="modalVideo" src="" playsinline webkit-playsinline autoplay loop muted class="hidden w-full h-full object-cover"></video>
+            
+            <!-- 縦書き詩的コピー（文字量・サイズに合わせて背景の黒枠が自動フィット） -->
+            <div class="absolute top-2.5 right-2.5 max-w-[55%] max-h-[calc(100%-1.25rem)] w-fit h-fit bg-black/65 backdrop-blur-sm px-2.5 py-2 rounded-lg border border-white/20 text-white shadow-lg pointer-events-none flex items-center justify-center">
+              <p id="modalVerticalPoem" class="vertical-rl text-[11px] sm:text-xs font-medium tracking-[0.18em] leading-[1.75] select-none whitespace-pre"></p>
+            </div>
+          </div>
+
+          <!-- ストーリー＆味の調和解説（文節ごとの自然な折り返し） -->
+          <div class="bg-kinari/60 p-3.5 sm:p-4 rounded-xl border border-stone-200">
+            <p id="modalStory" class="text-xs sm:text-[13px] text-stone-700 leading-relaxed auto-phrase text-pretty text-left"></p>
+          </div>
+
+          <!-- ペアリング地酒・ドリンクのディテール -->
+          <div class="flex items-center gap-3.5 bg-white p-3 sm:p-3.5 rounded-xl border border-stone-200">
+            <div class="w-16 h-20 bg-stone-100 rounded-lg flex items-center justify-center p-1 shrink-0 overflow-hidden">
+              <img id="modalSakeImage" src="" alt="お酒" class="max-h-full object-contain" onerror="this.src='https://placehold.co/100x200/eee/333?text=地酒'">
+            </div>
+            <div class="flex-1 min-w-0">
+              <span class="text-[9.5px] text-amber-700 font-bold tracking-widest block mb-0.5">RECOMMENDED PAIRING</span>
+              <h4 id="modalSakeTitle" class="text-xs sm:text-sm font-bold text-sumi truncate"></h4>
+              <p id="modalSakeBrewery" class="text-[10.5px] text-stone-500 mb-0.5 truncate"></p>
+              <p id="modalSakeDesc" class="text-[10.5px] sm:text-[11px] text-stone-600 line-clamp-2 leading-relaxed auto-phrase text-pretty"></p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- フッターアクション -->
+        <div class="p-3 bg-stone-50 border-t border-stone-200 flex gap-2">
+          <button onclick="closeModal()" class="flex-1 py-2.5 rounded-xl bg-sumi text-white text-xs font-serif font-bold tracking-wider hover:bg-stone-800 active:scale-95 transition-all cursor-pointer">
+            メニュー一覧へ戻る
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // ========================================================
+    // 画像読み込みフォールバック用マップ
+    // ========================================================
+    const fallbackImages = {
+      okonomi: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=400&q=80",
+      hekinanyakisoba: "https://images.unsplash.com/photo-1617093727343-374698b1b08d?auto=format&fit=crop&w=400&q=80",
+      negiyaki: "https://images.unsplash.com/photo-1552611052-33e04de081de?auto=format&fit=crop&w=400&q=80",
+      gyuusuji: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=400&q=80",
+      hoiruyaki: "https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=400&q=80",
+      tizuyaki: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=400&q=80",
+      napoli: "https://images.unsplash.com/photo-1621996346565-e3d5d62816dc?auto=format&fit=crop&w=400&q=80",
+      beer: "https://images.unsplash.com/photo-1608270586620-248524c67de9?auto=format&fit=crop&w=400&q=80",
+      gaikan: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=400&q=80"
+    };
+
+    // ========================================================
+    // 指定画像ファイル対応メニューデータ（全9品）
+    // ========================================================
+    const menuData = [
+      {
+        id: "oden",
+        title: "出汁染みる 名物あつあつおでん",
+        subtitle: "じっくり煮込んだ黄金出汁。身体の芯から温まる冬の極上鍋",
+        verticalPoem: "立ち上る出汁の湯気。\n芯まで染み入る旨味、\n冬を彩るあたたかな口福。",
+        pairingName: "特選地酒の熱燗 または 香ばし緑茶ハイ",
+        image: "おでん.mp4",
+        mediaType: "video",
+        story: "厳選した鰹節と昆布を贅沢に使い、弱火でコトコトと長時間煮込んだ自慢の黄金出汁。大根や玉子、練り物の奥深くまでじんわりと染み込んだ出汁の旨味と、立ち上る湯気の芳醇な香りをお楽しみください。",
+        sake: {
+          title: "愛知の特撰純米酒（熱燗）",
+          brewery: "愛知県厳選蔵元",
+          desc: "出汁のまろやかな塩気と旨味を、ふくよかな米の温もりが優しく包み込みます。",
+          image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=400&q=80"
+        }
+      },
+      {
+        id: "cheesesauce",
+        title: "とろ〜り濃厚 とろけるチーズソース",
+        subtitle: "目の前で流れる黄金の滝。鉄板料理を贅沢に包み込む芳醇なコク",
+        verticalPoem: "とろりと流れ落ちる黄金。\n芳醇に絡み合うミルクのコク、\n抗えない濃厚な誘惑。",
+        pairingName: "クラフトビール または プレミアムハイボール",
+        image: "とろけるチーズソース.mp4",
+        mediaType: "video",
+        story: "数種のナチュラルチーズを独自ブレンドし、滑らかにとろける黄金比率で仕立てました。熱々の鉄板料理やお好み焼きにとろりと回しかければ、濃厚なミルクのコクと芳醇な香気が広がる贅沢な逸品へと昇華します。",
+        sake: {
+          title: "クラフトビール（IPA / ペールエール）",
+          brewery: "厳選ブルワリー",
+          desc: "ホップの豊かな苦味と爽快なアロマが、濃厚なチーズソースの脂をすっきりと流します。",
+          image: "https://images.unsplash.com/photo-1608270586620-248524c67de9?auto=format&fit=crop&w=400&q=80"
+        }
+      },
+      {
+        id: "okonomi",
+        title: "名物 黄金お好み焼き",
+        subtitle: "外はカリッと中はふっくら。創業以来受け継がれる極上の一枚",
+        verticalPoem: "鉄板に躍る湯気。\nふっくら極まる生地、\n秘伝ソースの甘芳しい誘い。",
+        pairingName: "キリッと冷えた生ビール または 超炭酸ハイボール",
+        image: "okonomi.png",
+        story: "厳選したキャベツの甘みと出汁の旨味を閉じ込め、高温の鉄板でふっくらと焼き上げました。特製ブレンドソースと削り節の香ばしさが重なり、口いっぱいに広がる王道の美味しさをご堪能ください。",
+        sake: {
+          title: "サッポロ生ビール 黒ラベル",
+          brewery: "サッポロビール",
+          desc: "クリーミーな泡と麦の旨味が、濃厚なソースとお好み焼きの香ばしさに完璧に調和します。",
+          image: "https://images.unsplash.com/photo-1608270586620-248524c67de9?auto=format&fit=crop&w=400&q=80"
+        }
+      },
+      {
+        id: "hekinanyakisoba",
+        title: "碧南名物 碧南焼きそば",
+        subtitle: "伝統の白醤油と太麺が絡み合う、碧南ならではの香ばしいご当地の味",
+        verticalPoem: "白醤油の透き通る芳香。\n香ばしく焦げる麺肌、\n碧南が育んだ伝統の誇り。",
+        pairingName: "碧南の地酒 または すっきりレモンサワー",
+        image: "hekinanyakisoba.png",
+        story: "碧南特産の伝統製法による白醤油を使用し、厳選したモチモチ麺と新鮮な具材を一気に焼き上げました。上品な塩気と芳醇な大豆の旨味が麺一本一本に染み渡る自慢の逸品です。",
+        sake: {
+          title: "地元愛知の特選辛口純米酒",
+          brewery: "愛知県厳選蔵元",
+          desc: "白醤油の繊細な風味と素材の甘みを引き立てる、キレのある辛口地酒です。",
+          image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=400&q=80"
+        }
+      },
+      {
+        id: "negiyaki",
+        title: "たっぷり青葱の極上ねぎ焼き",
+        subtitle: "香り豊かな葱がどっさり。特製醤油タレとレモンでさっぱりと",
+        verticalPoem: "青葱の鮮烈なシャキ感。\n香ばしい醤油の焦げ目、\n軽やかにほどける口福。",
+        pairingName: "辛口ウーロンハイ または 樽ハイ倶楽部",
+        image: "negiyaki.png",
+        story: "毎朝仕入れる新鮮な葱を贅沢に敷き詰め、薄めの生地で香ばしく焼き上げました。特製のだし醤油と搾りたてレモンで仕上げることで、葱本来のみずみずしい甘みと爽やかな後味が際立ちます。",
+        sake: {
+          title: "氷結レモンサワー",
+          brewery: "好味家特製",
+          desc: "柑橘の心地よい酸味が、葱の香ばしさと醤油の焦げ風味を爽快にリフレッシュします。",
+          image: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=400&q=80"
+        }
+      },
+      {
+        id: "gyuusuji",
+        title: "とろとろ煮込みの特製牛すじ",
+        subtitle: "じっくり長時間煮込んだ深いコク。旨味が溶け出す鉄板の定番酒肴",
+        verticalPoem: "じっくり煮含めた時間。\n舌の上でほぐれる極上肉、\n染み渡る濃厚な旨味。",
+        pairingName: "濃厚ハイボール または 厳選麦焼酎",
+        image: "gyuusuji.png",
+        story: "厳選した牛すじ肉を丁寧に下処理し、特製出汁と味噌・醤油でトロトロになるまでじっくりと煮込みました。噛むほどに溢れるコラーゲンと肉の旨味がお酒の杯をぐいぐい進めます。",
+        sake: {
+          title: "角ハイボール濃いめ",
+          brewery: "サントリー",
+          desc: "炭酸の爽快感とウイスキーのコクが、牛すじのジューシーな旨味と絶妙にマッチ。",
+          image: "https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=400&q=80"
+        }
+      },
+      {
+        id: "hoiruyaki",
+        title: "旨味凝縮 季節のホイル焼き",
+        subtitle: "包みを開けた瞬間に広がる芳香。素材のエキスを逃さない鉄板技法",
+        verticalPoem: "銀の包みを開く瞬間。\n立ち上る湯気と芳醇な香り、\n凝縮された旬の恵み。",
+        pairingName: "辛口白ワイン または スパークリング酒",
+        image: "hoiruyaki.png",
+        story: "厳選した旬の素材に特製バター醤油や香味調味を合わせ、アルミホイルで優しく包んで鉄板で蒸し焼きに。旨味の蒸気を一滴も逃さず閉じ込めた、開けた瞬間の歓声が上がる一皿です。",
+        sake: {
+          title: "勝沼醸造 甲州白ワイン",
+          brewery: "勝沼醸造（山梨県）",
+          desc: "すっきりとした和の柑橘系アロマが、ホイル蒸し焼きの繊細な風味を引き立てます。",
+          image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=400&q=80"
+        }
+      },
+      {
+        id: "tizuyaki",
+        title: "とろ〜り濃厚 焦がしチーズ焼き",
+        subtitle: "カリッとした焦げ目ととろけるチーズの競演。女性やお子様にも大人気",
+        verticalPoem: "黄金に焦げる香ばしさ。\nとろりと糸引く贅沢、\n濃厚チーズの芳醇な誘惑。",
+        pairingName: "軽めの赤ワイン または プレミアムハイボール",
+        image: "tizuyaki.png",
+        story: "数種のチーズを独自の黄金比率でブレンド。鉄板に触れる面はカリカリに香ばしく焼き目をつけ、上部はとろ〜りクリーミーに仕上げました。ブラックペッパーの刺激がアクセントです。",
+        sake: {
+          title: "グラス赤ワイン（ピノ・ノワール）",
+          brewery: "厳選ハウスワイン",
+          desc: "果実味豊かな軽やかな渋みが、焦がしチーズの塩気と濃厚なミルク感にベストマッチ。",
+          image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=400&q=80"
+        }
+      },
+      {
+        id: "napoli",
+        title: "熱々鉄板の昔ながらナポリタン",
+        subtitle: "ジュージュー鳴る玉子敷き鉄板。ケチャップの甘酸っぱさが懐かしい味わい",
+        verticalPoem: "ジュウジュウと鳴る鉄板。\n敷き詰められた黄金玉子、\n郷愁を誘う甘酸っぱい記憶。",
+        pairingName: "瓶ビール（赤星） または クリームソーダハイ",
+        image: "napoli.png",
+        story: "熱したステーキ皿のような鉄板にふんわり溶き卵を流し込み、その上に香ばしく炒め上げた太麺ナポリタンを盛り付けました。濃厚なケチャップソースと玉子のまろやかさが絡み合う喫茶風名物です。",
+        sake: {
+          title: "サッポロラガー「赤星」",
+          brewery: "サッポロビール",
+          desc: "熱処理ビールの程よい苦味と炭酸が、昔ながらの濃厚ナポリタンの脂を心地よく流します。",
+          image: "https://images.unsplash.com/photo-1608270586620-248524c67de9?auto=format&fit=crop&w=400&q=80"
+        }
+      },
+      {
+        id: "beer",
+        title: "徹底品質管理のこだわり生ビール",
+        subtitle: "クリーミーな泡、黄金の液体。毎日の徹底洗浄が生み出す究極の一杯",
+        verticalPoem: "きめ細やかな絹の泡。\n喉を潤す黄金の輝き、\n最初の一口の至福。",
+        pairingName: "鉄板焼き全般・お好み焼き・焼きそば",
+        image: "beer.png",
+        story: "グラスの洗浄、サーバーの温度管理、ガス圧の調整に至るまで一切の妥協を許さないこだわりの生ビール。きめ細やかなシルキーな泡が、鉄板料理の旨味を最高の状態に引き上げます。",
+        sake: {
+          title: "極上クリーミー生ビール",
+          brewery: "好味家サーブ",
+          desc: "パーフェクトな注ぎ分けにより実現した、最後の一滴まで美味しい究極の一杯です。",
+          image: "https://images.unsplash.com/photo-1608270586620-248524c67de9?auto=format&fit=crop&w=400&q=80"
+        }
+      },
+      {
+        id: "gaikan",
+        title: "好味家 店舗空間とこだわり",
+        subtitle: "温もりあふれる鉄板の灯りと笑顔が集う場所。心地よいひとときを",
+        verticalPoem: "暖簾をくぐれば広がる、\n香ばしい音と笑顔の輪。\n今宵も温もりとともに。",
+        pairingName: "お好きなドリンク各種",
+        image: "gaikan.png",
+        story: "どこか懐かしく、誰もがホッとくつろげる空間づくりを目指しています。目の前の鉄板で繰り広げられる調理のライブ感とともに、大切なご家族やご友人との特別な時間をお過ごしください。",
+        sake: {
+          title: "好味家おすすめセレクト",
+          brewery: "全国各地の厳選銘酒",
+          desc: "お料理やお好みに合わせて、各種ドリンクやお酒をお選びいただけます。",
+          image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=400&q=80"
+        }
+      }
+    ];
+
+    // ========================================================
+    // エアホッケーのように「すーっと滑らかに」滑る物理シミュレーション
+    // ========================================================
+    let bubbles = [];
+    let animationFrameId = null;
+    let stageWidth = 320;
+    let stageHeight = 380;
+    const BUBBLE_RADIUS = 35; // 直径70pxの存在感ある正円
+    const BUBBLE_DIAMETER = BUBBLE_RADIUS * 2;
+
+    class DynamicBubble {
+      constructor(data, index, total) {
+        this.data = data;
+        this.isBrand = data.isBrand || false;
+        this.radius = BUBBLE_RADIUS;
+        
+        // 13個（12品＋1ロゴ）の分散初期配置
+        const padding = 12;
+        const cols = 4;
+        const col = index % cols;
+        const row = Math.floor(index / cols);
+        
+        const usableW = Math.max(160, stageWidth - padding * 2 - this.radius * 2);
+        const usableH = Math.max(180, stageHeight - padding * 2 - this.radius * 2);
+
+        this.x = padding + this.radius + col * (usableW / (cols - 1 || 1)) + (Math.random() * 6 - 3);
+        this.y = padding + this.radius + row * (usableH / Math.max(1, Math.ceil(total / cols) - 1)) + (Math.random() * 6 - 3);
+
+        // エアホッケーの滑走速度（すーっと気持ちよく進む巡航速度）
+        this.baseSpeed = 0.95 + Math.random() * 0.35;
+        const angle = Math.random() * Math.PI * 2;
+        this.vx = Math.cos(angle) * this.baseSpeed;
+        this.vy = Math.sin(angle) * this.baseSpeed;
+
+        this.isDragging = false;
+        this.dragStartX = 0;
+        this.dragStartY = 0;
+        this.hasMoved = false;
+
+        // DOM要素
+        this.element = document.createElement("div");
+        this.element.className = "bubble-item absolute select-none cursor-pointer";
+        this.element.style.width = `${BUBBLE_DIAMETER}px`;
+        this.element.style.height = `${BUBBLE_DIAMETER}px`;
+
+        if (this.isBrand) {
+          // ロゴバブル（ゴールドの輪をまとった特別バブル）
+          this.element.innerHTML = `
+            <div class="relative w-full h-full rounded-full bg-white p-[2.5px] shadow-[0_5px_15px_rgba(0,0,0,0.22)] border-2 border-amber-300 hover:border-[#b84433] hover:shadow-[0_8px_22px_rgba(184,68,51,0.4)] transition-all overflow-hidden flex items-center justify-center">
+              <img 
+                src="logo-footer.png" 
+                alt="オハラマーラ" 
+                class="w-full h-full object-contain rounded-full pointer-events-none p-1" 
+                onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=150&q=80';"
+              >
+            </div>
+          `;
+        } else {
+          // 料理バブル（画像または動画に対応）
+          const isVideo = data.mediaType === 'video' || (data.image && data.image.endsWith('.mp4'));
+          const mediaHtml = isVideo
+            ? `<video src="${data.image}" autoplay loop muted playsinline webkit-playsinline class="w-full h-full object-cover rounded-full pointer-events-none"></video>`
+            : `<img src="${data.image}" alt="${data.title}" class="w-full h-full object-cover rounded-full pointer-events-none filter saturate-[1.08]" onerror="this.onerror=null; this.src='${fallbackImages[data.id] || 'https://placehold.co/140x140/b84433/fff?text=逸品'}';">`;
+
+          this.element.innerHTML = `
+            <div class="relative w-full h-full rounded-full bg-white p-[2.5px] shadow-[0_5px_15px_rgba(0,0,0,0.22)] border-2 border-white hover:border-[#b84433] hover:shadow-[0_8px_22px_rgba(184,68,51,0.4)] transition-all overflow-hidden flex items-center justify-center">
+              ${mediaHtml}
+            </div>
+          `;
+        }
+
+        this.setupEvents();
+      }
+
+      setupEvents() {
+        let startClientX = 0;
+        let startClientY = 0;
+
+        const onPointerDown = (e) => {
+          this.isDragging = true;
+          this.hasMoved = false;
+          const point = e.touches ? e.touches[0] : e;
+          startClientX = point.clientX;
+          startClientY = point.clientY;
+          this.dragStartX = point.clientX;
+          this.dragStartY = point.clientY;
+        };
+
+        const onPointerMove = (e) => {
+          if (!this.isDragging) return;
+          const point = e.touches ? e.touches[0] : e;
+          const dx = point.clientX - this.dragStartX;
+          const dy = point.clientY - this.dragStartY;
+          
+          if (Math.hypot(point.clientX - startClientX, point.clientY - startClientY) > 6) {
+            this.hasMoved = true;
+          }
+
+          this.x += dx;
+          this.y += dy;
+          this.vx = dx * 0.35;
+          this.vy = dy * 0.35;
+
+          this.dragStartX = point.clientX;
+          this.dragStartY = point.clientY;
+        };
+
+        const onPointerUp = () => {
+          if (this.isDragging) {
+            this.isDragging = false;
+            if (!this.hasMoved) {
+              if (this.isBrand) {
+                openBrandModal();
+              } else {
+                openModal(this.data.id);
+              }
+            }
+          }
+        };
+
+        this.element.addEventListener("mousedown", onPointerDown);
+        window.addEventListener("mousemove", onPointerMove);
+        window.addEventListener("mouseup", onPointerUp);
+
+        this.element.addEventListener("touchstart", onPointerDown, { passive: true });
+        window.addEventListener("touchmove", onPointerMove, { passive: true });
+        window.addEventListener("touchend", onPointerUp);
+      }
+
+      update() {
+        if (!this.isDragging) {
+          let speed = Math.hypot(this.vx, this.vy);
+
+          if (speed < 0.05) {
+            const angle = Math.random() * Math.PI * 2;
+            this.vx = Math.cos(angle) * this.baseSpeed;
+            this.vy = Math.sin(angle) * this.baseSpeed;
+            speed = this.baseSpeed;
+          }
+
+          // フリック後の自然減速と一定巡航への滑らかな復帰
+          if (speed > this.baseSpeed) {
+            this.vx *= 0.985;
+            this.vy *= 0.985;
+          } else if (speed < this.baseSpeed * 0.9) {
+            const ratio = this.baseSpeed / speed;
+            this.vx = this.vx * 0.98 + (this.vx * ratio) * 0.02;
+            this.vy = this.vy * 0.98 + (this.vy * ratio) * 0.02;
+          }
+
+          // 等速直線運動でスーッと進む
+          this.x += this.vx;
+          this.y += this.vy;
+
+          // 四方の壁とのエアホッケー反発
+          const leftWall = this.radius;
+          const rightWall = stageWidth - this.radius;
+          const topWall = this.radius;
+          const bottomWall = stageHeight - this.radius;
+
+          if (this.x < leftWall) {
+            this.x = leftWall;
+            this.vx = Math.abs(this.vx);
+          } else if (this.x > rightWall) {
+            this.x = rightWall;
+            this.vx = -Math.abs(this.vx);
+          }
+
+          if (this.y < topWall) {
+            this.y = topWall;
+            this.vy = Math.abs(this.vy);
+          } else if (this.y > bottomWall) {
+            this.y = bottomWall;
+            this.vy = -Math.abs(this.vy);
+          }
+        }
+
+        const left = this.x - this.radius;
+        const top = this.y - this.radius;
+        this.element.style.transform = `translate3d(${left}px, ${top}px, 0)`;
+      }
+    }
+
+    // ホッケーの弾性衝突処理（パック同士がカツンと反射）
+    function resolveBubbleCollisions() {
+      for (let i = 0; i < bubbles.length; i++) {
+        for (let j = i + 1; j < bubbles.length; j++) {
+          const b1 = bubbles[i];
+          const b2 = bubbles[j];
+          const dx = b2.x - b1.x;
+          const dy = b2.y - b1.y;
+          const dist = Math.hypot(dx, dy);
+          const minDist = b1.radius + b2.radius;
+
+          if (dist < minDist && dist > 0) {
+            const overlap = (minDist - dist) * 0.5;
+            const nx = dx / dist;
+            const ny = dy / dist;
+
+            if (!b1.isDragging) {
+              b1.x -= nx * overlap;
+              b1.y -= ny * overlap;
+            }
+            if (!b2.isDragging) {
+              b2.x += nx * overlap;
+              b2.y += ny * overlap;
+            }
+
+            const kx = b1.vx - b2.vx;
+            const ky = b1.vy - b2.vy;
+            const p = 2 * (nx * kx + ny * ky) / 2;
+
+            if (!b1.isDragging) {
+              b1.vx -= p * nx * 0.98;
+              b1.vy -= p * ny * 0.98;
+            }
+            if (!b2.isDragging) {
+              b2.vx += p * nx * 0.98;
+              b2.vy += p * ny * 0.98;
+            }
+          }
+        }
+      }
+    }
+
+    function startBubbleLoop() {
+      function loop() {
+        resolveBubbleCollisions();
+        bubbles.forEach(b => b.update());
+        animationFrameId = requestAnimationFrame(loop);
+      }
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      animationFrameId = requestAnimationFrame(loop);
+    }
+
+    // ステージ初期化（全12品 ＋ ロゴ1個 = 計13個のバブル生成）
+    function initFloatingBubbles() {
+      const stage = document.getElementById("bubbleStage");
+      const container = document.getElementById("bubblesContainer");
+      if (!stage || !container) return;
+      
+      container.innerHTML = '';
+      bubbles = [];
+
+      stageWidth = stage.clientWidth || 320;
+      stageHeight = stage.clientHeight || 380;
+
+      // 12メニュー ＋ 1ロゴのリスト作成
+      const allBubbleItems = [...menuData];
+      allBubbleItems.splice(4, 0, { id: "brand_1", isBrand: true, title: "オハラマーラ" });
+
+      allBubbleItems.forEach((item, index) => {
+        const bubble = new DynamicBubble(item, index, allBubbleItems.length);
+        bubbles.push(bubble);
+        container.appendChild(bubble.element);
+      });
+
+      startBubbleLoop();
+    }
+
+    // メニューカード一覧の描画（全12品の四角形サムネイル 2列グリッド）
+    function renderMenuCards() {
+      const container = document.getElementById("menuCardsList");
+      if (!container) return;
+      container.innerHTML = '';
+
+      menuData.forEach((item) => {
+        const card = document.createElement("article");
+        card.className = "group bg-white rounded-xl p-2.5 border border-stone-200 shadow-sm hover:shadow-md transition-all active:scale-[0.97] cursor-pointer flex flex-col justify-between overflow-hidden";
+        
+        const isVideo = item.mediaType === 'video' || (item.image && item.image.endsWith('.mp4'));
+        const mediaHtml = isVideo
+          ? `<video src="${item.image}" autoplay loop muted playsinline webkit-playsinline class="w-full h-full object-cover pointer-events-none"></video>`
+          : `<img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" onerror="this.onerror=null; this.src='${fallbackImages[item.id] || 'https://placehold.co/300x225/b84433/fff?text=逸品'}';">`;
+
+        card.innerHTML = `
+          <!-- 四角形（角丸長方形）のお料理写真または動画サムネイル -->
+          <div class="w-full aspect-[4/3] rounded-lg overflow-hidden shrink-0 relative bg-stone-100 border border-stone-100 shadow-inner mb-2.5 flex items-center justify-center">
+            ${mediaHtml}
+          </div>
+
+          <!-- メニュー名（auto-phraseで折り返し調整） -->
+          <div class="w-full mb-2 text-center px-0.5">
+            <h4 class="font-serif font-bold text-sumi text-xs leading-snug line-clamp-2 auto-phrase text-balance">
+              ${item.title}
+            </h4>
+          </div>
+
+          <!-- こだわりを読む -->
+          <div class="w-full pt-1.5 border-t border-stone-100 flex items-center justify-center mt-auto">
+            <span class="text-[10.5px] font-bold text-[#b84433] font-serif flex items-center gap-0.5 group-hover:underline">
+              こだわりを読む
+              <svg class="w-2.5 h-2.5 inline shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </span>
+          </div>
+        `;
+
+        card.addEventListener("click", () => {
+          openModal(item.id);
+        });
+
+        container.appendChild(card);
+      });
+    }
+
+    // 料理用モーダルオープン処理
+    function openModal(id) {
+      const item = menuData.find(m => m.id === id);
+      if (!item) return;
+
+      document.getElementById("modalTitle").innerText = item.title;
+      document.getElementById("modalPairingName").innerText = item.pairingName;
+      
+      const modalImg = document.getElementById("modalImage");
+      const modalVid = document.getElementById("modalVideo");
+      const isVideo = item.mediaType === 'video' || (item.image && item.image.endsWith('.mp4'));
+
+      if (isVideo) {
+        modalImg.classList.add("hidden");
+        modalVid.classList.remove("hidden");
+        modalVid.src = item.image;
+        try { modalVid.play(); } catch(e){}
+      } else {
+        modalVid.classList.add("hidden");
+        try { modalVid.pause(); } catch(e){}
+        modalImg.classList.remove("hidden");
+        modalImg.className = "w-full h-full object-cover opacity-90 transition-transform duration-700 hover:scale-105";
+        modalImg.src = item.image;
+        modalImg.onerror = () => {
+          modalImg.onerror = null;
+          modalImg.src = fallbackImages[item.id] || 'https://placehold.co/600x400/222/fff?text=料理写真';
+        };
+      }
+
+      document.getElementById("modalStory").innerText = item.story;
+      document.getElementById("modalVerticalPoem").innerText = item.verticalPoem;
+
+      // お酒情報
+      document.getElementById("modalSakeTitle").innerText = item.sake.title;
+      document.getElementById("modalSakeBrewery").innerText = item.sake.brewery;
+      document.getElementById("modalSakeDesc").innerText = item.sake.desc;
+      document.getElementById("modalSakeImage").src = item.sake.image;
+
+      // モーダル表示
+      const modal = document.getElementById("detailModal");
+      modal.classList.remove("hidden");
+      document.body.style.overflow = "hidden";
+    }
+
+    // ロゴ丸バブルタップ時のオハラマーラ紹介モーダル
+    function openBrandModal() {
+      document.getElementById("modalTitle").innerText = "創作中華 オハラマーラ";
+      document.getElementById("modalPairingName").innerText = "痺れと旨味の極致・厳選美酒";
+
+      const modalImg = document.getElementById("modalImage");
+      const modalVid = document.getElementById("modalVideo");
+      if (modalVid) {
+        modalVid.classList.add("hidden");
+        try { modalVid.pause(); } catch(e){}
+      }
+      modalImg.classList.remove("hidden");
+      modalImg.className = "w-full h-full object-contain p-6 bg-stone-900";
+      modalImg.src = "logo-footer.png";
+      modalImg.onerror = () => {
+        modalImg.onerror = null;
+        modalImg.src = 'https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=600&q=80';
+      };
+
+      document.getElementById("modalStory").innerText = "こだわりを知って食べる、知らずに食べるとでは大きな違いがあります。知って食べて頂くことでより美味しいを実感ください。\n\n四川花椒の爽快な痺れと自家製漢方辣油、そして備長炭の香気。お料理が届くまでの時間も、特別な物語としてお愉しみいただければ幸いです。";
+      document.getElementById("modalVerticalPoem").innerText = "五感を震わす麻辣。\n美酒と響き合う、\n唯一無二の口福。";
+
+      document.getElementById("modalSakeTitle").innerText = "超炭酸ハイボール ＆ 厳選紹興酒・地酒";
+      document.getElementById("modalSakeBrewery").innerText = "オハラマーラおすすめセレクション";
+      document.getElementById("modalSakeDesc").innerText = "スパイスの刺激を心地よくリセットし、料理のコクを幾重にも引き立てるお酒を取り揃えております。";
+      document.getElementById("modalSakeImage").src = "logo-footer.png";
+
+      const modal = document.getElementById("detailModal");
+      modal.classList.remove("hidden");
+      document.body.style.overflow = "hidden";
+    }
+
+    // モーダルクローズ
+    function closeModal() {
+      const modal = document.getElementById("detailModal");
+      const modalVid = document.getElementById("modalVideo");
+      if (modalVid) {
+        try { modalVid.pause(); } catch(e){}
+      }
+      if (modal) {
+        modal.classList.add("hidden");
+        document.body.style.overflow = "";
+      }
+    }
+
+    document.getElementById("detailModal").addEventListener("click", (e) => {
+      if (e.target.id === "detailModal") {
+        closeModal();
+      }
+    });
+
+    window.addEventListener("resize", () => {
+      const stage = document.getElementById("bubbleStage");
+      if (stage) {
+        stageWidth = stage.clientWidth || 320;
+        stageHeight = stage.clientHeight || 380;
+      }
+    });
+
+    window.addEventListener("DOMContentLoaded", () => {
+      initFloatingBubbles();
+      renderMenuCards();
+    });
+  </script>
+</body>
+</html>
