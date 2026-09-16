@@ -2,742 +2,879 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>極上生ビール泡ガチャ | スマホを振って黄金の泡を注ごう！</title>
-  <!-- Tailwind CSS CDN -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>ビール泡ガチャ</title>
+  
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Tone.js CDN for interactive sound effects -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
-  <!-- Canvas Confetti for winning fanfare -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap');
-
-    body {
-      font-family: 'M PLUS Rounded 1c', sans-serif;
-      touch-action: manipulation;
-      user-select: none;
-      -webkit-user-select: none;
-      overflow-x: hidden;
-      background: radial-gradient(circle at 50% 20%, #fef3c7 0%, #fde68a 45%, #f59e0b 100%);
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Noto+Sans+JP:wght@400;500;700;900&family=Playfair+Display:wght@700&display=swap');
+    
+    :root {
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
 
-    /* Bubble Pulse Animation */
-    @keyframes pulse-glow {
-      0%, 100% {
-        box-shadow: 0 0 15px rgba(245, 158, 11, 0.7), 0 0 30px rgba(251, 191, 36, 0.5);
-        transform: scale(1);
-      }
-      50% {
-        box-shadow: 0 0 25px rgba(245, 158, 11, 0.95), 0 0 50px rgba(217, 119, 6, 0.8);
-        transform: scale(1.04);
-      }
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      touch-action: manipulation;
+      overscroll-behavior: none;
+      background: radial-gradient(circle at 50% 38%, #1c130b 0%, #0c0805 60%, #050302 100%);
+    }
+
+    /* Ambient Warm Bar Lighting */
+    .bar-lighting {
+      background-image: 
+        radial-gradient(ellipse at 50% 15%, rgba(217, 119, 6, 0.15) 0%, transparent 65%),
+        radial-gradient(circle at 50% 85%, rgba(180, 83, 9, 0.1) 0%, transparent 70%);
+    }
+
+    /* Machine Frame & Sphere Alignment Variables */
+    :root {
+      /* gacha.png に対する球体の位置・サイズ比率 */
+      --sphere-top: 34.0%;
+      --sphere-left: 50%;
+      --sphere-size: 77%;
+    }
+
+    /* Glass Dome Outer Rim & Glow */
+    .glass-dome {
+      box-shadow: 
+        inset 0 0 20px rgba(255, 255, 255, 0.2),
+        inset 0 -10px 25px rgba(0, 0, 0, 0.5),
+        0 10px 30px rgba(0, 0, 0, 0.6);
+      transition: box-shadow 0.4s ease, transform 0.3s ease;
     }
 
     .pulse-ready {
-      animation: pulse-glow 1.2s infinite ease-in-out;
+      animation: ready-pulse 1.8s infinite ease-in-out;
     }
 
-    /* Beer Stein / Glass Dome reflections */
-    .glass-dome {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.12) 60%, rgba(255, 255, 255, 0.45) 100%);
-      box-shadow: inset 0 4px 25px rgba(255, 255, 255, 0.9),
-                  inset 0 -8px 25px rgba(180, 83, 9, 0.35),
-                  0 15px 35px rgba(146, 64, 14, 0.3);
+    @keyframes ready-pulse {
+      0%, 100% {
+        box-shadow: 
+          inset 0 0 35px rgba(255, 255, 255, 0.45),
+          inset 0 0 50px rgba(245, 158, 11, 0.45),
+          0 0 45px rgba(251, 191, 36, 0.7),
+          0 20px 50px rgba(0, 0, 0, 0.9);
+        transform: translate(-50%, -50%) scale(1.02);
+      }
+      50% {
+        box-shadow: 
+          inset 0 0 20px rgba(255, 255, 255, 0.2),
+          inset 0 0 30px rgba(245, 158, 11, 0.2),
+          0 0 20px rgba(251, 191, 36, 0.3),
+          0 15px 40px rgba(0, 0, 0, 0.9);
+        transform: translate(-50%, -50%) scale(1);
+      }
     }
 
-    /* Crank Handle rotation animation */
-    @keyframes crank-spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .cranking {
-      animation: crank-spin 0.9s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    /* Capsule bounce */
     @keyframes drop-bounce {
-      0% { transform: translateY(-120px) scale(0.6); opacity: 0; }
-      60% { transform: translateY(15px) scale(1.08); opacity: 1; }
-      80% { transform: translateY(-8px) scale(0.96); }
-      100% { transform: translateY(0px) scale(1); }
+      0% { transform: translateY(-30px) scale(0.6) rotate(-20deg); opacity: 0; }
+      55% { transform: translateY(12px) scale(1.08) rotate(10deg); opacity: 1; }
+      75% { transform: translateY(-6px) scale(0.97) rotate(-4deg); }
+      100% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
     }
+
     .capsule-drop {
       animation: drop-bounce 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
+
+    /* Crank Handle Styles */
+    .handle-idle {
+      opacity: 0.85;
+    }
+
+    .handle-ready {
+      animation: handle-glow-pulse 1.4s infinite ease-in-out;
+      cursor: pointer;
+    }
+
+    .handle-ready .handle-glow {
+      border-color: rgba(251, 191, 36, 0.9);
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.8), inset 0 0 15px rgba(251, 191, 36, 0.5);
+    }
+
+    @keyframes handle-glow-pulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); }
+      50% { transform: translate(-50%, -50%) scale(1.06); }
+    }
+
+    /* Chute Ejection Animations */
+    @keyframes chute-roll {
+      0% {
+        transform: translateY(-36px) scale(0.35) rotate(-140deg);
+        opacity: 0;
+      }
+      55% {
+        transform: translateY(6px) scale(1.08) rotate(15deg);
+        opacity: 1;
+      }
+      75% {
+        transform: translateY(-2px) scale(0.97) rotate(-4deg);
+      }
+      100% {
+        transform: translateY(0) scale(1) rotate(0deg);
+        opacity: 1;
+      }
+    }
+
+    .chute-eject {
+      animation: chute-roll 0.75s cubic-bezier(0.25, 1.4, 0.5, 1) forwards;
+    }
+
+    .capsule-waiting {
+      animation: capsule-float-glow 1.5s infinite ease-in-out;
+    }
+
+    @keyframes capsule-float-glow {
+      0%, 100% {
+        transform: translateY(0) scale(1);
+        filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.7));
+      }
+      50% {
+        transform: translateY(-3px) scale(1.04);
+        filter: drop-shadow(0 0 16px rgba(245, 158, 11, 0.95));
+      }
+    }
   </style>
 </head>
-<body class="min-h-screen text-slate-800 flex flex-col items-center justify-between p-3 sm:p-5 select-none pt-6 sm:pt-8">
+<body class="h-[100dvh] w-screen text-slate-100 flex flex-col items-center justify-between p-2 select-none box-border bar-lighting overflow-hidden">
 
-  <main class="w-full max-w-xl flex-1 flex flex-col items-center justify-center relative">
+  <main id="main-stage" class="w-full flex-1 flex flex-col items-center justify-center relative overflow-hidden">
     
-    <!-- Machine Frame -->
-    <div class="w-full relative flex flex-col items-center">
+    <!-- Machine Stage: gacha.png as backdrop with layered fluid sphere -->
+    <div id="machine-wrapper" class="relative max-h-[85dvh] max-w-[92vw] sm:max-w-[460px] flex items-center justify-center transition-transform duration-200">
       
-      <!-- Top Beer Tap Cap of Machine -->
-      <div class="w-56 sm:w-64 h-9 bg-gradient-to-r from-amber-600 via-amber-400 to-amber-600 rounded-t-3xl shadow-md border-t-2 border-white/80 flex items-center justify-center">
-        <div class="w-20 h-2.5 bg-amber-800/40 rounded-full"></div>
-      </div>
-      
-      <!-- Transparent Beer Glass Tank Dome Container (Enlarged) -->
-      <div id="tank-container" class="relative w-[340px] sm:w-[420px] md:w-[460px] h-[340px] sm:h-[420px] md:h-[460px] rounded-full border-4 border-white/90 glass-dome overflow-hidden shadow-2xl flex items-center justify-center cursor-pointer">
-        <!-- Canvas for dynamic golden beer, creamy white head, tilt liquid, and 10 capsules -->
+      <!-- Gacha Machine & Background Image -->
+      <img 
+        id="gacha-bg" 
+        src="./gacha.png" 
+        alt="Gacha Machine" 
+        onerror="this.onerror=null; this.src='https://raw.githubusercontent.com/010m-xtech/TEST2/main/shake/gacha.png';"
+        class="max-h-[82dvh] w-auto object-contain pointer-events-none drop-shadow-[0_20px_40px_rgba(0,0,0,0.85)]"
+      />
+
+      <!-- Dynamic Beer Glass Sphere Layered over Machine Image -->
+      <div 
+        id="tank-container" 
+        style="top: var(--sphere-top); left: var(--sphere-left); width: var(--sphere-size); aspect-ratio: 1 / 1;"
+        class="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-amber-100/60 glass-dome overflow-hidden flex items-center justify-center cursor-pointer active:scale-95 transition-transform"
+      >
+        <!-- 2D Canvas for physics-based beer fluid, foam head, and floating capsules -->
         <canvas id="bubble-canvas" class="w-full h-full block"></canvas>
 
-        <!-- Glass highlights and reflection overlays -->
-        <div class="absolute top-6 left-9 w-28 h-14 rounded-full bg-gradient-to-b from-white/70 to-transparent transform -rotate-45 pointer-events-none"></div>
-        <div class="absolute bottom-8 right-9 w-16 h-8 rounded-full bg-gradient-to-t from-white/40 to-transparent transform -rotate-45 pointer-events-none"></div>
+        <!-- Glass highlights and specular reflections -->
+        <div class="absolute top-4 left-6 w-24 sm:w-32 h-12 sm:h-16 rounded-full bg-gradient-to-b from-white/60 to-transparent transform -rotate-45 pointer-events-none"></div>
+        <div class="absolute bottom-6 right-8 w-14 sm:w-18 h-7 sm:h-9 rounded-full bg-gradient-to-t from-white/25 to-transparent transform -rotate-45 pointer-events-none"></div>
         
-        <!-- Beer Foam meter overlay floating indicator -->
-        <div class="absolute bottom-5 bg-amber-950/75 backdrop-blur-md text-white px-4 py-1.5 rounded-full text-xs sm:text-sm font-black tracking-wider flex items-center gap-2 shadow-lg border border-amber-300/40 pointer-events-none">
-          <span class="inline-block w-2.5 h-2.5 rounded-full bg-yellow-300 animate-ping"></span>
-          泡＆ビール注ぎ率: <span id="bubble-percent" class="text-amber-300 text-sm sm:text-base font-extrabold w-12 text-right">0%</span>
+        <!-- Live Beer Meter Badge -->
+        <div class="absolute bottom-4 bg-stone-950/85 backdrop-blur-md text-white px-3.5 py-1 rounded-full text-[11px] font-bold tracking-wider flex items-center gap-2 shadow-2xl border border-amber-500/40 pointer-events-none transition-all">
+          <span id="bubble-status-dot" class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+          泡＆ビール: <span id="bubble-percent" class="text-amber-300 text-xs font-extrabold w-10 text-right">0%</span>
         </div>
       </div>
 
-      <div class="w-[350px] sm:w-[430px] md:w-[470px] bg-gradient-to-b from-amber-600 via-amber-700 to-amber-900 rounded-3xl p-5 shadow-2xl border-4 border-amber-200/90 relative -mt-6 z-10 flex flex-col items-center">
-        <!-- Shiny Golden Trim Plate -->
-        <div class="w-4/5 h-2.5 bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-300 rounded-full mb-3.5 shadow"></div>
-
-        <!-- Progress Bar Indicator -->
-        <div class="w-full bg-amber-950/60 rounded-full h-4 sm:h-5 p-0.5 mb-4 shadow-inner overflow-hidden border border-amber-300/40">
-          <div id="progress-fill" class="bg-gradient-to-r from-yellow-300 via-amber-300 to-white h-full rounded-full transition-all duration-150 w-0 relative">
-            <div class="absolute inset-0 bg-white/40 animate-pulse"></div>
-          </div>
-        </div>
-
-        <!-- Crank / Gacha Dispenser Area -->
-        <div class="w-full flex items-center justify-between px-3 sm:px-6 gap-3">
+      <!-- Crank Handle Layer (Red Circle Area on Machine) -->
+      <div 
+        id="crank-handle" 
+        class="absolute -translate-x-1/2 -translate-y-1/2 rounded-full cursor-pointer flex items-center justify-center z-30 handle-idle active:scale-95 transition-all"
+        style="top: 67.2%; left: 50.4%; width: 22.5%; aspect-ratio: 1 / 1;"
+      >
+        <!-- Rotating Visual Knob with Brass Crossbar -->
+        <div id="crank-knob-visual" class="w-full h-full rounded-full relative flex items-center justify-center pointer-events-none transition-transform duration-700 ease-in-out">
+          <!-- Outer circular glow ring -->
+          <div class="absolute inset-0 rounded-full border-2 border-amber-400/0 handle-glow transition-all"></div>
           
-          <!-- Dispenser Drop Chute -->
-          <div class="w-24 sm:w-28 h-20 sm:h-24 bg-amber-950/90 rounded-2xl border-2 border-amber-400/50 shadow-inner flex items-center justify-center relative overflow-hidden">
-            <span class="text-[10px] sm:text-xs text-amber-200/70 font-bold absolute top-1">注ぎ口</span>
-            <div id="chute-exit" class="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center transition-transform">
-              <span class="text-xs sm:text-sm text-amber-400/50 font-mono font-bold">WAIT</span>
-            </div>
+          <!-- Authentic Brass Horizontal Handle Bar -->
+          <div class="w-[82%] h-[22%] rounded-full bg-gradient-to-b from-amber-200 via-amber-400 to-amber-700 shadow-[0_5px_12px_rgba(0,0,0,0.7),inset_0_1px_2px_rgba(255,255,255,0.9)] border border-amber-300/70 relative flex items-center justify-center">
+            <!-- Center Rivet Knob Cap -->
+            <div class="w-4 h-4 rounded-full bg-gradient-to-br from-amber-100 to-amber-600 shadow-md border border-amber-200"></div>
           </div>
-
-          <!-- Main Interactive Crank Wheel Button -->
-          <div class="flex-1 flex flex-col items-center">
-            <button id="gacha-crank-btn" disabled class="relative group disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform active:scale-95">
-              <div id="crank-disc" class="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-tr from-amber-300 via-yellow-200 to-amber-500 border-4 border-white shadow-xl flex items-center justify-center relative">
-                <!-- Inner crank bar (Beer Tap style lever) -->
-                <div class="w-14 sm:w-16 h-4 sm:h-5 bg-gradient-to-r from-amber-700 via-amber-500 to-amber-700 rounded-full shadow-md border border-white/40"></div>
-                <!-- Knob -->
-                <div class="absolute top-1.5 sm:top-2 right-2 sm:right-2.5 w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-b from-white to-amber-200 rounded-full shadow border border-amber-400"></div>
-              </div>
-            </button>
-            <span id="gacha-btn-label" class="mt-2 text-xs sm:text-sm font-black text-amber-100 text-shadow drop-shadow text-center">
-              振って注いでね！
-            </span>
-          </div>
-
-          <!-- Shake manual trigger button for desktop or accessibility -->
-          <div class="flex flex-col items-center gap-1">
-            <button id="manual-shake-btn" class="px-3 sm:px-4 py-2 sm:py-2.5 bg-amber-50 hover:bg-white text-amber-900 active:bg-amber-100 font-bold text-xs sm:text-sm rounded-xl shadow border border-amber-300 active:scale-95 transition flex flex-col items-center">
-              <span class="text-lg sm:text-xl">🍺</span>
-              <span class="text-[10px] sm:text-xs leading-tight">手動で泡注ぎ</span>
-            </button>
-          </div>
-
         </div>
 
+        <!-- Prompt Badge when 100% full -->
+        <div id="handle-prompt" class="absolute -top-7 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-stone-950 font-black text-[10px] whitespace-nowrap shadow-xl border border-amber-200 animate-bounce hidden pointer-events-none tracking-wider">
+          回してガチャ！
+        </div>
+      </div>
+
+      <!-- Chute Area (Blue Circle Area on Machine) -->
+      <div 
+        id="chute-area" 
+        class="absolute -translate-x-1/2 pointer-events-none z-30 flex items-center justify-center overflow-visible"
+        style="top: 83.2%; left: 50.4%; width: 23%; height: 14%;"
+      >
+        <!-- Dispensed Capsule falling onto the tray -->
+        <div id="dispensed-capsule" class="hidden pointer-events-auto cursor-pointer relative flex flex-col items-center justify-center active:scale-95 transition-transform">
+          <!-- 3D style beer capsule in tray -->
+          <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full border border-white/90 shadow-[0_8px_20px_rgba(0,0,0,0.85)] overflow-hidden relative flex flex-col">
+            <div class="h-1/2 w-full bg-gradient-to-b from-white to-amber-100 border-b border-amber-200/80"></div>
+            <div class="h-1/2 w-full bg-gradient-to-b from-amber-400 to-amber-600"></div>
+            <div class="absolute inset-0 flex items-center justify-center text-sm">🍺</div>
+          </div>
+          
+          <!-- Tap to Open Guide Prompt -->
+          <div id="capsule-tap-guide" class="absolute -top-6 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-yellow-300 text-stone-950 font-black text-[9px] whitespace-nowrap shadow-xl border border-white/80 animate-pulse hidden tracking-wider">
+            タップして開封！
+          </div>
+        </div>
       </div>
 
     </div>
   </main>
 
-  <footer class="w-full max-w-xl text-center py-2">
-    <p id="shake-instruction" class="text-xs sm:text-sm font-bold text-amber-950 bg-white/80 backdrop-blur-sm py-1.5 px-4 rounded-full inline-block shadow-sm border border-amber-200">
-      💡 スマホをたくさんシャカシャカ振って、極上の黄金ビール泡をじっくり注ごう！
+  <footer class="w-full max-w-md text-center py-2 z-20 shrink-0 pb-[max(0.5rem,var(--safe-bottom))]">
+    <p id="shake-instruction" class="text-xs sm:text-sm font-semibold text-amber-200/90 bg-stone-900/90 backdrop-blur-md py-2 px-5 rounded-full inline-block shadow-xl border border-amber-600/30 transition-all duration-300">
+      スマホを振って黄金の生ビールを満タンに注ごう！
     </p>
   </footer>
 
-  <div id="result-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-md hidden items-center justify-center p-4">
-    <div class="w-full max-w-xs bg-gradient-to-b from-amber-50 via-white to-amber-100 rounded-3xl p-6 shadow-2xl border-4 border-amber-300 text-center flex flex-col items-center relative overflow-hidden">
+  <!-- Result Modal: Craft Beer Tasting Card -->
+  <div id="result-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex-col items-center justify-center p-4">
+    <div id="modal-card" class="w-full max-w-sm bg-gradient-to-b from-stone-900 via-stone-950 to-amber-950/90 border-2 border-amber-500/50 rounded-3xl p-6 text-center shadow-[0_25px_60px_rgba(0,0,0,0.9)] relative overflow-hidden flex flex-col items-center">
       
-      <!-- Sparkle Background Pattern -->
-      <div class="absolute -top-12 -right-12 w-32 h-32 bg-amber-300/40 rounded-full blur-xl pointer-events-none"></div>
+      <div class="absolute -top-24 -left-24 w-48 h-48 bg-amber-500/15 rounded-full blur-3xl pointer-events-none"></div>
       
-      <!-- Stage 1: Unopened Capsule Container -->
-      <div id="capsule-stage" class="cursor-pointer my-4 flex flex-col items-center">
-        <div id="bouncing-capsule" class="w-28 h-28 rounded-full border-4 border-white shadow-2xl relative overflow-hidden transition transform hover:scale-105 active:scale-95 capsule-drop">
-          <div id="capsule-top-half" class="absolute top-0 inset-x-0 h-1/2 bg-white transition-transform origin-bottom duration-500 shadow-inner"></div>
-          <div id="capsule-bottom-half" class="absolute bottom-0 inset-x-0 h-1/2 bg-gradient-to-b from-amber-400 to-amber-500 transition-transform origin-top duration-500"></div>
-          <div class="absolute top-1/2 -mt-1 inset-x-0 h-2 bg-amber-900/20 z-10"></div>
-          <div class="absolute inset-0 flex items-center justify-center z-20 text-3xl animate-pulse">🍻</div>
-        </div>
-        <p class="mt-4 text-xs font-extrabold text-amber-900 animate-bounce">
-          👇 タップして泡カプセルを開けよう！
-        </p>
+      <!-- Top Rarity Pill -->
+      <div id="res-rarity" class="px-4 py-1 rounded-full text-xs font-extrabold tracking-widest uppercase mb-4 shadow-md bg-amber-500 text-stone-950">
+        SSR
       </div>
 
-      <!-- Stage 2: Revealed Prize Stage (hidden initially) -->
-      <div id="prize-stage" class="hidden flex flex-col items-center w-full">
-        <!-- Rarity Badge -->
-        <span id="prize-rarity" class="px-3 py-1 rounded-full text-xs font-black tracking-widest text-white shadow-sm mb-2">
-          SSR
-        </span>
-
-        <!-- Prize Visual Icon/Card -->
-        <div id="prize-card" class="w-24 h-24 rounded-2xl bg-white shadow-xl border-4 border-amber-400 flex items-center justify-center text-5xl mb-3 relative overflow-hidden">
-          <span id="prize-icon">👑</span>
+      <!-- Capsule Animation Icon -->
+      <div class="w-24 h-24 mb-3 flex items-center justify-center relative">
+        <div id="res-capsule" class="w-20 h-20 rounded-full border-2 border-white/80 shadow-[0_10px_25px_rgba(0,0,0,0.6)] overflow-hidden relative capsule-drop flex flex-col">
+          <div class="h-1/2 w-full bg-gradient-to-b from-white to-amber-50 border-b border-amber-200/70"></div>
+          <div class="h-1/2 w-full bg-gradient-to-b from-amber-400 to-amber-600"></div>
+          <div class="absolute inset-0 flex items-center justify-center text-3xl" id="res-icon">🍺</div>
         </div>
-
-        <h2 id="prize-name" class="text-lg font-black text-amber-950 mb-1">
-          ゴールドプレミアム生ビール
-        </h2>
-        <p id="prize-desc" class="text-xs text-amber-800 font-bold mb-4 px-2">
-          黄金比7:3の奇跡！泡まで旨い至高の1杯！
-        </p>
-
-        <!-- Claim / Retry Button -->
-        <button id="close-modal-btn" class="w-full py-3 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 hover:from-amber-600 hover:to-amber-800 text-white font-black rounded-xl shadow-lg active:scale-95 transition">
-          もう一杯注ぐ！（振る）
-        </button>
       </div>
 
+      <!-- Title & Description -->
+      <h3 id="res-name" class="text-xl sm:text-2xl font-black text-amber-300 mb-1 tracking-wide">
+        ゴールドプレミアム生
+      </h3>
+      <div id="res-type" class="text-xs text-amber-200/70 mb-3 font-serif tracking-wider">CRAFT BEER SELECTION</div>
+      
+      <p id="res-desc" class="text-sm text-stone-300 mb-6 bg-stone-900/80 p-3 rounded-xl border border-stone-800 leading-relaxed">
+        最高峰の麦芽と希少ホップが奏でる極上のコクと香り。
+      </p>
+
+      <button id="close-modal-btn" class="w-full py-3.5 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 active:scale-95 text-stone-950 font-black rounded-2xl text-sm tracking-wider shadow-[0_4px_20px_rgba(245,158,11,0.4)] transition-all">
+        もう一度注ぐ
+      </button>
     </div>
   </div>
 
   <script>
-    /* Beer Gacha items */
-    const GACHA_ITEMS = [
-      { id: 'item_1', name: 'ゴールドプレミアム生', rarity: 'SSR', icon: '🏆', color: 'bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500', desc: '麦芽100%！黄金比7:3の極上泡が立つ伝説のビール！' },
-      { id: 'item_2', name: '職人の特大ジョッキ', rarity: 'SSR', icon: '🍺', color: 'bg-gradient-to-r from-amber-500 to-orange-500', desc: 'キンキンに凍りついたメガジョッキ！乾杯の主役！' },
-      { id: 'item_3', name: '香るクラフトIPA', rarity: 'SR', icon: '🌿', color: 'bg-gradient-to-r from-emerald-500 to-amber-500', desc: 'ホップの華やかなアロマと心地よい苦味がたまらない。' },
-      { id: 'item_4', name: 'コク旨黒ビール', rarity: 'SR', icon: '☕', color: 'bg-gradient-to-r from-stone-700 to-amber-900', desc: 'ロースト麦芽の香ばしい薫りとクリーミーな泡。' },
-      { id: 'item_5', name: '茹でたて枝豆', rarity: 'R', icon: '🫛', color: 'bg-gradient-to-r from-green-500 to-emerald-600', desc: 'ビールに一番合う永遠のベストパートナー！' },
-      { id: 'item_6', name: '香ばし焼き鳥盛り', rarity: 'R', icon: '🍢', color: 'bg-gradient-to-r from-amber-600 to-red-600', desc: 'タレの香りと炭火の煙がビールを無限に進ませる。' },
-      { id: 'item_7', name: 'クリーミーな神泡', rarity: 'N', icon: '🫧', color: 'bg-amber-400', desc: 'きめ細やかでシルキーなビールの白い天使。' },
-      { id: 'item_8', name: '黄金色の麦のしずく', rarity: 'N', icon: '🌾', color: 'bg-amber-400', desc: '大地の恵みたっぷりの美味しい麦汁。' }
-    ];
-
-    let bubblePower = 0; // 0 to 100
-    const MAX_POWER = 100;
-    let isFull = false;
-    let isCranking = false;
-    let soundEnabled = true;
-    let currentPrize = null;
-
-    let synthsInitialized = false;
-    let bubblePopSynth, fanfareSynth, rattleSynth, clickSynth;
+    // Audio engine with Tone.js
+    let audioReady = false;
+    let fizzNoise = null;
+    let fizzFilter = null;
+    let crankSynth = null;
+    let fanfareSynth = null;
 
     function initAudio() {
-      if (synthsInitialized) return;
+      if (audioReady) return;
       try {
         Tone.start();
 
-        // Bubble burst / beer fizz synth
-        bubblePopSynth = new Tone.MembraneSynth({
-          pitchDecay: 0.08,
-          octaves: 2.5,
+        // Carbonation fizz noise
+        fizzNoise = new Tone.Noise('pink');
+        fizzFilter = new Tone.Filter({
+          frequency: 1800,
+          type: 'bandpass',
+          Q: 2.5
+        });
+        const fizzGain = new Tone.Gain(0.08).toDestination();
+        fizzNoise.connect(fizzFilter);
+        fizzFilter.connect(fizzGain);
+        fizzNoise.start();
+        fizzGain.gain.setValueAtTime(0, Tone.now());
+
+        // Capsule dispense click sound
+        crankSynth = new Tone.MembraneSynth({
+          pitchDecay: 0.05,
+          octaves: 3,
           oscillator: { type: 'sine' },
-          envelope: { attack: 0.001, decay: 0.12, sustain: 0, release: 0.05 }
+          envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 }
         }).toDestination();
-        bubblePopSynth.volume.value = -7;
+        crankSynth.volume.value = -6;
 
-        // Mechanical Click Synth for Tap Handle
-        clickSynth = new Tone.PluckSynth({
-          attackNoise: 1.6,
-          dampening: 3800,
-          resonance: 0.75
-        }).toDestination();
-        clickSynth.volume.value = -4;
+        // SSR Fanfare
+        fanfareSynth = new Tone.PolySynth(Tone.Synth).toDestination();
+        fanfareSynth.volume.value = -8;
 
-        // Rattle/fizzy foam synth for shaking
-        rattleSynth = new Tone.NoiseSynth({
-          noise: { type: 'white' },
-          envelope: { attack: 0.005, decay: 0.09, sustain: 0 }
-        }).toDestination();
-        rattleSynth.volume.value = -13;
-
-        // Fanfare PolySynth for prize reveal
-        fanfareSynth = new Tone.PolySynth(Tone.Synth, {
-          oscillator: { type: 'triangle' },
-          envelope: { attack: 0.02, decay: 0.3, sustain: 0.4, release: 0.8 }
-        }).toDestination();
-        fanfareSynth.volume.value = -5;
-
-        synthsInitialized = true;
-      } catch (err) {
-        console.warn("Audio init deferred:", err);
+        audioReady = true;
+      } catch (e) {
+        console.warn('Audio Init Notice:', e);
       }
     }
 
-    function playBubbleSound() {
-      if (!soundEnabled || !synthsInitialized) return;
+    function playFizz(intensity = 0.5) {
+      if (!audioReady) return;
       try {
-        const notes = ['D5', 'F#5', 'A5', 'B5', 'D6', 'E6'];
-        const note = notes[Math.floor(Math.random() * notes.length)];
-        bubblePopSynth.triggerAttackRelease(note, '16n');
-      } catch (e) {}
-    }
-
-    function playShakeFizz() {
-      if (!soundEnabled || !synthsInitialized) return;
-      try {
-        rattleSynth.triggerAttackRelease('32n');
+        const now = Tone.now();
+        fizzFilter.frequency.setValueAtTime(1400 + intensity * 1600, now);
       } catch (e) {}
     }
 
     function playCrankSound() {
-      if (!soundEnabled || !synthsInitialized) return;
+      if (!audioReady) return;
       try {
-        clickSynth.triggerAttack('C3');
+        crankSynth.triggerAttackRelease('C2', '8n');
       } catch (e) {}
     }
 
-    function playWinSound(rarity) {
-      if (!soundEnabled || !synthsInitialized) return;
+    function playFanfare() {
+      if (!audioReady) return;
       try {
         const now = Tone.now();
-        if (rarity === 'SSR') {
-          fanfareSynth.triggerAttackRelease(['D4', 'F#4', 'A4', 'D5'], '4n', now);
-          fanfareSynth.triggerAttackRelease(['G4', 'B4', 'D5', 'G5'], '4n', now + 0.22);
-          fanfareSynth.triggerAttackRelease(['A4', 'C#5', 'E5', 'A5'], '2n', now + 0.45);
-        } else if (rarity === 'SR') {
-          fanfareSynth.triggerAttackRelease(['G4', 'B4', 'D5'], '8n', now);
-          fanfareSynth.triggerAttackRelease(['C5', 'E5', 'G5'], '4n', now + 0.2);
-        } else {
-          fanfareSynth.triggerAttackRelease(['D5', 'A4'], '8n', now);
-        }
+        fanfareSynth.triggerAttackRelease(['C4', 'E4', 'G4', 'C5'], '8n', now);
+        fanfareSynth.triggerAttackRelease(['E4', 'G4', 'B4', 'E5'], '8n', now + 0.2);
+        fanfareSynth.triggerAttackRelease(['G4', 'C5', 'E5', 'G5'], '4n', now + 0.4);
       } catch (e) {}
     }
 
     const canvas = document.getElementById('bubble-canvas');
     const ctx = canvas.getContext('2d');
-    let width, height;
-    let bubbles = [];
-    let liquidLevel = 0.12; // normalized from 0.10 to 0.82
-    let shakeVelocity = { x: 0, y: 0 };
+    let width = 320;
+    let height = 320;
+    let tankRadius = 150;
 
-    // High precision tilt state
-    let targetLiquidAngle = 0; // Target physical tilt angle in radians
-    let liquidAngle = 0;        // Smoothed liquid surface angle
-    let currentTiltX = 0;      // Direct gravity vector X
-    let currentTiltY = 0;      // Direct gravity vector Y
+    let bubblePower = 0;
+    const MAX_POWER = 100;
+    let isFull = false;
+    let isCranking = false;
+
+    // Fluid dynamics
+    let liquidLevel = 0; 
+    let liquidAngle = 0; 
+    let targetLiquidAngle = 0;
+    let liquidWavePhase = 0;
+    let waveAmplitude = 0;
+    let shakeVelocity = { x: 0, y: 0 };
     let targetTiltX = 0;
     let targetTiltY = 0;
 
-    // Capsule class representing 10 buoyant capsules inside the tank
-    class TankCapsule {
-      constructor(index) {
-        this.index = index;
-        this.radius = 20;
-        this.x = 0;
-        this.y = 0;
-        this.vx = (Math.random() - 0.5) * 2;
-        this.vy = (Math.random() - 0.5) * 2;
-        this.angle = Math.random() * Math.PI * 2;
-        this.vAngle = (Math.random() - 0.5) * 0.05;
-        // Density variation (0.76 - 0.94) so capsules naturally settle semi-submerged in beer
-        this.density = 0.76 + (index % 4) * 0.06;
-        this.beerColors = [
-          ['#f59e0b', '#d97706'],
-          ['#fbbf24', '#b45309'],
-          ['#eab308', '#ca8a04'],
-          ['#78350f', '#451a03'], // dark beer capsule
-          ['#f97316', '#c2410c']
-        ];
-        this.colorPair = this.beerColors[index % this.beerColors.length];
+    // Bubbles
+    const bubbles = [];
+    const NUM_BUBBLES = 45;
+
+    // 10 Beer Toy Capsules
+    const CAPSULE_COUNT = 10;
+    const capsules = [];
+
+    function initBubbles() {
+      bubbles.length = 0;
+      // Rising carbonation bubbles (micro bubbles + medium bubbles)
+      for (let i = 0; i < 65; i++) {
+        bubbles.push({
+          x: (Math.random() - 0.5) * (tankRadius * 1.6),
+          y: Math.random() * (tankRadius * 1.6),
+          radius: Math.random() < 0.75 ? Math.random() * 1.5 + 0.6 : Math.random() * 2.8 + 1.8,
+          speed: Math.random() * 1.8 + 0.9,
+          wobble: Math.random() * Math.PI * 2,
+          wobbleSpeed: Math.random() * 0.09 + 0.03,
+          alpha: Math.random() * 0.6 + 0.35,
+          isStream: Math.random() < 0.25 // Column streams like fresh draught beer
+        });
       }
 
-      initPosition(cx, cy, tankRadius) {
-        const spawnRadius = tankRadius * 0.55;
-        const angle = (this.index / 10) * Math.PI * 2;
-        this.x = cx + Math.cos(angle) * (spawnRadius * (0.4 + Math.random() * 0.5));
-        this.y = cy + Math.sin(angle) * (spawnRadius * 0.5) + (tankRadius * 0.2);
+      // Initialize 10 clean, smooth capsules without clinging surface dots
+      capsules.length = 0;
+      for (let i = 0; i < CAPSULE_COUNT; i++) {
+        const angle = (i / CAPSULE_COUNT) * Math.PI * 2;
+        const dist = Math.random() * (tankRadius * 0.45) + (tankRadius * 0.15);
+
+        capsules.push({
+          x: Math.cos(angle) * dist,
+          y: Math.sin(angle) * dist + (tankRadius * 0.25),
+          vx: (Math.random() - 0.5) * 0.8,
+          vy: (Math.random() - 0.5) * 0.8,
+          radius: 19,
+          angle: Math.random() * Math.PI * 2,
+          va: (Math.random() - 0.5) * 0.03,
+          submergeDepth: 0.68 + Math.random() * 0.12 // slightly submerged balance
+        });
       }
+    }
 
-      update(cx, cy, tankRadius, surfaceYFunc) {
-        // Highly responsive gravity forces matching real device orientation
-        const gx = currentTiltX * 0.92;
-        const gy = 0.42 + Math.max(-0.25, currentTiltY * 0.5);
+    function handleResize() {
+      const container = document.getElementById('tank-container');
+      const rect = container.getBoundingClientRect();
+      const rawDim = Math.max(120, Math.min(rect.width || 260, rect.height || 260));
+      
+      const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+      canvas.width = rawDim * dpr;
+      canvas.height = rawDim * dpr;
+      width = rawDim;
+      height = rawDim;
 
-        this.vx += gx + (shakeVelocity.x * 0.08);
-        this.vy += gy + (shakeVelocity.y * 0.08);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      tankRadius = Math.max(10, width / 2 - 3);
 
-        // Buoyancy calculation
-        const surfaceY = surfaceYFunc(this.x);
-        const bottomY = this.y + this.radius;
+      // Adaptive capsule radius relative to sphere
+      const adaptiveRadius = Math.max(12, Math.min(22, tankRadius * 0.12));
+      capsules.forEach(c => c.radius = adaptiveRadius);
 
-        if (bottomY > surfaceY) {
-          // Submerged in beer liquid: smooth partial sinking equilibrium
-          const submergence = Math.min(this.radius * 2, bottomY - surfaceY);
-          const submergedRatio = submergence / (this.radius * 2);
-
-          const buoyancy = (submergedRatio / this.density) * 0.82;
-          this.vy -= buoyancy;
-
-          // Slide directly down the precise tilt slope
-          this.vx += Math.sin(liquidAngle) * 0.95;
-
-          // Viscous drag of beer liquid
-          this.vx *= 0.92;
-          this.vy *= 0.91;
-
-          // Natural surface rolling
-          this.angle += this.vx * 0.07;
+      // Automatic viewport fit
+      const availableH = window.innerHeight;
+      const scaler = document.getElementById('machine-wrapper');
+      if (scaler) {
+        if (availableH < 640) {
+          const s = Math.max(0.75, availableH / 680);
+          scaler.style.transform = `scale(${s})`;
         } else {
-          // In air above the foam
-          this.vx *= 0.985;
-          this.vy *= 0.985;
-          this.angle += this.vAngle;
-        }
-
-        this.x += this.vx;
-        this.y += this.vy;
-        this.vAngle *= 0.96;
-
-        // Circular dome bounds
-        const dx = this.x - cx;
-        const dy = this.y - cy;
-        const dist = Math.hypot(dx, dy);
-        const maxDist = tankRadius - this.radius - 2;
-
-        if (dist > maxDist) {
-          const normalX = dx / dist;
-          const normalY = dy / dist;
-          this.x = cx + normalX * maxDist;
-          this.y = cy + normalY * maxDist;
-
-          const dot = this.vx * normalX + this.vy * normalY;
-          this.vx = (this.vx - 1.6 * dot * normalX) * 0.62;
-          this.vy = (this.vy - 1.6 * dot * normalY) * 0.62;
+          scaler.style.transform = 'scale(1)';
         }
       }
+    }
+    window.addEventListener('resize', handleResize);
 
-      draw(c) {
-        c.save();
-        c.translate(this.x, this.y);
-        c.rotate(this.angle);
-
-        // Soft drop shadow in liquid
-        c.beginPath();
-        c.arc(1.5, 2.5, this.radius, 0, Math.PI * 2);
-        c.fillStyle = 'rgba(0, 0, 0, 0.16)';
-        c.fill();
-
-        // White Creamy Foam Top Half
-        c.beginPath();
-        c.arc(0, 0, this.radius, Math.PI, 0, false);
-        c.closePath();
-        const foamGrad = c.createLinearGradient(0, -this.radius, 0, 0);
-        foamGrad.addColorStop(0, '#ffffff');
-        foamGrad.addColorStop(0.7, '#fffbeb');
-        foamGrad.addColorStop(1, '#fef3c7');
-        c.fillStyle = foamGrad;
-        c.fill();
-
-        // Golden Beer Bottom Half
-        c.beginPath();
-        c.arc(0, 0, this.radius, 0, Math.PI, false);
-        c.closePath();
-        const beerGrad = c.createLinearGradient(0, 0, 0, this.radius);
-        beerGrad.addColorStop(0, this.colorPair[0]);
-        beerGrad.addColorStop(1, this.colorPair[1]);
-        c.fillStyle = beerGrad;
-        c.fill();
-
-        // Capsule Center Seam
-        c.beginPath();
-        c.rect(-this.radius, -1.2, this.radius * 2, 2.4);
-        c.fillStyle = 'rgba(255, 255, 255, 0.9)';
-        c.fill();
-        c.strokeStyle = 'rgba(180, 83, 9, 0.35)';
-        c.lineWidth = 0.8;
-        c.stroke();
-
-        // Glass Gloss reflection highlight
-        c.beginPath();
-        c.arc(-this.radius * 0.35, -this.radius * 0.35, this.radius * 0.38, 0, Math.PI * 2);
-        c.fillStyle = 'rgba(255, 255, 255, 0.55)';
-        c.fill();
-
-        // Outer rim highlight
-        c.beginPath();
-        c.arc(0, 0, this.radius, 0, Math.PI * 2);
-        c.strokeStyle = 'rgba(255, 255, 255, 0.75)';
-        c.lineWidth = 1.2;
-        c.stroke();
-
-        c.restore();
-      }
+    const gachaBg = document.getElementById('gacha-bg');
+    if (gachaBg) {
+      gachaBg.addEventListener('load', handleResize);
     }
 
-    let capsules = [];
-    function initCapsules() {
-      capsules = [];
-      const dpr = window.devicePixelRatio || 1;
-      const w = width > 0 ? (width / dpr) : (canvas.clientWidth || 300);
-      const h = height > 0 ? (height / dpr) : (canvas.clientHeight || 300);
-      const cx = w / 2;
-      const cy = h / 2;
-      const tankRadius = Math.max(10, Math.min(w, h) / 2 - 6);
+    function updatePhysics() {
+      // Smooth liquid level transition
+      const targetLevel = (bubblePower / MAX_POWER);
+      liquidLevel += (targetLevel - liquidLevel) * 0.09;
 
-      for (let i = 0; i < 10; i++) {
-        const cap = new TankCapsule(i);
-        cap.initPosition(cx, cy, tankRadius);
-        capsules.push(cap);
-      }
-    }
+      // Ultra-smooth liquid angle matching tilt & gravity with natural damping
+      liquidAngle += (targetLiquidAngle - liquidAngle) * 0.18;
 
-    function resolveCapsuleCollisions() {
+      // Wave oscillation & decay
+      liquidWavePhase += 0.08 + Math.min(0.2, waveAmplitude * 0.05);
+      waveAmplitude *= 0.94;
+      shakeVelocity.x *= 0.92;
+      shakeVelocity.y *= 0.92;
+
+      // Center reference of sphere
+      const cx = 0;
+      const cy = 0;
+
+      // Surface height relative to center (0 = bottom, 1 = top)
+      const currentSurfaceY = tankRadius - (liquidLevel * tankRadius * 1.88);
+
+      // Update 10 Capsules
       for (let i = 0; i < capsules.length; i++) {
+        const c = capsules[i];
+
+        // Gravitational force and tilt-slope force
+        const tiltXForce = Math.sin(liquidAngle) * 0.45 + targetTiltX * 0.28;
+        c.vx += tiltXForce + shakeVelocity.x * 0.08;
+        c.vy += 0.24 + shakeVelocity.y * 0.08; // Base downward gravity
+
+        // Multi-frequency wave calculation for natural fluid sloshing
+        const dxFromCenter = c.x;
+        const slopeY = Math.tan(-liquidAngle) * dxFromCenter;
+        const wave1 = Math.sin(liquidWavePhase + c.x * 0.035) * waveAmplitude;
+        const wave2 = Math.cos(liquidWavePhase * 1.4 - c.x * 0.07) * (waveAmplitude * 0.25);
+        const localSurfaceY = currentSurfaceY + slopeY + wave1 + wave2;
+
+        // Buoyancy when touching or submerged in beer
+        if (liquidLevel > 0.02) {
+          const depthInLiquid = c.y - localSurfaceY;
+          if (depthInLiquid > -c.radius * (1 - c.submergeDepth)) {
+            // Semi-submerged floating balance with viscous damping
+            const buoyancyStrength = Math.min(1.5, (depthInLiquid + c.radius * c.submergeDepth) * 0.055);
+            c.vy -= buoyancyStrength * 0.72;
+            c.vx *= 0.925;
+            c.vy *= 0.905;
+            c.va *= 0.93;
+          } else {
+            // Air drag
+            c.vx *= 0.985;
+            c.vy *= 0.985;
+          }
+        }
+
+        // Apply velocities
+        c.x += c.vx;
+        c.y += c.vy;
+        c.angle += c.va + c.vx * 0.02;
+
+        // Circular dome wall collision
+        const distFromCenter = Math.sqrt(c.x * c.x + c.y * c.y);
+        const maxDist = tankRadius - c.radius - 2;
+        if (distFromCenter > maxDist) {
+          const nx = c.x / distFromCenter;
+          const ny = c.y / distFromCenter;
+          c.x = nx * maxDist;
+          c.y = ny * maxDist;
+
+          // Bounce reflection
+          const dot = c.vx * nx + c.vy * ny;
+          if (dot > 0) {
+            c.vx -= 1.35 * dot * nx;
+            c.vy -= 1.35 * dot * ny;
+            c.va += (Math.random() - 0.5) * 0.06;
+          }
+        }
+
+        // Capsule-to-capsule collisions
         for (let j = i + 1; j < capsules.length; j++) {
-          const c1 = capsules[i];
-          const c2 = capsules[j];
-          const dx = c2.x - c1.x;
-          const dy = c2.y - c1.y;
-          const dist = Math.hypot(dx, dy);
-          const minDist = c1.radius + c2.radius;
+          const other = capsules[j];
+          const cdx = other.x - c.x;
+          const cdy = other.y - c.y;
+          const cdist = Math.sqrt(cdx * cdx + cdy * cdy);
+          const minDist = c.radius + other.radius;
 
-          if (dist < minDist && dist > 0.001) {
-            const overlap = (minDist - dist) * 0.5;
-            const nx = dx / dist;
-            const ny = dy / dist;
+          if (cdist < minDist && cdist > 0.001) {
+            const overlap = (minDist - cdist) * 0.5;
+            const normX = cdx / cdist;
+            const normY = cdy / cdist;
 
-            c1.x -= nx * overlap;
-            c1.y -= ny * overlap;
-            c2.x += nx * overlap;
-            c2.y += ny * overlap;
+            c.x -= normX * overlap;
+            c.y -= normY * overlap;
+            other.x += normX * overlap;
+            other.y += normY * overlap;
 
-            // Separate velocities
-            const dvx = c2.vx - c1.vx;
-            const dvy = c2.vy - c1.vy;
-            const p = (dvx * nx + dvy * ny) * 0.55;
+            const relVx = c.vx - other.vx;
+            const relVy = c.vy - other.vy;
+            const impulse = (relVx * normX + relVy * normY) * 0.55;
 
-            c1.vx += p * nx;
-            c1.vy += p * ny;
-            c2.vx -= p * nx;
-            c2.vy -= p * ny;
+            c.vx -= impulse * normX;
+            c.vy -= impulse * normY;
+            other.vx += impulse * normX;
+            other.vy += impulse * normY;
           }
         }
       }
     }
 
-    function resizeCanvas() {
-      const rect = canvas.getBoundingClientRect();
-      const container = document.getElementById('tank-container');
-      const dpr = window.devicePixelRatio || 1;
-      const displayWidth = Math.max(rect.width || (container ? container.clientWidth : 0) || 300, 50);
-      const displayHeight = Math.max(rect.height || (container ? container.clientHeight : 0) || 300, 50);
-
-      width = canvas.width = Math.floor(displayWidth * dpr);
-      height = canvas.height = Math.floor(displayHeight * dpr);
-      initCapsules();
-    }
-    window.addEventListener('resize', resizeCanvas);
-
-    class Bubble {
-      constructor(isBurst = false) {
-        this.reset(isBurst);
-      }
-      reset(isBurst = false) {
-        const dpr = window.devicePixelRatio || 1;
-        const w = width > 0 ? (width / dpr) : (canvas.clientWidth || 300);
-        const h = height > 0 ? (height / dpr) : (canvas.clientHeight || 300);
-        const currentLiquidHeight = h * liquidLevel;
-        
-        this.x = Math.random() * (w * 0.84) + (w * 0.08);
-        this.y = h - (Math.random() * currentLiquidHeight);
-        this.radius = Math.random() * 6 + 2.5; // Fine creamy bubbles
-        this.speedY = -(Math.random() * 2.5 + 1.2); // Carbonation rises up fast
-        this.speedX = (Math.random() - 0.5) * 1.2;
-        this.wobble = Math.random() * Math.PI * 2;
-        this.wobbleSpeed = Math.random() * 0.1 + 0.04;
-        this.alpha = Math.random() * 0.55 + 0.35;
-        this.isFoam = Math.random() > 0.4;
-      }
-      update(forceX, forceY) {
-        this.wobble += this.wobbleSpeed;
-        this.x += Math.sin(this.wobble) * 0.7 + this.speedX + forceX * 0.2;
-        this.y += this.speedY + forceY * 0.2;
-
-        const dpr = window.devicePixelRatio || 1;
-        const w = width > 0 ? (width / dpr) : (canvas.clientWidth || 300);
-        const h = height > 0 ? (height / dpr) : (canvas.clientHeight || 300);
-        const surfaceY = h - (h * liquidLevel);
-
-        if (this.y < surfaceY - 8 || this.y > h || this.x < 0 || this.x > w) {
-          this.reset();
-        }
-      }
-      draw(c) {
-        c.save();
-        c.beginPath();
-        c.arc(this.x, this.y, Math.max(0.1, this.radius), 0, Math.PI * 2);
-        if (this.isFoam) {
-          c.fillStyle = `rgba(255, 255, 255, ${this.alpha * 1.1})`;
-        } else {
-          c.fillStyle = `rgba(254, 240, 138, ${this.alpha})`;
-        }
-        c.fill();
-        c.strokeStyle = `rgba(255, 255, 255, ${this.alpha * 0.8})`;
-        c.lineWidth = 1;
-        c.stroke();
-
-        // Shimmer highlight
-        c.beginPath();
-        c.arc(this.x - this.radius * 0.3, this.y - this.radius * 0.3, Math.max(0.1, this.radius * 0.25), 0, Math.PI * 2);
-        c.fillStyle = 'rgba(255, 255, 255, 0.9)';
-        c.fill();
-        c.restore();
-      }
-    }
-
-    function initBubbles() {
-      bubbles = [];
-      const count = 65;
-      for (let i = 0; i < count; i++) {
-        bubbles.push(new Bubble());
-      }
-    }
-
-    let waveTime = 0;
     function render() {
-      const dpr = window.devicePixelRatio || 1;
-      const w = width > 0 ? (width / dpr) : (canvas.clientWidth || 300);
-      const h = height > 0 ? (height / dpr) : (canvas.clientHeight || 300);
+      updatePhysics();
 
-      if (w <= 20 || h <= 20) {
-        requestAnimationFrame(render);
-        return;
-      }
+      ctx.clearRect(0, 0, width, height);
 
-      const cx = w / 2;
-      const cy = h / 2;
-      const tankRadius = Math.max(10, Math.min(w, h) / 2 - 4);
+      const cx = width / 2;
+      const cy = height / 2;
 
       ctx.save();
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, w, h);
-
-      // High-precision smooth tilt interpolation
-      currentTiltX += (targetTiltX - currentTiltX) * 0.18;
-      currentTiltY += (targetTiltY - currentTiltY) * 0.18;
-      liquidAngle += (targetLiquidAngle - liquidAngle) * 0.18;
-
-      // Target liquid level moves with bubblePower
-      const targetLevel = 0.15 + (bubblePower / MAX_POWER) * 0.68;
-      liquidLevel += (targetLevel - liquidLevel) * 0.08;
-
-      waveTime += 0.05 + Math.abs(shakeVelocity.x) * 0.02;
-
-      // Surface height calculator at any horizontal X position accounting for precision tilt & subtle dynamic ripples
-      const baseSurfaceY = h - (h * liquidLevel);
-      const getSurfaceY = (x) => {
-        const tiltOffset = (x - cx) * Math.tan(liquidAngle);
-        const ripple = Math.sin(x * 0.035 + waveTime) * (2.2 + Math.abs(shakeVelocity.x) * 1.5) +
-                       Math.cos(x * 0.025 - waveTime) * 1.5;
-        return baseSurfaceY + tiltOffset + ripple;
-      };
-
-      // Clip all liquid and capsules strictly inside circular beer glass dome
-      ctx.save();
+      // Clip inside circular glass dome
       ctx.beginPath();
       ctx.arc(cx, cy, tankRadius, 0, Math.PI * 2);
       ctx.clip();
 
-      // 1. Draw Golden Beer Body with Tilt
-      ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(-20, h + 20);
-      ctx.lineTo(-20, getSurfaceY(-20));
+      // Atmospheric bar glass chamber background
+      const chamberGrad = ctx.createRadialGradient(cx, cy * 0.75, tankRadius * 0.2, cx, cy, tankRadius);
+      chamberGrad.addColorStop(0, '#1c1007');
+      chamberGrad.addColorStop(0.65, '#0e0804');
+      chamberGrad.addColorStop(1, '#050302');
+      ctx.fillStyle = chamberGrad;
+      ctx.fillRect(0, 0, width, height);
 
-      for (let x = -20; x <= w + 20; x += 10) {
-        ctx.lineTo(x, getSurfaceY(x));
-      }
-      ctx.lineTo(w + 20, h + 20);
-      ctx.closePath();
+      // Liquid height calculation
+      const currentSurfaceY = tankRadius - (liquidLevel * tankRadius * 1.88);
+      const spanW = tankRadius * 1.6;
+      const steps = 36;
+      const foamThickness = Math.max(16, liquidLevel * 36);
 
-      // Rich Golden Beer gradient aligned with liquid inclination
-      const liquidGrad = ctx.createLinearGradient(0, baseSurfaceY - 20, 0, h);
-      if (bubblePower >= MAX_POWER) {
-        liquidGrad.addColorStop(0, 'rgba(251, 191, 36, 0.94)');
-        liquidGrad.addColorStop(0.4, 'rgba(245, 158, 11, 0.96)');
-        liquidGrad.addColorStop(1, 'rgba(180, 83, 9, 0.98)');
-      } else {
-        liquidGrad.addColorStop(0, 'rgba(253, 224, 71, 0.88)');
-        liquidGrad.addColorStop(0.5, 'rgba(245, 158, 11, 0.92)');
-        liquidGrad.addColorStop(1, 'rgba(217, 119, 6, 0.96)');
-      }
-      ctx.fillStyle = liquidGrad;
-      ctx.fill();
-      ctx.restore();
-
-      // 2. Update and Draw 10 Floating Capsules
-      resolveCapsuleCollisions();
-      for (let cap of capsules) {
-        cap.update(cx, cy, tankRadius, getSurfaceY);
-        cap.draw(ctx);
+      // Helper: draws the oscillating wave path for liquid surface
+      function traceSurfaceWave(targetCtx) {
+        for (let s = 0; s <= steps; s++) {
+          const px = -spanW + (spanW * 2 * s) / steps;
+          const py = currentSurfaceY 
+            + Math.sin(liquidWavePhase + px * 0.038) * waveAmplitude
+            + Math.cos(liquidWavePhase * 1.5 - px * 0.065) * (waveAmplitude * 0.22);
+          targetCtx.lineTo(px, py);
+        }
       }
 
-      // 3. Draw Thick Creamy White Foam Head (ビール泡層)
-      const foamThickness = 16 + (bubblePower / MAX_POWER) * 22;
-      ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(-20, getSurfaceY(-20) + 6);
+      // --- 1. Background Beer Liquid (Deep Volume) ---
+      if (liquidLevel > 0.005) {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(-liquidAngle);
 
-      for (let x = -20; x <= w + 20; x += 10) {
-        ctx.lineTo(x, getSurfaceY(x) - foamThickness);
-      }
-      ctx.lineTo(w + 20, getSurfaceY(w + 20) - foamThickness);
-      ctx.lineTo(w + 20, getSurfaceY(w + 20) + 6);
-      for (let x = w + 20; x >= -20; x -= 10) {
-        ctx.lineTo(x, getSurfaceY(x) + 6);
-      }
-      ctx.closePath();
-      
-      const foamGrad = ctx.createLinearGradient(0, baseSurfaceY - foamThickness, 0, baseSurfaceY + 8);
-      foamGrad.addColorStop(0, 'rgba(255, 255, 255, 0.98)');
-      foamGrad.addColorStop(0.7, 'rgba(254, 252, 232, 0.92)');
-      foamGrad.addColorStop(1, 'rgba(254, 240, 138, 0.45)');
-      ctx.fillStyle = foamGrad;
-      ctx.fill();
+        const beerGrad = ctx.createLinearGradient(0, currentSurfaceY, 0, tankRadius * 1.2);
+        beerGrad.addColorStop(0, '#ffb81c');
+        beerGrad.addColorStop(0.18, '#f59e0b');
+        beerGrad.addColorStop(0.45, '#d97706');
+        beerGrad.addColorStop(0.75, '#b45309');
+        beerGrad.addColorStop(1, '#662402');
 
-      // Creamy foam crown cloud bumps along the tilted surface
-      for (let x = 6; x < w; x += 24) {
-        const sy = getSurfaceY(x);
+        ctx.fillStyle = beerGrad;
         ctx.beginPath();
-        ctx.arc(x, sy - foamThickness + 2, 9, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
+        ctx.moveTo(-spanW, tankRadius * 1.5);
+        ctx.lineTo(-spanW, currentSurfaceY);
+        traceSurfaceWave(ctx);
+        ctx.lineTo(spanW, tankRadius * 1.5);
+        ctx.closePath();
         ctx.fill();
+
+        // Inner glowing beer caustic beam
+        ctx.save();
+        ctx.globalCompositeOperation = 'screen';
+        const causticGrad = ctx.createRadialGradient(0, currentSurfaceY + 45, 10, 0, currentSurfaceY + 60, spanW * 0.8);
+        causticGrad.addColorStop(0, 'rgba(251, 191, 36, 0.45)');
+        causticGrad.addColorStop(0.6, 'rgba(217, 119, 6, 0.15)');
+        causticGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = causticGrad;
+        ctx.beginPath();
+        ctx.ellipse(0, currentSurfaceY + 50, spanW * 0.75, tankRadius * 0.4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        // Background Rising Bubbles (deep layer behind capsules)
+        bubbles.forEach((b, idx) => {
+          b.y -= b.speed * (0.85 + waveAmplitude * 0.12);
+          b.wobble += b.wobbleSpeed;
+          const bubbleX = b.x + Math.sin(b.wobble) * (b.isStream ? 1.2 : 3.5);
+
+          if (b.y < currentSurfaceY + 6) {
+            b.y = tankRadius * (0.85 + Math.random() * 0.35);
+            b.x = b.isStream ? (Math.random() - 0.5) * (tankRadius * 0.9) : (Math.random() - 0.5) * (tankRadius * 1.6);
+          }
+
+          // Only render rear 60% of bubbles here
+          if (idx % 5 < 3 && b.y > currentSurfaceY) {
+            ctx.fillStyle = `rgba(255, 250, 220, ${b.alpha * 0.85})`;
+            ctx.beginPath();
+            ctx.arc(bubbleX, b.y, b.radius, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        });
+
+        ctx.restore();
       }
+
+      // --- 2. Render 10 Capsules Submerged In Beer Fluid ---
+      ctx.save();
+      ctx.translate(cx, cy);
+
+      capsules.forEach(c => {
+        ctx.save();
+        ctx.translate(c.x, c.y);
+        ctx.rotate(c.angle);
+
+        const r = c.radius;
+
+        // Shadow cast through liquid or onto tank back
+        ctx.save();
+        ctx.shadowColor = liquidLevel > 0.1 ? 'rgba(80, 30, 5, 0.45)' : 'rgba(0, 0, 0, 0.6)';
+        ctx.shadowBlur = 12;
+        ctx.shadowOffsetY = 5;
+        ctx.beginPath();
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fill();
+        ctx.restore();
+
+        // Capsule Base Body Clip
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.clip();
+
+        // --- Top Hemisphere: White Cap (tinted by ambient beer glow when immersed) ---
+        const topGrad = ctx.createLinearGradient(-r * 0.4, -r, r * 0.4, 0);
+        if (liquidLevel > 0.1) {
+          // Warm amber beer ambient absorption on top cap
+          topGrad.addColorStop(0, '#fffbf0');
+          topGrad.addColorStop(0.5, '#fef3c7');
+          topGrad.addColorStop(0.85, '#fde68a');
+          topGrad.addColorStop(1, '#fcd34d');
+        } else {
+          topGrad.addColorStop(0, '#ffffff');
+          topGrad.addColorStop(0.5, '#f5f5f7');
+          topGrad.addColorStop(0.85, '#e2e5ea');
+          topGrad.addColorStop(1, '#cbd1da');
+        }
+        ctx.fillStyle = topGrad;
+        ctx.fillRect(-r, -r, r * 2, r);
+
+        // --- Bottom Hemisphere: Amber Resin ---
+        const btmGrad = ctx.createLinearGradient(-r * 0.3, 0, r * 0.4, r);
+        btmGrad.addColorStop(0, '#f59e0b');
+        btmGrad.addColorStop(0.4, '#d97706');
+        btmGrad.addColorStop(0.75, '#b45309');
+        btmGrad.addColorStop(1, '#78350f');
+        ctx.fillStyle = btmGrad;
+        ctx.fillRect(-r, 0, r * 2, r);
+
+        // Bottom internal resin core
+        const amberCore = ctx.createRadialGradient(0, r * 0.45, 1, 0, r * 0.45, r * 0.7);
+        amberCore.addColorStop(0, 'rgba(254, 215, 170, 0.7)');
+        amberCore.addColorStop(0.6, 'rgba(217, 119, 6, 0.3)');
+        amberCore.addColorStop(1, 'rgba(0, 0, 0, 0.4)');
+        ctx.fillStyle = amberCore;
+        ctx.beginPath();
+        ctx.arc(0, r * 0.45, r * 0.65, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Seam & Interlocking Rim
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
+        ctx.fillRect(-r, -1.5, r * 2, 1.2);
+        ctx.fillStyle = 'rgba(30, 20, 10, 0.5)';
+        ctx.fillRect(-r, -0.3, r * 2, 1.6);
+
+        // Spherical Curvature Shading
+        const sphereShade = ctx.createRadialGradient(r * 0.3, r * 0.3, r * 0.35, 0, 0, r);
+        sphereShade.addColorStop(0, 'rgba(0, 0, 0, 0)');
+        sphereShade.addColorStop(0.7, 'rgba(0, 0, 0, 0.15)');
+        sphereShade.addColorStop(1, 'rgba(0, 0, 0, 0.55)');
+        ctx.fillStyle = sphereShade;
+        ctx.fillRect(-r, -r, r * 2, r * 2);
+
+        // Specular highlight
+        ctx.save();
+        ctx.rotate(-0.6);
+        ctx.fillStyle = liquidLevel > 0.1 ? 'rgba(255, 250, 220, 0.75)' : 'rgba(255, 255, 255, 0.85)';
+        ctx.beginPath();
+        ctx.ellipse(-r * 0.28, -r * 0.5, r * 0.48, r * 0.18, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        ctx.restore(); // End capsule clip
+
+        // Capsule perimeter rim
+        ctx.strokeStyle = liquidLevel > 0.1 ? 'rgba(253, 230, 138, 0.6)' : 'rgba(255, 255, 255, 0.6)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.restore(); // End capsule translate
+      });
+
+      // --- 3. Submersion Tint Layer: Bathes submerged capsules inside golden beer ---
+      if (liquidLevel > 0.02) {
+        ctx.save();
+        ctx.rotate(-liquidAngle);
+
+        // Mask only the area occupied by liquid
+        ctx.beginPath();
+        ctx.moveTo(-spanW, tankRadius * 1.5);
+        ctx.lineTo(-spanW, currentSurfaceY);
+        traceSurfaceWave(ctx);
+        ctx.lineTo(spanW, tankRadius * 1.5);
+        ctx.closePath();
+        ctx.clip();
+
+        // Multi-stop volumetric beer veil over submerged capsule parts
+        const submersionVeil = ctx.createLinearGradient(0, currentSurfaceY, 0, tankRadius * 1.2);
+        submersionVeil.addColorStop(0, 'rgba(251, 191, 36, 0.28)');
+        submersionVeil.addColorStop(0.3, 'rgba(245, 158, 11, 0.38)');
+        submersionVeil.addColorStop(0.7, 'rgba(217, 119, 6, 0.48)');
+        submersionVeil.addColorStop(1, 'rgba(180, 83, 9, 0.55)');
+
+        ctx.fillStyle = submersionVeil;
+        ctx.fillRect(-spanW, currentSurfaceY, spanW * 2, tankRadius * 1.6);
+
+        // Foreground Micro Bubbles (rising in front of the capsules)
+        bubbles.forEach((b, idx) => {
+          if (idx % 5 >= 3 && b.y > currentSurfaceY) {
+            const bubbleX = b.x + Math.sin(b.wobble) * (b.isStream ? 1.2 : 3.5);
+            ctx.fillStyle = `rgba(255, 252, 235, ${b.alpha * 0.95})`;
+            ctx.beginPath();
+            ctx.arc(bubbleX, b.y, b.radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            if (b.radius > 1.6) {
+              ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+              ctx.beginPath();
+              ctx.arc(bubbleX - b.radius * 0.3, b.y - b.radius * 0.3, b.radius * 0.35, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+        });
+
+        ctx.restore();
+      }
+
+      ctx.restore(); // End capsules & liquid translation
+
+      // --- 4. Velvet Foam Head (Rendered on top of liquid and partially submerged capsules) ---
+      if (liquidLevel > 0.005) {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(-liquidAngle);
+
+        // Foam-Beer Crema Transition Layer
+        const transGrad = ctx.createLinearGradient(0, currentSurfaceY - 4, 0, currentSurfaceY + 8);
+        transGrad.addColorStop(0, 'rgba(254, 243, 199, 0.95)');
+        transGrad.addColorStop(1, 'rgba(245, 158, 11, 0.1)');
+        ctx.fillStyle = transGrad;
+        ctx.beginPath();
+        ctx.moveTo(-spanW, currentSurfaceY + 8);
+        traceSurfaceWave(ctx);
+        ctx.lineTo(spanW, currentSurfaceY + 12);
+        ctx.lineTo(-spanW, currentSurfaceY + 12);
+        ctx.closePath();
+        ctx.fill();
+
+        // Main dense velvet foam head
+        const foamGrad = ctx.createLinearGradient(0, currentSurfaceY - foamThickness, 0, currentSurfaceY + 4);
+        foamGrad.addColorStop(0, '#ffffff');
+        foamGrad.addColorStop(0.35, '#fffdf7');
+        foamGrad.addColorStop(0.7, '#fef9e7');
+        foamGrad.addColorStop(1, '#fde68a');
+
+        ctx.fillStyle = foamGrad;
+        ctx.beginPath();
+        ctx.moveTo(-spanW, currentSurfaceY + 4);
+
+        // Foam top boundary
+        for (let s = 0; s <= steps; s++) {
+          const px = -spanW + (spanW * 2 * s) / steps;
+          const mound = Math.sin(s * 0.55) * 2.5;
+          const py = currentSurfaceY - foamThickness + mound
+            + Math.sin(liquidWavePhase + px * 0.045 + 1) * (waveAmplitude * 0.65);
+          ctx.lineTo(px, py);
+        }
+
+        // Foam bottom boundary
+        for (let s = steps; s >= 0; s--) {
+          const px = -spanW + (spanW * 2 * s) / steps;
+          const py = currentSurfaceY 
+            + Math.sin(liquidWavePhase + px * 0.038) * waveAmplitude
+            + Math.cos(liquidWavePhase * 1.5 - px * 0.065) * (waveAmplitude * 0.22);
+          ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.restore();
+      }
+
+      // --- 5. Glass Dome Front Ambient Rim & Vignette ---
+      ctx.save();
+      const glassVignette = ctx.createRadialGradient(cx, cy, tankRadius * 0.8, cx, cy, tankRadius);
+      glassVignette.addColorStop(0, 'rgba(0, 0, 0, 0)');
+      glassVignette.addColorStop(0.85, 'rgba(25, 14, 5, 0.2)');
+      glassVignette.addColorStop(1, 'rgba(10, 5, 2, 0.6)');
+      ctx.fillStyle = glassVignette;
+      ctx.beginPath();
+      ctx.arc(cx, cy, tankRadius, 0, Math.PI * 2);
+      ctx.fill();
       ctx.restore();
 
-      // 4. Update and draw carbonation bubbles
-      for (let b of bubbles) {
-        b.update(shakeVelocity.x + (currentTiltX * 2.5), shakeVelocity.y);
-        b.draw(ctx);
-      }
-
-      ctx.restore(); // Restore clip
-      ctx.restore(); // Restore transform
-
-      // Decay shake momentum
-      shakeVelocity.x *= 0.92;
-      shakeVelocity.y *= 0.92;
+      ctx.restore(); // End glass dome clip
 
       requestAnimationFrame(render);
     }
 
-    function addBubblePower(amount, isPhysicalShake = false) {
-      if (isFull || isCranking) return;
+    function addBubblePower(amount, isShake = false) {
+      if (isFull) return;
 
-      initAudio();
       bubblePower = Math.min(MAX_POWER, bubblePower + amount);
+      waveAmplitude = Math.min(22, waveAmplitude + amount * 3.5);
 
-      // Add extra splash bubble particle
-      if (bubbles.length < 100) {
-        bubbles.push(new Bubble(true));
-      }
-
-      if (isPhysicalShake) {
-        playShakeFizz();
-      } else {
-        playBubbleSound();
+      if (isShake) {
+        playFizz(bubblePower / MAX_POWER);
       }
 
       updateUI();
@@ -749,35 +886,49 @@
 
     function updateUI() {
       const pct = Math.floor(bubblePower);
-      document.getElementById('bubble-percent').textContent = `${pct}%`;
-      document.getElementById('progress-fill').style.width = `${pct}%`;
+      const pctElem = document.getElementById('bubble-percent');
+      if (pctElem) pctElem.textContent = `${pct}%`;
 
-      const crankBtn = document.getElementById('gacha-crank-btn');
-      const label = document.getElementById('gacha-btn-label');
+      const tankContainer = document.getElementById('tank-container');
+      const dot = document.getElementById('bubble-status-dot');
 
       if (bubblePower >= MAX_POWER) {
-        crankBtn.disabled = false;
-        crankBtn.classList.add('pulse-ready');
-        label.textContent = '✨ 黄金のレバーを回して乾杯！';
-        label.className = 'mt-1.5 text-xs font-black text-yellow-300 text-shadow drop-shadow text-center';
+        if (tankContainer) tankContainer.classList.add('pulse-ready');
+        if (dot) {
+          dot.className = 'inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_10px_#34d399]';
+        }
       } else {
-        crankBtn.disabled = true;
-        crankBtn.classList.remove('pulse-ready');
-        label.textContent = `振って注いでね！ (${pct}%)`;
-        label.className = 'mt-1.5 text-xs font-black text-amber-100 text-shadow drop-shadow text-center';
+        if (tankContainer) tankContainer.classList.remove('pulse-ready');
+        if (dot) {
+          dot.className = 'inline-block w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping';
+        }
       }
     }
 
     function onTankFull() {
       isFull = true;
-      document.getElementById('shake-instruction').innerHTML = '🍺 <b>黄金ビールが満タンに注がれました！</b> レバーを回してガチャを引こう！';
+      const instruction = document.getElementById('shake-instruction');
+      if (instruction) {
+        instruction.innerHTML = '✨ <b>生ビール満タン！</b> 赤丸のハンドルを回そう！';
+      }
+
+      // ハンドルをReady（回転可能・発光）状態へ切り替え
+      const handle = document.getElementById('crank-handle');
+      const handlePrompt = document.getElementById('handle-prompt');
+      if (handle) {
+        handle.classList.remove('handle-idle');
+        handle.classList.add('handle-ready');
+      }
+      if (handlePrompt) {
+        handlePrompt.classList.remove('hidden');
+      }
       
       if (navigator.vibrate) {
         navigator.vibrate([100, 50, 100, 50, 200]);
       }
       confetti({
-        particleCount: 30,
-        spread: 50,
+        particleCount: 40,
+        spread: 70,
         origin: { y: 0.6 },
         colors: ['#f59e0b', '#fbbf24', '#ffffff', '#d97706']
       });
@@ -785,243 +936,247 @@
 
     let lastX = null, lastY = null, lastZ = null;
     let lastShakeTime = 0;
-    const SHAKE_THRESHOLD = 15;
 
-    function handleOrientation(event) {
-      // Precise real-world tilt angle calculation from device roll (gamma)
-      if (event.gamma !== null) {
-        // gamma ranges -90 to +90 degrees (left/right tilt)
-        const rad = (event.gamma * Math.PI) / 180;
-        // Allow broad liquid tilt angle up to ±1.1 rad (~63 degrees)
-        targetLiquidAngle = Math.max(-1.1, Math.min(1.1, rad));
-        targetTiltX = Math.max(-1.2, Math.min(1.2, Math.sin(rad) * 1.3));
+    function handleMotion(e) {
+      const acc = e.acceleration || e.accelerationIncludingGravity;
+      if (!acc) return;
+
+      const now = performance.now();
+      if (lastX !== null && (now - lastShakeTime > 65)) {
+        const dx = (acc.x || 0) - lastX;
+        const dy = (acc.y || 0) - lastY;
+        const dz = (acc.z || 0) - lastZ;
+        const delta = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+        if (delta > 14) {
+          // Moderate rise rate for an enjoyable shaking experience
+          const gain = Math.min(2.0, (delta - 14) * 0.16 + 0.5);
+          shakeVelocity.x += (Math.random() - 0.5) * 8;
+          shakeVelocity.y -= 5;
+          addBubblePower(gain, true);
+          lastShakeTime = now;
+        }
       }
-      if (event.beta !== null) {
-        // Forward/backward tilt (relative to standard ~45 deg viewing angle)
-        const pitchDiff = (event.beta - 45) * (Math.PI / 180);
-        targetTiltY = Math.max(-1.0, Math.min(1.0, Math.sin(pitchDiff)));
+      lastX = acc.x || 0;
+      lastY = acc.y || 0;
+      lastZ = acc.z || 0;
+    }
+
+    function handleOrientation(e) {
+      if (e.gamma !== null) {
+        // Gamma: Left to Right (-90 to +90) -> responsive, fluid tilt
+        const rad = (e.gamma * Math.PI) / 180;
+        targetLiquidAngle = Math.max(-1.25, Math.min(1.25, rad * 1.4));
+        targetTiltX = Math.max(-1.5, Math.min(1.5, rad * 1.6));
+      }
+      if (e.beta !== null) {
+        // Beta: Front to Back (-180 to +180)
+        targetTiltY = (e.beta - 45) * 0.02;
       }
     }
 
-    function handleMotion(event) {
-      const current = event.accelerationIncludingGravity || event.acceleration;
-      if (!current || current.x === null) return;
-
-      // Direct gravity vector orientation for high precision fall-back
-      if (event.accelerationIncludingGravity) {
-        const ag = event.accelerationIncludingGravity;
-        if (ag.x !== null && ag.y !== null) {
-          // Angle of gravity vector in 2D plane
-          const gravityAngle = Math.atan2(-ag.x, Math.max(1.0, ag.y));
-          targetLiquidAngle = Math.max(-1.1, Math.min(1.1, gravityAngle));
-          targetTiltX = Math.max(-1.2, Math.min(1.2, -ag.x / 7.5));
-          targetTiltY = Math.max(-1.0, Math.min(1.0, (ag.y - 4.5) / 7.5));
-        }
-      }
-
-      const currentTime = Date.now();
-      if ((currentTime - lastShakeTime) < 55) return;
-
-      if (lastX !== null) {
-        const deltaX = Math.abs(current.x - lastX);
-        const deltaY = Math.abs(current.y - lastY);
-        const deltaZ = Math.abs(current.z - lastZ);
-        const totalDelta = deltaX + deltaY + deltaZ;
-
-        if (totalDelta > SHAKE_THRESHOLD) {
-          const powerGain = Math.min(2.2, (totalDelta / SHAKE_THRESHOLD) * 0.65);
-          shakeVelocity.x = (current.x - lastX) * 1.3;
-          shakeVelocity.y = (current.y - lastY) * 1.3;
-
-          addBubblePower(powerGain, true);
-          lastShakeTime = currentTime;
-
-          if (navigator.vibrate && Math.random() > 0.4) {
-            navigator.vibrate(20);
-          }
-        }
-      }
-
-      lastX = current.x;
-      lastY = current.y;
-      lastZ = current.z;
-    }
-
-    // センサーの常時自動バインド（許可ボタン不要化）
+    // Seamless automatic permission bindings
     let sensorInitialized = false;
-    function autoEnableSensors() {
+    function tryEnableSensors() {
       if (sensorInitialized) return;
       initAudio();
 
-      const needOrientationPerm = typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function';
-      const needMotionPerm = typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function';
-
-      // iOS Safari (iOS 13+) などユーザー操作契機の許可が必要な端末向け
-      if (needOrientationPerm || needMotionPerm) {
-        if (needOrientationPerm) {
-          DeviceOrientationEvent.requestPermission()
-            .then(res => {
-              if (res === 'granted') {
-                window.addEventListener('deviceorientation', handleOrientation);
-              }
-            })
-            .catch(() => {});
-        }
-        if (needMotionPerm) {
-          DeviceMotionEvent.requestPermission()
-            .then(res => {
-              if (res === 'granted') {
-                window.addEventListener('devicemotion', handleMotion);
-                sensorInitialized = true;
-              }
-            })
-            .catch(() => {});
-        }
+      if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+        DeviceMotionEvent.requestPermission().then(state => {
+          if (state === 'granted') {
+            window.addEventListener('devicemotion', handleMotion, { passive: true });
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+              DeviceOrientationEvent.requestPermission().then(orState => {
+                if (orState === 'granted') {
+                  window.addEventListener('deviceorientation', handleOrientation, { passive: true });
+                }
+              }).catch(() => {});
+            }
+          }
+        }).catch(() => {});
       } else {
-        // Android / Chrome / 標準ブラウザ：無条件で常に許可・登録
-        window.addEventListener('deviceorientation', handleOrientation);
-        window.addEventListener('devicemotion', handleMotion);
-        sensorInitialized = true;
+        window.addEventListener('devicemotion', handleMotion, { passive: true });
+        window.addEventListener('deviceorientation', handleOrientation, { passive: true });
       }
+      sensorInitialized = true;
     }
 
-    // Android/PC向け：ページロード時に即座に常時接続
-    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission !== 'function') {
-      window.addEventListener('devicemotion', handleMotion);
-    }
-    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission !== 'function') {
-      window.addEventListener('deviceorientation', handleOrientation);
-    }
+    window.addEventListener('touchstart', tryEnableSensors, { once: true });
+    window.addEventListener('click', tryEnableSensors, { once: true });
+    window.addEventListener('devicemotion', handleMotion, { passive: true });
+    window.addEventListener('deviceorientation', handleOrientation, { passive: true });
 
-    // iOS Safari向け：画面のどこかを1度タッチした瞬間に裏で透過的に許可・初期化を実行
-    window.addEventListener('touchstart', autoEnableSensors, { passive: true, once: true });
-    window.addEventListener('pointerdown', autoEnableSensors, { passive: true, once: true });
-    window.addEventListener('click', autoEnableSensors, { passive: true, once: true });
-
-    // Mouse tilt simulation on desktop
+    // Desktop mouse tilt simulation
     window.addEventListener('mousemove', (e) => {
       const normX = (e.clientX / window.innerWidth) * 2 - 1;
       const normY = (e.clientY / window.innerHeight) * 2 - 1;
-      targetLiquidAngle = normX * 0.85; // Up to ~48 degrees on desktop mouse
-      targetTiltX = normX * 1.1;
+      targetLiquidAngle = normX * 0.85;
+      targetTiltX = normX * 1.2;
       targetTiltY = normY * 0.6;
     });
 
-    const crankBtn = document.getElementById('gacha-crank-btn');
-    const crankDisc = document.getElementById('crank-disc');
-
-    crankBtn.addEventListener('click', () => {
-      if (!isFull || isCranking) return;
-      isCranking = true;
-
+    // Sphere tap handler: shake fallback when filling
+    const tankContainer = document.getElementById('tank-container');
+    tankContainer.addEventListener('click', (e) => {
       initAudio();
+
+      if (!isFull) {
+        shakeVelocity.x = (Math.random() - 0.5) * 12;
+        shakeVelocity.y = -8;
+        addBubblePower(2.5, false);
+      }
+    });
+
+    // --- Crank Handle Interaction (赤丸部分タップ) ---
+    const crankHandle = document.getElementById('crank-handle');
+    if (crankHandle) {
+      crankHandle.addEventListener('click', () => {
+        initAudio();
+
+        if (!isFull) {
+          // まだ満タンでない場合: 少しカタカタ動いて案内
+          playCrankSound();
+          const knob = document.getElementById('crank-knob-visual');
+          if (knob) {
+            knob.style.transform = 'rotate(15deg)';
+            setTimeout(() => {
+              knob.style.transform = 'rotate(-10deg)';
+              setTimeout(() => {
+                knob.style.transform = 'rotate(0deg)';
+              }, 100);
+            }, 100);
+          }
+
+          const instruction = document.getElementById('shake-instruction');
+          if (instruction) {
+            instruction.innerHTML = '⚠️ まだビールが足りません！振って満タンにしよう！';
+            setTimeout(() => {
+              if (!isFull) instruction.innerHTML = 'スマホを振って黄金の生ビールを満タンに注ごう！';
+            }, 1800);
+          }
+          return;
+        }
+
+        if (isCranking) return;
+        isCranking = true;
+
+        // ハンドル回転アニメーション実行
+        playCrankSound();
+        if (navigator.vibrate) {
+          navigator.vibrate([60, 40, 60, 40, 100]);
+        }
+
+        const handlePrompt = document.getElementById('handle-prompt');
+        if (handlePrompt) handlePrompt.classList.add('hidden');
+
+        crankHandle.classList.remove('handle-ready');
+        const knob = document.getElementById('crank-knob-visual');
+        if (knob) {
+          knob.style.transform = 'rotate(360deg)';
+        }
+
+        setTimeout(() => playCrankSound(), 280);
+
+        // 回転完了後、青丸の排出口からカプセルが転がり出る
+        setTimeout(() => {
+          ejectCapsuleToChute();
+        }, 750);
+      });
+    }
+
+    // 青丸の排出口へカプセルをドロップ
+    function ejectCapsuleToChute() {
       playCrankSound();
 
-      crankDisc.classList.add('cranking');
+      const dispensed = document.getElementById('dispensed-capsule');
+      const tapGuide = document.getElementById('capsule-tap-guide');
+      const instruction = document.getElementById('shake-instruction');
 
-      if (navigator.vibrate) {
-        navigator.vibrate([80, 50, 80]);
+      if (instruction) {
+        instruction.innerHTML = '🎁 <b>カプセルが出ました！</b> タップして開封しよう！';
       }
 
-      setTimeout(() => playCrankSound(), 250);
-      setTimeout(() => playCrankSound(), 550);
+      if (dispensed) {
+        dispensed.classList.remove('hidden');
+        dispensed.classList.remove('chute-eject', 'capsule-waiting');
+        void dispensed.offsetWidth; // リフロー強制
+        dispensed.classList.add('chute-eject');
 
-      setTimeout(() => {
-        crankDisc.classList.remove('cranking');
+        setTimeout(() => {
+          dispensed.classList.add('capsule-waiting');
+          if (tapGuide) tapGuide.classList.remove('hidden');
+        }, 800);
+      }
+    }
+
+    // 排出口に出たカプセルをタップして開封
+    const dispensedCapsule = document.getElementById('dispensed-capsule');
+    if (dispensedCapsule) {
+      dispensedCapsule.addEventListener('click', () => {
+        initAudio();
         dispenseCapsule();
-      }, 950);
-    });
 
-    document.getElementById('manual-shake-btn').addEventListener('click', () => {
-      initAudio();
-      shakeVelocity.x = (Math.random() - 0.5) * 16;
-      shakeVelocity.y = -9;
-      // 手動タップ時も少しずつ溜まるように調整
-      addBubblePower(2.5, false);
-    });
+        // 排出口のカプセルを非表示に
+        dispensedCapsule.classList.add('hidden');
+        dispensedCapsule.classList.remove('chute-eject', 'capsule-waiting');
+        const tapGuide = document.getElementById('capsule-tap-guide');
+        if (tapGuide) tapGuide.classList.add('hidden');
+      });
+    }
 
-    document.getElementById('bubble-canvas').addEventListener('click', (e) => {
-      initAudio();
-      shakeVelocity.x = (Math.random() - 0.5) * 10;
-      // ジョッキタップ時の上昇量も調整
-      addBubblePower(1.5, false);
-    });
+    const GACHA_ITEMS = [
+      { name: 'ゴールドプレミアム生', type: 'CRAFT BEER SELECTION', rarity: 'SSR', icon: '🍺', desc: '選りすぐりの二条大麦と希少アロマホップを100%使用。豊潤で極上のコクと澄んだキレ。' },
+      { name: '至高の白泡ヴァイツェン', type: 'CRAFT BEER SELECTION', rarity: 'SSR', icon: '🍻', desc: '小麦麦芽を贅沢に使ったフルーティーな香りとクリーミーな泡立ちの白ビール。' },
+      { name: '爽快キンキンメガジョッキ', type: 'SPECIAL SELECTION', rarity: 'SR', icon: '🍺', desc: '氷点下の喉ごし！喉が鳴る爽快感抜群のメガサイズ生ビール。' },
+      { name: 'アロマ香るクラフトIPA', type: 'CRAFT BEER SELECTION', rarity: 'SR', icon: '🌾', desc: '華やかなシトラスホップの芳香と重厚な苦味が心地よく続く本格IPA。' },
+      { name: '名物・備長炭焼き鳥盛り', type: 'IZAKAYA TASTING', rarity: 'R', icon: '🍢', desc: '香ばしい炭火の香りと秘伝のタレがビールの旨味を何倍にも引き立てる逸品。' },
+      { name: '朝採れ塩茹で黒枝豆', type: 'IZAKAYA TASTING', rarity: 'R', icon: '🫛', desc: 'ほっくり甘みのある大粒豆にミネラル塩。ビールのお供の絶対的エース。' },
+      { name: '黄金色の冷涼ラガー', type: 'STANDARD TAP', rarity: 'N', icon: '🍺', desc: '喉越しすっきり、最初の一杯に最適な王道ジャパニーズラガー。' },
+      { name: 'サクサク揚げたてポテト', type: 'IZAKAYA TASTING', rarity: 'N', icon: '🍟', desc: '外はカリッと中はホクホク。ビールの炭酸と相性抜群の定番おつまみ。' }
+    ];
 
     function rollGachaItem() {
       const rand = Math.random() * 100;
-      let rarity = 'N';
-      if (rand < 12) rarity = 'SSR';       // 12%
-      else if (rand < 38) rarity = 'SR';   // 26%
-      else if (rand < 68) rarity = 'R';    // 30%
-      else rarity = 'N';                   // 32%
-
-      const pool = GACHA_ITEMS.filter(it => it.rarity === rarity);
-      return pool[Math.floor(Math.random() * pool.length)];
+      if (rand < 10) return GACHA_ITEMS[0]; // SSR
+      if (rand < 22) return GACHA_ITEMS[1]; // SSR
+      if (rand < 45) return GACHA_ITEMS[2]; // SR
+      if (rand < 65) return GACHA_ITEMS[3]; // SR
+      if (rand < 82) return GACHA_ITEMS[4]; // R
+      if (rand < 92) return GACHA_ITEMS[5]; // R
+      return GACHA_ITEMS[6 + Math.floor(Math.random() * 2)]; // N
     }
 
     function dispenseCapsule() {
-      currentPrize = rollGachaItem();
+      const item = rollGachaItem();
 
       const modal = document.getElementById('result-modal');
-      const capsuleStage = document.getElementById('capsule-stage');
-      const prizeStage = document.getElementById('prize-stage');
-      const topHalf = document.getElementById('capsule-top-half');
-      const bottomHalf = document.getElementById('capsule-bottom-half');
+      const resName = document.getElementById('res-name');
+      const resType = document.getElementById('res-type');
+      const resDesc = document.getElementById('res-desc');
+      const resRarity = document.getElementById('res-rarity');
+      const resIcon = document.getElementById('res-icon');
 
-      // Set Capsule styling: White foam on top, amber beer on bottom
-      if (currentPrize.rarity === 'SSR') {
-        bottomHalf.className = "absolute bottom-0 inset-x-0 h-1/2 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 transition-transform origin-top duration-500";
-      } else if (currentPrize.rarity === 'SR') {
-        bottomHalf.className = "absolute bottom-0 inset-x-0 h-1/2 bg-gradient-to-r from-amber-600 to-orange-500 transition-transform origin-top duration-500";
-      } else if (currentPrize.rarity === 'R') {
-        bottomHalf.className = "absolute bottom-0 inset-x-0 h-1/2 bg-amber-500 transition-transform origin-top duration-500";
+      resName.textContent = item.name;
+      resType.textContent = item.type;
+      resDesc.textContent = item.desc;
+      resIcon.textContent = item.icon;
+      resRarity.textContent = item.rarity;
+
+      if (item.rarity === 'SSR') {
+        resRarity.className = 'px-4 py-1 rounded-full text-xs font-black tracking-widest bg-gradient-to-r from-amber-400 via-yellow-200 to-amber-500 text-stone-950 shadow-[0_0_15px_#f59e0b] animate-pulse';
+        playFanfare();
+        confetti({ particleCount: 70, spread: 80, origin: { y: 0.5 } });
+      } else if (item.rarity === 'SR') {
+        resRarity.className = 'px-4 py-1 rounded-full text-xs font-bold tracking-widest bg-amber-400 text-stone-950';
+      } else if (item.rarity === 'R') {
+        resRarity.className = 'px-4 py-1 rounded-full text-xs font-bold tracking-widest bg-stone-700 text-amber-200';
       } else {
-        bottomHalf.className = "absolute bottom-0 inset-x-0 h-1/2 bg-yellow-600 transition-transform origin-top duration-500";
+        resRarity.className = 'px-4 py-1 rounded-full text-xs font-bold tracking-widest bg-stone-800 text-stone-400';
       }
 
-      topHalf.style.transform = 'translateY(0)';
-      bottomHalf.style.transform = 'translateY(0)';
-
-      capsuleStage.classList.remove('hidden');
-      prizeStage.classList.add('hidden');
       modal.classList.remove('hidden');
       modal.classList.add('flex');
     }
-
-    document.getElementById('bouncing-capsule').addEventListener('click', () => {
-      const topHalf = document.getElementById('capsule-top-half');
-      const bottomHalf = document.getElementById('capsule-bottom-half');
-
-      topHalf.style.transform = 'translateY(-30px) rotate(-15deg)';
-      bottomHalf.style.transform = 'translateY(30px) rotate(15deg)';
-
-      playWinSound(currentPrize.rarity);
-
-      setTimeout(() => {
-        document.getElementById('capsule-stage').classList.add('hidden');
-        const prizeStage = document.getElementById('prize-stage');
-        prizeStage.classList.remove('hidden');
-
-        const rarityBadge = document.getElementById('prize-rarity');
-        rarityBadge.textContent = currentPrize.rarity;
-        rarityBadge.className = `px-3 py-1 rounded-full text-xs font-black tracking-widest text-white shadow-sm mb-2 ${
-          currentPrize.rarity === 'SSR' ? 'bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600' :
-          currentPrize.rarity === 'SR' ? 'bg-amber-600' :
-          currentPrize.rarity === 'R' ? 'bg-emerald-600' : 'bg-slate-400'
-        }`;
-
-        document.getElementById('prize-icon').textContent = currentPrize.icon;
-        document.getElementById('prize-name').textContent = currentPrize.name;
-        document.getElementById('prize-desc').textContent = currentPrize.desc;
-
-        confetti({
-          particleCount: currentPrize.rarity === 'SSR' ? 120 : currentPrize.rarity === 'SR' ? 70 : 40,
-          spread: 80,
-          origin: { y: 0.5 },
-          colors: ['#f59e0b', '#fbbf24', '#fef08a', '#ffffff']
-        });
-      }, 400);
-    });
 
     document.getElementById('close-modal-btn').addEventListener('click', () => {
       document.getElementById('result-modal').classList.add('hidden');
@@ -1030,12 +1185,34 @@
       bubblePower = 0;
       isFull = false;
       isCranking = false;
+
+      // ハンドルの状態を初期状態（Idle）にリセット
+      const crankHandle = document.getElementById('crank-handle');
+      if (crankHandle) {
+        crankHandle.classList.remove('handle-ready');
+        crankHandle.classList.add('handle-idle');
+      }
+      const knob = document.getElementById('crank-knob-visual');
+      if (knob) {
+        knob.style.transform = 'rotate(0deg)';
+      }
+
+      // 排出口の非表示リセット
+      const dispensed = document.getElementById('dispensed-capsule');
+      if (dispensed) dispensed.classList.add('hidden');
+      const tapGuide = document.getElementById('capsule-tap-guide');
+      if (tapGuide) tapGuide.classList.add('hidden');
+
       updateUI();
-      document.getElementById('shake-instruction').textContent = '💡 スマホをたくさんシャカシャカ振って、極上の黄金ビール泡をじっくり注ごう！';
+      const instruction = document.getElementById('shake-instruction');
+      if (instruction) {
+        instruction.textContent = 'スマホを振って黄金の生ビールを満タンに注ごう！';
+      }
     });
 
+    // Initialize on window load
     window.onload = () => {
-      resizeCanvas();
+      handleResize();
       initBubbles();
       updateUI();
       render();
