@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>顔はめ＆お絵描きミニゲーム集</title>
     <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
         body {
             margin: 0;
             overflow: hidden;
@@ -15,19 +21,17 @@
             width: 100vw;
             height: 100dvh;
             touch-action: none;
-            user-select: none;
         }
 
         @keyframes shakeScreen {
-            0% { transform: translate(0, 0); }
-            20% { transform: translate(-15px, 10px); }
-            40% { transform: translate(15px, -10px); }
-            60% { transform: translate(-15px, 10px); }
-            80% { transform: translate(15px, -10px); }
-            100% { transform: translate(0, 0); }
+            0%, 100% { transform: translate(0, 0); }
+            20% { transform: translate(-12px, 8px); }
+            40% { transform: translate(12px, -8px); }
+            60% { transform: translate(-8px, 6px); }
+            80% { transform: translate(8px, -6px); }
         }
         .shake-screen {
-            animation: shakeScreen 0.2s ease-in-out;
+            animation: shakeScreen 0.25s ease-in-out;
         }
 
         #setup-screen {
@@ -55,8 +59,8 @@
             height: 420px;
             position: relative;
             pointer-events: none;
-            transition: transform 0.4s ease;
-            transform: scale(1.7);
+            transition: transform 0.35s ease;
+            transform: scale(1.6);
             transform-origin: top center;
         }
 
@@ -85,7 +89,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transform: scaleX(-1) scale(1.5);
+            transform: scaleX(-1) scale(1.4);
         }
 
         #drawing-canvas {
@@ -104,12 +108,14 @@
             border-color: transparent;
         }
         #character.drawing-mode #drawing-canvas {
-            background-color: rgba(255,255,255,0.4);
+            background-color: rgba(255,255,255,0.3);
             border: 3px dashed #ff9800;
-            border-radius: 30px;
+            border-radius: 28px;
         }
 
         #character.playing-mode {
+            position: absolute;
+            top: 0; left: 0;
             transform-origin: top left;
             pointer-events: none;
             border: none;
@@ -129,12 +135,12 @@
             flex-direction: row;
             justify-content: center;
             align-items: center;
-            gap: 15px;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            gap: 14px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 24px;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
         .palette-section {
@@ -146,56 +152,57 @@
 
         .palette-divider {
             width: 2px;
-            height: 30px;
+            height: 28px;
             background-color: #ddd;
-            margin: 0 5px;
+            margin: 0 4px;
             border-radius: 2px;
         }
 
         #ui-area {
             background: #fff;
-            padding: 15px 20px 20px;
-            border-top-left-radius: 30px;
-            border-top-right-radius: 30px;
-            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+            padding: 12px 18px 20px;
+            border-top-left-radius: 28px;
+            border-top-right-radius: 28px;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.08);
             display: flex;
             flex-direction: column;
             align-items: center;
-            max-height: 45vh;
+            max-height: 48vh;
             overflow-y: auto;
         }
 
         .btn {
-            padding: 15px 30px;
-            font-size: 1.3rem;
+            padding: 14px 28px;
+            font-size: 1.25rem;
             font-weight: bold;
             color: white;
             border: none;
             border-radius: 30px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             cursor: pointer;
-            transition: transform 0.1s;
+            transition: transform 0.1s, filter 0.1s;
         }
-        .btn:active { transform: scale(0.95); }
-        .btn.small { padding: 10px 20px; font-size: 1rem; }
+        .btn:active { transform: scale(0.96); filter: brightness(0.95); }
+        .btn.small { padding: 8px 16px; font-size: 0.95rem; }
 
         .color-btn {
             width: 32px; height: 32px;
             border-radius: 50%;
             border: 3px solid #f0f0f0;
             cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.18);
+            transition: transform 0.15s;
         }
         .color-btn.active {
             border-color: #333;
-            transform: scale(1.15);
+            transform: scale(1.2);
         }
 
         .size-btn {
             background-color: #555;
             border-radius: 50%;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: transform 0.15s;
             border: 2px solid transparent;
         }
         .size-btn.active {
@@ -215,70 +222,84 @@
             top: 0; left: 0;
             background-color: #ffeaa7;
             z-index: 90;
-            padding: 5vh 0;
-            box-sizing: border-box;
+            padding: 3vh 16px;
         }
 
         .game-btn {
-            width: 90%;
-            max-width: 340px;
-            padding: 12px 15px;
-            background-color: #ff9800;
+            width: 100%;
+            max-width: 330px;
+            padding: 0;
+            border-radius: 20px;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            flex-shrink: 1;
-            text-decoration: none;
+            background-color: #ff9800;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+            border: 3px solid #fff;
+            text-align: center;
         }
-        .game-btn-img {
+        .game-btn.whack {
+            background-color: #e74c3c;
+        }
+
+        .game-btn-img-wrap {
             width: 100%;
-            max-height: 25vh;
-            height: 120px;
-            object-fit: contain;
-            border-radius: 12px;
-            background-color: rgba(255,255,255,0.4);
+            height: 125px;
+            overflow: hidden;
+            background-color: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
         }
+        .game-btn-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .game-btn-text-wrap {
+            padding: 8px 12px 10px;
+            color: #fff;
+        }
         .game-btn-title {
-            font-size: 1.3rem;
-            margin: 2px 0;
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 2px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.25);
         }
         .game-btn-desc {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: normal;
-            line-height: 1.4;
-            white-space: normal;
-            text-align: center;
+            line-height: 1.35;
+            opacity: 0.95;
         }
 
         .game-screen {
             display: none;
-            width: 100%; height: 100%;
+            width: 100%;
+            height: 100%;
             position: absolute;
             top: 0; left: 0;
             overflow: hidden;
         }
         .score-board {
             position: absolute;
-            top: 12px; left: 12px;
+            top: 14px; left: 14px;
             display: flex;
-            gap: 15px;
-            font-size: 1.1rem;
+            gap: 16px;
+            font-size: 1.15rem;
             font-weight: bold;
-            background: rgba(255,255,255,0.9);
+            background: rgba(255,255,255,0.92);
             padding: 8px 16px;
-            border-radius: 20px;
-            z-index: 30;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 24px;
+            z-index: 40;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         .back-btn {
             position: absolute;
-            top: 12px; right: 12px;
-            background-color: #95a5a6;
-            z-index: 30;
+            top: 14px; right: 14px;
+            background-color: #7f8c8d;
+            z-index: 40;
         }
 
         .result-popup {
@@ -290,18 +311,17 @@
             padding: 20px;
             border-radius: 24px;
             text-align: center;
-            z-index: 50;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            width: 85%;
+            z-index: 60;
+            box-shadow: 0 12px 36px rgba(0,0,0,0.35);
+            width: 86%;
             max-width: 320px;
             max-height: 90vh;
             overflow-y: auto;
-            box-sizing: border-box;
         }
 
         .result-avatar-container {
-            width: 140px;
-            height: 196px;
+            width: 130px;
+            height: 182px;
             margin: 8px auto 0;
             position: relative;
             border: 3px solid #ffb74d;
@@ -312,9 +332,10 @@
         .result-avatar-canvas {
             width: 100%;
             height: 100%;
-        /* キャッチゲームの木と空の背景 */
+        }
+
         #catch-screen {
-            background: linear-gradient(to bottom, #81d4fa 0%, #b2ebf2 70%, #c8e6c9 100%);
+            background-color: #81d4fa;
             position: relative;
         }
         #catch-screen::before {
@@ -323,66 +344,69 @@
             top: 0; left: 0; width: 100%; height: 100%;
             z-index: 0;
             pointer-events: none;
-            /* 指定の背景画像に変更 */
             background-image: url('gaikan.png');
             background-size: cover;
-            background-position: center;
+            background-position: center bottom;
             background-repeat: no-repeat;
         }
 
         .falling-item {
             position: absolute;
-            font-size: 40px;
             z-index: 15;
             user-select: none;
             display: flex;
             align-items: center;
             justify-content: center;
+            pointer-events: none;
         }
 
-        #whack-screen { background-color: #a3e4d7; }
+        #whack-screen {
+            background-color: #80cbc4;
+        }
 
         #whack-holes {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             grid-template-rows: repeat(3, 1fr);
             gap: 12px;
-            width: 100%;
+            width: 94%;
+            max-width: 420px;
             height: calc(100% - 90px);
             margin: 75px auto 10px;
-            padding: 12px;
-            box-sizing: border-box;
+            padding: 8px;
         }
 
         .whack-hole {
             position: relative;
-            background-color: #76d7c4;
+            background-color: #4db6ac;
             border-radius: 20px;
             overflow: hidden;
+            border: 3px solid #b2dfdb;
+            box-shadow: inset 0 3px 8px rgba(0,0,0,0.15);
         }
 
         .hole-inner {
             position: absolute;
-            bottom: 10%;
+            bottom: 8%;
             left: 10%;
             width: 80%;
-            height: 30%;
+            height: 28%;
             background-color: #3e2723;
             border-radius: 50%;
-            box-shadow: inset 0 5px 10px rgba(0,0,0,0.8);
+            box-shadow: inset 0 6px 12px rgba(0,0,0,0.85);
         }
 
         .mole {
             position: absolute;
-            bottom: 5%;
+            bottom: 6%;
             left: 50%;
             cursor: pointer;
-            transition: transform 0.15s ease-out;
+            transition: transform 0.16s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+            will-change: transform;
         }
 
         .food-mole {
-            font-size: 60px;
-            transform: translateX(-50%) translateY(-30px);
+            transform: translateX(-50%) translateY(-24px);
             width: 80px;
             height: 80px;
             display: flex;
@@ -390,17 +414,19 @@
             justify-content: center;
         }
         .food-mole.hidden {
-            transform: translateX(-50%) translateY(150px);
+            transform: translateX(-50%) translateY(160px);
+            pointer-events: none;
         }
 
         .character-mole {
             width: 300px;
             height: 420px;
             transform-origin: bottom center;
-            transform: translateX(-50%) scale(0.35) translateY(30px);
+            transform: translateX(-50%) scale(0.34) translateY(26px);
         }
         .character-mole.hidden {
-            transform: translateX(-50%) scale(0.35) translateY(450px);
+            transform: translateX(-50%) scale(0.34) translateY(500px);
+            pointer-events: none;
         }
 
         .clone-face-frame {
@@ -430,23 +456,23 @@
         #custom-modal {
             display: none;
             position: fixed;
-            top: 20px;
+            top: 18px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(33, 33, 33, 0.95);
+            background: rgba(33, 33, 33, 0.92);
             color: #fff;
-            padding: 12px 24px;
-            border-radius: 30px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+            padding: 10px 20px;
+            border-radius: 25px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.25);
             z-index: 999;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             text-align: center;
             max-width: 90%;
             pointer-events: none;
-            animation: fadeIn 0.3s ease;
+            animation: fadeIn 0.25s ease;
         }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translate(-50%, -10px); }
+            from { opacity: 0; transform: translate(-50%, -8px); }
             to { opacity: 1; transform: translate(-50%, 0); }
         }
     </style>
@@ -455,8 +481,10 @@
     <div id="custom-modal"></div>
 
     <div id="setup-screen">
-        <div style="text-align:center; padding:15px 10px 5px; background-color:#ffedd6; z-index:110;">
-            <h1 style="color:#e74c3c; font-size:clamp(1rem, 5vw, 1.5rem); margin:0; font-weight:bold; white-space:nowrap; text-shadow: 1px 1px 0 #fff;">自分のアバターを作ってゲームで遊ぼう！！</h1>
+        <div style="text-align:center; padding:14px 10px 4px; background-color:#ffedd6; z-index:110;">
+            <h1 style="color:#e74c3c; font-size:clamp(0.95rem, 4.5vw, 1.4rem); margin:0; font-weight:bold; white-space:nowrap; text-shadow: 1px 1px 0 #fff;">
+                自分のアバターを作ってゲームで遊ぼう！！
+            </h1>
         </div>
 
         <div id="character-area">
@@ -471,12 +499,12 @@
 
         <div id="ui-area">
             <div id="ui-shooting" style="text-align:center;">
-                <p style="margin:0 0 15px 0; color:#d35400; font-size:1.1rem; font-weight:bold;">顔の形に合わせて撮影！</p>
-                <button id="shoot-btn" class="btn" style="background-color:#ff9800; width:200px;">撮影する！</button>
+                <p style="margin:0 0 14px 0; color:#d35400; font-size:1.05rem; font-weight:bold;">顔の枠に合わせて撮影！</p>
+                <button id="shoot-btn" class="btn" style="background-color:#ff9800; width:210px;">撮影する！</button>
             </div>
 
-            <div id="ui-drawing" style="display:none; width:100%; max-width:350px;">
-                <p style="text-align:center; color:#e74c3c; font-weight:bold; margin-top:0; margin-bottom:10px; font-size:1.1rem;">写真にらくがきしてみよう！</p>
+            <div id="ui-drawing" style="display:none; width:100%; max-width:340px;">
+                <p style="text-align:center; color:#e74c3c; font-weight:bold; margin-top:0; margin-bottom:8px; font-size:1rem;">写真にらくがきしてみよう！</p>
                 
                 <div id="bottom-palette">
                     <div class="palette-section">
@@ -488,38 +516,46 @@
                     </div>
                     <div class="palette-divider"></div>
                     <div class="palette-section">
-                        <div class="size-btn" data-size="5" style="width:6px; height:6px;"></div>
-                        <div class="size-btn active" data-size="12" style="width:12px; height:12px;"></div>
-                        <div class="size-btn" data-size="25" style="width:20px; height:20px;"></div>
+                        <div class="size-btn" data-size="4" style="width:6px; height:6px;"></div>
+                        <div class="size-btn active" data-size="10" style="width:12px; height:12px;"></div>
+                        <div class="size-btn" data-size="22" style="width:20px; height:20px;"></div>
                     </div>
                 </div>
 
-                <div style="display:flex; justify-content:space-between; gap: 8px; margin-bottom:15px;">
-                    <button id="retake-btn" class="btn small" style="flex:1; background-color:#95a5a6; padding:12px 5px; font-size:0.95rem;">撮り直す</button>
-                    <button id="undo-btn" class="btn small" style="flex:1; background-color:#34495e; padding:12px 5px; font-size:0.95rem;">1つ戻す</button>
-                    <button id="clear-btn" class="btn small" style="flex:1; background-color:#e74c3c; padding:12px 5px; font-size:0.95rem;">全消し</button>
+                <div style="display:flex; justify-content:space-between; gap: 8px; margin-bottom:12px;">
+                    <button id="retake-btn" class="btn small" style="flex:1; background-color:#95a5a6; padding:10px 4px;">撮り直す</button>
+                    <button id="undo-btn" class="btn small" style="flex:1; background-color:#34495e; padding:10px 4px;">1つ戻す</button>
+                    <button id="clear-btn" class="btn small" style="flex:1; background-color:#e74c3c; padding:10px 4px;">全消し</button>
                 </div>
-                <button id="start-btn" class="btn" style="width:100%; background-color:#2ecc71; padding:15px; font-size:1.4rem;">完成！遊ぶ！</button>
+                <button id="start-btn" class="btn" style="width:100%; background-color:#2ecc71; padding:14px; font-size:1.3rem;">完成！遊ぶ！</button>
             </div>
         </div>
     </div>
 
     <div id="game-select-screen">
-        <h2 style="color:#d35400; margin:0; font-size: 1.4rem;">どのゲームで遊ぶ？</h2>
+        <h2 style="color:#d35400; margin:0; font-size: 1.35rem;">どのゲームで遊ぶ？</h2>
         
         <button id="btn-play-catch" class="btn game-btn">
-            <img src="kyachi.png" alt="メニューキャッチ" class="game-btn-img" onerror="this.outerHTML='<div class=\'game-btn-img\' style=\'font-size:3rem;\'>🍎</div>'">
-            <div class="game-btn-title">メニューキャッチ</div>
-            <div class="game-btn-desc">落ちてくるメニューをたくさんとろう。<br>💣爆弾にはきをつけて！</div>
+            <div class="game-btn-img-wrap">
+                <img src="kyachi.png" alt="メニューキャッチ" class="game-btn-img" onerror="this.outerHTML='<div style=\'font-size:3rem;\'>🍎</div>'">
+            </div>
+            <div class="game-btn-text-wrap">
+                <div class="game-btn-title">メニューキャッチ</div>
+                <div class="game-btn-desc">落ちてくるメニューをたくさんとろう！<br>💣爆弾には気をつけて！</div>
+            </div>
         </button>
         
-        <button id="btn-play-whack" class="btn game-btn" style="background-color:#e74c3c;">
-            <img src="mogura.png" alt="モグラたたき" class="game-btn-img" onerror="this.outerHTML='<div class=\'game-btn-img\' style=\'font-size:3rem;\'>🐹</div>'">
-            <div class="game-btn-title">モグラたたき</div>
-            <div class="game-btn-desc">とびだすメニューをタップしてたくさんとろう。<br>自分をとったらだめだよ！</div>
+        <button id="btn-play-whack" class="btn game-btn whack">
+            <div class="game-btn-img-wrap">
+                <img src="mogura.png" alt="モグラたたき" class="game-btn-img" onerror="this.outerHTML='<div style=\'font-size:3rem;\'>🐹</div>'">
+            </div>
+            <div class="game-btn-text-wrap">
+                <div class="game-btn-title">モグラたたき</div>
+                <div class="game-btn-desc">とびだすメニューをタップしてゲット！<br>自分を叩いたら減点だよ！</div>
+            </div>
         </button>
         
-        <button id="btn-remake" class="btn small" style="background-color:#95a5a6; margin-top: 5px;">キャラを作り直す</button>
+        <button id="btn-remake" class="btn small" style="background-color:#95a5a6; margin-top: 4px;">キャラを作り直す</button>
     </div>
 
     <div id="catch-screen" class="game-screen">
@@ -530,21 +566,21 @@
         <button class="btn small back-btn" onclick="backToMenu()">戻る</button>
         
         <div id="catch-result" class="result-popup">
-            <h2 style="color:#e74c3c; margin-top:0; margin-bottom:5px; font-size:1.2rem;">タイムアップ！</h2>
-            <p style="font-size:1.1rem; font-weight:bold; margin:0 0 8px 0;">最終スコア: <span id="catch-final-score"></span>点</p>
+            <h2 style="color:#e74c3c; margin-top:0; margin-bottom:4px; font-size:1.2rem;">タイムアップ！</h2>
+            <p style="font-size:1.1rem; font-weight:bold; margin:0 0 6px 0;">最終スコア: <span id="catch-final-score">0</span>点</p>
             
-            <div id="catch-best-food" style="margin-bottom: 8px; display: none; flex-direction: column; align-items: center;">
+            <div id="catch-best-food" style="margin-bottom: 6px; display: none; flex-direction: column; align-items: center;">
                 <span style="font-size: 0.8rem; font-weight: bold; color: #555;">たくさん集めた今日のおすすめメニューは</span>
-                <div id="catch-best-food-img-wrap" style="margin:5px 0;">
-                    <img id="catch-best-food-img" src="" style="width: 120px; height: 120px; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                <div style="margin:4px 0; width:110px; height:110px; display:flex; align-items:center; justify-content:center;">
+                    <img id="catch-best-food-img" src="" style="width: 100%; height: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
                 </div>
-                <span id="catch-best-food-name" style="font-size: 1.2rem; font-weight: bold; color: #d35400;">商品名</span>
+                <span id="catch-best-food-name" style="font-size: 1.15rem; font-weight: bold; color: #d35400;">商品名</span>
             </div>
 
             <div class="result-avatar-container">
                 <canvas id="result-catch-canvas" class="result-avatar-canvas" width="300" height="420"></canvas>
             </div>
-            <button class="btn" style="background-color:#ff9800; width:100%; margin-top:15px;" onclick="resetToStart()">もう一度</button>
+            <button class="btn" style="background-color:#ff9800; width:100%; margin-top:14px;" onclick="resetToStart()">もう一度</button>
         </div>
     </div>
 
@@ -558,21 +594,21 @@
         <div id="whack-holes"></div>
 
         <div id="whack-result" class="result-popup">
-            <h2 style="color:#e74c3c; margin-top:0; margin-bottom:5px; font-size:1.2rem;">タイムアップ！</h2>
-            <p style="font-size:1.1rem; font-weight:bold; margin:0 0 8px 0;">最終スコア: <span id="whack-final-score"></span>点</p>
+            <h2 style="color:#e74c3c; margin-top:0; margin-bottom:4px; font-size:1.2rem;">タイムアップ！</h2>
+            <p style="font-size:1.1rem; font-weight:bold; margin:0 0 6px 0;">最終スコア: <span id="whack-final-score">0</span>点</p>
             
-            <div id="whack-best-food" style="margin-bottom: 8px; display: none; flex-direction: column; align-items: center;">
+            <div id="whack-best-food" style="margin-bottom: 6px; display: none; flex-direction: column; align-items: center;">
                 <span style="font-size: 0.8rem; font-weight: bold; color: #555;">たくさん集めた今日のおすすめメニューは</span>
-                <div id="whack-best-food-img-wrap" style="margin:5px 0;">
-                    <img id="whack-best-food-img" src="" style="width: 120px; height: 120px; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                <div style="margin:4px 0; width:110px; height:110px; display:flex; align-items:center; justify-content:center;">
+                    <img id="whack-best-food-img" src="" style="width: 100%; height: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
                 </div>
-                <span id="whack-best-food-name" style="font-size: 1.2rem; font-weight: bold; color: #d35400;">商品名</span>
+                <span id="whack-best-food-name" style="font-size: 1.15rem; font-weight: bold; color: #d35400;">商品名</span>
             </div>
 
             <div class="result-avatar-container">
                 <canvas id="result-whack-canvas" class="result-avatar-canvas" width="300" height="420"></canvas>
             </div>
-            <button class="btn" style="background-color:#ff9800; width:100%; margin-top:15px;" onclick="resetToStart()">もう一度</button>
+            <button class="btn" style="background-color:#ff9800; width:100%; margin-top:14px;" onclick="resetToStart()">もう一度</button>
         </div>
     </div>
 
@@ -592,31 +628,29 @@
         const uiShooting = document.getElementById('ui-shooting');
         const uiDrawing = document.getElementById('ui-drawing');
 
-        // 指定の3つのメニュー画像に変更
+        // 指定メニュー3種
         const goodFoods = [
             { name: "牛すじ", emoji: "🍲", src: "gyuusuji.png" },
             { name: "碧南焼きそば", emoji: "🍜", src: "hekinanyakisoba.png" },
             { name: "お好み焼き", emoji: "🥞", src: "okonomi.png" }
         ];
-        const badItems = ['💣']; 
 
         let caughtFoods = {};
         let currentStream = null;
 
-        // Custom notification helper to replace alert()
         function showNotification(msg) {
             const modal = document.getElementById('custom-modal');
             modal.innerText = msg;
             modal.style.display = 'block';
-            setTimeout(() => { modal.style.display = 'none'; }, 3500);
+            setTimeout(() => { modal.style.display = 'none'; }, 3000);
         }
 
         function startCamera() {
             if (currentStream) {
                 currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
             }
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                showNotification("お使いのブラウザはカメラに対応していません。");
                 createMockPhoto();
                 return;
             }
@@ -624,15 +658,13 @@
             .then(stream => { 
                 currentStream = stream;
                 video.srcObject = stream; 
-                video.play(); 
+                video.play().catch(() => {});
             })
-            .catch(err => { 
-                showNotification("カメラへのアクセスが制限されています。モック画像を使用できます。");
+            .catch(() => { 
                 createMockPhoto();
             });
         }
 
-        // Mock photo generator in case camera is disabled or previewed without permissions
         function createMockPhoto() {
             photoCanvas.width = 300;
             photoCanvas.height = 400;
@@ -641,24 +673,21 @@
             pCtx.fillStyle = "#d35400";
             pCtx.font = "bold 24px sans-serif";
             pCtx.textAlign = "center";
-            pCtx.fillText("笑顔の顔写真", 150, 180);
-            pCtx.font = "40px sans-serif";
-            pCtx.fillText("😊", 150, 240);
+            pCtx.fillText("😊 笑顔", 150, 200);
         }
 
         startCamera();
 
         document.getElementById('shoot-btn').addEventListener('click', () => {
-            if (video.videoWidth === 0) {
-                // If webcam hasn't loaded, create a default face mock
+            if (!video.videoWidth) {
                 createMockPhoto();
             } else {
                 photoCanvas.width = video.videoWidth;
                 photoCanvas.height = video.videoHeight;
                 
-                const zoom = 1.5;
-                const sx = video.videoWidth / 2 - (video.videoWidth / zoom) / 2;
-                const sy = video.videoHeight / 2 - (video.videoHeight / zoom) / 2;
+                const zoom = 1.4;
+                const sx = (video.videoWidth - video.videoWidth / zoom) / 2;
+                const sy = (video.videoHeight - video.videoHeight / zoom) / 2;
                 const sw = video.videoWidth / zoom;
                 const sh = video.videoHeight / zoom;
                 
@@ -706,7 +735,7 @@
 
         let isDrawing = false;
         let currentColor = '#000000';
-        let currentSize = 12;
+        let currentSize = 10;
 
         function getPos(e) {
             const rect = drawCanvas.getBoundingClientRect();
@@ -778,24 +807,30 @@
         });
 
         function resetToStart() {
+            backToMenu();
             selectScreen.style.display = 'none';
-            catchScreen.style.display = 'none';
-            whackScreen.style.display = 'none';
-            document.getElementById('catch-result').style.display = 'none';
-            document.getElementById('whack-result').style.display = 'none';
-
             setupScreen.style.display = 'flex';
             resetToShooting();
         }
 
-        function backToMenu() {
-            cancelAnimationFrame(catchAnimationId);
+        function stopAllGames() {
+            if (catchAnimationId) cancelAnimationFrame(catchAnimationId);
             clearInterval(catchTimerId);
             clearInterval(catchSpawnerId);
             clearInterval(whackTimerId);
             clearTimeout(whackSpawnerId);
             whackHoles.forEach(h => clearTimeout(h.timeoutId));
             
+            fallingItems.forEach(item => {
+                if (item.element && item.element.parentNode) {
+                    item.element.remove();
+                }
+            });
+            fallingItems = [];
+        }
+
+        function backToMenu() {
+            stopAllGames();
             catchScreen.style.display = 'none';
             whackScreen.style.display = 'none';
             document.getElementById('catch-result').style.display = 'none';
@@ -804,6 +839,7 @@
         }
 
         function showGameResult(gameType, finalScore) {
+            stopAllGames();
             const resultScreenId = gameType + '-result';
             const scoreId = gameType + '-final-score';
             const bestFoodContainerId = gameType + '-best-food';
@@ -827,18 +863,21 @@
                 const imgEl = document.getElementById(bestFoodImgId);
                 imgEl.src = bestFood.src;
                 imgEl.onerror = () => {
-                    // Fallback to emoji representation
                     imgEl.style.display = 'none';
                     let fallbackSpan = document.getElementById(gameType + '-best-fallback');
                     if (!fallbackSpan) {
                         fallbackSpan = document.createElement('div');
                         fallbackSpan.id = gameType + '-best-fallback';
-                        fallbackSpan.style.fontSize = '80px';
+                        fallbackSpan.style.fontSize = '70px';
                         imgEl.parentNode.appendChild(fallbackSpan);
                     }
                     fallbackSpan.innerText = bestFood.emoji || '🍱';
                     fallbackSpan.style.display = 'block';
                 };
+                imgEl.style.display = 'block';
+                const fb = document.getElementById(gameType + '-best-fallback');
+                if (fb) fb.style.display = 'none';
+
                 document.getElementById(bestFoodNameId).innerText = bestFood.name;
                 bestFoodContainer.style.display = 'flex';
             } else {
@@ -861,7 +900,9 @@
             ctx.beginPath();
             ctx.ellipse(faceX + faceW/2, faceY + faceH/2, faceW/2, faceH/2, 0, 0, 2 * Math.PI);
             ctx.clip();
-            ctx.drawImage(photoCanvas, 0, 0, photoCanvas.width, photoCanvas.height, faceX, faceY, faceW, faceH);
+            if (photoCanvas.width > 0) {
+                ctx.drawImage(photoCanvas, 0, 0, photoCanvas.width, photoCanvas.height, faceX, faceY, faceW, faceH);
+            }
             ctx.restore();
             
             ctx.drawImage(drawCanvas, 0, 0, targetCanvas.width, targetCanvas.height);
@@ -870,7 +911,7 @@
         let gameScale = 0.42;
         let catchScore = 0;
         let catchTime = 30;
-        let catchTimerId, catchSpawnerId, catchAnimationId;
+        let catchTimerId = null, catchSpawnerId = null, catchAnimationId = null;
         let fallingItems = [];
         let charX = 0;
         let charY = 0;
@@ -885,17 +926,18 @@
         });
 
         function startCatchGame() {
+            stopAllGames();
             catchScore = 0;
             catchTime = 30;
             caughtFoods = {}; 
-            fallingItems.forEach(item => item.element.remove());
-            fallingItems = [];
-            
             document.getElementById('catch-score').innerText = catchScore;
             document.getElementById('catch-time').innerText = catchTime;
+            document.getElementById('catch-result').style.display = 'none';
             
-            charX = window.innerWidth / 2 - (character.offsetWidth * gameScale) / 2;
-            charY = window.innerHeight - (character.offsetHeight * gameScale) - 20;
+            const charW = 300 * gameScale;
+            const charH = 420 * gameScale;
+            charX = (window.innerWidth - charW) / 2;
+            charY = window.innerHeight - charH - 15;
             character.style.transform = `translate(${charX}px, ${charY}px) scale(${gameScale})`;
 
             catchTimerId = setInterval(() => {
@@ -903,46 +945,46 @@
                 document.getElementById('catch-time').innerText = catchTime;
                 if (catchTime <= 0) {
                     clearInterval(catchTimerId);
-                    clearInterval(catchSpawnerId);
-                    cancelAnimationFrame(catchAnimationId);
                     showGameResult('catch', catchScore); 
                 }
             }, 1000);
 
-            catchSpawnerId = setInterval(spawnItem, 600);
+            catchSpawnerId = setInterval(spawnItem, 650);
             catchLoop();
         }
 
         function spawnItem() {
-            const isGood = Math.random() > 0.45;
+            if (catchTime <= 0) return;
+            const isGood = Math.random() > 0.4;
             let htmlContent = '';
             let foodIndex = -1;
 
             if (isGood) {
                 foodIndex = Math.floor(Math.random() * goodFoods.length);
                 const food = goodFoods[foodIndex];
-                htmlContent = `<img src="${food.src}" onerror="this.outerHTML='<span style=\\'font-size:60px;\\'>${food.emoji || '🍱'}</span>'" style="width:75px; height:75px; object-fit:contain; border-radius:10px;">`;
+                htmlContent = `<img src="${food.src}" onerror="this.outerHTML='<span style=\\'font-size:55px;\\'>${food.emoji || '🍱'}</span>'" style="width:72px; height:72px; object-fit:contain;">`;
             } else {
-                htmlContent = `<span style="font-size:55px;">💣</span>`;
+                htmlContent = `<span style="font-size:54px;">💣</span>`;
             }
             
             const el = document.createElement('div');
             el.className = 'falling-item';
             el.innerHTML = htmlContent; 
             
-            const startX = Math.random() * Math.max(10, window.innerWidth - 90);
+            const itemWidth = 72;
+            const startX = Math.random() * Math.max(10, window.innerWidth - itemWidth - 20) + 10;
             el.style.left = startX + 'px';
             el.style.top = '-80px';
             catchScreen.appendChild(el);
 
-            const speedMultiplier = (30 - catchTime) / 30;
-            const extraSpeed = speedMultiplier * 6;
+            const speedRatio = (30 - catchTime) / 30;
+            const speed = 4.2 + (Math.random() * 2.5) + (speedRatio * 5);
 
             fallingItems.push({
                 element: el,
                 y: -80,
                 x: startX,
-                speed: Math.random() * 3 + 4 + extraSpeed,
+                speed: speed,
                 isGood: isGood,
                 foodIndex: foodIndex 
             });
@@ -950,60 +992,72 @@
 
         function catchLoop() {
             character.style.transform = `translate(${charX}px, ${charY}px) scale(${gameScale})`;
-            const charRect = character.getBoundingClientRect();
+            
+            const charW = 300 * gameScale;
+            const charH = 420 * gameScale;
+            const basketTop = charY + 20;
+            const basketBottom = charY + charH;
+            const basketLeft = charX + 10;
+            const basketRight = charX + charW - 10;
 
             for (let i = fallingItems.length - 1; i >= 0; i--) {
-                let item = fallingItems[i];
+                const item = fallingItems[i];
                 item.y += item.speed;
                 item.element.style.top = item.y + 'px';
 
-                const itemRect = item.element.getBoundingClientRect();
-                
-                if (itemRect.bottom > charRect.top + 30 && 
-                    itemRect.top < charRect.bottom &&
-                    itemRect.right > charRect.left + 30 && 
-                    itemRect.left < charRect.right - 30) {
+                const itemSize = 65;
+                const itemBottom = item.y + itemSize;
+                const itemRight = item.x + itemSize;
+
+                // Simple AABB collision with basket zone
+                if (itemBottom >= basketTop && item.y <= basketBottom &&
+                    itemRight >= basketLeft && item.x <= basketRight) {
                     
                     if (item.isGood) {
                         catchScore += 10;
                         caughtFoods[item.foodIndex] = (caughtFoods[item.foodIndex] || 0) + 1;
+                        item.element.innerHTML = '<span style="font-size:45px;">✨</span>';
                     } else {
-                        catchScore -= 10;
+                        catchScore = Math.max(0, catchScore - 10);
+                        item.element.innerHTML = '<span style="font-size:45px;">💥</span>';
+                        document.body.classList.add('shake-screen');
+                        setTimeout(() => document.body.classList.remove('shake-screen'), 250);
                     }
                     document.getElementById('catch-score').innerText = catchScore;
                     
-                    item.element.innerHTML = item.isGood ? '✨' : '💥';
-                    setTimeout(() => item.element.remove(), 200);
+                    const el = item.element;
+                    setTimeout(() => { if (el && el.parentNode) el.remove(); }, 180);
                     fallingItems.splice(i, 1);
                     continue;
                 }
-                if (item.y > window.innerHeight) {
+
+                if (item.y > window.innerHeight + 10) {
                     item.element.remove();
                     fallingItems.splice(i, 1);
                 }
             }
-            catchAnimationId = requestAnimationFrame(catchLoop);
+            if (catchTime > 0) {
+                catchAnimationId = requestAnimationFrame(catchLoop);
+            }
         }
 
-        // Touch and mouse movement listener for catch game
         function onCatchMove(e) {
             if (catchTime <= 0) return;
-            if (e.target.tagName.toLowerCase() === 'button') return;
+            if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === 'button') return;
             
-            e.preventDefault(); 
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            
-            let newX = clientX - (character.offsetWidth * gameScale) / 2;
-            const maxRight = window.innerWidth - (character.offsetWidth * gameScale);
+            const charW = 300 * gameScale;
+            let newX = clientX - (charW / 2);
+            const maxX = window.innerWidth - charW;
             
             if (newX < 0) newX = 0;
-            if (newX > maxRight) newX = maxRight;
+            if (newX > maxX) newX = maxX;
             charX = newX;
         }
 
-        catchScreen.addEventListener('touchmove', onCatchMove, {passive: false});
+        catchScreen.addEventListener('touchmove', onCatchMove, {passive: true});
         catchScreen.addEventListener('mousemove', onCatchMove);
-        catchScreen.addEventListener('touchstart', onCatchMove, {passive: false});
+        catchScreen.addEventListener('touchstart', onCatchMove, {passive: true});
         catchScreen.addEventListener('mousedown', onCatchMove);
 
         document.getElementById('btn-play-whack').addEventListener('click', () => {
@@ -1015,7 +1069,7 @@
         let whackHoles = [];
         let whackScore = 0;
         let whackTime = 30;
-        let whackTimerId, whackSpawnerId;
+        let whackTimerId = null, whackSpawnerId = null;
         let currentSpawnInterval = 1000;
 
         function setupWhackHoles() {
@@ -1031,7 +1085,7 @@
                     <div class="mole character-mole hidden">
                         <canvas class="clone-drawing" width="300" height="420"></canvas>
                         <div class="clone-face-frame">
-                            <canvas class="clone-photo" width="${photoCanvas.width || 300}" height="${photoCanvas.height || 420}"></canvas>
+                            <canvas class="clone-photo" width="300" height="420"></canvas>
                         </div>
                     </div>
                     <div class="mole food-mole hidden"></div>
@@ -1041,7 +1095,9 @@
                 const cloneDraw = holeDiv.querySelector('.clone-drawing');
                 const clonePhoto = holeDiv.querySelector('.clone-photo');
                 cloneDraw.getContext('2d').drawImage(drawCanvas, 0, 0);
-                clonePhoto.getContext('2d').drawImage(photoCanvas, 0, 0);
+                if (photoCanvas.width > 0) {
+                    clonePhoto.getContext('2d').drawImage(photoCanvas, 0, 0, clonePhoto.width, clonePhoto.height);
+                }
 
                 const charMole = holeDiv.querySelector('.character-mole');
                 const foodMole = holeDiv.querySelector('.food-mole');
@@ -1050,10 +1106,8 @@
                     e.preventDefault();
                     tapMole(i, isChar);
                 };
-                charMole.addEventListener('touchstart', (e) => tapAction(e, true), {passive: false});
-                charMole.addEventListener('mousedown', (e) => tapAction(e, true));
-                foodMole.addEventListener('touchstart', (e) => tapAction(e, false), {passive: false});
-                foodMole.addEventListener('mousedown', (e) => tapAction(e, false));
+                charMole.addEventListener('pointerdown', (e) => tapAction(e, true));
+                foodMole.addEventListener('pointerdown', (e) => tapAction(e, false));
 
                 whackHoles.push({
                     charMole: charMole,
@@ -1067,6 +1121,7 @@
         }
 
         function startWhackGame() {
+            stopAllGames();
             whackScore = 0;
             whackTime = 30;
             currentSpawnInterval = 1000;
@@ -1098,18 +1153,17 @@
         function scheduleNextSpawn() {
             if (whackTime <= 0) return;
             spawnMoles();
-            let ratio = whackTime / 30; 
-            currentSpawnInterval = 300 + (700 * ratio); 
+            const ratio = whackTime / 30; 
+            currentSpawnInterval = 400 + (600 * ratio); 
             whackSpawnerId = setTimeout(scheduleNextSpawn, currentSpawnInterval);
         }
 
         function spawnMoles() {
             let spawnCount = 1;
-            if (whackTime <= 22) spawnCount = 2;
-            if (whackTime <= 14) spawnCount = 3;
-            if (whackTime <= 6) spawnCount = 4;
+            if (whackTime <= 20) spawnCount = 2;
+            if (whackTime <= 10) spawnCount = 3;
 
-            let available = whackHoles.map((h, i) => ({h, i})).filter(obj => !obj.h.isActive);
+            const available = whackHoles.map((h, i) => ({h, i})).filter(obj => !obj.h.isActive);
             for (let i = available.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [available[i], available[j]] = [available[j], available[i]];
@@ -1120,24 +1174,26 @@
         }
 
         function showMole(index) {
-            let hole = whackHoles[index];
+            const hole = whackHoles[index];
             hole.isActive = true;
             
-            let isCharacter = Math.random() < 0.3;
+            const isCharacter = Math.random() < 0.3;
             
             if (isCharacter) {
                 hole.charMole.classList.remove('hidden');
+                hole.foodMole.classList.add('hidden');
                 hole.isCharacter = true;
             } else {
-                let foodIndex = Math.floor(Math.random() * goodFoods.length);
-                let food = goodFoods[foodIndex];
-                hole.foodMole.innerHTML = `<img src="${food.src}" onerror="this.outerHTML='<span style=\\'font-size:60px;\\'>${food.emoji || '🍱'}</span>'" style="width:75px; height:75px; object-fit:contain; border-radius:10px;">`;
+                const foodIndex = Math.floor(Math.random() * goodFoods.length);
+                const food = goodFoods[foodIndex];
+                hole.foodMole.innerHTML = `<img src="${food.src}" onerror="this.outerHTML='<span style=\\'font-size:55px;\\'>${food.emoji || '🍱'}</span>'" style="width:72px; height:72px; object-fit:contain;">`;
                 hole.foodMole.classList.remove('hidden');
+                hole.charMole.classList.add('hidden');
                 hole.isCharacter = false;
                 hole.foodIndex = foodIndex; 
             }
             
-            let displayTime = currentSpawnInterval * 0.9; 
+            const displayTime = Math.max(500, currentSpawnInterval * 0.88); 
             hole.timeoutId = setTimeout(() => {
                 if (hole.isActive) {
                     hole.isActive = false;
@@ -1148,16 +1204,16 @@
         }
 
         function tapMole(index, isCharacter) {
-            let hole = whackHoles[index];
+            const hole = whackHoles[index];
             if (!hole.isActive) return;
 
             hole.isActive = false;
             clearTimeout(hole.timeoutId); 
             
             if (isCharacter) {
-                whackScore -= 10; 
+                whackScore = Math.max(0, whackScore - 10); 
                 document.body.classList.add('shake-screen');
-                setTimeout(() => document.body.classList.remove('shake-screen'), 200);
+                setTimeout(() => document.body.classList.remove('shake-screen'), 250);
             } else {
                 whackScore += 10; 
                 caughtFoods[hole.foodIndex] = (caughtFoods[hole.foodIndex] || 0) + 1; 
