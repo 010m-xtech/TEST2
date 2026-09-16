@@ -34,6 +34,32 @@
             animation: shakeScreen 0.25s ease-in-out;
         }
 
+        .nav-back-book-btn {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            background: #ffffff;
+            color: #d35400;
+            border: 2px solid #ffb74d;
+            border-radius: 20px;
+            padding: 5px 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-decoration: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+            transition: all 0.15s ease;
+            cursor: pointer;
+            z-index: 120;
+        }
+        .nav-back-book-btn:active {
+            transform: scale(0.96);
+            background-color: #fff3e0;
+        }
+
         #setup-screen {
             display: flex;
             flex-direction: column;
@@ -488,8 +514,12 @@
     <div id="custom-modal"></div>
 
     <div id="setup-screen">
-        <div style="text-align:center; padding:14px 10px 4px; background-color:#ffedd6; z-index:110;">
-            <h1 style="color:#e74c3c; font-size:clamp(0.95rem, 4.5vw, 1.4rem); margin:0; font-weight:bold; white-space:nowrap; text-shadow: 1px 1px 0 #fff;">
+        <a href="https://010m-xtech.github.io/TEST2/stylebook_743000" class="nav-back-book-btn">
+            <span>‹</span> おすすめ本に戻る
+        </a>
+
+        <div style="display:flex; flex-direction:column; align-items:center; padding:38px 10px 4px; background-color:#ffedd6; z-index:110;">
+            <h1 style="color:#e74c3c; font-size:clamp(0.95rem, 4.2vw, 1.35rem); margin:0; font-weight:bold; white-space:nowrap; text-shadow: 1px 1px 0 #fff;">
                 自分のアバターを作ってゲームで遊ぼう！！
             </h1>
         </div>
@@ -540,6 +570,10 @@
     </div>
 
     <div id="game-select-screen">
+        <a href="https://010m-xtech.github.io/TEST2/stylebook_743000" class="nav-back-book-btn">
+            <span>‹</span> おすすめ本に戻る
+        </a>
+
         <h2 style="color:#d35400; margin:0; font-size: 1.35rem;">どのゲームで遊ぶ？</h2>
         
         <button id="btn-play-catch" class="btn game-btn">
@@ -971,7 +1005,7 @@
                 const food = goodFoods[foodIndex];
                 htmlContent = `<img src="${food.src}" onerror="this.outerHTML='<span style=\\'font-size:55px;\\'>${food.emoji || '🍱'}</span>'" style="width:72px; height:72px; object-fit:contain;">`;
             } else {
-                htmlContent = `<span style="font-size:54px;">💣</span>`;
+                htmlContent = `<span style="font-size:40px; line-height:1; display:inline-block; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));">💣</span>`;
             }
             
             const el = document.createElement('div');
@@ -1012,13 +1046,17 @@
                 item.y += item.speed;
                 item.element.style.top = item.y + 'px';
 
-                const itemSize = 65;
-                const itemBottom = item.y + itemSize;
-                const itemRight = item.x + itemSize;
+                // メニューは取りやすく広め(65px)、爆弾は一回り小さく当たり判定を狭める(36px・中心寄せ)
+                const hitSize = item.isGood ? 65 : 36;
+                const offset = item.isGood ? 0 : 16;
+                const itemLeft = item.x + offset;
+                const itemRight = itemLeft + hitSize;
+                const itemTop = item.y + offset;
+                const itemBottom = itemTop + hitSize;
 
-                // Simple AABB collision with basket zone
-                if (itemBottom >= basketTop && item.y <= basketBottom &&
-                    itemRight >= basketLeft && item.x <= basketRight) {
+                // AABB collision with basket zone
+                if (itemBottom >= basketTop && itemTop <= basketBottom &&
+                    itemRight >= basketLeft && itemLeft <= basketRight) {
                     
                     if (item.isGood) {
                         catchScore += 10;
@@ -1026,7 +1064,7 @@
                         item.element.innerHTML = '<span style="font-size:45px;">✨</span>';
                     } else {
                         catchScore = Math.max(0, catchScore - 10);
-                        item.element.innerHTML = '<span style="font-size:45px;">💥</span>';
+                        item.element.innerHTML = '<span style="font-size:38px;">💥</span>';
                         document.body.classList.add('shake-screen');
                         setTimeout(() => document.body.classList.remove('shake-screen'), 250);
                     }
