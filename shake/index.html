@@ -198,16 +198,16 @@
       class="block h-full w-auto max-w-full max-h-[100dvh] object-contain pointer-events-none select-none z-0"
     />
 
-    <!-- 画面上部の説明文（1行・固定） -->
+    <!-- 画面上部の説明文（2行・固定） -->
     <div
       id="top-guide-container"
-      class="absolute z-20 left-1/2 -translate-x-1/2 pointer-events-none flex flex-col items-center"
+      class="absolute z-20 left-1/2 -translate-x-1/2 pointer-events-auto cursor-pointer flex flex-col items-center"
       style="top: max(3.5%, calc(var(--safe-top) + 8px));"
     >
-      <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/85 border border-amber-500/40 text-amber-200 shadow-2xl backdrop-blur-md">
-        <span class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
-        <span id="shake-instruction" class="text-[11px] sm:text-xs font-medium tracking-wider whitespace-nowrap">
-          スマホを振ってね！生ビールが溜まっていくよ
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-black/85 border border-amber-500/40 text-amber-200 shadow-2xl backdrop-blur-md active:scale-95 transition-transform">
+        <span class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-ping shrink-0"></span>
+        <span id="shake-instruction" class="text-[11px] sm:text-xs font-medium tracking-wider text-center leading-tight">
+          スマホを振るか<br />画面をタップしてね！
         </span>
       </div>
     </div>
@@ -417,6 +417,10 @@
     let shakeVelocity = { x: 0, y: 0 };
     let wavePhase = 0;
 
+    // 重力ベクトル追跡（ローパスフィルター用）
+    const gravity = { x: 0, y: 9.8, z: 0 };
+    let hasGravityInit = false;
+
     // 球体内に浮かぶ15個のカプセル（浮力とゆらぎのパラメータ付き）
     const capsules = Array.from({ length: 15 }, (_, i) => {
       const angle = (i / 15) * Math.PI * 2;
@@ -496,57 +500,82 @@
       handlePrompt.style.opacity = '1';
     }
 
-    let lastX = null, lastY = null, lastZ = null;
     let lastShakeTime = 0;
 
+    // 堅牢なモーション・シェイク検知処理
     function handleMotion(e) {
       const now = performance.now();
-      if (now - lastShakeTime < 60) return;
 
-      const pureAcc = e.acceleration;
-      if (pureAcc && pureAcc.x !== null && pureAcc.y !== null && pureAcc.z !== null) {
-        const mag = Math.sqrt(pureAcc.x * pureAcc.x + pureAcc.y * pureAcc.y + pureAcc.z * pureAcc.z);
-        if (mag > 4.0) {
-          const gain = Math.min(3.5, (mag - 4.0) * 0.4 + 1.2);
-          shakeVelocity.x += (pureAcc.x || (Math.random() - 0.5) * 8) * 0.5;
-          shakeVelocity.y -= 6;
+      // 1. 純粋加速度が利用できる場合（iOSや一部Android）
+      const p = e.acceleration;
+      if (p && (p.x !== null || p.y !== null || p.z !== null)) {
+        const px = p.x || 0;
+        const py = p.y || 0;
+        const pz = p.z || 0;
+        const force = Math.sqrt(px * px + py * py + pz * pz);
+
+        if (force > 2.4 && now - lastShakeTime > 45) {
+          const gain = Math.min(4.5, (force - 2.4) * 0.45 + 1.2);
+          shakeVelocity.x += px * 0.7;
+          shakeVelocity.y -= Math.abs(py) * 0.8 + 4;
           addBubblePower(gain, true);
           lastShakeTime = now;
+          if (navigator.vibrate && Math.random() < 0.3) navigator.vibrate(15);
           return;
         }
       }
 
+      // 2. 重力込み加速度からの高精度な振り検知（全端末共通フォールバック）
       const acc = e.accelerationIncludingGravity || e.acceleration;
       if (!acc) return;
-      const curX = acc.x ?? 0;
-      const curY = acc.y ?? 0;
-      const curZ = acc.z ?? 0;
 
-      if (lastX !== null) {
-        const dx = curX - lastX;
-        const dy = curY - lastY;
-        const dz = curZ - lastZ;
-        const delta = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      const ax = acc.x || 0;
+      const ay = acc.y || 0;
+      const az = acc.z || 0;
 
-        if (delta > 4.2) {
-          const gain = Math.min(3.2, (delta - 4.2) * 0.35 + 1.0);
-          shakeVelocity.x += (Math.random() - 0.5) * 10;
-          shakeVelocity.y -= 6;
-          addBubblePower(gain, true);
-          lastShakeTime = now;
-        }
+      if (!hasGravityInit) {
+        gravity.x = ax;
+        gravity.y = ay;
+        gravity.z = az;
+        hasGravityInit = true;
+        return;
       }
 
-      lastX = curX;
-      lastY = curY;
-      lastZ = curZ;
+      // ローパスフィルターで重力成分を抽出（α=0.82）
+      gravity.x = 0.82 * gravity.x + 0.18 * ax;
+      gravity.y = 0.82 * gravity.y + 0.18 * ay;
+      gravity.z = 0.82 * gravity.z + 0.18 * az;
+
+      // 重力成分を差し引いた実加速度（ハイパス成分）
+      const linearX = ax - gravity.x;
+      const linearY = ay - gravity.y;
+      const linearZ = az - gravity.z;
+      const shakeForce = Math.sqrt(linearX * linearX + linearY * linearY + linearZ * linearZ);
+
+      // 重力ベクトルの向きから端末の左右傾き（ロール）をバックアップ計算
+      if (Math.abs(gravity.y) > 0.5 || Math.abs(gravity.x) > 0.5) {
+        const tiltFromGrav = -Math.atan2(gravity.x, gravity.y);
+        targetLiquidAngle = Math.max(-1.1, Math.min(1.1, tiltFromGrav * 1.2));
+        targetTiltX = Math.max(-1.3, Math.min(1.3, tiltFromGrav * 1.5));
+      }
+
+      // 振りの強さが閾値（2.0m/s²）を超えたらビールを注ぐ
+      if (shakeForce > 2.0 && now - lastShakeTime > 45) {
+        const gain = Math.min(4.0, (shakeForce - 2.0) * 0.4 + 1.1);
+        shakeVelocity.x += linearX * 0.6;
+        shakeVelocity.y -= 5;
+        addBubblePower(gain, true);
+        lastShakeTime = now;
+        if (navigator.vibrate && Math.random() < 0.3) navigator.vibrate(15);
+      }
     }
 
+    // 端末のジャイロ傾き検知
     function handleOrientation(e) {
       if (e.gamma !== null && e.gamma !== undefined) {
         const rad = (e.gamma * Math.PI) / 180;
-        targetLiquidAngle = Math.max(-1.25, Math.min(1.25, rad * 1.4));
-        targetTiltX = Math.max(-1.5, Math.min(1.5, rad * 1.6));
+        targetLiquidAngle = Math.max(-1.25, Math.min(1.25, rad * 1.35));
+        targetTiltX = Math.max(-1.5, Math.min(1.5, rad * 1.55));
       }
       if (e.beta !== null && e.beta !== undefined) {
         targetTiltY = (e.beta - 45) * 0.02;
@@ -554,11 +583,14 @@
     }
 
     let sensorActive = false;
+
+    // センサーの確実な起動（iOS permission対応 + Android自動接続）
     async function activateSensors() {
       initAudio();
       if (sensorActive) return;
 
       try {
+        // iOS 13+ のユーザー許可フロー
         if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
           const permissionState = await DeviceMotionEvent.requestPermission();
           if (permissionState === 'granted') {
@@ -571,22 +603,33 @@
                 if (orientState === 'granted') {
                   window.addEventListener('deviceorientation', handleOrientation, { passive: true });
                 }
-              } catch (err) {}
+              } catch (e) {}
             }
           }
         } else {
+          // Android / PC / その他標準ブラウザ（許可ダイアログ不要）
           window.addEventListener('devicemotion', handleMotion, { passive: true });
           window.addEventListener('deviceorientation', handleOrientation, { passive: true });
           sensorActive = true;
         }
       } catch (err) {
-        console.warn('Sensor activation error:', err);
+        console.warn('Sensor request error:', err);
       }
     }
 
+    // イベント登録（画面タッチ・クリック、上部ガイドのタップですぐに許可を有効化）
     window.addEventListener('touchstart', activateSensors, { passive: true });
+    window.addEventListener('touchend', activateSensors, { passive: true });
     window.addEventListener('click', activateSensors);
+    document.getElementById('top-guide-container').addEventListener('click', activateSensors);
 
+    // Android/デスクトップ向けにロード時にも即リスナー登録を試行
+    try {
+      window.addEventListener('devicemotion', handleMotion, { passive: true });
+      window.addEventListener('deviceorientation', handleOrientation, { passive: true });
+    } catch (e) {}
+
+    // PC用マウス連動
     window.addEventListener('mousemove', (e) => {
       if ('ontouchstart' in window) return;
       const normX = (e.clientX / window.innerWidth) * 2 - 1;
