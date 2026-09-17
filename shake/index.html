@@ -15,6 +15,9 @@
     :root {
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --sphere-top: 33.8%;
+      --sphere-left: 50%;
+      --sphere-size: 80.5%;
     }
 
     * {
@@ -28,22 +31,7 @@
       font-family: 'Noto Sans JP', sans-serif;
       touch-action: manipulation;
       overscroll-behavior: none;
-      background: radial-gradient(circle at 50% 38%, #1c130b 0%, #0c0805 60%, #050302 100%);
-    }
-
-    /* Ambient Warm Bar Lighting */
-    .bar-lighting {
-      background-image: 
-        radial-gradient(ellipse at 50% 15%, rgba(217, 119, 6, 0.15) 0%, transparent 65%),
-        radial-gradient(circle at 50% 85%, rgba(180, 83, 9, 0.1) 0%, transparent 70%);
-    }
-
-    /* Machine Frame & Sphere Alignment Variables */
-    :root {
-      /* gacha.png に対する球体の位置・サイズ比率 */
-      --sphere-top: 34.0%;
-      --sphere-left: 50%;
-      --sphere-size: 77%;
+      background: #080503;
     }
 
     /* Glass Dome Outer Rim & Glow */
@@ -78,35 +66,32 @@
       }
     }
 
-    @keyframes drop-bounce {
-      0% { transform: translateY(-30px) scale(0.6) rotate(-20deg); opacity: 0; }
-      55% { transform: translateY(12px) scale(1.08) rotate(10deg); opacity: 1; }
-      75% { transform: translateY(-6px) scale(0.97) rotate(-4deg); }
-      100% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
-    }
-
-    .capsule-drop {
-      animation: drop-bounce 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-    }
-
     /* Crank Handle Styles */
     .handle-idle {
-      opacity: 0.85;
+      cursor: default;
+    }
+
+    .handle-idle #crank-knob-visual {
+      opacity: 0;
     }
 
     .handle-ready {
-      animation: handle-glow-pulse 1.4s infinite ease-in-out;
       cursor: pointer;
+      animation: handle-glow-pulse 1.4s infinite ease-in-out;
+    }
+
+    .handle-ready #crank-knob-visual {
+      opacity: 1;
     }
 
     .handle-ready .handle-glow {
       border-color: rgba(251, 191, 36, 0.9);
-      box-shadow: 0 0 20px rgba(245, 158, 11, 0.8), inset 0 0 15px rgba(251, 191, 36, 0.5);
+      box-shadow: 0 0 25px rgba(245, 158, 11, 0.9), inset 0 0 15px rgba(251, 191, 36, 0.6);
     }
 
     @keyframes handle-glow-pulse {
       0%, 100% { transform: translate(-50%, -50%) scale(1); }
-      50% { transform: translate(-50%, -50%) scale(1.06); }
+      50% { transform: translate(-50%, -50%) scale(1.05); }
     }
 
     /* Chute Ejection Animations */
@@ -146,16 +131,97 @@
         filter: drop-shadow(0 0 16px rgba(245, 158, 11, 0.95));
       }
     }
+
+    /* Ultra-Realistic 3D Spherical Capsule Styles */
+    .capsule-3d-sphere {
+      position: relative;
+      border-radius: 9999px;
+      overflow: hidden;
+      box-shadow: 
+        inset 2px 3px 6px rgba(255, 255, 255, 0.5),
+        inset -3px -4px 8px rgba(0, 0, 0, 0.6),
+        0 6px 14px rgba(0, 0, 0, 0.6);
+    }
+
+    .capsule-specular-gloss {
+      position: absolute;
+      top: 10%;
+      left: 18%;
+      width: 46%;
+      height: 24%;
+      border-radius: 9999px;
+      background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0) 75%);
+      transform: rotate(-35deg);
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .capsule-bounce-light {
+      position: absolute;
+      bottom: 6%;
+      right: 14%;
+      width: 42%;
+      height: 20%;
+      border-radius: 9999px;
+      background: radial-gradient(ellipse at center, rgba(251, 191, 36, 0.45) 0%, rgba(251, 191, 36, 0) 80%);
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .capsule-center-rim {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 3px;
+      transform: translateY(-50%);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(50, 30, 10, 0.6) 100%);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+      z-index: 8;
+      pointer-events: none;
+    }
+
+    .capsule-dome-top {
+      width: 100%;
+      height: 50%;
+      background: radial-gradient(circle at 40% 30%, #ffffff 0%, #f4f4f6 50%, #d4d6db 85%, #9fa4af 100%);
+    }
+
+    .capsule-dome-bottom {
+      width: 100%;
+      height: 50%;
+      background: radial-gradient(circle at 45% 65%, #fde68a 0%, #f59e0b 45%, #b45309 80%, #5c2404 100%);
+      position: relative;
+    }
+
+    .capsule-inner-depth {
+      position: absolute;
+      inset: 0;
+      border-radius: 9999px;
+      background: radial-gradient(circle at 75% 75%, rgba(0, 0, 0, 0.45) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    @keyframes drop-bounce {
+      0% { transform: translateY(-30px) scale(0.6) rotate(-20deg); opacity: 0; }
+      55% { transform: translateY(12px) scale(1.08) rotate(10deg); opacity: 1; }
+      75% { transform: translateY(-6px) scale(0.97) rotate(-4deg); }
+      100% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
+    }
+
+    .capsule-drop {
+      animation: drop-bounce 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
   </style>
 </head>
 <body class="h-[100dvh] w-screen text-slate-100 flex flex-col items-center justify-center p-0 m-0 select-none box-border bg-[#080503] overflow-hidden">
 
   <main id="main-stage" class="w-full h-[100dvh] flex items-center justify-center relative overflow-hidden">
     
-    <!-- Machine Stage: gacha.png as backdrop with layered fluid sphere -->
     <div id="machine-wrapper" class="relative h-[100dvh] max-w-full flex items-center justify-center transition-transform duration-200">
       
-      <!-- Gacha Machine & Background Image -->
+      <!-- Gacha Machine Background Image -->
       <img 
         id="gacha-bg" 
         src="./gacha.png" 
@@ -170,10 +236,9 @@
         style="top: var(--sphere-top); left: var(--sphere-left); width: var(--sphere-size); aspect-ratio: 1 / 1;"
         class="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-amber-100/60 glass-dome overflow-hidden flex items-center justify-center cursor-pointer active:scale-95 transition-transform"
       >
-        <!-- 2D Canvas for physics-based beer fluid, foam head, and floating capsules -->
         <canvas id="bubble-canvas" class="w-full h-full block"></canvas>
 
-        <!-- Glass highlights and specular reflections -->
+        <!-- Specular Highlights -->
         <div class="absolute top-4 left-6 w-24 sm:w-32 h-12 sm:h-16 rounded-full bg-gradient-to-b from-white/60 to-transparent transform -rotate-45 pointer-events-none"></div>
         <div class="absolute bottom-6 right-8 w-14 sm:w-18 h-7 sm:h-9 rounded-full bg-gradient-to-t from-white/25 to-transparent transform -rotate-45 pointer-events-none"></div>
         
@@ -184,59 +249,58 @@
         </div>
       </div>
 
-      <!-- Crank Handle Layer (Red Circle Area on Machine) -->
+      <!-- Crank Handle Layer -->
       <div 
         id="crank-handle" 
-        class="absolute -translate-x-1/2 -translate-y-1/2 rounded-full cursor-pointer flex items-center justify-center z-30 handle-idle active:scale-95 transition-all"
-        style="top: 67.2%; left: 50.4%; width: 22.5%; aspect-ratio: 1 / 1;"
+        class="absolute -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center z-30 handle-idle active:scale-95 transition-all"
+        style="top: 67.5%; left: 50.0%; width: 22.5%; aspect-ratio: 1 / 1;"
       >
-        <!-- Rotating Visual Knob with Brass Crossbar -->
-        <div id="crank-knob-visual" class="w-full h-full rounded-full relative flex items-center justify-center pointer-events-none transition-transform duration-700 ease-in-out">
-          <!-- Outer circular glow ring -->
+        <div id="crank-knob-visual" class="w-full h-full rounded-full relative flex items-center justify-center pointer-events-none transition-all duration-700 ease-in-out">
           <div class="absolute inset-0 rounded-full border-2 border-amber-400/0 handle-glow transition-all"></div>
           
-          <!-- Authentic Brass Horizontal Handle Bar -->
           <div class="w-[82%] h-[22%] rounded-full bg-gradient-to-b from-amber-200 via-amber-400 to-amber-700 shadow-[0_5px_12px_rgba(0,0,0,0.7),inset_0_1px_2px_rgba(255,255,255,0.9)] border border-amber-300/70 relative flex items-center justify-center">
-            <!-- Center Rivet Knob Cap -->
             <div class="w-4 h-4 rounded-full bg-gradient-to-br from-amber-100 to-amber-600 shadow-md border border-amber-200"></div>
           </div>
         </div>
 
-        <!-- Prompt Badge when 100% full -->
         <div id="handle-prompt" class="absolute -top-7 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-stone-950 font-black text-[10px] whitespace-nowrap shadow-xl border border-amber-200 animate-bounce hidden pointer-events-none tracking-wider">
-          回してガチャ！
+          タップして回してね！
         </div>
       </div>
 
-      <!-- Chute Area (Blue Circle Area on Machine) -->
+      <!-- Chute Area -->
       <div 
         id="chute-area" 
         class="absolute -translate-x-1/2 pointer-events-none z-30 flex items-center justify-center overflow-visible"
         style="top: 83.2%; left: 50.4%; width: 23%; height: 14%;"
       >
-        <!-- Dispensed Capsule falling onto the tray -->
         <div id="dispensed-capsule" class="hidden pointer-events-auto cursor-pointer relative flex flex-col items-center justify-center active:scale-95 transition-transform">
-          <!-- 3D style beer capsule in tray -->
-          <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full border border-white/90 shadow-[0_8px_20px_rgba(0,0,0,0.85)] overflow-hidden relative flex flex-col">
-            <div class="h-1/2 w-full bg-gradient-to-b from-white to-amber-100 border-b border-amber-200/80"></div>
-            <div class="h-1/2 w-full bg-gradient-to-b from-amber-400 to-amber-600"></div>
-            <div class="absolute inset-0 flex items-center justify-center text-sm">🍺</div>
+          <div class="absolute -bottom-1.5 w-12 h-3 rounded-full bg-black/80 blur-[2px] pointer-events-none"></div>
+
+          <!-- Ultra-Realistic 3D Beer Capsule -->
+          <div class="w-[52px] h-[52px] sm:w-[60px] sm:h-[60px] capsule-3d-sphere flex flex-col">
+            <div class="capsule-specular-gloss"></div>
+            <div class="capsule-bounce-light"></div>
+            <div class="capsule-inner-depth"></div>
+            <div class="capsule-center-rim"></div>
+            
+            <div class="capsule-dome-top"></div>
+            <div class="capsule-dome-bottom"></div>
           </div>
           
-          <!-- Tap to Open Guide Prompt -->
-          <div id="capsule-tap-guide" class="absolute -top-6 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-yellow-300 text-stone-950 font-black text-[9px] whitespace-nowrap shadow-xl border border-white/80 animate-pulse hidden tracking-wider">
+          <div id="capsule-tap-guide" class="absolute -top-7 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-yellow-300 text-stone-950 font-black text-[9px] whitespace-nowrap shadow-2xl border border-white/90 animate-pulse hidden tracking-wider">
             タップして開封！
           </div>
         </div>
       </div>
 
-      <!-- Instruction Guide positioned directly above the sphere on the machine -->
+      <!-- Instruction Guide directly above sphere -->
       <div 
         class="absolute left-1/2 -translate-x-1/2 z-40 pointer-events-none w-full max-w-[95%] text-center px-1"
         style="top: max(3.8%, calc(var(--safe-top) + 6px));"
       >
         <p id="shake-instruction" class="text-[11px] sm:text-xs md:text-sm font-bold text-amber-200 bg-stone-950/85 backdrop-blur-md py-1.5 px-3 sm:px-4 rounded-full inline-block shadow-2xl border border-amber-500/40 transition-all duration-300 pointer-events-auto tracking-tight sm:tracking-wide whitespace-nowrap">
-          スマホを振って黄金の生ビールを満タンに注ごう！
+          スマホを振ってね！生ビールが溜まっていくよ
         </p>
       </div>
 
@@ -244,27 +308,30 @@
 
   </main>
 
-  <!-- Result Modal: Craft Beer Tasting Card -->
+  <!-- Result Modal -->
   <div id="result-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex-col items-center justify-center p-4">
     <div id="modal-card" class="w-full max-w-sm bg-gradient-to-b from-stone-900 via-stone-950 to-amber-950/90 border-2 border-amber-500/50 rounded-3xl p-6 text-center shadow-[0_25px_60px_rgba(0,0,0,0.9)] relative overflow-hidden flex flex-col items-center">
       
       <div class="absolute -top-24 -left-24 w-48 h-48 bg-amber-500/15 rounded-full blur-3xl pointer-events-none"></div>
       
-      <!-- Top Rarity Pill -->
       <div id="res-rarity" class="px-4 py-1 rounded-full text-xs font-extrabold tracking-widest uppercase mb-4 shadow-md bg-amber-500 text-stone-950">
         SSR
       </div>
 
-      <!-- Capsule Animation Icon -->
-      <div class="w-24 h-24 mb-3 flex items-center justify-center relative">
-        <div id="res-capsule" class="w-20 h-20 rounded-full border-2 border-white/80 shadow-[0_10px_25px_rgba(0,0,0,0.6)] overflow-hidden relative capsule-drop flex flex-col">
-          <div class="h-1/2 w-full bg-gradient-to-b from-white to-amber-50 border-b border-amber-200/70"></div>
-          <div class="h-1/2 w-full bg-gradient-to-b from-amber-400 to-amber-600"></div>
-          <div class="absolute inset-0 flex items-center justify-center text-3xl" id="res-icon">🍺</div>
+      <div class="w-28 h-28 mb-3 flex items-center justify-center relative">
+        <div class="absolute bottom-0 w-16 h-3 rounded-full bg-black/90 blur-[3px]"></div>
+        
+        <div id="res-capsule" class="w-[86px] h-[86px] capsule-3d-sphere capsule-drop flex flex-col border border-white/40">
+          <div class="capsule-specular-gloss"></div>
+          <div class="capsule-bounce-light"></div>
+          <div class="capsule-inner-depth"></div>
+          <div class="capsule-center-rim"></div>
+          
+          <div class="capsule-dome-top"></div>
+          <div class="capsule-dome-bottom"></div>
         </div>
       </div>
 
-      <!-- Title & Description -->
       <h3 id="res-name" class="text-xl sm:text-2xl font-black text-amber-300 mb-1 tracking-wide">
         ゴールドプレミアム生
       </h3>
@@ -281,7 +348,6 @@
   </div>
 
   <script>
-    // Audio engine with Tone.js
     let audioReady = false;
     let fizzNoise = null;
     let fizzFilter = null;
@@ -293,7 +359,6 @@
       try {
         Tone.start();
 
-        // Carbonation fizz noise
         fizzNoise = new Tone.Noise('pink');
         fizzFilter = new Tone.Filter({
           frequency: 1800,
@@ -306,7 +371,6 @@
         fizzNoise.start();
         fizzGain.gain.setValueAtTime(0, Tone.now());
 
-        // Capsule dispense click sound
         crankSynth = new Tone.MembraneSynth({
           pitchDecay: 0.05,
           octaves: 3,
@@ -315,7 +379,6 @@
         }).toDestination();
         crankSynth.volume.value = -6;
 
-        // SSR Fanfare
         fanfareSynth = new Tone.PolySynth(Tone.Synth).toDestination();
         fanfareSynth.volume.value = -8;
 
@@ -361,7 +424,7 @@
     let isFull = false;
     let isCranking = false;
 
-    // Fluid dynamics
+    // Fluid dynamics variables
     let liquidLevel = 0; 
     let liquidAngle = 0; 
     let targetLiquidAngle = 0;
@@ -371,17 +434,12 @@
     let targetTiltX = 0;
     let targetTiltY = 0;
 
-    // Bubbles
     const bubbles = [];
-    const NUM_BUBBLES = 45;
-
-    // 10 Beer Toy Capsules
     const CAPSULE_COUNT = 10;
     const capsules = [];
 
     function initBubbles() {
       bubbles.length = 0;
-      // Rising carbonation bubbles (micro bubbles + medium bubbles)
       for (let i = 0; i < 65; i++) {
         bubbles.push({
           x: (Math.random() - 0.5) * (tankRadius * 1.6),
@@ -391,11 +449,10 @@
           wobble: Math.random() * Math.PI * 2,
           wobbleSpeed: Math.random() * 0.09 + 0.03,
           alpha: Math.random() * 0.6 + 0.35,
-          isStream: Math.random() < 0.25 // Column streams like fresh draught beer
+          isStream: Math.random() < 0.25
         });
       }
 
-      // Initialize 10 clean, smooth capsules without clinging surface dots
       capsules.length = 0;
       for (let i = 0; i < CAPSULE_COUNT; i++) {
         const angle = (i / CAPSULE_COUNT) * Math.PI * 2;
@@ -409,7 +466,7 @@
           radius: 19,
           angle: Math.random() * Math.PI * 2,
           va: (Math.random() - 0.5) * 0.03,
-          submergeDepth: 0.68 + Math.random() * 0.12 // slightly submerged balance
+          submergeDepth: 0.68 + Math.random() * 0.12
         });
       }
     }
@@ -418,7 +475,6 @@
       const gachaBg = document.getElementById('gacha-bg');
       const machineWrapper = document.getElementById('machine-wrapper');
       
-      // 画像の実際の描画サイズに合わせてラッパーを完全一致させる（位置ズレ防止）
       if (gachaBg && machineWrapper) {
         const bgRect = gachaBg.getBoundingClientRect();
         if (bgRect.width > 0 && bgRect.height > 0) {
@@ -441,7 +497,6 @@
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       tankRadius = Math.max(10, width / 2 - 3);
 
-      // Adaptive capsule radius relative to sphere
       const adaptiveRadius = Math.max(12, Math.min(22, tankRadius * 0.12));
       capsules.forEach(c => c.radius = adaptiveRadius);
     }
@@ -453,65 +508,48 @@
     }
 
     function updatePhysics() {
-      // Smooth liquid level transition
       const targetLevel = (bubblePower / MAX_POWER);
       liquidLevel += (targetLevel - liquidLevel) * 0.09;
-
-      // Ultra-smooth liquid angle matching tilt & gravity with natural damping
       liquidAngle += (targetLiquidAngle - liquidAngle) * 0.18;
 
-      // Wave oscillation & decay
       liquidWavePhase += 0.08 + Math.min(0.2, waveAmplitude * 0.05);
       waveAmplitude *= 0.94;
       shakeVelocity.x *= 0.92;
       shakeVelocity.y *= 0.92;
 
-      // Center reference of sphere
-      const cx = 0;
-      const cy = 0;
-
-      // Surface height relative to center (0 = bottom, 1 = top)
       const currentSurfaceY = tankRadius - (liquidLevel * tankRadius * 1.88);
 
-      // Update 10 Capsules
       for (let i = 0; i < capsules.length; i++) {
         const c = capsules[i];
 
-        // Gravitational force and tilt-slope force
         const tiltXForce = Math.sin(liquidAngle) * 0.45 + targetTiltX * 0.28;
         c.vx += tiltXForce + shakeVelocity.x * 0.08;
-        c.vy += 0.24 + shakeVelocity.y * 0.08; // Base downward gravity
+        c.vy += 0.24 + shakeVelocity.y * 0.08;
 
-        // Multi-frequency wave calculation for natural fluid sloshing
         const dxFromCenter = c.x;
         const slopeY = Math.tan(-liquidAngle) * dxFromCenter;
         const wave1 = Math.sin(liquidWavePhase + c.x * 0.035) * waveAmplitude;
         const wave2 = Math.cos(liquidWavePhase * 1.4 - c.x * 0.07) * (waveAmplitude * 0.25);
         const localSurfaceY = currentSurfaceY + slopeY + wave1 + wave2;
 
-        // Buoyancy when touching or submerged in beer
         if (liquidLevel > 0.02) {
           const depthInLiquid = c.y - localSurfaceY;
           if (depthInLiquid > -c.radius * (1 - c.submergeDepth)) {
-            // Semi-submerged floating balance with viscous damping
             const buoyancyStrength = Math.min(1.5, (depthInLiquid + c.radius * c.submergeDepth) * 0.055);
             c.vy -= buoyancyStrength * 0.72;
             c.vx *= 0.925;
             c.vy *= 0.905;
             c.va *= 0.93;
           } else {
-            // Air drag
             c.vx *= 0.985;
             c.vy *= 0.985;
           }
         }
 
-        // Apply velocities
         c.x += c.vx;
         c.y += c.vy;
         c.angle += c.va + c.vx * 0.02;
 
-        // Circular dome wall collision
         const distFromCenter = Math.sqrt(c.x * c.x + c.y * c.y);
         const maxDist = tankRadius - c.radius - 2;
         if (distFromCenter > maxDist) {
@@ -520,7 +558,6 @@
           c.x = nx * maxDist;
           c.y = ny * maxDist;
 
-          // Bounce reflection
           const dot = c.vx * nx + c.vy * ny;
           if (dot > 0) {
             c.vx -= 1.35 * dot * nx;
@@ -529,7 +566,6 @@
           }
         }
 
-        // Capsule-to-capsule collisions
         for (let j = i + 1; j < capsules.length; j++) {
           const other = capsules[j];
           const cdx = other.x - c.x;
@@ -569,12 +605,10 @@
       const cy = height / 2;
 
       ctx.save();
-      // Clip inside circular glass dome
       ctx.beginPath();
       ctx.arc(cx, cy, tankRadius, 0, Math.PI * 2);
       ctx.clip();
 
-      // Atmospheric bar glass chamber background
       const chamberGrad = ctx.createRadialGradient(cx, cy * 0.75, tankRadius * 0.2, cx, cy, tankRadius);
       chamberGrad.addColorStop(0, '#1c1007');
       chamberGrad.addColorStop(0.65, '#0e0804');
@@ -582,13 +616,11 @@
       ctx.fillStyle = chamberGrad;
       ctx.fillRect(0, 0, width, height);
 
-      // Liquid height calculation
       const currentSurfaceY = tankRadius - (liquidLevel * tankRadius * 1.88);
       const spanW = tankRadius * 1.6;
       const steps = 36;
       const foamThickness = Math.max(16, liquidLevel * 36);
 
-      // Helper: draws the oscillating wave path for liquid surface
       function traceSurfaceWave(targetCtx) {
         for (let s = 0; s <= steps; s++) {
           const px = -spanW + (spanW * 2 * s) / steps;
@@ -599,7 +631,7 @@
         }
       }
 
-      // --- 1. Background Beer Liquid (Deep Volume) ---
+      // Background Beer Liquid
       if (liquidLevel > 0.005) {
         ctx.save();
         ctx.translate(cx, cy);
@@ -621,7 +653,6 @@
         ctx.closePath();
         ctx.fill();
 
-        // Inner glowing beer caustic beam
         ctx.save();
         ctx.globalCompositeOperation = 'screen';
         const causticGrad = ctx.createRadialGradient(0, currentSurfaceY + 45, 10, 0, currentSurfaceY + 60, spanW * 0.8);
@@ -634,7 +665,6 @@
         ctx.fill();
         ctx.restore();
 
-        // Background Rising Bubbles (deep layer behind capsules)
         bubbles.forEach((b, idx) => {
           b.y -= b.speed * (0.85 + waveAmplitude * 0.12);
           b.wobble += b.wobbleSpeed;
@@ -645,7 +675,6 @@
             b.x = b.isStream ? (Math.random() - 0.5) * (tankRadius * 0.9) : (Math.random() - 0.5) * (tankRadius * 1.6);
           }
 
-          // Only render rear 60% of bubbles here
           if (idx % 5 < 3 && b.y > currentSurfaceY) {
             ctx.fillStyle = `rgba(255, 250, 220, ${b.alpha * 0.85})`;
             ctx.beginPath();
@@ -657,7 +686,7 @@
         ctx.restore();
       }
 
-      // --- 2. Render 10 Capsules Submerged In Beer Fluid ---
+      // Render Floating Capsules
       ctx.save();
       ctx.translate(cx, cy);
 
@@ -668,7 +697,6 @@
 
         const r = c.radius;
 
-        // Shadow cast through liquid or onto tank back
         ctx.save();
         ctx.shadowColor = liquidLevel > 0.1 ? 'rgba(80, 30, 5, 0.45)' : 'rgba(0, 0, 0, 0.6)';
         ctx.shadowBlur = 12;
@@ -679,16 +707,13 @@
         ctx.fill();
         ctx.restore();
 
-        // Capsule Base Body Clip
         ctx.save();
         ctx.beginPath();
         ctx.arc(0, 0, r, 0, Math.PI * 2);
         ctx.clip();
 
-        // --- Top Hemisphere: White Cap (tinted by ambient beer glow when immersed) ---
         const topGrad = ctx.createLinearGradient(-r * 0.4, -r, r * 0.4, 0);
         if (liquidLevel > 0.1) {
-          // Warm amber beer ambient absorption on top cap
           topGrad.addColorStop(0, '#fffbf0');
           topGrad.addColorStop(0.5, '#fef3c7');
           topGrad.addColorStop(0.85, '#fde68a');
@@ -702,7 +727,6 @@
         ctx.fillStyle = topGrad;
         ctx.fillRect(-r, -r, r * 2, r);
 
-        // --- Bottom Hemisphere: Amber Resin ---
         const btmGrad = ctx.createLinearGradient(-r * 0.3, 0, r * 0.4, r);
         btmGrad.addColorStop(0, '#f59e0b');
         btmGrad.addColorStop(0.4, '#d97706');
@@ -711,7 +735,6 @@
         ctx.fillStyle = btmGrad;
         ctx.fillRect(-r, 0, r * 2, r);
 
-        // Bottom internal resin core
         const amberCore = ctx.createRadialGradient(0, r * 0.45, 1, 0, r * 0.45, r * 0.7);
         amberCore.addColorStop(0, 'rgba(254, 215, 170, 0.7)');
         amberCore.addColorStop(0.6, 'rgba(217, 119, 6, 0.3)');
@@ -721,13 +744,11 @@
         ctx.arc(0, r * 0.45, r * 0.65, 0, Math.PI * 2);
         ctx.fill();
 
-        // Seam & Interlocking Rim
         ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
         ctx.fillRect(-r, -1.5, r * 2, 1.2);
         ctx.fillStyle = 'rgba(30, 20, 10, 0.5)';
         ctx.fillRect(-r, -0.3, r * 2, 1.6);
 
-        // Spherical Curvature Shading
         const sphereShade = ctx.createRadialGradient(r * 0.3, r * 0.3, r * 0.35, 0, 0, r);
         sphereShade.addColorStop(0, 'rgba(0, 0, 0, 0)');
         sphereShade.addColorStop(0.7, 'rgba(0, 0, 0, 0.15)');
@@ -735,7 +756,6 @@
         ctx.fillStyle = sphereShade;
         ctx.fillRect(-r, -r, r * 2, r * 2);
 
-        // Specular highlight
         ctx.save();
         ctx.rotate(-0.6);
         ctx.fillStyle = liquidLevel > 0.1 ? 'rgba(255, 250, 220, 0.75)' : 'rgba(255, 255, 255, 0.85)';
@@ -744,24 +764,21 @@
         ctx.fill();
         ctx.restore();
 
-        ctx.restore(); // End capsule clip
+        ctx.restore();
 
-        // Capsule perimeter rim
         ctx.strokeStyle = liquidLevel > 0.1 ? 'rgba(253, 230, 138, 0.6)' : 'rgba(255, 255, 255, 0.6)';
         ctx.lineWidth = 1.2;
         ctx.beginPath();
         ctx.arc(0, 0, r, 0, Math.PI * 2);
         ctx.stroke();
 
-        ctx.restore(); // End capsule translate
+        ctx.restore();
       });
 
-      // --- 3. Submersion Tint Layer: Bathes submerged capsules inside golden beer ---
       if (liquidLevel > 0.02) {
         ctx.save();
         ctx.rotate(-liquidAngle);
 
-        // Mask only the area occupied by liquid
         ctx.beginPath();
         ctx.moveTo(-spanW, tankRadius * 1.5);
         ctx.lineTo(-spanW, currentSurfaceY);
@@ -770,7 +787,6 @@
         ctx.closePath();
         ctx.clip();
 
-        // Multi-stop volumetric beer veil over submerged capsule parts
         const submersionVeil = ctx.createLinearGradient(0, currentSurfaceY, 0, tankRadius * 1.2);
         submersionVeil.addColorStop(0, 'rgba(251, 191, 36, 0.28)');
         submersionVeil.addColorStop(0.3, 'rgba(245, 158, 11, 0.38)');
@@ -780,7 +796,6 @@
         ctx.fillStyle = submersionVeil;
         ctx.fillRect(-spanW, currentSurfaceY, spanW * 2, tankRadius * 1.6);
 
-        // Foreground Micro Bubbles (rising in front of the capsules)
         bubbles.forEach((b, idx) => {
           if (idx % 5 >= 3 && b.y > currentSurfaceY) {
             const bubbleX = b.x + Math.sin(b.wobble) * (b.isStream ? 1.2 : 3.5);
@@ -801,15 +816,14 @@
         ctx.restore();
       }
 
-      ctx.restore(); // End capsules & liquid translation
+      ctx.restore();
 
-      // --- 4. Velvet Foam Head (Rendered on top of liquid and partially submerged capsules) ---
+      // Velvet Foam Head
       if (liquidLevel > 0.005) {
         ctx.save();
         ctx.translate(cx, cy);
         ctx.rotate(-liquidAngle);
 
-        // Foam-Beer Crema Transition Layer
         const transGrad = ctx.createLinearGradient(0, currentSurfaceY - 4, 0, currentSurfaceY + 8);
         transGrad.addColorStop(0, 'rgba(254, 243, 199, 0.95)');
         transGrad.addColorStop(1, 'rgba(245, 158, 11, 0.1)');
@@ -822,7 +836,6 @@
         ctx.closePath();
         ctx.fill();
 
-        // Main dense velvet foam head
         const foamGrad = ctx.createLinearGradient(0, currentSurfaceY - foamThickness, 0, currentSurfaceY + 4);
         foamGrad.addColorStop(0, '#ffffff');
         foamGrad.addColorStop(0.35, '#fffdf7');
@@ -833,7 +846,6 @@
         ctx.beginPath();
         ctx.moveTo(-spanW, currentSurfaceY + 4);
 
-        // Foam top boundary
         for (let s = 0; s <= steps; s++) {
           const px = -spanW + (spanW * 2 * s) / steps;
           const mound = Math.sin(s * 0.55) * 2.5;
@@ -842,7 +854,6 @@
           ctx.lineTo(px, py);
         }
 
-        // Foam bottom boundary
         for (let s = steps; s >= 0; s--) {
           const px = -spanW + (spanW * 2 * s) / steps;
           const py = currentSurfaceY 
@@ -856,7 +867,7 @@
         ctx.restore();
       }
 
-      // --- 5. Glass Dome Front Ambient Rim & Vignette ---
+      // Ambient Glass Dome Vignette
       ctx.save();
       const glassVignette = ctx.createRadialGradient(cx, cy, tankRadius * 0.8, cx, cy, tankRadius);
       glassVignette.addColorStop(0, 'rgba(0, 0, 0, 0)');
@@ -868,7 +879,7 @@
       ctx.fill();
       ctx.restore();
 
-      ctx.restore(); // End glass dome clip
+      ctx.restore();
 
       requestAnimationFrame(render);
     }
@@ -913,17 +924,16 @@
 
     function onTankFull() {
       isFull = true;
-      const instruction = document.getElementById('shake-instruction');
-      if (instruction) {
-        instruction.innerHTML = '✨ <b>生ビール満タン！</b> 赤丸のハンドルを回そう！';
-      }
 
-      // ハンドルをReady（回転可能・発光）状態へ切り替え
       const handle = document.getElementById('crank-handle');
+      const knob = document.getElementById('crank-knob-visual');
       const handlePrompt = document.getElementById('handle-prompt');
       if (handle) {
         handle.classList.remove('handle-idle');
         handle.classList.add('handle-ready');
+      }
+      if (knob) {
+        knob.style.opacity = '1';
       }
       if (handlePrompt) {
         handlePrompt.classList.remove('hidden');
@@ -943,14 +953,12 @@
     let lastX = null, lastY = null, lastZ = null;
     let lastShakeTime = 0;
 
-    // 高精度・高互換性シェイク検知ロジック (iOS / Android 両対応)
     function handleMotion(e) {
-      // 重力込み加速度、または純加速度のどちらでも取得
       const acc = e.accelerationIncludingGravity || e.acceleration;
       if (!acc) return;
 
       const now = performance.now();
-      if (now - lastShakeTime < 70) return; // 最小インターバル
+      if (now - lastShakeTime < 70) return;
 
       const curX = acc.x ?? 0;
       const curY = acc.y ?? 0;
@@ -962,7 +970,6 @@
         const dz = curZ - lastZ;
         const delta = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
-        // 閾値を超えたらシェイクと判定（軽快に反応するよう感度を調整）
         if (delta > 8.0) {
           const gain = Math.min(2.2, (delta - 8.0) * 0.18 + 0.6);
           shakeVelocity.x += (Math.random() - 0.5) * 10;
@@ -979,25 +986,21 @@
 
     function handleOrientation(e) {
       if (e.gamma !== null && e.gamma !== undefined) {
-        // Gamma: Left to Right (-90 to +90) -> responsive, fluid tilt
         const rad = (e.gamma * Math.PI) / 180;
         targetLiquidAngle = Math.max(-1.25, Math.min(1.25, rad * 1.4));
         targetTiltX = Math.max(-1.5, Math.min(1.5, rad * 1.6));
       }
       if (e.beta !== null && e.beta !== undefined) {
-        // Beta: Front to Back (-180 to +180)
         targetTiltY = (e.beta - 45) * 0.02;
       }
     }
 
-    // センサー確実起動マネージャー
     let sensorActive = false;
     async function activateSensors() {
       initAudio();
       if (sensorActive) return;
 
       try {
-        // iOS 13+ Safari Permission API
         if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
           const permissionState = await DeviceMotionEvent.requestPermission();
           if (permissionState === 'granted') {
@@ -1014,7 +1017,6 @@
             }
           }
         } else {
-          // Android / PC / 非iOS環境
           window.addEventListener('devicemotion', handleMotion, { passive: true });
           window.addEventListener('deviceorientation', handleOrientation, { passive: true });
           sensorActive = true;
@@ -1024,14 +1026,10 @@
       }
     }
 
-    // ユーザーの画面ファーストタッチ・クリックで確実にセンサーを有効化
     window.addEventListener('touchstart', activateSensors, { passive: true });
     window.addEventListener('click', activateSensors);
-    
-    // 即時バインドも試行（Android等は初回から即座に動作）
     activateSensors();
 
-    // Desktop mouse tilt simulation
     window.addEventListener('mousemove', (e) => {
       const normX = (e.clientX / window.innerWidth) * 2 - 1;
       const normY = (e.clientY / window.innerHeight) * 2 - 1;
@@ -1040,10 +1038,9 @@
       targetTiltY = normY * 0.6;
     });
 
-    // Sphere / Body tap handler: shake fallback when filling
     const tankContainer = document.getElementById('tank-container');
     if (tankContainer) {
-      tankContainer.addEventListener('click', (e) => {
+      tankContainer.addEventListener('click', () => {
         activateSensors();
         if (!isFull) {
           shakeVelocity.x = (Math.random() - 0.5) * 12;
@@ -1053,7 +1050,6 @@
       });
     }
 
-    // ガイダンスバーのタップでもセンサーをアクティブ化し泡を注入
     const shakeInstruction = document.getElementById('shake-instruction');
     if (shakeInstruction) {
       shakeInstruction.addEventListener('click', () => {
@@ -1064,32 +1060,24 @@
       });
     }
 
-    // --- Crank Handle Interaction (赤丸部分タップ) ---
     const crankHandle = document.getElementById('crank-handle');
     if (crankHandle) {
       crankHandle.addEventListener('click', () => {
         initAudio();
 
         if (!isFull) {
-          // まだ満タンでない場合: 少しカタカタ動いて案内
           playCrankSound();
           const knob = document.getElementById('crank-knob-visual');
           if (knob) {
-            knob.style.transform = 'rotate(15deg)';
+            knob.style.opacity = '0.7';
+            knob.style.transform = 'rotate(10deg)';
             setTimeout(() => {
-              knob.style.transform = 'rotate(-10deg)';
+              knob.style.transform = 'rotate(-8deg)';
               setTimeout(() => {
                 knob.style.transform = 'rotate(0deg)';
-              }, 100);
-            }, 100);
-          }
-
-          const instruction = document.getElementById('shake-instruction');
-          if (instruction) {
-            instruction.innerHTML = '⚠️ まだビールが足りません！振って満タンにしよう！';
-            setTimeout(() => {
-              if (!isFull) instruction.innerHTML = 'スマホを振って黄金の生ビールを満タンに注ごう！';
-            }, 1800);
+                knob.style.opacity = '0';
+              }, 120);
+            }, 120);
           }
           return;
         }
@@ -1097,7 +1085,6 @@
         if (isCranking) return;
         isCranking = true;
 
-        // ハンドル回転アニメーション実行
         playCrankSound();
         if (navigator.vibrate) {
           navigator.vibrate([60, 40, 60, 40, 100]);
@@ -1109,34 +1096,28 @@
         crankHandle.classList.remove('handle-ready');
         const knob = document.getElementById('crank-knob-visual');
         if (knob) {
+          knob.style.opacity = '1';
           knob.style.transform = 'rotate(360deg)';
         }
 
         setTimeout(() => playCrankSound(), 280);
 
-        // 回転完了後、青丸の排出口からカプセルが転がり出る
         setTimeout(() => {
           ejectCapsuleToChute();
         }, 750);
       });
     }
 
-    // 青丸の排出口へカプセルをドロップ
     function ejectCapsuleToChute() {
       playCrankSound();
 
       const dispensed = document.getElementById('dispensed-capsule');
       const tapGuide = document.getElementById('capsule-tap-guide');
-      const instruction = document.getElementById('shake-instruction');
-
-      if (instruction) {
-        instruction.innerHTML = '🎁 <b>カプセルが出ました！</b> タップして開封しよう！';
-      }
 
       if (dispensed) {
         dispensed.classList.remove('hidden');
         dispensed.classList.remove('chute-eject', 'capsule-waiting');
-        void dispensed.offsetWidth; // リフロー強制
+        void dispensed.offsetWidth;
         dispensed.classList.add('chute-eject');
 
         setTimeout(() => {
@@ -1146,14 +1127,12 @@
       }
     }
 
-    // 排出口に出たカプセルをタップして開封
     const dispensedCapsule = document.getElementById('dispensed-capsule');
     if (dispensedCapsule) {
       dispensedCapsule.addEventListener('click', () => {
         initAudio();
         dispenseCapsule();
 
-        // 排出口のカプセルを非表示に
         dispensedCapsule.classList.add('hidden');
         dispensedCapsule.classList.remove('chute-eject', 'capsule-waiting');
         const tapGuide = document.getElementById('capsule-tap-guide');
@@ -1174,13 +1153,13 @@
 
     function rollGachaItem() {
       const rand = Math.random() * 100;
-      if (rand < 10) return GACHA_ITEMS[0]; // SSR
-      if (rand < 22) return GACHA_ITEMS[1]; // SSR
-      if (rand < 45) return GACHA_ITEMS[2]; // SR
-      if (rand < 65) return GACHA_ITEMS[3]; // SR
-      if (rand < 82) return GACHA_ITEMS[4]; // R
-      if (rand < 92) return GACHA_ITEMS[5]; // R
-      return GACHA_ITEMS[6 + Math.floor(Math.random() * 2)]; // N
+      if (rand < 10) return GACHA_ITEMS[0];
+      if (rand < 22) return GACHA_ITEMS[1];
+      if (rand < 45) return GACHA_ITEMS[2];
+      if (rand < 65) return GACHA_ITEMS[3];
+      if (rand < 82) return GACHA_ITEMS[4];
+      if (rand < 92) return GACHA_ITEMS[5];
+      return GACHA_ITEMS[6 + Math.floor(Math.random() * 2)];
     }
 
     function dispenseCapsule() {
@@ -1191,12 +1170,10 @@
       const resType = document.getElementById('res-type');
       const resDesc = document.getElementById('res-desc');
       const resRarity = document.getElementById('res-rarity');
-      const resIcon = document.getElementById('res-icon');
 
       resName.textContent = item.name;
       resType.textContent = item.type;
       resDesc.textContent = item.desc;
-      resIcon.textContent = item.icon;
       resRarity.textContent = item.rarity;
 
       if (item.rarity === 'SSR') {
@@ -1215,39 +1192,36 @@
       modal.classList.add('flex');
     }
 
-    document.getElementById('close-modal-btn').addEventListener('click', () => {
-      document.getElementById('result-modal').classList.add('hidden');
-      document.getElementById('result-modal').classList.remove('flex');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    if (closeModalBtn) {
+      closeModalBtn.addEventListener('click', () => {
+        document.getElementById('result-modal').classList.add('hidden');
+        document.getElementById('result-modal').classList.remove('flex');
 
-      bubblePower = 0;
-      isFull = false;
-      isCranking = false;
+        bubblePower = 0;
+        isFull = false;
+        isCranking = false;
 
-      // ハンドルの状態を初期状態（Idle）にリセット
-      const crankHandle = document.getElementById('crank-handle');
-      if (crankHandle) {
-        crankHandle.classList.remove('handle-ready');
-        crankHandle.classList.add('handle-idle');
-      }
-      const knob = document.getElementById('crank-knob-visual');
-      if (knob) {
-        knob.style.transform = 'rotate(0deg)';
-      }
+        const crankHandle = document.getElementById('crank-handle');
+        if (crankHandle) {
+          crankHandle.classList.remove('handle-ready');
+          crankHandle.classList.add('handle-idle');
+        }
+        const knob = document.getElementById('crank-knob-visual');
+        if (knob) {
+          knob.style.transform = 'rotate(0deg)';
+          knob.style.opacity = '0';
+        }
 
-      // 排出口の非表示リセット
-      const dispensed = document.getElementById('dispensed-capsule');
-      if (dispensed) dispensed.classList.add('hidden');
-      const tapGuide = document.getElementById('capsule-tap-guide');
-      if (tapGuide) tapGuide.classList.add('hidden');
+        const dispensed = document.getElementById('dispensed-capsule');
+        if (dispensed) dispensed.classList.add('hidden');
+        const tapGuide = document.getElementById('capsule-tap-guide');
+        if (tapGuide) tapGuide.classList.add('hidden');
 
-      updateUI();
-      const instruction = document.getElementById('shake-instruction');
-      if (instruction) {
-        instruction.textContent = 'スマホを振って黄金の生ビールを満タンに注ごう！';
-      }
-    });
+        updateUI();
+      });
+    }
 
-    // Initialize on window load
     window.onload = () => {
       handleResize();
       initBubbles();
