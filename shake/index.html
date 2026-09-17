@@ -1,51 +1,501 @@
-<!-- ... existing code ... -->
-      lastX = curX;
-      lastY = curY;
-      lastZ = curZ;
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>クラフトビール泡ガチャ</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Confetti Canvas -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      /* 背景画像の金具フレームに合わせた座標と一回り拡大した球体サイズ */
+      --sphere-top: 32.9%;
+      --sphere-left: 50.0%;
+      --sphere-size: 82.5%;
+      /* 真鍮ハンドル軸の位置（赤丸の位置：中央円形プレートの水平レバー軸） */
+      --handle-top: 66.0%;
+      --handle-left: 50.0%;
+      /* 排出口トレイの位置（青丸の位置：金色の受皿トレイ中央） */
+      --chute-top: 79.8%;
+      --chute-left: 50.0%;
     }
 
-    function handleOrientation(e) {
-<!-- ... existing code ... -->
-    let sensorActive = false;
-    async function activateSensors() {
-      initAudio();
-      if (sensorActive) return;
+    body {
+      background-color: #000000;
+      overflow: hidden;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
 
-      try {
-        if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-          const permissionState = await DeviceMotionEvent.requestPermission();
-          if (permissionState === 'granted') {
-            window.addEventListener('devicemotion', handleMotion, { passive: true });
-            sensorActive = true;
+    /* 球体内部を奥行きのある立体ガラス空間でマスク */
+    .glass-dome {
+      border-radius: 50%;
+      background: radial-gradient(circle at 45% 35%, #181410 0%, #0d0a08 55%, #030202 100%);
+      box-shadow:
+        /* ガラス外周の輪郭エッジ＆深み */
+        0 8px 32px rgba(0, 0, 0, 0.9),
+        0 2px 8px rgba(0, 0, 0, 0.7),
+        /* 球体内部の深い球面アンビエントシャドウ */
+        inset 0 0 45px rgba(0, 0, 0, 0.95),
+        inset 0 0 16px rgba(0, 0, 0, 0.8),
+        /* ガラスの厚みを感じさせるリムハイライト */
+        inset 0 2px 5px rgba(255, 255, 255, 0.35),
+        inset 0 -4px 12px rgba(245, 158, 11, 0.25);
+    }
 
-            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-              try {
-                const orientState = await DeviceOrientationEvent.requestPermission();
-                if (orientState === 'granted') {
-                  window.addEventListener('deviceorientation', handleOrientation, { passive: true });
-                }
-              } catch (err) {}
-            }
-          }
-        } else {
-          window.addEventListener('devicemotion', handleMotion, { passive: true });
-          window.addEventListener('deviceorientation', handleOrientation, { passive: true });
-          sensorActive = true;
-        }
-      } catch (err) {
-        console.warn('Sensor request error:', err);
+    /* ガラス表面の多層3Dハイライト＆曲面リフレクション */
+    .glass-reflection {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      pointer-events: none;
+      background: 
+        /* 左上のメイン光源ハイライト（三日月状） */
+        radial-gradient(circle at 32% 22%, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.2) 18%, transparent 38%),
+        /* 右上の細長い斜め光条 */
+        linear-gradient(135deg, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0.08) 26%, transparent 48%),
+        /* ガラス側面の曲面フレネル反射 */
+        radial-gradient(circle at 82% 40%, rgba(255, 255, 255, 0.25) 0%, transparent 30%),
+        /* 下部カウンター照明の琥珀色バウンスライト */
+        radial-gradient(circle at 50% 92%, rgba(251, 191, 36, 0.32) 0%, rgba(217, 119, 6, 0.12) 35%, transparent 55%);
+      box-shadow:
+        /* ガラスレンズのエッジハイライト */
+        inset 1px 2px 3px rgba(255, 255, 255, 0.45),
+        inset -1px -2px 6px rgba(0, 0, 0, 0.6);
+    }
+
+    /* ガラスの曲面グレア（レンズの弧状の光彩） */
+    .glass-reflection::after {
+      content: '';
+      position: absolute;
+      top: 6%;
+      left: 14%;
+      width: 72%;
+      height: 38%;
+      border-radius: 50%;
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.25), transparent);
+      transform: rotate(-18deg);
+      filter: blur(1.5px);
+      pointer-events: none;
+    }
+
+    /* 満タン時の球体オーラ */
+    .pulse-ready {
+      animation: sphereGlow 2.2s infinite ease-in-out;
+    }
+    @keyframes sphereGlow {
+      0%, 100% {
+        box-shadow: 0 0 25px rgba(245, 158, 11, 0.4), inset 0 0 15px rgba(255, 215, 0, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 45px rgba(251, 191, 36, 0.85), 0 0 80px rgba(245, 158, 11, 0.5), inset 0 0 25px rgba(255, 255, 255, 0.6);
       }
     }
 
-    window.addEventListener('touchstart', activateSensors, { passive: true });
-    window.addEventListener('click', activateSensors);
-    activateSensors();
+    /* 真鍮ハンドル（通常時は透明で元絵のレバーを見せる） */
+    .brass-crank {
+      background: radial-gradient(circle, #ffe082 0%, #d4af37 40%, #aa7c11 75%, #5a4005 100%);
+      box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.8),
+        0 0 0 2px #5a4005,
+        inset 0 2px 3px rgba(255, 255, 255, 0.6),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.7);
+      transition: transform 0.15s ease-out, filter 0.3s;
+    }
+    .brass-crank-rotating {
+      transition: transform 0.9s cubic-bezier(0.25, 1, 0.5, 1) !important;
+      transform: rotate(360deg) !important;
+    }
+    .crank-ready-glow {
+      animation: crankGlow 1.5s infinite alternate;
+    }
+    @keyframes crankGlow {
+      from { filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.5)); }
+      to { filter: drop-shadow(0 0 16px rgba(251, 191, 36, 1)) drop-shadow(0 0 24px rgba(245, 158, 11, 0.8)); }
+    }
 
-    window.addEventListener('mousemove', (e) => {
-<!-- ... existing code ... -->
-```
-```html:ビール泡ガチャ:index.html
-<!-- ... existing code ... -->
+    /* 3Dカプセルデザイン */
+    .capsule-3d {
+      border-radius: 50%;
+      position: relative;
+      overflow: hidden;
+      background: #ffffff;
+      box-shadow:
+        0 8px 18px rgba(0, 0, 0, 0.75),
+        inset -3px -3px 8px rgba(0, 0, 0, 0.45),
+        inset 3px 3px 8px rgba(255, 255, 255, 0.8);
+    }
+    .capsule-3d-top {
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 50%;
+      background: radial-gradient(circle at 35% 30%, #ffffff 0%, #e2e8f0 60%, #94a3b8 100%);
+    }
+    .capsule-3d-bottom {
+      position: absolute;
+      bottom: 0; left: 0; right: 0; height: 50%;
+      background: radial-gradient(circle at 50% 30%, #f59e0b 0%, #d97706 50%, #78350f 100%);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+    }
+    .capsule-3d-seam {
+      position: absolute;
+      top: 50%; left: 0; right: 0; height: 2px;
+      transform: translateY(-50%);
+      background: rgba(0, 0, 0, 0.35);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+      z-index: 2;
+    }
+    .capsule-3d-shine {
+      position: absolute;
+      top: 12%; left: 18%; width: 38%; height: 24%;
+      border-radius: 50%;
+      background: radial-gradient(ellipse, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0) 75%);
+      transform: rotate(-30deg);
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    /* カプセル射出アニメーション（横ズレを防止し純粋な縦方向の自然なバウンドに修正） */
+    .capsule-dispense-anim {
+      animation: chuteDrop 0.85s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+    }
+    @keyframes chuteDrop {
+      0% {
+        transform: translateY(-48px) scale(0.35);
+        opacity: 0;
+      }
+      50% {
+        opacity: 1;
+      }
+      70% {
+        transform: translateY(3px) scale(1.06);
+      }
+      85% {
+        transform: translateY(-2px) scale(0.98);
+      }
+      100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+
+<body class="h-[100dvh] w-screen flex items-center justify-center m-0 p-0 select-none">
+  <div id="machine-wrapper" class="relative w-auto h-[100dvh] max-w-full flex items-center justify-center overflow-hidden">
+    <!-- 背景画像 -->
+    <img
+      id="gacha-bg"
+      src="./gacha.png"
+      onerror="this.onerror=null; this.src='https://raw.githubusercontent.com/010m-xtech/TEST2/main/shake/gacha.png';"
+      alt="Craft Beer Gacha Machine"
+      class="block h-full w-auto max-w-full max-h-[100dvh] object-contain pointer-events-none select-none z-0"
+    />
+
+    <!-- 画面上部の説明文（1行・固定） -->
+    <div
+      id="top-guide-container"
+      class="absolute z-20 left-1/2 -translate-x-1/2 pointer-events-none flex flex-col items-center"
+      style="top: max(3.5%, calc(var(--safe-top) + 8px));"
+    >
+      <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/85 border border-amber-500/40 text-amber-200 shadow-2xl backdrop-blur-md">
+        <span class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+        <span id="shake-instruction" class="text-[11px] sm:text-xs font-medium tracking-wider whitespace-nowrap">
+          スマホを振ってね！生ビールが溜まっていくよ
+        </span>
+      </div>
+    </div>
+
+    <!-- 球体キャンバスコンテナ -->
+    <div
+      id="tank-container"
+      class="absolute z-10 glass-dome overflow-hidden cursor-pointer"
+      style="
+        top: var(--sphere-top);
+        left: var(--sphere-left);
+        width: var(--sphere-size);
+        height: 0;
+        padding-bottom: var(--sphere-size);
+        transform: translate(-50%, -50%);
+      "
+    >
+      <canvas id="beer-canvas" class="absolute inset-0 w-full h-full"></canvas>
+      <div class="glass-reflection"></div>
+
+      <!-- 球体下部の進捗バッジ -->
+      <div
+        id="bubble-status-badge"
+        class="absolute bottom-[6%] left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/85 border border-amber-500/30 text-[11px] sm:text-xs font-mono font-bold tracking-wider text-amber-300 shadow-lg pointer-events-none flex items-center gap-1.5 backdrop-blur-sm z-20"
+      >
+        <span id="bubble-status-dot" class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+        <span>泡＆ビール: <span id="bubble-percent">0</span>%</span>
+      </div>
+    </div>
+
+    <!-- 真鍮ハンドル（赤丸の位置） -->
+    <div
+      id="crank-handle"
+      class="absolute z-30 cursor-pointer pointer-events-auto flex items-center justify-center"
+      style="
+        top: var(--handle-top);
+        left: var(--handle-left);
+        width: 80px;
+        height: 80px;
+        transform: translate(-50%, -50%);
+      "
+    >
+      <!-- 満タン時に出現する発光真鍮レバー -->
+      <div
+        id="crank-visual"
+        class="brass-crank relative rounded-full opacity-0 pointer-events-none transition-all duration-300 flex items-center justify-center"
+        style="width: 72px; height: 20px; transform-origin: center center;"
+      >
+        <div class="w-4 h-4 rounded-full bg-gradient-to-b from-amber-200 to-amber-700 shadow-inner border border-amber-900 flex items-center justify-center">
+          <div class="w-1.5 h-1.5 rounded-full bg-amber-950"></div>
+        </div>
+      </div>
+      <!-- ハンドル上の誘導フキダシ -->
+      <div
+        id="handle-prompt"
+        class="absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-amber-500 text-black shadow-lg opacity-0 transition-opacity duration-300 pointer-events-none"
+      >
+        タップして回してね！
+      </div>
+    </div>
+    <!-- カプセル排出口（青丸の位置：金色の受皿トレイ） -->
+    <div
+      id="capsule-chute"
+      class="absolute z-30 pointer-events-none flex items-center justify-center"
+      style="
+        top: var(--chute-top);
+        left: var(--chute-left);
+        transform: translate(-50%, -50%);
+        width: 60px;
+        height: 60px;
+      "
+    >
+      <!-- 排出された3Dカプセル（受皿トレイの真ん中にジャスト着座） -->
+      <div
+        id="dispensed-capsule"
+        class="relative hidden pointer-events-auto cursor-pointer flex flex-col items-center justify-center"
+      >
+        <!-- タップ開封案内フキダシ（カプセルの上部に浮かせてトレイの接地を邪魔しない） -->
+        <span class="absolute -top-6 whitespace-nowrap text-[9px] font-bold text-amber-300 bg-black/90 px-2 py-0.5 rounded-full border border-amber-500/50 animate-bounce shadow-lg">
+          タップして開封！
+        </span>
+        <div class="capsule-3d w-10 h-10 relative">
+          <div class="capsule-3d-top"></div>
+          <div class="capsule-3d-bottom"></div>
+          <div class="capsule-3d-seam"></div>
+          <div class="capsule-3d-shine"></div>
+        </div>
+        <!-- トレイに落ちる接地シャドウ -->
+        <div class="w-8 h-1.5 rounded-full bg-black/70 blur-[1.5px] mt-0.5"></div>
+      </div>
+    </div>
+  </div>
+
+  <div
+    id="result-modal"
+    class="fixed inset-0 z-50 hidden flex-col items-center justify-center bg-black/90 backdrop-blur-md p-4 transition-opacity duration-300"
+  >
+    <div class="relative max-w-sm w-full bg-neutral-900 border border-amber-600/40 rounded-2xl p-6 text-center shadow-[0_0_50px_rgba(245,158,11,0.25)] flex flex-col items-center">
+      <div class="text-xs tracking-widest text-amber-500 font-serif mb-1">CRAFT BEER DISPENSED</div>
+      <h3 id="result-rarity" class="text-lg font-bold text-amber-300 tracking-wider mb-4">極上の生ビールが注がれました！</h3>
+
+      <div class="relative my-3 flex items-center justify-center">
+        <div class="capsule-3d w-20 h-20 shadow-[0_15px_30px_rgba(0,0,0,0.9)]">
+          <div class="capsule-3d-top"></div>
+          <div class="capsule-3d-bottom"></div>
+          <div class="capsule-3d-seam"></div>
+          <div class="capsule-3d-shine"></div>
+        </div>
+      </div>
+
+      <div class="mt-3 w-full bg-black/50 border border-amber-500/20 rounded-xl p-3">
+        <div class="text-[10px] text-neutral-400">当選銘柄</div>
+        <div id="result-name" class="text-lg font-bold text-amber-100 font-serif tracking-wide mt-0.5">IPAプレミアム</div>
+        <div id="result-desc" class="text-xs text-neutral-300 mt-2 leading-relaxed">華やかなホップの香りと心地よい苦味の最高峰。</div>
+      </div>
+
+      <button
+        id="close-modal-btn"
+        class="mt-5 w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 text-black font-bold text-sm tracking-wider shadow-lg active:scale-95 transition-transform"
+      >
+        もう一杯注ぐ
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const MAX_POWER = 100.0;
+    let bubblePower = 0.0;
+    let isFull = false;
+    let isCranking = false;
+
+    const BEER_ITEMS = [
+      { name: "芳醇IPA エクストラ", rarity: "GOLD SPECIAL", desc: "柑橘系ホップの鮮烈なアロマと重厚な苦味が調和した極上IPA。" },
+      { name: "琥珀プレミアムピルスナー", rarity: "STANDARD", desc: "黄金の輝きと爽快な喉越し。麦芽100%の伝統クラシック。" },
+      { name: "黒樽インペリアルスタウト", rarity: "DARK SPECIAL", desc: "ロースト麦芽の香ばしい深みとカカオのような濃厚なコク。" },
+      { name: "白夜ヴァイツェン", rarity: "SPECIAL WHITE", desc: "バナナを思わせるフルーティーな香りとクリーミーな神泡。" },
+      { name: "ベルジャン・ゴールドセゾン", rarity: "VINTAGE", desc: "スパイス感と爽やかな酸味が広がる、職人仕込みの伝統エール。" }
+    ];
+
+    const machineWrapper = document.getElementById('machine-wrapper');
+    const gachaBg = document.getElementById('gacha-bg');
+    const tankContainer = document.getElementById('tank-container');
+    const canvas = document.getElementById('beer-canvas');
+    const ctx = canvas.getContext('2d');
+    const bubblePercent = document.getElementById('bubble-percent');
+    const bubbleStatusDot = document.getElementById('bubble-status-dot');
+    const crankHandle = document.getElementById('crank-handle');
+    const crankVisual = document.getElementById('crank-visual');
+    const handlePrompt = document.getElementById('handle-prompt');
+    const dispensedCapsule = document.getElementById('dispensed-capsule');
+    const resultModal = document.getElementById('result-modal');
+    const resultName = document.getElementById('result-name');
+    const resultRarity = document.getElementById('result-rarity');
+    const resultDesc = document.getElementById('result-desc');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+
+    let audioCtx = null;
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) audioCtx = new AudioContext();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function playBubbleSound() {
+      if (!audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        const freq = 380 + Math.random() * 260;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(freq + 180, audioCtx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.09);
+      } catch (err) {}
+    }
+
+    function playCrankSound() {
+      if (!audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(160, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(70, audioCtx.currentTime + 0.25);
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.26);
+      } catch (err) {}
+    }
+
+    let liquidAngle = 0;
+    let targetLiquidAngle = 0;
+    let targetTiltX = 0;
+    let targetTiltY = 0;
+    let currentTiltX = 0;
+    let currentTiltY = 0;
+    let shakeVelocity = { x: 0, y: 0 };
+    let wavePhase = 0;
+
+    // 球体内に浮かぶ15個のカプセル（浮力とゆらぎのパラメータ付き）
+    const capsules = Array.from({ length: 15 }, (_, i) => {
+      const angle = (i / 15) * Math.PI * 2;
+      const dist = 20 + (i % 4) * 16;
+      return {
+        x: Math.cos(angle) * dist,
+        y: Math.sin(angle) * dist,
+        vx: (Math.random() - 0.5) * 0.6,
+        vy: (Math.random() - 0.5) * 0.6,
+        r: 15.5,
+        rot: Math.random() * Math.PI * 2,
+        vrot: (Math.random() - 0.5) * 0.03,
+        buoyancyFactor: 0.85 + (i % 5) * 0.08,
+        bobPhase: Math.random() * Math.PI * 2,
+        bobSpeed: 0.8 + Math.random() * 0.6
+      };
+    });
+
+    // 炭酸気泡（マイクロバブル）
+    const microBubbles = Array.from({ length: 32 }, () => ({
+      x: (Math.random() - 0.5) * 130,
+      y: Math.random() * 100,
+      speed: 0.8 + Math.random() * 1.5,
+      r: 1 + Math.random() * 2
+    }));
+
+    function handleResize() {
+      if (gachaBg.complete && gachaBg.naturalWidth > 0) {
+        const bgRect = gachaBg.getBoundingClientRect();
+        if (bgRect.width > 0 && bgRect.height > 0) {
+          machineWrapper.style.width = bgRect.width + 'px';
+          machineWrapper.style.height = bgRect.height + 'px';
+        }
+      }
+      const rect = tankContainer.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
+    }
+
+    gachaBg.addEventListener('load', handleResize);
+    window.addEventListener('resize', handleResize);
+
+    function addBubblePower(amount, fromShake = false) {
+      if (isFull) return;
+      initAudio();
+      bubblePower = Math.min(MAX_POWER, bubblePower + amount);
+      if (Math.random() < 0.35) playBubbleSound();
+      updateUI();
+      if (bubblePower >= MAX_POWER) {
+        onTankFull();
+      }
+    }
+
+    function updateUI() {
+      const pct = Math.floor(bubblePower);
+      bubblePercent.textContent = pct;
+      if (bubblePower >= MAX_POWER) {
+        tankContainer.classList.add('pulse-ready');
+        bubbleStatusDot.className = 'inline-block w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]';
+      } else {
+        tankContainer.classList.remove('pulse-ready');
+        bubbleStatusDot.className = 'inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse';
+      }
+    }
+
+    function onTankFull() {
+      isFull = true;
+      if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+      confetti({ particleCount: 35, spread: 60, origin: { y: 0.55 }, colors: ['#f59e0b', '#fbbf24', '#ffffff'] });
+
+      crankVisual.style.opacity = '1';
+      crankVisual.style.pointerEvents = 'auto';
+      crankVisual.classList.add('crank-ready-glow');
+      handlePrompt.style.opacity = '1';
+    }
+
     let lastX = null, lastY = null, lastZ = null;
     let lastShakeTime = 0;
 
@@ -53,25 +503,21 @@
       const now = performance.now();
       if (now - lastShakeTime < 60) return;
 
-      // 純粋な運動加速度（重力除去済み）を優先し、なければ重力込み加速度を使用
       const pureAcc = e.acceleration;
       if (pureAcc && pureAcc.x !== null && pureAcc.y !== null && pureAcc.z !== null) {
         const mag = Math.sqrt(pureAcc.x * pureAcc.x + pureAcc.y * pureAcc.y + pureAcc.z * pureAcc.z);
-        // 感度を高めに調整（4.0m/s²以上で検知）
         if (mag > 4.0) {
-          const gain = Math.min(3.5, (mag - 4.0) * 0.35 + 1.0);
-          shakeVelocity.x += (pureAcc.x || (Math.random() - 0.5) * 8) * 0.6;
-          shakeVelocity.y -= 7;
+          const gain = Math.min(3.5, (mag - 4.0) * 0.4 + 1.2);
+          shakeVelocity.x += (pureAcc.x || (Math.random() - 0.5) * 8) * 0.5;
+          shakeVelocity.y -= 6;
           addBubblePower(gain, true);
           lastShakeTime = now;
           return;
         }
       }
 
-      // 重力込み加速度での差分検知（フォールバック）
       const acc = e.accelerationIncludingGravity || e.acceleration;
       if (!acc) return;
-
       const curX = acc.x ?? 0;
       const curY = acc.y ?? 0;
       const curZ = acc.z ?? 0;
@@ -82,11 +528,10 @@
         const dz = curZ - lastZ;
         const delta = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
-        // 軽いシェイクでも反応するよう閾値を 8.0 → 4.5 に大幅緩和
-        if (delta > 4.5) {
-          const gain = Math.min(3.2, (delta - 4.5) * 0.3 + 0.8);
-          shakeVelocity.x += (Math.random() - 0.5) * 12;
-          shakeVelocity.y -= 7;
+        if (delta > 4.2) {
+          const gain = Math.min(3.2, (delta - 4.2) * 0.35 + 1.0);
+          shakeVelocity.x += (Math.random() - 0.5) * 10;
+          shakeVelocity.y -= 6;
           addBubblePower(gain, true);
           lastShakeTime = now;
         }
@@ -114,7 +559,6 @@
       if (sensorActive) return;
 
       try {
-        // iOS 13+ のユーザー許可要求
         if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
           const permissionState = await DeviceMotionEvent.requestPermission();
           if (permissionState === 'granted') {
@@ -131,20 +575,376 @@
             }
           }
         } else {
-          // Android または許可要求が不要な環境
           window.addEventListener('devicemotion', handleMotion, { passive: true });
           window.addEventListener('deviceorientation', handleOrientation, { passive: true });
           sensorActive = true;
         }
       } catch (err) {
-        console.warn('Sensor request error:', err);
+        console.warn('Sensor activation error:', err);
       }
     }
 
-    // 画面タップ・タッチ時に確実にセンサーと音声をアンロック（自動実行はiOSで拒否されるため削除）
     window.addEventListener('touchstart', activateSensors, { passive: true });
-    window.addEventListener('touchend', activateSensors, { passive: true });
     window.addEventListener('click', activateSensors);
 
     window.addEventListener('mousemove', (e) => {
-<!-- ... existing code ... -->
+      if ('ontouchstart' in window) return;
+      const normX = (e.clientX / window.innerWidth) * 2 - 1;
+      const normY = (e.clientY / window.innerHeight) * 2 - 1;
+      targetLiquidAngle = normX * 0.85;
+      targetTiltX = normX * 1.1;
+      targetTiltY = normY * 0.6;
+    });
+
+    tankContainer.addEventListener('click', () => {
+      initAudio();
+      if (!isFull) {
+        shakeVelocity.x += (Math.random() - 0.5) * 12;
+        shakeVelocity.y -= 7;
+        addBubblePower(2.5, false);
+      }
+    });
+
+    crankHandle.addEventListener('click', () => {
+      initAudio();
+      if (!isFull || isCranking) {
+        if (!isFull) {
+          crankVisual.style.transform = 'rotate(15deg)';
+          setTimeout(() => {
+            crankVisual.style.transform = 'rotate(0deg)';
+          }, 150);
+        }
+        return;
+      }
+
+      isCranking = true;
+      handlePrompt.style.opacity = '0';
+      crankVisual.classList.remove('crank-ready-glow');
+      crankVisual.classList.add('brass-crank-rotating');
+      playCrankSound();
+      if (navigator.vibrate) navigator.vibrate([80, 50, 80]);
+
+      setTimeout(() => {
+        crankVisual.classList.remove('brass-crank-rotating');
+        crankVisual.style.transform = 'rotate(0deg)';
+        ejectCapsuleToChute();
+      }, 950);
+    });
+
+    function ejectCapsuleToChute() {
+      dispensedCapsule.classList.remove('hidden');
+      dispensedCapsule.classList.add('capsule-dispense-anim');
+      playBubbleSound();
+      if (navigator.vibrate) navigator.vibrate(60);
+    }
+
+    dispensedCapsule.addEventListener('click', () => {
+      initAudio();
+      const item = BEER_ITEMS[Math.floor(Math.random() * BEER_ITEMS.length)];
+      resultName.textContent = item.name;
+      resultRarity.textContent = item.rarity;
+      resultDesc.textContent = item.desc;
+
+      resultModal.classList.remove('hidden');
+      resultModal.classList.add('flex');
+      confetti({ particleCount: 70, spread: 80, origin: { y: 0.5 }, colors: ['#f59e0b', '#fbbf24', '#ffffff'] });
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+      resultModal.classList.add('hidden');
+      resultModal.classList.remove('flex');
+      dispensedCapsule.classList.add('hidden');
+      dispensedCapsule.classList.remove('capsule-dispense-anim');
+
+      bubblePower = 0;
+      isFull = false;
+      isCranking = false;
+      crankVisual.style.opacity = '0';
+      crankVisual.style.pointerEvents = 'none';
+      updateUI();
+    });
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const w = tankContainer.clientWidth;
+      const h = tankContainer.clientHeight;
+      if (w === 0 || h === 0) return;
+
+      const r = w / 2;
+      ctx.clearRect(0, 0, w, h);
+
+      liquidAngle += (targetLiquidAngle - liquidAngle) * 0.18;
+      currentTiltX += (targetTiltX - currentTiltX) * 0.14;
+      currentTiltY += (targetTiltY - currentTiltY) * 0.14;
+
+      shakeVelocity.x *= 0.88;
+      shakeVelocity.y *= 0.88;
+      wavePhase += 0.05;
+
+      const fillRatio = bubblePower / MAX_POWER;
+      const totalHeight = fillRatio * (h * 0.84);
+      // 液体7：泡3の黄金比率
+      const liquidHeight = totalHeight * 0.70;
+      const foamHeight = totalHeight * 0.30;
+      const foamTopY = h * 0.94 - totalHeight;
+      const liquidTopY = h * 0.94 - liquidHeight;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(r, r, r - 1, 0, Math.PI * 2);
+      ctx.clip();
+
+      // 1. 球体内部の3D空間グラデーション（奥まった球面深度を演出）
+      const domeBg = ctx.createRadialGradient(r * 0.88, r * 0.75, r * 0.08, r, r, r);
+      domeBg.addColorStop(0, '#261f18');
+      domeBg.addColorStop(0.55, '#120e0b');
+      domeBg.addColorStop(0.85, '#070504');
+      domeBg.addColorStop(1, '#020101');
+      ctx.fillStyle = domeBg;
+      ctx.fill();
+
+      // 2. 黄金ビール液体（7割）の描画
+      if (liquidHeight > 1.5) {
+        ctx.save();
+        ctx.translate(r, liquidTopY);
+        ctx.rotate(liquidAngle);
+
+        const beerGrad = ctx.createLinearGradient(0, 0, 0, liquidHeight + 40);
+        beerGrad.addColorStop(0, '#fef08a');
+        beerGrad.addColorStop(0.12, '#facc15');
+        beerGrad.addColorStop(0.4, '#f59e0b');
+        beerGrad.addColorStop(0.75, '#d97706');
+        beerGrad.addColorStop(1, '#92400e');
+
+        ctx.fillStyle = beerGrad;
+        ctx.beginPath();
+        const halfW = w * 1.3;
+        ctx.moveTo(-halfW, h);
+        ctx.lineTo(-halfW, 0);
+
+        for (let x = -halfW; x <= halfW; x += 15) {
+          const wave = Math.sin(x * 0.035 + wavePhase) * (1.8 + Math.abs(shakeVelocity.x) * 0.3)
+                     + Math.cos(x * 0.08 + wavePhase * 1.5) * 0.8;
+          ctx.lineTo(x, wave);
+        }
+        ctx.lineTo(halfW, h);
+        ctx.closePath();
+        ctx.fill();
+
+        // 奥の炭酸気泡
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        microBubbles.forEach((b, idx) => {
+          if (idx % 2 === 0) {
+            b.y -= b.speed;
+            if (b.y < -liquidHeight) b.y = 0;
+            ctx.beginPath();
+            ctx.arc(b.x, b.y + liquidHeight, b.r, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        });
+
+        ctx.restore();
+      }
+
+      // 3. 15個のカプセル物理演算（浮力・ゆらぎ・衝突反発）と描画
+      for (let i = 0; i < capsules.length; i++) {
+        const c = capsules[i];
+        const gravY = 0.28;
+        const tiltForceX = currentTiltX * 0.45 + shakeVelocity.x * 0.15;
+        const tiltForceY = currentTiltY * 0.25;
+
+        c.vx += tiltForceX;
+        c.vy += gravY + tiltForceY;
+
+        const capAbsY = r + c.y;
+        // ビール液体および泡の層にいる場合の浮力（液面と泡の境界付近に自然にぷかぷか集まる）
+        if (capAbsY > liquidTopY && liquidHeight > 4) {
+          const depth = capAbsY - liquidTopY;
+          const baseBuoyancy = -0.46 * Math.min(1.4, depth / 22) * c.buoyancyFactor;
+          const bobbing = Math.sin(wavePhase * c.bobSpeed + c.bobPhase) * 0.18;
+          const horizontalDrift = Math.cos(wavePhase * 0.7 + c.bobPhase) * 0.08;
+
+          c.vy += baseBuoyancy + bobbing;
+          c.vx += horizontalDrift;
+          c.vx *= 0.90;
+          c.vy *= 0.90;
+        } else {
+          c.vx *= 0.97;
+          c.vy *= 0.97;
+        }
+
+        // カプセル同士の緩やかな反発（重なり防止＆自然な玉突き）
+        for (let j = i + 1; j < capsules.length; j++) {
+          const other = capsules[j];
+          const dx = other.x - c.x;
+          const dy = other.y - c.y;
+          const distCaps = Math.sqrt(dx * dx + dy * dy);
+          const minDist = c.r + other.r + 1;
+          if (distCaps < minDist && distCaps > 0.001) {
+            const overlap = (minDist - distCaps) * 0.5;
+            const nx = dx / distCaps;
+            const ny = dy / distCaps;
+            c.x -= nx * overlap * 0.6;
+            c.y -= ny * overlap * 0.6;
+            other.x += nx * overlap * 0.6;
+            other.y += ny * overlap * 0.6;
+            const kx = (c.vx - other.vx) * 0.3;
+            const ky = (c.vy - other.vy) * 0.3;
+            c.vx -= kx * nx;
+            c.vy -= ky * ny;
+            other.vx += kx * nx;
+            other.vy += ky * ny;
+          }
+        }
+
+        c.x += c.vx;
+        c.y += c.vy;
+        c.rot += c.vrot;
+
+        // 球体ガラス内壁との衝突バウンド判定
+        const dist = Math.sqrt(c.x * c.x + c.y * c.y);
+        const maxDist = r - c.r - 4;
+        if (dist > maxDist) {
+          const nx = c.x / dist;
+          const ny = c.y / dist;
+          c.x = nx * maxDist;
+          c.y = ny * maxDist;
+          const dot = c.vx * nx + c.vy * ny;
+          c.vx = (c.vx - 2 * dot * nx) * 0.45;
+          c.vy = (c.vy - 2 * dot * ny) * 0.45;
+        }
+
+        ctx.save();
+        ctx.translate(r + c.x, r + c.y);
+        ctx.rotate(c.rot);
+
+        // 白半球（トップ）
+        ctx.beginPath();
+        ctx.arc(0, 0, c.r, Math.PI, 0);
+        ctx.fillStyle = '#f8fafc';
+        ctx.fill();
+
+        // 琥珀半球（ボトム）
+        ctx.beginPath();
+        ctx.arc(0, 0, c.r, 0, Math.PI);
+        ctx.fillStyle = '#d97706';
+        ctx.fill();
+
+        // センターシーム（接合リム）
+        ctx.beginPath();
+        ctx.rect(-c.r, -1, c.r * 2, 2);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+        ctx.fill();
+
+        // 球体光沢ハイライト
+        const capGrad = ctx.createRadialGradient(-c.r * 0.3, -c.r * 0.3, 1, -c.r * 0.3, -c.r * 0.3, c.r * 0.9);
+        capGrad.addColorStop(0, 'rgba(255, 255, 255, 0.65)');
+        capGrad.addColorStop(0.3, 'rgba(255, 255, 255, 0.15)');
+        capGrad.addColorStop(1, 'rgba(0, 0, 0, 0.4)');
+        ctx.fillStyle = capGrad;
+        ctx.beginPath();
+        ctx.arc(0, 0, c.r, 0, Math.PI * 2);
+        ctx.fill();
+
+        // ビールに沈んでいる深度に応じたアンバー色被り
+        if (capAbsY > liquidTopY && liquidHeight > 5) {
+          ctx.fillStyle = 'rgba(217, 119, 6, 0.35)';
+          ctx.beginPath();
+          ctx.arc(0, 0, c.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        ctx.restore();
+      }
+
+      // 4. クリーミーな神泡（3割）の描画（液体の上にふんわり被さるシルキーフォーム層）
+      if (foamHeight > 1.5) {
+        ctx.save();
+        ctx.translate(r, liquidTopY);
+        ctx.rotate(liquidAngle);
+
+        const halfW = w * 1.3;
+
+        // 泡のグラデーション（上面は純白、下面はビールとの境界でほんのり琥珀が透ける）
+        const foamGrad = ctx.createLinearGradient(0, -foamHeight, 0, 4);
+        foamGrad.addColorStop(0, 'rgba(255, 255, 255, 0.98)');
+        foamGrad.addColorStop(0.65, 'rgba(254, 252, 243, 0.96)');
+        foamGrad.addColorStop(0.9, 'rgba(254, 243, 199, 0.92)');
+        foamGrad.addColorStop(1, 'rgba(251, 191, 36, 0.85)');
+
+        ctx.fillStyle = foamGrad;
+        ctx.beginPath();
+
+        // 泡の上面（ふわふわとした柔らかな波形）
+        ctx.moveTo(-halfW, -foamHeight);
+        for (let x = -halfW; x <= halfW; x += 12) {
+          const waveTop = Math.sin(x * 0.03 + wavePhase * 1.1) * (1.6 + Math.abs(shakeVelocity.x) * 0.25)
+                        + Math.cos(x * 0.065 + wavePhase * 0.9) * 1.1;
+          ctx.lineTo(x, -foamHeight + waveTop);
+        }
+
+        // 泡の下面（液体表面の波形にフィット）
+        for (let x = halfW; x >= -halfW; x -= 15) {
+          const waveBottom = Math.sin(x * 0.035 + wavePhase) * (1.8 + Math.abs(shakeVelocity.x) * 0.3)
+                           + Math.cos(x * 0.08 + wavePhase * 1.5) * 0.8;
+          ctx.lineTo(x, waveBottom + 2);
+        }
+
+        ctx.closePath();
+        ctx.fill();
+
+        // 泡の上面の繊細なハイライト光条
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(-halfW, -foamHeight);
+        for (let x = -halfW; x <= halfW; x += 12) {
+          const waveTop = Math.sin(x * 0.03 + wavePhase * 1.1) * (1.6 + Math.abs(shakeVelocity.x) * 0.25)
+                        + Math.cos(x * 0.065 + wavePhase * 0.9) * 1.1;
+          ctx.lineTo(x, -foamHeight + waveTop);
+        }
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      // 5. 手前の炭酸気泡
+      if (liquidHeight > 2) {
+        ctx.save();
+        ctx.translate(r, liquidTopY);
+        ctx.rotate(liquidAngle);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
+        microBubbles.forEach((b, idx) => {
+          if (idx % 2 !== 0) {
+            b.y -= b.speed * 1.1;
+            if (b.y < -liquidHeight) b.y = 0;
+            ctx.beginPath();
+            ctx.arc(b.x, b.y + liquidHeight, b.r * 0.8, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        });
+        ctx.restore();
+      }
+
+      // 6. 球体ガラス内周の3Dビネット＆曲面シャドウ（液体やカプセルの上から球面深度を付与）
+      const sphereLensGrad = ctx.createRadialGradient(r, r, r * 0.65, r, r, r);
+      sphereLensGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+      sphereLensGrad.addColorStop(0.78, 'rgba(0, 0, 0, 0.18)');
+      sphereLensGrad.addColorStop(0.94, 'rgba(0, 0, 0, 0.55)');
+      sphereLensGrad.addColorStop(1, 'rgba(0, 0, 0, 0.85)');
+      ctx.fillStyle = sphereLensGrad;
+      ctx.beginPath();
+      ctx.arc(r, r, r, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    window.addEventListener('load', () => {
+      handleResize();
+      animate();
+    });
+  </script>
+</body>
+</html>
