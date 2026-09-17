@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>泡と香りのアンビエントメニュー</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;700;800&family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap');
+
+    /* スマホ画面向けのベースリセット */
+    html, body {
+      font-family: 'Zen Maru Gothic', sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      background-color: #3b1d44; /* PC等で見た時の余白ダークパープル */
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow-x: hidden;
+    }
+
+    .font-serif-luxury {
+      font-family: 'Shippori Mincho', serif;
+    }
+
+    /* スマホ専用メイン背景：動画・添付画像通りの上品なグラデーション */
+    .ambient-background-fixed {
+      background: radial-gradient(ellipse at 50% 36%, rgba(254, 219, 155, 0.96) 0%, rgba(235, 142, 178, 0.92) 38%, rgba(162, 114, 186, 0.96) 74%, rgba(103, 72, 140, 1) 100%);
+    }
+
+    /* 添付画像（image_44581b.jpg）通りの繊細な丸バブルフレーム */
+    .bubble-frame-subtle {
+      box-shadow: 
+        0 6px 16px rgba(65, 20, 75, 0.3),
+        inset 0 0 10px rgba(255, 255, 255, 0.85),
+        0 0 0 2px rgba(255, 255, 255, 0.95);
+    }
+
+    /* 泡が弾けるアニメーション */
+    @keyframes popRing {
+      0% { transform: scale(1); opacity: 1; filter: brightness(1); }
+      40% { transform: scale(1.35); opacity: 0.9; filter: brightness(1.8); }
+      100% { transform: scale(1.7); opacity: 0; filter: brightness(2.2); }
+    }
+    .pop-animate {
+      animation: popRing 0.35s cubic-bezier(0.12, 0.8, 0.32, 1) forwards;
+    }
+
+    /* シャッター光エフェクト */
+    @keyframes shutterFlash {
+      0% { opacity: 0.95; }
+      100% { opacity: 0; }
+    }
+    .flash-active {
+      animation: shutterFlash 0.25s ease-out forwards;
+    }
+
+    /* スクロールバー非表示 */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="flex justify-center items-start min-h-screen">
+
+  <!-- ============================================== -->
+  <!-- スマホサイズ固定コンテナ（最大幅430px：実機スマホでは100%全画面） -->
+  <!-- ============================================== -->
+  <div id="appContainer" class="w-full max-w-[430px] min-h-screen relative ambient-background-fixed shadow-2xl flex flex-col justify-between overflow-x-hidden border-x border-white/10">
+
+    <!-- 背景の白リング気泡 Canvas（スマホ幅・高さに自動同期） -->
+    <canvas id="ambientBubbleCanvas" class="absolute inset-0 w-full h-full pointer-events-none z-0"></canvas>
+
+    <!-- 浮遊する写真バブルの親レイヤー（スマホ枠内を安全に泳ぐ） -->
+    <div id="fullPhotoBubblesContainer" class="absolute inset-0 pointer-events-none z-10 overflow-hidden"></div>
+
+    <!-- ======================================================== -->
+    <!-- 1. ファーストビュー（image_44581b.jpg の余白とタイポグラフィ） -->
+    <!-- ======================================================== -->
+    <section class="w-full min-h-screen flex flex-col justify-between items-center px-4 py-5 relative z-20">
+      
+      <!-- 上部ヘッダー -->
+      <header class="w-full flex items-center justify-between pt-1">
+        <!-- 音声切替ボタン -->
+        <button id="soundBtn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/40 text-[11px] font-medium text-white active:scale-95 transition shadow-sm">
+          <i data-lucide="volume-2" class="w-3.5 h-3.5" id="soundIcon"></i>
+          <span id="soundLabel">泡の音：ON</span>
+        </button>
+
+        <!-- ブランドバッジ -->
+        <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/30 text-[10px] tracking-widest text-amber-100 uppercase shadow-sm">
+          <i data-lucide="sparkles" class="w-3 h-3 text-yellow-200"></i>
+          <span>Craft & Moments</span>
+        </div>
+      </header>
+
+      <!-- 中央：image_44581b.jpg をオマージュしたタイトル構成 -->
+      <div class="text-center my-auto flex flex-col items-center pointer-events-none px-3">
+        <span class="text-[11px] font-semibold tracking-widest text-amber-100 uppercase drop-shadow mb-1">
+          THE BREWERY'S MARGIN
+        </span>
+        
+        <h1 class="text-3xl font-extrabold tracking-widest text-white drop-shadow-lg font-serif-luxury leading-relaxed">
+          醸造所の余白
+        </h1>
+        
+        <div class="w-10 h-0.5 bg-white/60 my-2 rounded-full"></div>
+
+        <p class="text-xs font-medium tracking-widest text-white/95 drop-shadow leading-relaxed">
+          大切な夜の語らいに<br>心ほどける極上の一杯
+        </p>
+
+        <!-- 泡タップの直感ヒントバナー -->
+        <div class="mt-7 px-3.5 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/40 text-[10.5px] font-bold text-white flex items-center gap-2 shadow-sm animate-pulse">
+          <span class="w-2 h-2 rounded-full bg-amber-300 animate-ping"></span>
+          浮かぶ小さな写真を触るとこだわりが開きます 🫧
+        </div>
+      </div>
+
+      <!-- 下部スクロール案内 -->
+      <div class="flex flex-col items-center pb-6 animate-bounce pointer-events-none">
+        <span class="text-[10.5px] font-bold tracking-widest text-white/85 mb-0.5">下にスクロールしてメニューを見る</span>
+        <i data-lucide="chevron-down" class="w-4 h-4 text-white/90"></i>
+      </div>
+
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- 2. 下部メニューリストセクション（スクロールで出現） -->
+    <!-- ======================================================== -->
+    <section class="w-full px-4 pb-28 pt-2 relative z-20">
+      
+      <!-- セクションタイトル -->
+      <div class="text-center mb-5">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-[10.5px] font-bold text-amber-100 mb-1.5">
+          <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+          <span>MENU & INGREDIENT STORIES</span>
+        </div>
+        <h2 class="text-xl font-bold tracking-wider text-white font-serif-luxury drop-shadow-md">
+          こだわりのお品書き
+        </h2>
+        <p class="text-[11px] text-white/80 mt-0.5">
+          タップすると香りのピラミッドや直近1週間の感想をご覧いただけます
+        </p>
+      </div>
+
+      <!-- メニューカード一覧 -->
+      <div class="flex flex-col gap-3.5" id="menuListContainer">
+        <!-- JavaScriptで動的生成されます -->
+      </div>
+
+    </section>
+
+    <!-- ============================================== -->
+    <!-- 下部固定アクションバー（スマホ画面下部に固定） -->
+    <!-- ============================================== -->
+    <div class="sticky bottom-0 left-0 right-0 z-30 p-3 bg-gradient-to-t from-purple-950/95 via-purple-900/70 to-transparent backdrop-blur-xs flex justify-center">
+      <button id="openCameraBtn" class="w-full py-3 px-5 rounded-full bg-gradient-to-r from-amber-400 via-rose-400 to-purple-400 text-white font-black text-xs sm:text-sm shadow-xl hover:shadow-2xl active:scale-95 transition border-2 border-white/80 flex items-center justify-center gap-2">
+        <i data-lucide="camera" class="w-4 h-4"></i>
+        <span>外カメラで乾杯の泡を撮る</span>
+        <span class="bg-white text-purple-900 text-[9px] font-black px-1.5 py-0.5 rounded-full shadow-sm">LIVE</span>
+      </button>
+      <input type="file" id="cameraFallbackInput" accept="image/*" capture="environment" class="hidden">
+    </div>
+
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- リアルタイム外カメラ（リアカメラ）撮影ビューモーダル -->
+  <!-- ========================================================== -->
+  <div id="liveCameraModal" class="fixed inset-0 z-50 bg-black/95 hidden flex-col items-center justify-between p-4 opacity-0 transition-opacity duration-300">
+    <div id="shutterFlash" class="absolute inset-0 bg-white pointer-events-none opacity-0 z-50"></div>
+
+    <!-- カメラ上部バー -->
+    <div class="w-full max-w-[430px] flex items-center justify-between z-30 pt-2 px-1">
+      <button onclick="closeLiveCamera()" class="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center active:scale-90 transition">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+      <div class="text-center">
+        <span class="text-xs font-bold text-white/90 tracking-widest uppercase">REAR CAMERA</span>
+        <p class="text-[10px] text-amber-200">丸い泡の中に料理を収めてください</p>
+      </div>
+      <button onclick="toggleCameraFacing()" class="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center active:scale-90 transition">
+        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+    <!-- カメラプレビュー ＆ 中央の泡ターゲットフレーム -->
+    <div class="relative w-full max-w-[360px] aspect-square flex items-center justify-center overflow-hidden my-auto">
+      <video id="cameraVideo" autoplay playsinline muted class="w-full h-full object-cover rounded-3xl"></video>
+
+      <!-- 丸い泡のガイドフレーム -->
+      <div class="absolute w-56 h-56 rounded-full border-4 border-white/90 shadow-[0_0_0_9999px_rgba(0,0,0,0.65)] pointer-events-none flex items-center justify-center">
+        <div class="w-full h-full rounded-full border-2 border-dashed border-amber-300/80 animate-pulse"></div>
+        <span class="absolute -bottom-8 text-[11px] font-bold text-amber-200 bg-black/60 px-3 py-1 rounded-full backdrop-blur-sm whitespace-nowrap">
+          ここが泡になります ✨
+        </span>
+      </div>
+      <canvas id="captureCanvas" class="hidden"></canvas>
+    </div>
+
+    <!-- カメラ下部コントロール -->
+    <div class="w-full max-w-[430px] flex flex-col items-center gap-2 pb-4 z-30">
+      <div class="flex items-center gap-7">
+        <button onclick="triggerFileInputFallback()" class="w-11 h-11 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center active:scale-90 transition border border-white/30" title="アルバムから選択">
+          <i data-lucide="image" class="w-5 h-5"></i>
+        </button>
+
+        <button id="shutterBtn" onclick="takePhoto()" class="w-18 h-18 rounded-full border-4 border-white flex items-center justify-center bg-white/20 active:scale-95 transition shadow-2xl p-1">
+          <div class="w-14 h-14 rounded-full bg-gradient-to-tr from-amber-400 to-rose-400 shadow-inner"></div>
+        </button>
+
+        <div class="w-11 h-11"></div>
+      </div>
+      <p class="text-[10.5px] text-white/75 font-medium mt-0.5">シャッターを押すとすぐに泡になって浮かびます</p>
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- 画像（image_390921.jpg）の構成を忠実に再現した詳細モーダル（スマホ最適化縦レイアウト） -->
+  <!-- ========================================================== -->
+  <div id="productDetailModal" class="fixed inset-0 z-50 ambient-background-fixed hidden items-center justify-center p-3 opacity-0 transition-opacity duration-300 overflow-y-auto no-scrollbar">
+    
+    <!-- 背景の白リング気泡装飾（image_390921.jpg 通り） -->
+    <div class="absolute inset-0 pointer-events-none overflow-hidden max-w-[430px] mx-auto">
+      <div class="absolute w-20 h-20 rounded-full border border-white/40 top-8 left-4"></div>
+      <div class="absolute w-12 h-12 rounded-full border border-white/30 top-1/3 right-4"></div>
+      <div class="absolute w-28 h-28 rounded-full border border-white/25 bottom-12 left-1/4"></div>
+      <div class="absolute w-16 h-16 rounded-full border border-white/35 top-14 right-1/4"></div>
+    </div>
+
+    <!-- コンテンツカード（スマホ画面で読みやすい縦スクロールカード） -->
+    <div class="relative w-full max-w-[390px] rounded-3xl p-4 flex flex-col my-auto text-white">
+      
+      <!-- 閉じるボタン -->
+      <button onclick="closeProductModal()" class="absolute top-1 right-1 w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/50 text-white flex items-center justify-center active:scale-90 transition z-30 shadow-lg">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <!-- 1. 上段：添付画像の丸い写真 ＋ 上下の円弧湾曲テキスト -->
+      <div class="flex flex-col items-center justify-center relative mt-2 mb-4">
+        <div class="relative w-56 h-56 flex items-center justify-center">
+          
+          <!-- 円弧テキスト SVG -->
+          <svg viewBox="0 0 300 300" class="absolute inset-0 w-full h-full pointer-events-none z-20">
+            <path id="curveTop" d="M 35,150 A 115,115 0 1,1 265,150" fill="none" />
+            <path id="curveBottom" d="M 265,150 A 115,115 0 0,1 35,150" fill="none" />
+
+            <!-- 上側のカーブテキスト（画像:「チュベローズの香り」風） -->
+            <text class="text-[17px] font-black fill-white tracking-widest font-serif-luxury" style="filter: drop-shadow(0 2px 5px rgba(0,0,0,0.35));">
+              <textPath href="#curveTop" startOffset="50%" text-anchor="middle" id="detailCurvedTop">
+                チュベローズの香り
+              </textPath>
+            </text>
+
+            <!-- 下側のカーブテキスト（画像:「ホワイトピンクの湯色（にごり）」風） -->
+            <text class="text-[14px] font-bold fill-white/95 tracking-wide" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));">
+              <textPath href="#curveBottom" startOffset="50%" text-anchor="middle" id="detailCurvedBottom">
+                ホワイトピンクの湯色（にごり）
+              </textPath>
+            </text>
+          </svg>
+
+          <!-- 中央の丸い写真フレーム -->
+          <div class="w-40 h-40 rounded-full overflow-hidden border-4 border-white shadow-2xl relative bg-white/10 flex items-center justify-center z-10">
+            <img id="detailMainImage" src="" alt="Menu Main" class="w-full h-full object-cover">
+            <div class="absolute inset-0 rounded-full border-2 border-white/50 pointer-events-none"></div>
+          </div>
+
+          <!-- 周囲の小バブル -->
+          <div class="absolute top-1 right-2 w-4 h-4 rounded-full border border-white/60 pointer-events-none"></div>
+          <div class="absolute bottom-3 left-1 w-6 h-6 rounded-full border border-white/40 pointer-events-none"></div>
+        </div>
+      </div>
+
+      <!-- 2. 中段：添付画像通りのピラミッドノート（TOP/MIDDLE/BASE） -->
+      <div class="w-full max-w-[320px] mx-auto flex flex-col items-center gap-1 relative my-1">
+        
+        <!-- TOP段 -->
+        <div class="relative w-[58%] bg-gradient-to-r from-orange-400/90 to-amber-400/90 text-white rounded-t-xl py-2 px-1 text-center shadow-md border-t border-x border-white/60 flex flex-col items-center justify-center">
+          <span class="text-[11px] font-black tracking-widest uppercase">TOP</span>
+          <span id="detailTopText" class="text-[10px] font-bold mt-0.5 tracking-wider leading-tight">シトラス、グリーン</span>
+
+          <!-- 左添え写真 -->
+          <div class="absolute -left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-lg bg-amber-100 z-20">
+            <img id="detailTopImg" src="" class="w-full h-full object-cover" alt="TOP note image">
+          </div>
+        </div>
+
+        <!-- MIDDLE段 -->
+        <div class="relative w-[80%] bg-gradient-to-r from-pink-500/85 to-rose-400/85 text-white py-2.5 px-2 text-center shadow-md border-x border-white/60 flex flex-col items-center justify-center">
+          <span class="text-[11px] font-black tracking-widest uppercase">MIDDLE</span>
+          <span id="detailMidText" class="text-[10px] font-bold mt-0.5 tracking-wide leading-tight">
+            チュベローズ、ジャスミン<br>オレンジフラワー
+          </span>
+
+          <!-- 右添え写真 -->
+          <div class="absolute -right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-lg bg-rose-100 z-20">
+            <img id="detailMidImg" src="" class="w-full h-full object-cover" alt="MIDDLE note image">
+          </div>
+        </div>
+
+        <!-- BASE段 -->
+        <div class="relative w-full bg-gradient-to-r from-purple-700/85 to-pink-600/85 text-white rounded-b-xl py-2.5 px-3 text-center shadow-md border-b border-x border-white/60 flex flex-col items-center justify-center">
+          <span class="text-[11px] font-black tracking-widest uppercase">BASE</span>
+          <span id="detailBaseText" class="text-[10px] font-bold mt-0.5 tracking-wider leading-tight">ムスク、ウッド</span>
+
+          <!-- 左下添え写真 -->
+          <div class="absolute -left-5 bottom-0 translate-y-1 w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-lg bg-stone-100 z-20">
+            <img id="detailBaseImg" src="" class="w-full h-full object-cover" alt="BASE note image">
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 3. 下段：お客様の直近1週間の口コミ -->
+      <div class="mt-4 w-full bg-white/15 backdrop-blur-md p-3 rounded-2xl border border-white/30 text-xs">
+        <div class="flex items-center justify-between mb-1 text-[10.5px] font-bold text-amber-200">
+          <span class="flex items-center gap-1">
+            <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+            <span id="detailReviewAuthor">先週ご来店のお客様</span>
+          </span>
+          <span class="text-yellow-300">★★★★★</span>
+        </div>
+        <p id="detailReviewText" class="text-white/90 leading-relaxed font-medium text-[11px]">
+          「口当たりが驚くほど柔らかく、香りの変化が楽しめました。お肉料理との相性が最高です！」
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 写真撮影後のコメント確認モーダル -->
+  <div id="photoPreviewModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+    <div class="w-full max-w-[320px] bg-gradient-to-b from-purple-900 via-rose-900 to-amber-950 rounded-3xl p-4 border-2 border-white/60 text-center flex flex-col items-center shadow-2xl text-white">
+      <h3 class="text-sm font-bold mb-0.5 font-serif-luxury">撮りたての泡を浮かべる✨</h3>
+      <p class="text-[10px] text-white/80 mb-3">撮った写真が小さな泡となって画面を泳ぎます</p>
+
+      <div class="w-20 h-20 rounded-full overflow-hidden border-2 border-white shadow-xl mb-3 relative bubble-frame-subtle">
+        <img id="capturedImgPreview" src="" class="w-full h-full object-cover">
+      </div>
+
+      <input type="text" id="capturedCommentInput" placeholder="一言（例：最高のお肉と乾杯！🍻）" class="w-full px-3 py-2 text-xs rounded-xl bg-white/20 border border-white/40 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-amber-300 mb-3 text-center font-bold">
+
+      <div class="flex gap-2 w-full">
+        <button onclick="closeCaptureModal()" class="flex-1 py-2 rounded-full bg-white/20 hover:bg-white/30 text-white text-xs font-bold transition">撮り直す</button>
+        <button onclick="submitCapturedBubble()" class="flex-1 py-2 rounded-full bg-gradient-to-r from-amber-400 to-rose-400 text-white font-bold text-xs shadow-md active:scale-95 transition">泡を流す！🫧</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- アプリケーション JavaScript -->
+  <!-- ============================================== -->
+  <script>
+    // ==============================================
+    // 1. メニュー＆香りのピラミッドデータ
+    // ==============================================
+    const menuData = [
+      {
+        id: 0,
+        category: 'CRAFT BEER',
+        title: '夕暮れルージュ（芳醇生エール）',
+        curvedTop: 'ベリーと華やかな生ホップの香り',
+        curvedBottom: '茜色に染まる芳醇な泡（生仕込み）',
+        mainImg: 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=600&auto=format&fit=crop&q=80',
+        price: '¥880',
+        tag: '当店名物',
+        top: {
+          text: 'シトラス、グリーン、ラズベリー',
+          img: 'https://images.unsplash.com/photo-1534856966150-c832f7b7a005?w=200&auto=format&fit=crop&q=80'
+        },
+        mid: {
+          text: 'チュベローズ、生ホップの花\nブラッドオレンジ',
+          img: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?w=200&auto=format&fit=crop&q=80'
+        },
+        base: {
+          text: 'ロースト麦芽、フレンチオーク樽',
+          img: 'https://images.unsplash.com/photo-1508615039623-a25605d2b022?w=200&auto=format&fit=crop&q=80'
+        },
+        review: {
+          author: '昨日ご来店：佐藤様',
+          text: '「泡が非常にきめ細やかで、注ぎたてのベリー香がテーブルいっぱいに広がって感動しました！」'
+        }
+      },
+      {
+        id: 1,
+        category: 'CRAFT BEER',
+        title: '宵待ちブランシェ（無濾過白泡）',
+        curvedTop: 'ベルガモットと白葡萄の香り',
+        curvedBottom: 'シルキーな純白の神泡（無濾過）',
+        mainImg: 'https://images.unsplash.com/photo-1608270199042-3a5665b1134e?w=600&auto=format&fit=crop&q=80',
+        price: '¥880',
+        tag: '女性人気No.1',
+        top: {
+          text: 'ベルガモット、レモングラス',
+          img: 'https://images.unsplash.com/photo-1582979512210-99b6a53386f9?w=200&auto=format&fit=crop&q=80'
+        },
+        mid: {
+          text: 'カモミール、白桃アロマ\nコリアンダーシード',
+          img: 'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=200&auto=format&fit=crop&q=80'
+        },
+        base: {
+          text: '小麦麦芽、ホワイトムスクの余韻',
+          img: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=200&auto=format&fit=crop&q=80'
+        },
+        review: {
+          author: '3日前ご来店：高橋様',
+          text: '「苦味が少なく白ワインのようにフルーティー。チーズとのペアリングが完璧でした！」'
+        }
+      },
+      {
+        id: 2,
+        category: 'MAIN DISH',
+        title: '厳選黒毛和牛の薪焼きステーキ',
+        curvedTop: '薪の燻煙と赤身肉の旨味凝縮',
+        curvedBottom: '表面は香ばしく中は極上レア',
+        mainImg: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop&q=80',
+        price: '¥2,800',
+        tag: 'シェフおすすめ',
+        top: {
+          text: '桜薪の芳ばしいスモーキーアロマ',
+          img: 'https://images.unsplash.com/photo-1509358271058-acd22cc93898?w=200&auto=format&fit=crop&q=80'
+        },
+        mid: {
+          text: '噛むほどに溢れる濃厚な肉汁\nブラックペッパー',
+          img: 'https://images.unsplash.com/photo-1558030006-450675393462?w=200&auto=format&fit=crop&q=80'
+        },
+        base: {
+          text: '淡路島ローストオニオンと赤ワインソース',
+          img: 'https://images.unsplash.com/photo-1590794056226-79ef3a8147e1?w=200&auto=format&fit=crop&q=80'
+        },
+        review: {
+          author: '2日前ご来店：田中様ご夫婦',
+          text: '「薪の香りが香ばしく、ビールが止まりませんでした！記念日にぴったりの一皿でした。」'
+        }
+      },
+      {
+        id: 3,
+        category: 'APPETIZER',
+        title: '旬果実と濃厚ブッラータチーズ',
+        curvedTop: 'フレッシュなミルキーさと甘酸っぱさ',
+        curvedBottom: '割るととろけ出す特製生クリーム',
+        mainImg: 'https://images.unsplash.com/photo-1592417817098-8f3d6910985c?w=600&auto=format&fit=crop&q=80',
+        price: '¥1,650',
+        tag: '数量限定',
+        top: {
+          text: '摘みたてスイートバジルとピンクペッパー',
+          img: 'https://images.unsplash.com/photo-1608686207856-001b95cf60ca?w=200&auto=format&fit=crop&q=80'
+        },
+        mid: {
+          text: 'イタリア直輸入の濃厚モッツァレラ\n純生クリーム',
+          img: 'https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?w=200&auto=format&fit=crop&q=80'
+        },
+        base: {
+          text: 'エクストラバージンオリーブオイルと岩塩',
+          img: 'https://images.unsplash.com/photo-1595126730719-1932bd72910c?w=200&auto=format&fit=crop&q=80'
+        },
+        review: {
+          author: '4日前ご来店：女子会グループ様',
+          text: '「泡と一緒に写真撮ったらめちゃくちゃ映えました！味もミルキーで最高です✨」'
+        }
+      },
+      {
+        id: 4,
+        category: 'PIZZA',
+        title: '石窯焼きブッファラ・マルゲリータ',
+        curvedTop: '薪窯500度で一気に焼き上げる芳ばしさ',
+        curvedBottom: 'サクッともちもち極上コルニチョーネ',
+        mainImg: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600&auto=format&fit=crop&q=80',
+        price: '¥1,850',
+        tag: '焼きたて',
+        top: {
+          text: 'フレッシュバジルと焦がし小麦の芳香',
+          img: 'https://images.unsplash.com/photo-1582979512210-99b6a53386f9?w=200&auto=format&fit=crop&q=80'
+        },
+        mid: {
+          text: '水牛モッツァレラのジューシーな旨み',
+          img: 'https://images.unsplash.com/photo-1558030006-450675393462?w=200&auto=format&fit=crop&q=80'
+        },
+        base: {
+          text: 'サンマルツァーノ産完熟トマトソース',
+          img: 'https://images.unsplash.com/photo-1590794056226-79ef3a8147e1?w=200&auto=format&fit=crop&q=80'
+        },
+        review: {
+          author: '先週ご来店：木村様',
+          text: '「生地が驚くほど軽くて香ばしい！ビールとの相性が抜群でペロリと完食しました。」'
+        }
+      }
+    ];
+
+    // 浮遊する写真バブルの初期データ（画像44581b風）
+    const bubbleInitialList = [
+      {
+        menuId: 2,
+        img: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=400&auto=format&fit=crop&q=80',
+        label: 'ステーキ🥩',
+        sizeType: 'medium'
+      },
+      {
+        menuId: 0,
+        img: 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=400&auto=format&fit=crop&q=80',
+        label: '生エール🍺',
+        sizeType: 'small'
+      },
+      {
+        menuId: 3,
+        img: 'https://images.unsplash.com/photo-1592417817098-8f3d6910985c?w=400&auto=format&fit=crop&q=80',
+        label: 'ブッラータ🧀',
+        sizeType: 'medium'
+      },
+      {
+        menuId: 1,
+        img: 'https://images.unsplash.com/photo-1608270199042-3a5665b1134e?w=400&auto=format&fit=crop&q=80',
+        label: '白泡ヴァイス🌾',
+        sizeType: 'small'
+      },
+      {
+        menuId: 4,
+        img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&auto=format&fit=crop&q=80',
+        label: '薪窯ピッツァ🍕',
+        sizeType: 'medium'
+      },
+      {
+        menuId: 0,
+        img: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&auto=format&fit=crop&q=80',
+        label: '笑顔で乾杯✨',
+        sizeType: 'small'
+      },
+      {
+        menuId: 2,
+        img: 'https://images.unsplash.com/photo-1558030006-450675393462?w=400&auto=format&fit=crop&q=80',
+        label: 'ジューシー赤身',
+        sizeType: 'small'
+      }
+    ];
+
+    // ==============================================
+    // 2. 音響効果（Web Audio API）
+    // ==============================================
+    let audioCtx = null;
+    let isSoundOn = true;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playPopSound() {
+      if (!isSoundOn) return;
+      initAudio();
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const now = audioCtx.currentTime;
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(540, now);
+        osc.frequency.exponentialRampToValueAtTime(1250, now + 0.08);
+
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.12);
+      } catch (e) {}
+    }
+
+    function playShutterSound() {
+      if (!isSoundOn) return;
+      initAudio();
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const now = audioCtx.currentTime;
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(800, now);
+        osc.frequency.setValueAtTime(400, now + 0.04);
+
+        gain.gain.setValueAtTime(0.4, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.1);
+      } catch (e) {}
+    }
+
+    const soundBtn = document.getElementById('soundBtn');
+    const soundIcon = document.getElementById('soundIcon');
+    const soundLabel = document.getElementById('soundLabel');
+
+    soundBtn.addEventListener('click', () => {
+      isSoundOn = !isSoundOn;
+      if (isSoundOn) {
+        initAudio();
+        playPopSound();
+        soundIcon.setAttribute('data-lucide', 'volume-2');
+        soundLabel.textContent = '泡の音：ON';
+        soundBtn.classList.remove('opacity-60');
+      } else {
+        soundIcon.setAttribute('data-lucide', 'volume-x');
+        soundLabel.textContent = '泡の音：OFF';
+        soundBtn.classList.add('opacity-60');
+      }
+      lucide.createIcons();
+    });
+
+    // ==============================================
+    // 3. 背景の白リング気泡 Canvas（スマホ幅・高さ基準）
+    // ==============================================
+    const appContainer = document.getElementById('appContainer');
+    const canvas = document.getElementById('ambientBubbleCanvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    let ringBubbles = [];
+
+    function resizeCanvas() {
+      width = canvas.width = appContainer.clientWidth;
+      height = canvas.height = appContainer.clientHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class RingBubble {
+      constructor(init = false) {
+        this.reset(init);
+      }
+      reset(init = false) {
+        this.x = Math.random() * width;
+        this.y = init ? Math.random() * height : height + Math.random() * 40;
+        this.radius = Math.random() * 15 + 10;
+        this.speedY = Math.random() * 0.55 + 0.25;
+        this.wobble = Math.random() * Math.PI * 2;
+        this.wobbleSpeed = Math.random() * 0.018 + 0.008;
+        this.lineWidth = 1.1;
+        this.alpha = Math.random() * 0.35 + 0.18;
+      }
+      update() {
+        this.y -= this.speedY;
+        this.wobble += this.wobbleSpeed;
+        this.x += Math.sin(this.wobble) * 0.35;
+        if (this.y < -this.radius * 2) {
+          this.reset(false);
+        }
+      }
+      draw() {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(255, 255, 255, ${this.alpha})`;
+        ctx.lineWidth = this.lineWidth;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(this.x - this.radius * 0.35, this.y - this.radius * 0.35, this.radius * 0.16, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${this.alpha * 0.9})`;
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    for (let i = 0; i < 22; i++) {
+      ringBubbles.push(new RingBubble(true));
+    }
+
+    // ==============================================
+    // 4. 画像 image_44581b.jpg 通りのサイズ感を持つ写真バブル（スマホ枠内を安全に遊泳）
+    // ==============================================
+    const photoContainer = document.getElementById('fullPhotoBubblesContainer');
+    let floatingBubbles = [];
+
+    class FreePhotoBubble {
+      constructor(itemData, laneIndex = 0, delay = 0) {
+        this.data = itemData;
+
+        // スマホ画面に合わせたサイズ設計（小48px〜中62px）
+        const isSmall = itemData.sizeType === 'small' || (Math.random() > 0.45);
+        this.size = isSmall 
+          ? Math.floor(Math.random() * 4 + 48) 
+          : Math.floor(Math.random() * 6 + 60);
+        
+        // スマホ枠（max 430px）の内側で切れないように安全マージンを設定
+        const usableWidth = (appContainer.clientWidth || 390) - this.size - 24;
+        const colWidth = usableWidth / 3;
+        this.x = 12 + (laneIndex % 3) * colWidth + Math.random() * (colWidth * 0.85);
+
+        this.y = (appContainer.clientHeight || window.innerHeight) + Math.random() * 100 + delay;
+        this.speedY = Math.random() * 0.38 + 0.3;
+        this.wobble = Math.random() * Math.PI * 2;
+        this.wobbleSpeed = Math.random() * 0.018 + 0.01;
+        this.wobbleAmp = Math.random() * 4 + 3;
+        this.isPopping = false;
+
+        this.createElement();
+      }
+
+      createElement() {
+        this.el = document.createElement('div');
+        this.el.className = 'absolute pointer-events-auto cursor-pointer transition-transform duration-75 flex flex-col items-center select-none';
+        this.el.style.width = `${this.size}px`;
+
+        this.el.innerHTML = `
+          <div class="bubble-inner relative w-[${this.size}px] h-[${this.size}px] rounded-full p-0.5 bg-white/20 backdrop-blur-xs bubble-frame-subtle border border-white shadow-md active:scale-90 transition-transform">
+            <img src="${this.data.img}" class="w-full h-full object-cover rounded-full pointer-events-none" onerror="this.src='https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=300'">
+            
+            <div class="absolute top-1 left-1.5 w-2 h-1 rounded-full bg-white/90 transform -rotate-45 pointer-events-none"></div>
+          </div>
+          <span class="mt-0.5 text-[8.5px] font-bold text-white/90 px-1.5 py-0.2 rounded-full bg-black/45 backdrop-blur-xs border border-white/20 whitespace-nowrap shadow-xs scale-90">
+            ${this.data.label}
+          </span>
+        `;
+
+        this.el.addEventListener('pointerdown', (e) => {
+          e.stopPropagation();
+          this.popAndOpen();
+        });
+
+        photoContainer.appendChild(this.el);
+      }
+
+      update() {
+        if (this.isPopping) return;
+
+        this.y -= this.speedY;
+        this.wobble += this.wobbleSpeed;
+        const currentX = this.x + Math.sin(this.wobble) * this.wobbleAmp;
+
+        const containerHeight = appContainer.clientHeight || window.innerHeight;
+        const containerWidth = appContainer.clientWidth || 390;
+
+        if (this.y < -this.size - 30) {
+          this.y = containerHeight + Math.random() * 60 + 10;
+          this.x = 12 + Math.random() * (containerWidth - this.size - 24);
+        }
+
+        this.el.style.transform = `translate3d(${currentX}px, ${this.y}px, 0)`;
+      }
+
+      popAndOpen() {
+        if (this.isPopping) return;
+        this.isPopping = true;
+
+        playPopSound();
+
+        const inner = this.el.querySelector('.bubble-inner');
+        inner.classList.add('pop-animate');
+
+        setTimeout(() => {
+          openProductModal(this.data.menuId !== undefined ? this.data.menuId : 0);
+          setTimeout(() => {
+            inner.classList.remove('pop-animate');
+            const containerHeight = appContainer.clientHeight || window.innerHeight;
+            this.y = containerHeight + Math.random() * 80 + 10;
+            this.isPopping = false;
+          }, 1000);
+        }, 220);
+      }
+    }
+
+    function initFloatingBubbles() {
+      photoContainer.innerHTML = '';
+      floatingBubbles = bubbleInitialList.map((item, index) => {
+        return new FreePhotoBubble(item, index, index * 120);
+      });
+    }
+
+    // ==============================================
+    // 5. 下部スクロール用メニューカードの動的レンダリング
+    // ==============================================
+    function renderMenuList() {
+      const container = document.getElementById('menuListContainer');
+      container.innerHTML = '';
+
+      menuData.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'group cursor-pointer bg-white/20 hover:bg-white/30 backdrop-blur-lg rounded-3xl p-3.5 border border-white/50 shadow-lg transition duration-300 active:scale-[0.98] flex items-center gap-3.5';
+        card.onclick = () => openProductModal(index);
+
+        card.innerHTML = `
+          <!-- 丸いメニュー写真 -->
+          <div class="relative w-16 h-16 rounded-full overflow-hidden border-2 border-white/90 shadow-md shrink-0 bubble-frame-subtle">
+            <img src="${item.mainImg}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+            <div class="absolute inset-0 rounded-full border border-white/40 pointer-events-none"></div>
+          </div>
+
+          <!-- テキスト情報 -->
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 mb-0.5">
+              <span class="text-[8.5px] font-black uppercase px-1.5 py-0.5 rounded-full bg-amber-400 text-purple-950 shadow-xs">
+                ${item.category}
+              </span>
+              ${item.tag ? `<span class="text-[8.5px] font-bold px-1.5 py-0.5 rounded-full bg-white/25 text-white border border-white/30">${item.tag}</span>` : ''}
+              <span class="text-[11px] font-bold text-amber-200 ml-auto">${item.price}</span>
+            </div>
+
+            <h3 class="text-xs sm:text-sm font-bold text-white tracking-wide truncate group-hover:text-amber-100 transition">
+              ${item.title}
+            </h3>
+
+            <p class="text-[10px] text-white/80 line-clamp-1 mt-0.5">
+              ${item.curvedTop}
+            </p>
+
+            <div class="mt-1 flex items-center gap-1 text-[9.5px] text-amber-200 font-medium">
+              <i data-lucide="sparkles" class="w-3 h-3 text-yellow-300"></i>
+              <span>香りのピラミッドを見る</span>
+            </div>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+
+      lucide.createIcons();
+    }
+
+    // ==============================================
+    // 6. アニメーションメインループ
+    // ==============================================
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+
+      // 背景の白リング気泡
+      for (let i = 0; i < ringBubbles.length; i++) {
+        ringBubbles[i].update();
+        ringBubbles[i].draw();
+      }
+
+      // 浮遊する写真泡
+      for (let i = 0; i < floatingBubbles.length; i++) {
+        floatingBubbles[i].update();
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    // ==============================================
+    // 7. 商品詳細モーダル制御（添付画像 image_390921.jpg 再現）
+    // ==============================================
+    const productDetailModal = document.getElementById('productDetailModal');
+
+    function openProductModal(index = 0) {
+      initAudio();
+      playPopSound();
+
+      const item = menuData[index] || menuData[0];
+
+      document.getElementById('detailCurvedTop').textContent = item.curvedTop;
+      document.getElementById('detailCurvedBottom').textContent = item.curvedBottom;
+      document.getElementById('detailMainImage').src = item.mainImg;
+
+      document.getElementById('detailTopText').innerHTML = item.top.text.replace('\n', '<br>');
+      document.getElementById('detailTopImg').src = item.top.img;
+
+      document.getElementById('detailMidText').innerHTML = item.mid.text.replace('\n', '<br>');
+      document.getElementById('detailMidImg').src = item.mid.img;
+
+      document.getElementById('detailBaseText').innerHTML = item.base.text.replace('\n', '<br>');
+      document.getElementById('detailBaseImg').src = item.base.img;
+
+      document.getElementById('detailReviewAuthor').textContent = item.review.author;
+      document.getElementById('detailReviewText').textContent = item.review.text;
+
+      productDetailModal.classList.remove('hidden');
+      productDetailModal.classList.add('flex');
+      setTimeout(() => {
+        productDetailModal.classList.remove('opacity-0');
+      }, 10);
+    }
+
+    function closeProductModal() {
+      productDetailModal.classList.add('opacity-0');
+      setTimeout(() => {
+        productDetailModal.classList.add('hidden');
+        productDetailModal.classList.remove('flex');
+      }, 300);
+    }
+
+    productDetailModal.addEventListener('click', (e) => {
+      if (e.target === productDetailModal) closeProductModal();
+    });
+
+    window.openProductModal = openProductModal;
+    window.closeProductModal = closeProductModal;
+
+    // ==============================================
+    // 8. 外カメラ（リアカメラ）起動 ＆ シャッター撮影
+    // ==============================================
+    const openCameraBtn = document.getElementById('openCameraBtn');
+    const liveCameraModal = document.getElementById('liveCameraModal');
+    const cameraVideo = document.getElementById('cameraVideo');
+    const captureCanvas = document.getElementById('captureCanvas');
+    const shutterFlash = document.getElementById('shutterFlash');
+    const cameraFallbackInput = document.getElementById('cameraFallbackInput');
+    const photoPreviewModal = document.getElementById('photoPreviewModal');
+    const capturedImgPreview = document.getElementById('capturedImgPreview');
+    const capturedCommentInput = document.getElementById('capturedCommentInput');
+
+    let videoStream = null;
+    let currentFacingMode = 'environment';
+    let currentCapturedPhotoData = null;
+
+    async function startCamera(facing = 'environment') {
+      try {
+        if (videoStream) {
+          videoStream.getTracks().forEach(track => track.stop());
+        }
+
+        const constraints = {
+          video: {
+            facingMode: { ideal: facing },
+            width: { ideal: 1280 },
+            height: { ideal: 1280 }
+          },
+          audio: false
+        };
+
+        videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+        cameraVideo.srcObject = videoStream;
+        await cameraVideo.play();
+
+        liveCameraModal.classList.remove('hidden');
+        liveCameraModal.classList.add('flex');
+        setTimeout(() => liveCameraModal.classList.remove('opacity-0'), 10);
+
+      } catch (err) {
+        console.warn('Live camera error, falling back to file input:', err);
+        cameraFallbackInput.click();
+      }
+    }
+
+    function closeLiveCamera() {
+      liveCameraModal.classList.add('opacity-0');
+      setTimeout(() => {
+        liveCameraModal.classList.add('hidden');
+        liveCameraModal.classList.remove('flex');
+        if (videoStream) {
+          videoStream.getTracks().forEach(track => track.stop());
+          videoStream = null;
+        }
+      }, 300);
+    }
+
+    function toggleCameraFacing() {
+      currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+      startCamera(currentFacingMode);
+    }
+
+    function takePhoto() {
+      if (!cameraVideo.videoWidth) return;
+
+      playShutterSound();
+
+      shutterFlash.classList.add('flash-active');
+      setTimeout(() => shutterFlash.classList.remove('flash-active'), 280);
+
+      const video = cameraVideo;
+      const minDim = Math.min(video.videoWidth, video.videoHeight);
+      const startX = (video.videoWidth - minDim) / 2;
+      const startY = (video.videoHeight - minDim) / 2;
+
+      captureCanvas.width = 500;
+      captureCanvas.height = 500;
+      const cCtx = captureCanvas.getContext('2d');
+
+      if (currentFacingMode === 'user') {
+        cCtx.translate(500, 0);
+        cCtx.scale(-1, 1);
+      }
+
+      cCtx.drawImage(video, startX, startY, minDim, minDim, 0, 0, 500, 500);
+
+      currentCapturedPhotoData = captureCanvas.toDataURL('image/jpeg', 0.88);
+
+      closeLiveCamera();
+
+      setTimeout(() => {
+        capturedImgPreview.src = currentCapturedPhotoData;
+        capturedCommentInput.value = '';
+        photoPreviewModal.classList.remove('hidden');
+        photoPreviewModal.classList.add('flex');
+        setTimeout(() => photoPreviewModal.classList.remove('opacity-0'), 10);
+      }, 350);
+    }
+
+    function triggerFileInputFallback() {
+      cameraFallbackInput.click();
+    }
+
+    cameraFallbackInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          currentCapturedPhotoData = event.target.result;
+          closeLiveCamera();
+          capturedImgPreview.src = currentCapturedPhotoData;
+          capturedCommentInput.value = '';
+          photoPreviewModal.classList.remove('hidden');
+          photoPreviewModal.classList.add('flex');
+          setTimeout(() => photoPreviewModal.classList.remove('opacity-0'), 10);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    openCameraBtn.addEventListener('click', () => {
+      initAudio();
+      startCamera('environment');
+    });
+
+    function closeCaptureModal() {
+      photoPreviewModal.classList.add('opacity-0');
+      setTimeout(() => {
+        photoPreviewModal.classList.add('hidden');
+        photoPreviewModal.classList.remove('flex');
+      }, 300);
+      cameraFallbackInput.value = '';
+    }
+
+    function submitCapturedBubble() {
+      const comment = capturedCommentInput.value.trim() || '今夜の乾杯！🍻';
+
+      const newMenuIndex = menuData.length;
+      menuData.push({
+        id: newMenuIndex,
+        category: 'CUSTOMER MEMORY',
+        title: '出来立ての乾杯スナップ✨',
+        curvedTop: '今夜生まれた最高の瞬間',
+        curvedBottom: '泡とともに届いた出来立ての1枚',
+        mainImg: currentCapturedPhotoData,
+        price: 'MEMORIES',
+        tag: 'NEW',
+        top: {
+          text: '注ぎたての冷涼感と弾ける笑顔',
+          img: currentCapturedPhotoData
+        },
+        mid: {
+          text: '仲間と分かち合う美味しい時間\n温かい歓声',
+          img: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=200&auto=format&fit=crop&q=80'
+        },
+        base: {
+          text: '心地よい余韻と特別な夜の思い出',
+          img: 'https://images.unsplash.com/photo-1543007630-9710e4a00a20?w=200&auto=format&fit=crop&q=80'
+        },
+        review: {
+          author: 'たった今撮影されたお客様',
+          text: `「${comment}」`
+        }
+      });
+
+      const newBubble = new FreePhotoBubble({
+        menuId: newMenuIndex,
+        img: currentCapturedPhotoData,
+        label: comment.length > 7 ? comment.slice(0, 7) + '…' : comment,
+        sizeType: 'small'
+      }, Math.floor(Math.random() * 3), 0);
+
+      newBubble.speedY = 1.2;
+      setTimeout(() => {
+        newBubble.speedY = 0.35;
+      }, 2500);
+
+      floatingBubbles.push(newBubble);
+
+      renderMenuList();
+
+      closeCaptureModal();
+      playPopSound();
+    }
+
+    window.closeLiveCamera = closeLiveCamera;
+    window.toggleCameraFacing = toggleCameraFacing;
+    window.takePhoto = takePhoto;
+    window.triggerFileInputFallback = triggerFileInputFallback;
+    window.closeCaptureModal = closeCaptureModal;
+    window.submitCapturedBubble = submitCapturedBubble;
+
+    // ==============================================
+    // 9. 初期化
+    // ==============================================
+    window.addEventListener('load', () => {
+      lucide.createIcons();
+      resizeCanvas();
+      initFloatingBubbles();
+      renderMenuList();
+      animate();
+    });
+  </script>
+</body>
+</html>
