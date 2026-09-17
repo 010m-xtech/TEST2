@@ -17,7 +17,7 @@
       user-select: none;
       -webkit-user-select: none;
       touch-action: manipulation;
-      background-color: #3b1d44; /* PC等で見た時の余白ダークパープル */
+      background-color: #26112d; /* PC等で見た時の余白ダークパープル */
       margin: 0;
       padding: 0;
       width: 100%;
@@ -29,17 +29,36 @@
       font-family: 'Shippori Mincho', serif;
     }
 
-    /* スマホ専用メイン背景：動画・添付画像通りの上品なグラデーション */
+    /* スマホ専用メイン背景：動画読み込み前のフォールバック用グラデーション */
     .ambient-background-fixed {
       background: radial-gradient(ellipse at 50% 36%, rgba(254, 219, 155, 0.96) 0%, rgba(235, 142, 178, 0.92) 38%, rgba(162, 114, 186, 0.96) 74%, rgba(103, 72, 140, 1) 100%);
     }
 
-    /* 添付画像（image_44581b.jpg）通りの繊細な丸バブルフレーム */
+    /* 通常写真バブルフレーム（1.5倍サイズ用） */
     .bubble-frame-subtle {
       box-shadow: 
-        0 6px 16px rgba(65, 20, 75, 0.3),
-        inset 0 0 10px rgba(255, 255, 255, 0.85),
-        0 0 0 2px rgba(255, 255, 255, 0.95);
+        0 8px 20px rgba(65, 20, 75, 0.35),
+        inset 0 0 12px rgba(255, 255, 255, 0.85),
+        0 0 0 2.5px rgba(255, 255, 255, 0.95);
+    }
+
+    /* 自分で撮影した写真バブルフレーム（特大2倍サイズ＆ゴールド輝き＋パルス光） */
+    .bubble-frame-user {
+      box-shadow: 
+        0 10px 30px rgba(234, 179, 8, 0.5),
+        0 0 22px rgba(255, 255, 255, 0.85),
+        inset 0 0 16px rgba(255, 255, 255, 0.95),
+        0 0 0 3.5px rgba(254, 240, 138, 1);
+      animation: userBubblePulse 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes userBubblePulse {
+      0% {
+        box-shadow: 0 8px 24px rgba(234, 179, 8, 0.4), inset 0 0 12px rgba(255, 255, 255, 0.85), 0 0 0 3px rgba(254, 240, 138, 0.9);
+      }
+      100% {
+        box-shadow: 0 12px 36px rgba(234, 179, 8, 0.7), 0 0 26px rgba(255, 255, 255, 0.95), inset 0 0 18px rgba(255, 255, 255, 1), 0 0 0 4px rgba(255, 255, 255, 1);
+      }
     }
 
     /* 泡が弾けるアニメーション */
@@ -71,106 +90,97 @@
     }
   </style>
 </head>
-<body class="flex justify-center items-start min-h-screen">
+<body class="flex justify-center items-start h-screen overflow-hidden bg-[#26112d]">
 
   <!-- ============================================== -->
   <!-- スマホサイズ固定コンテナ（最大幅430px：実機スマホでは100%全画面） -->
   <!-- ============================================== -->
-  <div id="appContainer" class="w-full max-w-[430px] min-h-screen relative ambient-background-fixed shadow-2xl flex flex-col justify-between overflow-x-hidden border-x border-white/10">
+  <div id="appContainer" class="w-full max-w-[430px] h-full relative ambient-background-fixed shadow-2xl flex flex-col overflow-hidden border-x border-white/10">
 
-    <!-- 背景の白リング気泡 Canvas（スマホ幅・高さに自動同期） -->
-    <canvas id="ambientBubbleCanvas" class="absolute inset-0 w-full h-full pointer-events-none z-0"></canvas>
+    <!-- 背景動画（heikei.mp4：ループ・無音・インライン再生・確実な再生保証） -->
+    <video
+      id="bgVideo"
+      autoplay
+      loop
+      muted
+      playsinline
+      webkit-playsinline
+      preload="auto"
+      class="absolute inset-0 w-full h-full object-cover pointer-events-none z-0"
+    >
+      <source src="heikei.mp4" type="video/mp4">
+      <source src="./heikei.mp4" type="video/mp4">
+    </video>
+
+    <!-- 背景動画用ソフトオーバーレイ（文字の視認性を保ちながら動画の質感を透過） -->
+    <div class="absolute inset-0 bg-purple-950/20 pointer-events-none z-0"></div>
+
+    <!-- 背景のブクブク気泡 Canvas（スマホ幅・高さに自動同期） -->
+    <canvas id="ambientBubbleCanvas" class="absolute inset-0 w-full h-full pointer-events-none z-1"></canvas>
 
     <!-- 浮遊する写真バブルの親レイヤー（スマホ枠内を安全に泳ぐ） -->
     <div id="fullPhotoBubblesContainer" class="absolute inset-0 pointer-events-none z-10 overflow-hidden"></div>
 
     <!-- ======================================================== -->
-    <!-- 1. ファーストビュー（image_44581b.jpg の余白とタイポグラフィ） -->
+    <!-- 1. ファーストビュー -->
     <!-- ======================================================== -->
-    <section class="w-full min-h-screen flex flex-col justify-between items-center px-4 py-5 relative z-20">
-      
-      <!-- 上部ヘッダー -->
-      <header class="w-full flex items-center justify-between pt-1">
-        <!-- 音声切替ボタン -->
-        <button id="soundBtn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/40 text-[11px] font-medium text-white active:scale-95 transition shadow-sm">
-          <i data-lucide="volume-2" class="w-3.5 h-3.5" id="soundIcon"></i>
-          <span id="soundLabel">泡の音：ON</span>
+    <section class="w-full h-full flex flex-col justify-end items-center px-4 py-5 relative z-20 pointer-events-none">
+
+      <!-- 下部アクションボタン群（1画面完結型） -->
+      <div class="w-full flex flex-col gap-3 pb-6 relative z-30 pointer-events-auto">
+        
+        <!-- 泡タップの直感ヒントバナー -->
+        <div class="self-center mb-1 px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/40 text-[11px] font-bold text-white flex items-center gap-2 shadow-sm animate-pulse">
+          <span class="w-2 h-2 rounded-full bg-amber-300 animate-ping"></span>
+          泡をタッチしてみてね
+        </div>
+
+        <!-- おすすめメニューボタン -->
+        <button onclick="openMenuList()" class="w-full py-3.5 px-5 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md text-white font-bold text-sm shadow-lg active:scale-95 transition border border-white/50 flex items-center justify-center gap-2">
+          <i data-lucide="book-open" class="w-4 h-4"></i>
+          <span>おすすめメニューを見る</span>
         </button>
 
-        <!-- ブランドバッジ -->
-        <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/30 text-[10px] tracking-widest text-amber-100 uppercase shadow-sm">
-          <i data-lucide="sparkles" class="w-3 h-3 text-yellow-200"></i>
-          <span>Craft & Moments</span>
-        </div>
-      </header>
-
-      <!-- 中央：image_44581b.jpg をオマージュしたタイトル構成 -->
-      <div class="text-center my-auto flex flex-col items-center pointer-events-none px-3">
-        <span class="text-[11px] font-semibold tracking-widest text-amber-100 uppercase drop-shadow mb-1">
-          THE BREWERY'S MARGIN
-        </span>
-        
-        <h1 class="text-3xl font-extrabold tracking-widest text-white drop-shadow-lg font-serif-luxury leading-relaxed">
-          醸造所の余白
-        </h1>
-        
-        <div class="w-10 h-0.5 bg-white/60 my-2 rounded-full"></div>
-
-        <p class="text-xs font-medium tracking-widest text-white/95 drop-shadow leading-relaxed">
-          大切な夜の語らいに<br>心ほどける極上の一杯
-        </p>
-
-        <!-- 泡タップの直感ヒントバナー -->
-        <div class="mt-7 px-3.5 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/40 text-[10.5px] font-bold text-white flex items-center gap-2 shadow-sm animate-pulse">
-          <span class="w-2 h-2 rounded-full bg-amber-300 animate-ping"></span>
-          浮かぶ小さな写真を触るとこだわりが開きます 🫧
-        </div>
-      </div>
-
-      <!-- 下部スクロール案内 -->
-      <div class="flex flex-col items-center pb-6 animate-bounce pointer-events-none">
-        <span class="text-[10.5px] font-bold tracking-widest text-white/85 mb-0.5">下にスクロールしてメニューを見る</span>
-        <i data-lucide="chevron-down" class="w-4 h-4 text-white/90"></i>
+        <!-- カメラボタン -->
+        <button id="openCameraBtn" class="w-full py-3.5 px-5 rounded-full bg-gradient-to-r from-amber-400 via-rose-400 to-purple-400 text-white font-black text-sm shadow-xl hover:shadow-2xl active:scale-95 transition border-2 border-white/80 flex items-center justify-center gap-2">
+          <i data-lucide="camera" class="w-4 h-4"></i>
+          <span>写真を撮って泡を浮かべる</span>
+          <span class="bg-white text-purple-900 text-[9px] font-black px-1.5 py-0.5 rounded-full shadow-sm">LIVE</span>
+        </button>
+        <input type="file" id="cameraFallbackInput" accept="image/*" capture="environment" class="hidden">
       </div>
 
     </section>
 
     <!-- ======================================================== -->
-    <!-- 2. 下部メニューリストセクション（スクロールで出現） -->
+    <!-- 2. メニュー一覧モーダル画面 -->
     <!-- ======================================================== -->
-    <section class="w-full px-4 pb-28 pt-2 relative z-20">
+    <div id="menuListModal" class="absolute inset-0 z-40 bg-purple-950/85 backdrop-blur-xl hidden flex-col opacity-0 transition-opacity duration-300">
       
-      <!-- セクションタイトル -->
-      <div class="text-center mb-5">
-        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-[10.5px] font-bold text-amber-100 mb-1.5">
-          <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
-          <span>MENU & INGREDIENT STORIES</span>
-        </div>
-        <h2 class="text-xl font-bold tracking-wider text-white font-serif-luxury drop-shadow-md">
+      <!-- ヘッダー (閉じるボタン) -->
+      <div class="w-full flex items-center justify-between p-4 pb-3 border-b border-white/20">
+        <h2 class="text-lg font-bold tracking-wider text-white font-serif-luxury drop-shadow-md flex items-center gap-2">
+          <i data-lucide="book-open" class="w-5 h-5 text-amber-200"></i>
           こだわりのお品書き
         </h2>
-        <p class="text-[11px] text-white/80 mt-0.5">
-          タップすると香りのピラミッドや直近1週間の感想をご覧いただけます
-        </p>
+        <button onclick="closeMenuList()" class="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md text-white flex items-center justify-center active:scale-90 transition shadow-sm">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
       </div>
 
-      <!-- メニューカード一覧 -->
-      <div class="flex flex-col gap-3.5" id="menuListContainer">
-        <!-- JavaScriptで動的生成されます -->
+      <!-- メニューリスト (内部スクロール) -->
+      <div class="flex-1 overflow-y-auto px-4 py-4 pb-12 no-scrollbar">
+        <div class="text-center mb-5">
+          <p class="text-[11px] text-white/80">
+            タップすると香りのピラミッドや直近1週間の感想をご覧いただけます
+          </p>
+        </div>
+        <!-- メニューカード一覧 -->
+        <div class="flex flex-col gap-3.5" id="menuListContainer">
+          <!-- JavaScriptで動的生成されます -->
+        </div>
       </div>
 
-    </section>
-
-    <!-- ============================================== -->
-    <!-- 下部固定アクションバー（スマホ画面下部に固定） -->
-    <!-- ============================================== -->
-    <div class="sticky bottom-0 left-0 right-0 z-30 p-3 bg-gradient-to-t from-purple-950/95 via-purple-900/70 to-transparent backdrop-blur-xs flex justify-center">
-      <button id="openCameraBtn" class="w-full py-3 px-5 rounded-full bg-gradient-to-r from-amber-400 via-rose-400 to-purple-400 text-white font-black text-xs sm:text-sm shadow-xl hover:shadow-2xl active:scale-95 transition border-2 border-white/80 flex items-center justify-center gap-2">
-        <i data-lucide="camera" class="w-4 h-4"></i>
-        <span>外カメラで乾杯の泡を撮る</span>
-        <span class="bg-white text-purple-900 text-[9px] font-black px-1.5 py-0.5 rounded-full shadow-sm">LIVE</span>
-      </button>
-      <input type="file" id="cameraFallbackInput" accept="image/*" capture="environment" class="hidden">
     </div>
 
   </div>
@@ -203,7 +213,7 @@
       <div class="absolute w-56 h-56 rounded-full border-4 border-white/90 shadow-[0_0_0_9999px_rgba(0,0,0,0.65)] pointer-events-none flex items-center justify-center">
         <div class="w-full h-full rounded-full border-2 border-dashed border-amber-300/80 animate-pulse"></div>
         <span class="absolute -bottom-8 text-[11px] font-bold text-amber-200 bg-black/60 px-3 py-1 rounded-full backdrop-blur-sm whitespace-nowrap">
-          ここが泡になります ✨
+          ここが特大の泡になります
         </span>
       </div>
       <canvas id="captureCanvas" class="hidden"></canvas>
@@ -222,12 +232,12 @@
 
         <div class="w-11 h-11"></div>
       </div>
-      <p class="text-[10.5px] text-white/75 font-medium mt-0.5">シャッターを押すとすぐに泡になって浮かびます</p>
+      <p class="text-[10.5px] text-white/75 font-medium mt-0.5">シャッターを押すと2倍の特大泡になって浮かびます</p>
     </div>
   </div>
 
   <!-- ========================================================== -->
-  <!-- 画像（image_390921.jpg）の構成を忠実に再現した詳細モーダル（スマホ最適化縦レイアウト） -->
+  <!-- 画像（image_390921.jpg）の構成を忠実に再現した詳細モーダル -->
   <!-- ========================================================== -->
   <div id="productDetailModal" class="fixed inset-0 z-50 ambient-background-fixed hidden items-center justify-center p-3 opacity-0 transition-opacity duration-300 overflow-y-auto no-scrollbar">
     
@@ -247,30 +257,10 @@
         <i data-lucide="x" class="w-5 h-5"></i>
       </button>
 
-      <!-- 1. 上段：添付画像の丸い写真 ＋ 上下の円弧湾曲テキスト -->
+      <!-- 1. 上段：添付画像の丸い写真 -->
       <div class="flex flex-col items-center justify-center relative mt-2 mb-4">
         <div class="relative w-56 h-56 flex items-center justify-center">
           
-          <!-- 円弧テキスト SVG -->
-          <svg viewBox="0 0 300 300" class="absolute inset-0 w-full h-full pointer-events-none z-20">
-            <path id="curveTop" d="M 35,150 A 115,115 0 1,1 265,150" fill="none" />
-            <path id="curveBottom" d="M 265,150 A 115,115 0 0,1 35,150" fill="none" />
-
-            <!-- 上側のカーブテキスト（画像:「チュベローズの香り」風） -->
-            <text class="text-[17px] font-black fill-white tracking-widest font-serif-luxury" style="filter: drop-shadow(0 2px 5px rgba(0,0,0,0.35));">
-              <textPath href="#curveTop" startOffset="50%" text-anchor="middle" id="detailCurvedTop">
-                チュベローズの香り
-              </textPath>
-            </text>
-
-            <!-- 下側のカーブテキスト（画像:「ホワイトピンクの湯色（にごり）」風） -->
-            <text class="text-[14px] font-bold fill-white/95 tracking-wide" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));">
-              <textPath href="#curveBottom" startOffset="50%" text-anchor="middle" id="detailCurvedBottom">
-                ホワイトピンクの湯色（にごり）
-              </textPath>
-            </text>
-          </svg>
-
           <!-- 中央の丸い写真フレーム -->
           <div class="w-40 h-40 rounded-full overflow-hidden border-4 border-white shadow-2xl relative bg-white/10 flex items-center justify-center z-10">
             <img id="detailMainImage" src="" alt="Menu Main" class="w-full h-full object-cover">
@@ -291,7 +281,6 @@
           <span class="text-[11px] font-black tracking-widest uppercase">TOP</span>
           <span id="detailTopText" class="text-[10px] font-bold mt-0.5 tracking-wider leading-tight">シトラス、グリーン</span>
 
-          <!-- 左添え写真 -->
           <div class="absolute -left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-lg bg-amber-100 z-20">
             <img id="detailTopImg" src="" class="w-full h-full object-cover" alt="TOP note image">
           </div>
@@ -304,7 +293,6 @@
             チュベローズ、ジャスミン<br>オレンジフラワー
           </span>
 
-          <!-- 右添え写真 -->
           <div class="absolute -right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-lg bg-rose-100 z-20">
             <img id="detailMidImg" src="" class="w-full h-full object-cover" alt="MIDDLE note image">
           </div>
@@ -315,7 +303,6 @@
           <span class="text-[11px] font-black tracking-widest uppercase">BASE</span>
           <span id="detailBaseText" class="text-[10px] font-bold mt-0.5 tracking-wider leading-tight">ムスク、ウッド</span>
 
-          <!-- 左下添え写真 -->
           <div class="absolute -left-5 bottom-0 translate-y-1 w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-lg bg-stone-100 z-20">
             <img id="detailBaseImg" src="" class="w-full h-full object-cover" alt="BASE note image">
           </div>
@@ -343,18 +330,19 @@
   <!-- 写真撮影後のコメント確認モーダル -->
   <div id="photoPreviewModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
     <div class="w-full max-w-[320px] bg-gradient-to-b from-purple-900 via-rose-900 to-amber-950 rounded-3xl p-4 border-2 border-white/60 text-center flex flex-col items-center shadow-2xl text-white">
-      <h3 class="text-sm font-bold mb-0.5 font-serif-luxury">撮りたての泡を浮かべる✨</h3>
-      <p class="text-[10px] text-white/80 mb-3">撮った写真が小さな泡となって画面を泳ぎます</p>
+      <h3 class="text-sm font-bold mb-0.5 font-serif-luxury">撮りたての泡を浮かべる</h3>
+      <p class="text-[10px] text-white/80 mb-3">撮った写真が2倍の特大泡となって最優先で画面を泳ぎます！</p>
 
-      <div class="w-20 h-20 rounded-full overflow-hidden border-2 border-white shadow-xl mb-3 relative bubble-frame-subtle">
+      <!-- 2倍プレビュー枠 -->
+      <div class="w-28 h-28 rounded-full overflow-hidden border-4 border-amber-300 shadow-2xl mb-3 relative bubble-frame-user">
         <img id="capturedImgPreview" src="" class="w-full h-full object-cover">
       </div>
 
-      <input type="text" id="capturedCommentInput" placeholder="一言（例：最高のお肉と乾杯！🍻）" class="w-full px-3 py-2 text-xs rounded-xl bg-white/20 border border-white/40 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-amber-300 mb-3 text-center font-bold">
+      <input type="text" id="capturedCommentInput" placeholder="一言（例：最高のお肉と乾杯！）" class="w-full px-3 py-2 text-xs rounded-xl bg-white/20 border border-white/40 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-amber-300 mb-3 text-center font-bold">
 
       <div class="flex gap-2 w-full">
         <button onclick="closeCaptureModal()" class="flex-1 py-2 rounded-full bg-white/20 hover:bg-white/30 text-white text-xs font-bold transition">撮り直す</button>
-        <button onclick="submitCapturedBubble()" class="flex-1 py-2 rounded-full bg-gradient-to-r from-amber-400 to-rose-400 text-white font-bold text-xs shadow-md active:scale-95 transition">泡を流す！🫧</button>
+        <button onclick="submitCapturedBubble()" class="flex-1 py-2 rounded-full bg-gradient-to-r from-amber-400 to-rose-400 text-white font-bold text-xs shadow-md active:scale-95 transition">特大泡を流す！</button>
       </div>
     </div>
   </div>
@@ -468,7 +456,7 @@
         },
         review: {
           author: '4日前ご来店：女子会グループ様',
-          text: '「泡と一緒に写真撮ったらめちゃくちゃ映えました！味もミルキーで最高です✨」'
+          text: '「泡と一緒に写真撮ったらめちゃくちゃ映えました！味もミルキーで最高です！」'
         }
       },
       {
@@ -496,54 +484,95 @@
           author: '先週ご来店：木村様',
           text: '「生地が驚くほど軽くて香ばしい！ビールとの相性が抜群でペロリと完食しました。」'
         }
+      },
+      {
+        id: 5,
+        category: 'DESSERT',
+        title: '自家製リコッタのクレームキャラメル',
+        curvedTop: 'ほろ苦いカラメルと濃密な卵のコク',
+        curvedBottom: 'なめらかに溶け合う大人のドルチェ',
+        mainImg: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=600&auto=format&fit=crop&q=80',
+        price: '¥750',
+        tag: '食後に人気',
+        top: {
+          text: '深煎りエスプレッソカラメル',
+          img: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=200&auto=format&fit=crop&q=80'
+        },
+        mid: {
+          text: '那須御養卵と北海道リコッタチーズ',
+          img: 'https://images.unsplash.com/photo-1582979512210-99b6a53386f9?w=200&auto=format&fit=crop&q=80'
+        },
+        base: {
+          text: 'バニラビーンズの豊かな余韻',
+          img: 'https://images.unsplash.com/photo-1508615039623-a25605d2b022?w=200&auto=format&fit=crop&q=80'
+        },
+        review: {
+          author: '今週ご来店：女性お一人様',
+          text: '「濃厚なのに甘すぎず、黒ビールとのペアリングが最高に贅沢でした！」'
+        }
       }
     ];
 
-    // 浮遊する写真バブルの初期データ（画像44581b風）
+    // 浮遊する写真バブルの初期データ（増量して常時華やかに）
     const bubbleInitialList = [
       {
         menuId: 2,
         img: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=400&auto=format&fit=crop&q=80',
-        label: 'ステーキ🥩',
+        label: 'ステーキ',
         sizeType: 'medium'
       },
       {
         menuId: 0,
         img: 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=400&auto=format&fit=crop&q=80',
-        label: '生エール🍺',
+        label: '生エール',
         sizeType: 'small'
       },
       {
         menuId: 3,
         img: 'https://images.unsplash.com/photo-1592417817098-8f3d6910985c?w=400&auto=format&fit=crop&q=80',
-        label: 'ブッラータ🧀',
+        label: 'ブッラータ',
         sizeType: 'medium'
       },
       {
         menuId: 1,
         img: 'https://images.unsplash.com/photo-1608270199042-3a5665b1134e?w=400&auto=format&fit=crop&q=80',
-        label: '白泡ヴァイス🌾',
+        label: '白泡ヴァイス',
         sizeType: 'small'
       },
       {
         menuId: 4,
         img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&auto=format&fit=crop&q=80',
-        label: '薪窯ピッツァ🍕',
+        label: '薪窯ピッツァ',
         sizeType: 'medium'
       },
       {
         menuId: 0,
         img: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&auto=format&fit=crop&q=80',
-        label: '笑顔で乾杯✨',
+        label: '笑顔で乾杯',
+        sizeType: 'small'
+      },
+      {
+        menuId: 5,
+        img: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=400&auto=format&fit=crop&q=80',
+        label: '生ドルチェ',
         sizeType: 'small'
       },
       {
         menuId: 2,
         img: 'https://images.unsplash.com/photo-1558030006-450675393462?w=400&auto=format&fit=crop&q=80',
-        label: 'ジューシー赤身',
+        label: '薪焼きの香ばしさ',
+        sizeType: 'medium'
+      },
+      {
+        menuId: 1,
+        img: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&auto=format&fit=crop&q=80',
+        label: '楽しい夜の語らい',
         sizeType: 'small'
       }
     ];
+
+    // ユーザーが撮影した写真の優先保存リスト
+    const userCapturedBubbleList = [];
 
     // ==============================================
     // 2. 音響効果（Web Audio API）
@@ -606,34 +635,14 @@
       } catch (e) {}
     }
 
-    const soundBtn = document.getElementById('soundBtn');
-    const soundIcon = document.getElementById('soundIcon');
-    const soundLabel = document.getElementById('soundLabel');
-
-    soundBtn.addEventListener('click', () => {
-      isSoundOn = !isSoundOn;
-      if (isSoundOn) {
-        initAudio();
-        playPopSound();
-        soundIcon.setAttribute('data-lucide', 'volume-2');
-        soundLabel.textContent = '泡の音：ON';
-        soundBtn.classList.remove('opacity-60');
-      } else {
-        soundIcon.setAttribute('data-lucide', 'volume-x');
-        soundLabel.textContent = '泡の音：OFF';
-        soundBtn.classList.add('opacity-60');
-      }
-      lucide.createIcons();
-    });
-
     // ==============================================
-    // 3. 背景の白リング気泡 Canvas（スマホ幅・高さ基準）
+    // 3. 背景のブクブク気泡 Canvas（何もない泡を大幅増量＆炭酸モーション）
     // ==============================================
     const appContainer = document.getElementById('appContainer');
     const canvas = document.getElementById('ambientBubbleCanvas');
     const ctx = canvas.getContext('2d');
     let width, height;
-    let ringBubbles = [];
+    let ambientBubbles = [];
 
     function resizeCanvas() {
       width = canvas.width = appContainer.clientWidth;
@@ -642,74 +651,142 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    class RingBubble {
+    class AmbientBubble {
       constructor(init = false) {
         this.reset(init);
       }
       reset(init = false) {
         this.x = Math.random() * width;
-        this.y = init ? Math.random() * height : height + Math.random() * 40;
-        this.radius = Math.random() * 15 + 10;
-        this.speedY = Math.random() * 0.55 + 0.25;
+        this.y = init ? Math.random() * height : height + Math.random() * 50;
+        
+        // 泡のタイプ：炭酸微小気泡（小さく速い）と、ゆったり漂う白リング気泡
+        this.isMicro = Math.random() > 0.45;
+
+        if (this.isMicro) {
+          // 下からプクプク立ち昇る炭酸バブル
+          this.radius = Math.random() * 4 + 1.5;
+          this.speedY = Math.random() * 1.6 + 0.9;
+          this.wobbleSpeed = Math.random() * 0.05 + 0.03;
+          this.wobbleAmp = Math.random() * 1.8 + 0.6;
+          this.alpha = Math.random() * 0.55 + 0.25;
+          this.isFilled = Math.random() > 0.4;
+        } else {
+          // 動画・画像のような透明感のある美しい白リング泡
+          this.radius = Math.random() * 20 + 8;
+          this.speedY = Math.random() * 0.65 + 0.3;
+          this.wobbleSpeed = Math.random() * 0.02 + 0.008;
+          this.wobbleAmp = Math.random() * 0.8 + 0.3;
+          this.alpha = Math.random() * 0.4 + 0.18;
+          this.lineWidth = Math.random() * 0.8 + 1.0;
+          this.isFilled = false;
+        }
+
         this.wobble = Math.random() * Math.PI * 2;
-        this.wobbleSpeed = Math.random() * 0.018 + 0.008;
-        this.lineWidth = 1.1;
-        this.alpha = Math.random() * 0.35 + 0.18;
       }
+
       update() {
         this.y -= this.speedY;
         this.wobble += this.wobbleSpeed;
-        this.x += Math.sin(this.wobble) * 0.35;
-        if (this.y < -this.radius * 2) {
+        this.x += Math.sin(this.wobble) * this.wobbleAmp;
+
+        if (this.y < -this.radius * 2 || this.x < -15 || this.x > width + 15) {
           this.reset(false);
         }
       }
+
       draw() {
         ctx.save();
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(255, 255, 255, ${this.alpha})`;
-        ctx.lineWidth = this.lineWidth;
-        ctx.stroke();
 
-        ctx.beginPath();
-        ctx.arc(this.x - this.radius * 0.35, this.y - this.radius * 0.35, this.radius * 0.16, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${this.alpha * 0.9})`;
-        ctx.fill();
+        if (this.isMicro && this.isFilled) {
+          ctx.fillStyle = `rgba(255, 255, 255, ${this.alpha})`;
+          ctx.fill();
+        } else {
+          ctx.strokeStyle = `rgba(255, 255, 255, ${this.alpha})`;
+          ctx.lineWidth = this.lineWidth || 1.1;
+          ctx.stroke();
+
+          // 泡のきらめきハイライト
+          ctx.beginPath();
+          ctx.arc(this.x - this.radius * 0.35, this.y - this.radius * 0.35, Math.max(this.radius * 0.18, 1), 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 255, 255, ${this.alpha * 0.95})`;
+          ctx.fill();
+        }
         ctx.restore();
       }
     }
 
-    for (let i = 0; i < 22; i++) {
-      ringBubbles.push(new RingBubble(true));
+    // 何もない気泡を生成
+    for (let i = 0; i < 65; i++) {
+      ambientBubbles.push(new AmbientBubble(true));
     }
 
+    // 画面タップ時にその場所から小泡がシュワッと湧き上がる演出
+    function spawnTouchSparkles(x, y) {
+      for (let i = 0; i < 6; i++) {
+        const b = new AmbientBubble(false);
+        b.x = x + (Math.random() - 0.5) * 30;
+        b.y = y + (Math.random() - 0.5) * 30;
+        b.speedY = Math.random() * 2.2 + 1.2;
+        b.radius = Math.random() * 5 + 2;
+        ambientBubbles.push(b);
+      }
+      if (ambientBubbles.length > 95) {
+        ambientBubbles.splice(0, 6);
+      }
+    }
+
+    window.addEventListener('pointerdown', (e) => {
+      const rect = appContainer.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+      if (clickX >= 0 && clickX <= rect.width && clickY >= 0 && clickY <= rect.height) {
+        spawnTouchSparkles(clickX, clickY);
+      }
+    });
+
     // ==============================================
-    // 4. 画像 image_44581b.jpg 通りのサイズ感を持つ写真バブル（スマホ枠内を安全に遊泳）
+    // 4. 写真バブル（通常1.5倍、自分撮り2倍 ＆ 新陳代謝アルゴリズム）
     // ==============================================
     const photoContainer = document.getElementById('fullPhotoBubblesContainer');
     let floatingBubbles = [];
 
     class FreePhotoBubble {
-      constructor(itemData, laneIndex = 0, delay = 0) {
+      constructor(itemData, laneIndex = 0, delay = 0, startFromBottom = false) {
         this.data = itemData;
+        this.isUser = itemData.isUser === true;
+        this.isDead = false;
 
-        // スマホ画面に合わせたサイズ設計（小48px〜中62px）
-        const isSmall = itemData.sizeType === 'small' || (Math.random() > 0.45);
-        this.size = isSmall 
-          ? Math.floor(Math.random() * 4 + 48) 
-          : Math.floor(Math.random() * 6 + 60);
+        // サイズ計算
+        if (this.isUser) {
+          this.size = 138;
+        } else {
+          const isSmall = itemData.sizeType === 'small';
+          this.size = isSmall 
+            ? Math.floor(Math.random() * 6 + 74)
+            : Math.floor(Math.random() * 10 + 92);
+        }
         
-        // スマホ枠（max 430px）の内側で切れないように安全マージンを設定
-        const usableWidth = (appContainer.clientWidth || 390) - this.size - 24;
+        const containerWidth = appContainer.clientWidth || 390;
+        const containerHeight = appContainer.clientHeight || window.innerHeight;
+
+        const usableWidth = Math.max(containerWidth - this.size - 24, 20);
         const colWidth = usableWidth / 3;
         this.x = 12 + (laneIndex % 3) * colWidth + Math.random() * (colWidth * 0.85);
 
-        this.y = (appContainer.clientHeight || window.innerHeight) + Math.random() * 100 + delay;
-        this.speedY = Math.random() * 0.38 + 0.3;
+        if (startFromBottom) {
+          // 下から新しく湧き上がる場合
+          this.y = containerHeight + Math.random() * 40 + 20;
+        } else {
+          // 初期ロード時の分散配置
+          this.y = containerHeight + Math.random() * 100 + delay;
+        }
+
+        this.speedY = this.isUser ? 0.34 : (Math.random() * 0.38 + 0.28);
         this.wobble = Math.random() * Math.PI * 2;
-        this.wobbleSpeed = Math.random() * 0.018 + 0.01;
-        this.wobbleAmp = Math.random() * 4 + 3;
+        this.wobbleSpeed = Math.random() * 0.016 + 0.008;
+        this.wobbleAmp = this.isUser ? 5 : (Math.random() * 4 + 3);
         this.isPopping = false;
 
         this.createElement();
@@ -717,18 +794,30 @@
 
       createElement() {
         this.el = document.createElement('div');
-        this.el.className = 'absolute pointer-events-auto cursor-pointer transition-transform duration-75 flex flex-col items-center select-none';
+        // transition-transform を外し、上から下に瞬間移動する際の残像・引っ掛かりを防止
+        this.el.className = 'absolute pointer-events-auto cursor-pointer flex flex-col items-center select-none';
         this.el.style.width = `${this.size}px`;
+        this.el.style.willChange = 'transform'; // パフォーマンス最適化とチラつき防止
 
+        // ★ 初期位置をセット（DOM追加時のチラつきや、上部に残像が出るワープ現象を完全に防ぐ）
+        this.el.style.transform = `translate3d(${this.x}px, ${this.y}px, 0)`;
+
+        const frameClass = this.isUser 
+          ? 'bubble-frame-user bg-amber-400/30' 
+          : 'bubble-frame-subtle bg-white/20';
+
+        const labelTag = this.isUser 
+          ? `<span class="mt-1 text-[10px] font-black text-amber-950 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-300 border border-white shadow-md whitespace-nowrap scale-95 flex items-center gap-1 label-span">${this.data.label}</span>`
+          : `<span class="mt-0.5 text-[9.5px] font-bold text-white/95 px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-xs border border-white/25 whitespace-nowrap shadow-xs scale-90 label-span">${this.data.label}</span>`;
+
+        // 内部の .bubble-inner にのみ active:scale-90 と transition-transform を付与してタップ時の縮小を表現
         this.el.innerHTML = `
-          <div class="bubble-inner relative w-[${this.size}px] h-[${this.size}px] rounded-full p-0.5 bg-white/20 backdrop-blur-xs bubble-frame-subtle border border-white shadow-md active:scale-90 transition-transform">
+          <div class="bubble-inner relative w-[${this.size}px] h-[${this.size}px] rounded-full p-1 backdrop-blur-xs ${frameClass} border border-white active:scale-90 transition-transform duration-300">
             <img src="${this.data.img}" class="w-full h-full object-cover rounded-full pointer-events-none" onerror="this.src='https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=300'">
-            
-            <div class="absolute top-1 left-1.5 w-2 h-1 rounded-full bg-white/90 transform -rotate-45 pointer-events-none"></div>
+            <div class="absolute top-1.5 left-2 ${this.isUser ? 'w-4 h-2' : 'w-3 h-1.5'} rounded-full bg-white/95 transform -rotate-45 pointer-events-none shadow-sm"></div>
+            <div class="absolute bottom-2.5 right-3 ${this.isUser ? 'w-2.5 h-2.5' : 'w-1.5 h-1.5'} rounded-full bg-white/70 pointer-events-none"></div>
           </div>
-          <span class="mt-0.5 text-[8.5px] font-bold text-white/90 px-1.5 py-0.2 rounded-full bg-black/45 backdrop-blur-xs border border-white/20 whitespace-nowrap shadow-xs scale-90">
-            ${this.data.label}
-          </span>
+          ${labelTag}
         `;
 
         this.el.addEventListener('pointerdown', (e) => {
@@ -740,25 +829,22 @@
       }
 
       update() {
-        if (this.isPopping) return;
+        if (this.isPopping || this.isDead) return;
 
         this.y -= this.speedY;
         this.wobble += this.wobbleSpeed;
         const currentX = this.x + Math.sin(this.wobble) * this.wobbleAmp;
 
-        const containerHeight = appContainer.clientHeight || window.innerHeight;
-        const containerWidth = appContainer.clientWidth || 390;
-
-        if (this.y < -this.size - 30) {
-          this.y = containerHeight + Math.random() * 60 + 10;
-          this.x = 12 + Math.random() * (containerWidth - this.size - 24);
-        }
-
         this.el.style.transform = `translate3d(${currentX}px, ${this.y}px, 0)`;
+
+        // 画面上部に完全に消えたら死亡フラグを立てて、DOMから消去対象にする
+        if (this.y < -this.size - 40) {
+          this.isDead = true;
+        }
       }
 
       popAndOpen() {
-        if (this.isPopping) return;
+        if (this.isPopping || this.isDead) return;
         this.isPopping = true;
 
         playPopSound();
@@ -766,22 +852,44 @@
         const inner = this.el.querySelector('.bubble-inner');
         inner.classList.add('pop-animate');
 
+        const label = this.el.querySelector('.label-span');
+        if (label) {
+          label.style.transition = 'opacity 0.2s';
+          label.style.opacity = '0';
+        }
+
+        // タップした泡の破片が弾け飛ぶエフェクト
+        spawnTouchSparkles(this.x + this.size / 2, this.y + this.size / 2);
+
         setTimeout(() => {
           openProductModal(this.data.menuId !== undefined ? this.data.menuId : 0);
           setTimeout(() => {
-            inner.classList.remove('pop-animate');
-            const containerHeight = appContainer.clientHeight || window.innerHeight;
-            this.y = containerHeight + Math.random() * 80 + 10;
-            this.isPopping = false;
-          }, 1000);
+            // モーダルが開いた裏で泡要素を消去
+            this.isDead = true;
+          }, 300);
         }, 220);
       }
+    }
+
+    // 泡が消えたあとに新しい泡を下から1つ生成する関数
+    function spawnSingleBubble() {
+      let newData;
+      if (userCapturedBubbleList.length > 0 && Math.random() < 0.45) {
+        // ユーザーが撮った写真があれば優先的（45%）に選出
+        newData = userCapturedBubbleList[Math.floor(Math.random() * userCapturedBubbleList.length)];
+      } else {
+        newData = bubbleInitialList[Math.floor(Math.random() * bubbleInitialList.length)];
+      }
+      
+      const laneIndex = Math.floor(Math.random() * 3);
+      const newBubble = new FreePhotoBubble(newData, laneIndex, 0, true);
+      floatingBubbles.push(newBubble);
     }
 
     function initFloatingBubbles() {
       photoContainer.innerHTML = '';
       floatingBubbles = bubbleInitialList.map((item, index) => {
-        return new FreePhotoBubble(item, index, index * 120);
+        return new FreePhotoBubble(item, index, index * 120, false);
       });
     }
 
@@ -799,7 +907,7 @@
 
         card.innerHTML = `
           <!-- 丸いメニュー写真 -->
-          <div class="relative w-16 h-16 rounded-full overflow-hidden border-2 border-white/90 shadow-md shrink-0 bubble-frame-subtle">
+          <div class="relative w-18 h-18 rounded-full overflow-hidden border-2 border-white/90 shadow-md shrink-0 bubble-frame-subtle">
             <img src="${item.mainImg}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
             <div class="absolute inset-0 rounded-full border border-white/40 pointer-events-none"></div>
           </div>
@@ -818,10 +926,6 @@
               ${item.title}
             </h3>
 
-            <p class="text-[10px] text-white/80 line-clamp-1 mt-0.5">
-              ${item.curvedTop}
-            </p>
-
             <div class="mt-1 flex items-center gap-1 text-[9.5px] text-amber-200 font-medium">
               <i data-lucide="sparkles" class="w-3 h-3 text-yellow-300"></i>
               <span>香りのピラミッドを見る</span>
@@ -836,27 +940,57 @@
     }
 
     // ==============================================
+    // 5.5 メニュー一覧画面の開閉制御
+    // ==============================================
+    const menuListModal = document.getElementById('menuListModal');
+    
+    function openMenuList() {
+      menuListModal.classList.remove('hidden');
+      menuListModal.classList.add('flex');
+      setTimeout(() => {
+        menuListModal.classList.remove('opacity-0');
+      }, 10);
+    }
+
+    function closeMenuList() {
+      menuListModal.classList.add('opacity-0');
+      setTimeout(() => {
+        menuListModal.classList.add('hidden');
+        menuListModal.classList.remove('flex');
+      }, 300);
+    }
+
+    window.openMenuList = openMenuList;
+    window.closeMenuList = closeMenuList;
+
+    // ==============================================
     // 6. アニメーションメインループ
     // ==============================================
     function animate() {
       ctx.clearRect(0, 0, width, height);
 
-      // 背景の白リング気泡
-      for (let i = 0; i < ringBubbles.length; i++) {
-        ringBubbles[i].update();
-        ringBubbles[i].draw();
+      // 背景のブクブク気泡（65個）
+      for (let i = 0; i < ambientBubbles.length; i++) {
+        ambientBubbles[i].update();
+        ambientBubbles[i].draw();
       }
 
-      // 浮遊する写真泡
-      for (let i = 0; i < floatingBubbles.length; i++) {
+      // 浮遊する写真泡（死亡フラグが立った泡は削除し、新しく下から補充）
+      for (let i = floatingBubbles.length - 1; i >= 0; i--) {
         floatingBubbles[i].update();
+
+        if (floatingBubbles[i].isDead) {
+          floatingBubbles[i].el.remove();
+          floatingBubbles.splice(i, 1);
+          spawnSingleBubble(); // 消えた分だけ新しい泡を下から追加
+        }
       }
 
       requestAnimationFrame(animate);
     }
 
     // ==============================================
-    // 7. 商品詳細モーダル制御（添付画像 image_390921.jpg 再現）
+    // 7. 商品詳細モーダル制御
     // ==============================================
     const productDetailModal = document.getElementById('productDetailModal');
 
@@ -866,8 +1000,6 @@
 
       const item = menuData[index] || menuData[0];
 
-      document.getElementById('detailCurvedTop').textContent = item.curvedTop;
-      document.getElementById('detailCurvedBottom').textContent = item.curvedBottom;
       document.getElementById('detailMainImage').src = item.mainImg;
 
       document.getElementById('detailTopText').innerHTML = item.top.text.replace('\n', '<br>');
@@ -1039,14 +1171,15 @@
       cameraFallbackInput.value = '';
     }
 
+    // ★ 自分が撮影した写真を「特大2倍泡（138px）」として生成＆最優先リストへ登録
     function submitCapturedBubble() {
-      const comment = capturedCommentInput.value.trim() || '今夜の乾杯！🍻';
+      const comment = capturedCommentInput.value.trim() || '最高の乾杯！';
 
       const newMenuIndex = menuData.length;
       menuData.push({
         id: newMenuIndex,
         category: 'CUSTOMER MEMORY',
-        title: '出来立ての乾杯スナップ✨',
+        title: '出来立ての乾杯スナップ',
         curvedTop: '今夜生まれた最高の瞬間',
         curvedBottom: '泡とともに届いた出来立ての1枚',
         mainImg: currentCapturedPhotoData,
@@ -1070,19 +1203,25 @@
         }
       });
 
-      const newBubble = new FreePhotoBubble({
+      const userBubbleData = {
         menuId: newMenuIndex,
         img: currentCapturedPhotoData,
         label: comment.length > 7 ? comment.slice(0, 7) + '…' : comment,
-        sizeType: 'small'
-      }, Math.floor(Math.random() * 3), 0);
+        isUser: true
+      };
 
-      newBubble.speedY = 1.2;
+      // 優先再出現プールに追加
+      userCapturedBubbleList.unshift(userBubbleData);
+
+      // 撮った直後は即座に下から生成（startFromBottom = true）
+      const newBubble = new FreePhotoBubble(userBubbleData, Math.floor(Math.random() * 3), 0, true);
+      newBubble.speedY = 0.9;
       setTimeout(() => {
-        newBubble.speedY = 0.35;
+        newBubble.speedY = 0.32;
       }, 2500);
 
-      floatingBubbles.push(newBubble);
+      // 最前面（配列の先頭）に追加して優先表示
+      floatingBubbles.unshift(newBubble);
 
       renderMenuList();
 
@@ -1098,7 +1237,32 @@
     window.submitCapturedBubble = submitCapturedBubble;
 
     // ==============================================
-    // 9. 初期化
+    // 9. 背景動画（heikei.mp4）の強制再生ハンドラ
+    // ==============================================
+    function ensureVideoPlayback() {
+      const bgVideo = document.getElementById('bgVideo');
+      if (!bgVideo) return;
+
+      bgVideo.muted = true;
+      bgVideo.defaultMuted = true;
+
+      const playPromise = bgVideo.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          const onFirstTouch = () => {
+            bgVideo.muted = true;
+            bgVideo.play();
+            document.removeEventListener('touchstart', onFirstTouch);
+            document.removeEventListener('click', onFirstTouch);
+          };
+          document.addEventListener('touchstart', onFirstTouch, { once: true });
+          document.addEventListener('click', onFirstTouch, { once: true });
+        });
+      }
+    }
+
+    // ==============================================
+    // 10. 初期化
     // ==============================================
     window.addEventListener('load', () => {
       lucide.createIcons();
@@ -1106,6 +1270,7 @@
       initFloatingBubbles();
       renderMenuList();
       animate();
+      ensureVideoPlayback();
     });
   </script>
 </body>
