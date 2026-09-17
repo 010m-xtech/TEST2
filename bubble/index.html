@@ -17,7 +17,6 @@
       user-select: none;
       -webkit-user-select: none;
       touch-action: manipulation;
-      background-color: #26112d; /* PC等で見た時の余白ダークパープル */
       margin: 0;
       padding: 0;
       width: 100%;
@@ -29,15 +28,10 @@
       font-family: 'Shippori Mincho', serif;
     }
 
-    /* スマホ専用メイン背景：動画読み込み前のフォールバック用グラデーション */
-    .ambient-background-fixed {
-      background: radial-gradient(ellipse at 50% 36%, rgba(254, 219, 155, 0.96) 0%, rgba(235, 142, 178, 0.92) 38%, rgba(162, 114, 186, 0.96) 74%, rgba(103, 72, 140, 1) 100%);
-    }
-
     /* 通常写真バブルフレーム（1.5倍サイズ用） */
     .bubble-frame-subtle {
       box-shadow: 
-        0 8px 20px rgba(65, 20, 75, 0.35),
+        0 8px 20px rgba(0, 0, 0, 0.35),
         inset 0 0 12px rgba(255, 255, 255, 0.85),
         0 0 0 2.5px rgba(255, 255, 255, 0.95);
     }
@@ -100,12 +94,12 @@
     }
   </style>
 </head>
-<body class="flex justify-center items-start h-screen overflow-hidden bg-[#26112d]">
+<body class="flex justify-center items-start h-screen overflow-hidden bg-black">
 
   <!-- ============================================== -->
   <!-- スマホサイズ固定コンテナ（最大幅430px：実機スマホでは100%全画面） -->
   <!-- ============================================== -->
-  <div id="appContainer" class="w-full max-w-[430px] h-full relative ambient-background-fixed shadow-2xl flex flex-col overflow-hidden border-x border-white/10">
+  <div id="appContainer" class="w-full max-w-[430px] h-full relative bg-black shadow-2xl flex flex-col overflow-hidden border-x border-white/10">
 
     <!-- ======================================================== -->
     <!-- 0. イントロダクション演出（トップ移行前） -->
@@ -154,14 +148,14 @@
       <source src="./haikei.mp4" type="video/mp4">
     </video>
 
-    <!-- 背景動画用ソフトオーバーレイ（イントロ中は透明、泡が出現するときにフェードインして視認性を上げる） -->
-    <div id="videoOverlay" class="absolute inset-0 bg-purple-950/20 pointer-events-none z-0 opacity-0 transition-opacity duration-1000"></div>
+    <!-- 背景動画用ソフトオーバーレイ（イントロ中は透明、泡が出現するときにフェードインして視認性を上げる。黒掛けのみに変更） -->
+    <div id="videoOverlay" class="absolute inset-0 bg-black/30 pointer-events-none z-0 opacity-0 transition-opacity duration-1000"></div>
 
     <!-- 背景のブクブク気泡 Canvas（スマホ幅・高さに自動同期） -->
     <canvas id="ambientBubbleCanvas" class="absolute inset-0 w-full h-full pointer-events-none z-1"></canvas>
 
     <!-- 浮遊する写真バブルの親レイヤー（スマホ枠内を安全に泳ぐ） -->
-    <div id="fullPhotoBubblesContainer" class="absolute inset-0 pointer-events-none z-10 overflow-hidden"></div>
+    <div id="fullPhotoBubblesContainer" class="absolute inset-0 pointer-events-none z-10 overflow-hidden transition-opacity duration-300"></div>
 
     <!-- ======================================================== -->
     <!-- 1. ファーストビュー -->
@@ -181,17 +175,17 @@
         <div class="flex w-full max-w-[320px] mx-auto gap-2.5">
           
           <!-- おすすめメニューボタン（薄い黒掛け） -->
-          <button onclick="openMenuList()" class="flex-1 py-2.5 px-2 rounded-xl bg-black/30 hover:bg-black/40 backdrop-blur-md text-white font-bold text-[10px] shadow-md active:scale-95 transition border border-white/20 flex flex-col items-center justify-center gap-1">
+          <button onclick="openMenuList()" class="flex-1 py-2.5 px-2 rounded-xl bg-black/40 hover:bg-black/50 backdrop-blur-md text-white font-bold text-[10px] shadow-md active:scale-95 transition border border-white/20 flex flex-col items-center justify-center gap-1">
             <i data-lucide="book-open" class="w-4 h-4 text-white/90"></i>
             <span class="tracking-wider">おすすめメニュー</span>
           </button>
 
           <!-- カメラボタン（薄い黒掛け） -->
-          <button id="openCameraBtn" class="flex-1 py-2.5 px-2 rounded-xl bg-black/30 hover:bg-black/40 backdrop-blur-md text-white font-bold text-[10px] shadow-md active:scale-95 transition border border-white/20 flex flex-col items-center justify-center gap-1 relative leading-tight">
+          <button id="openCameraBtn" class="flex-1 py-2.5 px-2 rounded-xl bg-black/40 hover:bg-black/50 backdrop-blur-md text-white font-bold text-[10px] shadow-md active:scale-95 transition border border-white/20 flex flex-col items-center justify-center gap-1 relative leading-tight">
             <i data-lucide="camera" class="w-4 h-4 text-white/90"></i>
             <span class="tracking-wider text-center">写真を撮って<br>泡を浮かべる</span>
             <!-- LIVEバッジ -->
-            <span class="absolute -top-1 -right-1 bg-white text-purple-900 text-[8px] font-black px-1.5 py-0.5 rounded-full shadow-sm z-10">LIVE</span>
+            <span class="absolute -top-1 -right-1 bg-white text-gray-900 text-[8px] font-black px-1.5 py-0.5 rounded-full shadow-sm z-10">LIVE</span>
           </button>
 
         </div>
@@ -326,8 +320,8 @@
   </div>
 
   <!-- 写真撮影後のコメント確認モーダル -->
-  <div id="photoPreviewModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-    <div class="w-full max-w-[320px] bg-gradient-to-b from-purple-900 via-rose-900 to-amber-950 rounded-3xl p-4 border-2 border-white/60 text-center flex flex-col items-center shadow-2xl text-white">
+  <div id="photoPreviewModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+    <div class="w-full max-w-[320px] bg-gradient-to-b from-gray-800 via-gray-900 to-black rounded-3xl p-4 border border-white/30 text-center flex flex-col items-center shadow-2xl text-white">
       <h3 class="text-sm font-bold mb-0.5 font-serif-luxury">撮りたての泡を浮かべる</h3>
       <p class="text-[10px] text-white/80 mb-3">撮った写真が2倍の特大泡となって最優先で画面を泳ぎます！</p>
 
@@ -340,7 +334,7 @@
 
       <div class="flex gap-2 w-full">
         <button onclick="closeCaptureModal()" class="flex-1 py-2 rounded-full bg-white/20 hover:bg-white/30 text-white text-xs font-bold transition">撮り直す</button>
-        <button onclick="submitCapturedBubble()" class="flex-1 py-2 rounded-full bg-gradient-to-r from-amber-400 to-rose-400 text-white font-bold text-xs shadow-md active:scale-95 transition">特大泡を流す！</button>
+        <button onclick="submitCapturedBubble()" class="flex-1 py-2 rounded-full bg-gradient-to-r from-amber-400 to-rose-400 text-white font-bold text-xs shadow-md active:scale-95 transition text-black">特大泡を流す！</button>
       </div>
     </div>
   </div>
@@ -350,7 +344,7 @@
   <!-- ============================================== -->
   <script>
     // ==============================================
-    // 1. メニュー＆香りのピラミッドデータ（全9個に拡張）
+    // 1. メニューデータ
     // ==============================================
     const menuData = [
       {
@@ -861,7 +855,7 @@
 
           <!-- メニュー名 -->
           <div class="mt-3 text-center px-1 relative z-10 w-full flex justify-center">
-            <span class="text-[10px] sm:text-[11px] font-bold text-white bg-purple-950/80 backdrop-blur-md px-3 py-1.5 rounded-full whitespace-nowrap shadow-lg truncate max-w-[110%] border border-white/20">
+            <span class="text-[10px] sm:text-[11px] font-bold text-white bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full whitespace-nowrap shadow-lg truncate max-w-[110%] border border-white/20">
               ${shortTitle}
             </span>
           </div>
@@ -881,6 +875,11 @@
       setTimeout(() => {
         menuListModal.classList.remove('opacity-0');
       }, 10);
+      
+      // メニューを開いた時に背後の動く写真バブルを隠して見やすくする
+      const photoContainer = document.getElementById('fullPhotoBubblesContainer');
+      photoContainer.style.opacity = '0';
+      photoContainer.style.pointerEvents = 'none';
     }
 
     function closeMenuList() {
@@ -889,6 +888,11 @@
         menuListModal.classList.add('hidden');
         menuListModal.classList.remove('flex');
       }, 300);
+      
+      // メニューを閉じたら背後の動く写真バブルを再表示する
+      const photoContainer = document.getElementById('fullPhotoBubblesContainer');
+      photoContainer.style.opacity = '1';
+      photoContainer.style.pointerEvents = 'auto';
     }
 
     window.openMenuList = openMenuList;
