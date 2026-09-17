@@ -271,25 +271,21 @@
     <!-- カプセル排出口（青丸の位置：金色の受皿トレイ） -->
     <div
       id="capsule-chute"
-      class="absolute z-30 pointer-events-none flex items-center justify-center"
+      class="absolute z-20 flex flex-col items-center pointer-events-auto cursor-pointer"
       style="
         top: var(--chute-top);
         left: var(--chute-left);
         transform: translate(-50%, -50%);
-        width: 60px;
-        height: 60px;
       "
     >
-      <!-- 排出された3Dカプセル（受皿トレイの真ん中にジャスト着座） -->
-      <div
-        id="dispensed-capsule"
-        class="relative hidden pointer-events-auto cursor-pointer flex flex-col items-center justify-center"
-      >
-        <!-- タップ開封案内フキダシ（カプセルの上部に浮かせてトレイの接地を邪魔しない） -->
-        <span class="absolute -top-6 whitespace-nowrap text-[9px] font-bold text-amber-300 bg-black/90 px-2 py-0.5 rounded-full border border-amber-500/50 animate-bounce shadow-lg">
+      <!-- 排出されたカプセル -->
+      <div id="dispensed-capsule" class="hidden relative flex flex-col items-center group">
+        <!-- 開封ガイドフキダシ -->
+        <div class="absolute -top-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-amber-500 text-black shadow-lg animate-bounce pointer-events-none">
           タップして開封！
-        </span>
-        <div class="capsule-3d w-10 h-10 relative">
+        </div>
+        <!-- 3Dカプセル本体 -->
+        <div class="capsule-3d w-14 h-14 active:scale-95 transition-transform duration-150">
           <div class="capsule-3d-top"></div>
           <div class="capsule-3d-bottom"></div>
           <div class="capsule-3d-seam"></div>
@@ -298,6 +294,35 @@
         <!-- トレイに落ちる接地シャドウ -->
         <div class="w-8 h-1.5 rounded-full bg-black/70 blur-[1.5px] mt-0.5"></div>
       </div>
+    </div>
+  </div>
+
+  <!-- スタート時のセンサー許可オーバーレイ -->
+  <div
+    id="permission-overlay"
+    class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 backdrop-blur-md p-6 text-center transition-opacity duration-500"
+  >
+    <div class="max-w-xs w-full bg-gradient-to-b from-neutral-900 to-black border border-amber-500/40 rounded-3xl p-6 flex flex-col items-center shadow-[0_0_50px_rgba(245,158,11,0.3)]">
+      <div class="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/40 flex items-center justify-center mb-4 text-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+        <svg class="w-8 h-8 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M7 21h10"></path>
+          <path d="M12 21v-4"></path>
+          <path d="M6 3h12l-1.5 14h-9z"></path>
+          <path d="M6 8h12"></path>
+        </svg>
+      </div>
+      <h2 class="text-base font-bold text-amber-300 font-serif tracking-wide mb-1.5">クラフトビール泡ガチャ</h2>
+      <p class="text-xs text-neutral-300 leading-relaxed mb-5">
+        スマートフォンを振ることで<br />
+        黄金のビールと神泡が溜まります。<br />
+        <span class="text-[11px] text-amber-400/80">※「動作と方向へのアクセス」の許可を求められます</span>
+      </p>
+      <button
+        id="start-sensor-btn"
+        class="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-neutral-950 font-bold text-sm tracking-wider shadow-lg active:scale-95 transition-transform"
+      >
+        センサーを許可して始める
+      </button>
     </div>
   </div>
 
@@ -363,6 +388,8 @@
     const resultRarity = document.getElementById('result-rarity');
     const resultDesc = document.getElementById('result-desc');
     const closeModalBtn = document.getElementById('close-modal-btn');
+    const permissionOverlay = document.getElementById('permission-overlay');
+    const startSensorBtn = document.getElementById('start-sensor-btn');
 
     let audioCtx = null;
     function initAudio() {
@@ -507,70 +534,70 @@
       const now = performance.now();
 
       // 1. 純粋加速度が利用できる場合（iOSや一部Android）
-      const p = e.acceleration;
-      if (p && (p.x !== null || p.y !== null || p.z !== null)) {
-        const px = p.x || 0;
-        const py = p.y || 0;
-        const pz = p.z || 0;
-        const force = Math.sqrt(px * px + py * py + pz * pz);
+    const p = e.acceleration;
+    if (p && (p.x !== null || p.y !== null || p.z !== null)) {
+      const px = p.x || 0;
+      const py = p.y || 0;
+      const pz = p.z || 0;
+      const force = Math.sqrt(px * px + py * py + pz * pz);
 
-        if (force > 2.4 && now - lastShakeTime > 45) {
-          const gain = Math.min(4.5, (force - 2.4) * 0.45 + 1.2);
-          shakeVelocity.x += px * 0.7;
-          shakeVelocity.y -= Math.abs(py) * 0.8 + 4;
-          addBubblePower(gain, true);
-          lastShakeTime = now;
-          if (navigator.vibrate && Math.random() < 0.3) navigator.vibrate(15);
-          return;
-        }
-      }
-
-      // 2. 重力込み加速度からの高精度な振り検知（全端末共通フォールバック）
-      const acc = e.accelerationIncludingGravity || e.acceleration;
-      if (!acc) return;
-
-      const ax = acc.x || 0;
-      const ay = acc.y || 0;
-      const az = acc.z || 0;
-
-      if (!hasGravityInit) {
-        gravity.x = ax;
-        gravity.y = ay;
-        gravity.z = az;
-        hasGravityInit = true;
-        return;
-      }
-
-      // ローパスフィルターで重力成分を抽出（α=0.82）
-      gravity.x = 0.82 * gravity.x + 0.18 * ax;
-      gravity.y = 0.82 * gravity.y + 0.18 * ay;
-      gravity.z = 0.82 * gravity.z + 0.18 * az;
-
-      // 重力成分を差し引いた実加速度（ハイパス成分）
-      const linearX = ax - gravity.x;
-      const linearY = ay - gravity.y;
-      const linearZ = az - gravity.z;
-      const shakeForce = Math.sqrt(linearX * linearX + linearY * linearY + linearZ * linearZ);
-
-      // 重力ベクトルの向きから端末の左右傾き（ロール）をバックアップ計算
-      if (Math.abs(gravity.y) > 0.5 || Math.abs(gravity.x) > 0.5) {
-        const tiltFromGrav = -Math.atan2(gravity.x, gravity.y);
-        targetLiquidAngle = Math.max(-1.1, Math.min(1.1, tiltFromGrav * 1.2));
-        targetTiltX = Math.max(-1.3, Math.min(1.3, tiltFromGrav * 1.5));
-      }
-
-      // 振りの強さが閾値（2.0m/s²）を超えたらビールを注ぐ
-      if (shakeForce > 2.0 && now - lastShakeTime > 45) {
-        const gain = Math.min(4.0, (shakeForce - 2.0) * 0.4 + 1.1);
-        shakeVelocity.x += linearX * 0.6;
-        shakeVelocity.y -= 5;
+      if (force > 2.4 && now - lastShakeTime > 95) {
+        const gain = Math.min(0.75, (force - 2.4) * 0.07 + 0.18);
+        shakeVelocity.x += px * 0.7;
+        shakeVelocity.y -= Math.abs(py) * 0.8 + 4;
         addBubblePower(gain, true);
         lastShakeTime = now;
         if (navigator.vibrate && Math.random() < 0.3) navigator.vibrate(15);
+        return;
       }
     }
 
-    // 端末のジャイロ傾き検知
+    // 2. 重力込み加速度からの高精度な振り検知（全端末共通フォールバック）
+    const acc = e.accelerationIncludingGravity || e.acceleration;
+    if (!acc) return;
+
+    const ax = acc.x || 0;
+    const ay = acc.y || 0;
+    const az = acc.z || 0;
+
+    if (!hasGravityInit) {
+      gravity.x = ax;
+      gravity.y = ay;
+      gravity.z = az;
+      hasGravityInit = true;
+      return;
+    }
+
+    // ローパスフィルターで重力成分を抽出（α=0.82）
+    gravity.x = 0.82 * gravity.x + 0.18 * ax;
+    gravity.y = 0.82 * gravity.y + 0.18 * ay;
+    gravity.z = 0.82 * gravity.z + 0.18 * az;
+
+    // 重力成分を差し引いた実加速度（ハイパス成分）
+    const linearX = ax - gravity.x;
+    const linearY = ay - gravity.y;
+    const linearZ = az - gravity.z;
+    const shakeForce = Math.sqrt(linearX * linearX + linearY * linearY + linearZ * linearZ);
+
+    // 重力ベクトルの向きから端末の左右傾き（ロール）をバックアップ計算
+    if (Math.abs(gravity.y) > 0.5 || Math.abs(gravity.x) > 0.5) {
+      const tiltFromGrav = -Math.atan2(gravity.x, gravity.y);
+      targetLiquidAngle = Math.max(-1.1, Math.min(1.1, tiltFromGrav * 1.2));
+      targetTiltX = Math.max(-1.3, Math.min(1.3, tiltFromGrav * 1.5));
+    }
+
+    // 振りの強さが閾値（2.0m/s²）を超えたらビールを注ぐ
+    if (shakeForce > 2.0 && now - lastShakeTime > 95) {
+      const gain = Math.min(0.7, (shakeForce - 2.0) * 0.07 + 0.18);
+      shakeVelocity.x += linearX * 0.6;
+      shakeVelocity.y -= 5;
+      addBubblePower(gain, true);
+      lastShakeTime = now;
+      if (navigator.vibrate && Math.random() < 0.3) navigator.vibrate(15);
+    }
+  }
+
+  // 端末のジャイロ傾き検知
     function handleOrientation(e) {
       if (e.gamma !== null && e.gamma !== undefined) {
         const rad = (e.gamma * Math.PI) / 180;
@@ -590,7 +617,7 @@
       if (sensorActive) return;
 
       try {
-        // iOS 13+ のユーザー許可フロー
+        // iOS 13+ のユーザー明示的許可フロー（「動作と方向へのアクセス」ダイアログ）
         if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
           const permissionState = await DeviceMotionEvent.requestPermission();
           if (permissionState === 'granted') {
@@ -607,7 +634,7 @@
             }
           }
         } else {
-          // Android / PC / その他標準ブラウザ（許可ダイアログ不要）
+          // Android / PC / その他標準ブラウザ（許可ダイアログ不要で即時連動）
           window.addEventListener('devicemotion', handleMotion, { passive: true });
           window.addEventListener('deviceorientation', handleOrientation, { passive: true });
           sensorActive = true;
@@ -617,17 +644,27 @@
       }
     }
 
-    // イベント登録（画面タッチ・クリック、上部ガイドのタップですぐに許可を有効化）
-    window.addEventListener('touchstart', activateSensors, { passive: true });
-    window.addEventListener('touchend', activateSensors, { passive: true });
-    window.addEventListener('click', activateSensors);
-    document.getElementById('top-guide-container').addEventListener('click', activateSensors);
+    // スタートボタンを押した瞬間に確実に許可ダイアログを出し、ゲームを開始
+    if (startSensorBtn) {
+      startSensorBtn.addEventListener('click', async () => {
+        await activateSensors();
+        if (navigator.vibrate) navigator.vibrate(40);
+        if (permissionOverlay) {
+          permissionOverlay.classList.add('opacity-0', 'pointer-events-none');
+          setTimeout(() => {
+            permissionOverlay.remove();
+          }, 500);
+        }
+      });
+    }
 
-    // Android/デスクトップ向けにロード時にも即リスナー登録を試行
-    try {
-      window.addEventListener('devicemotion', handleMotion, { passive: true });
-      window.addEventListener('deviceorientation', handleOrientation, { passive: true });
-    } catch (e) {}
+    // バックアップ：画面タップ時にも起動
+    window.addEventListener('touchstart', activateSensors, { passive: true });
+    window.addEventListener('click', activateSensors);
+    const topGuideContainer = document.getElementById('top-guide-container');
+    if (topGuideContainer) {
+      topGuideContainer.addEventListener('click', activateSensors);
+    }
 
     // PC用マウス連動
     window.addEventListener('mousemove', (e) => {
@@ -639,73 +676,94 @@
       targetTiltY = normY * 0.6;
     });
 
-    tankContainer.addEventListener('click', () => {
-      initAudio();
-      if (!isFull) {
-        shakeVelocity.x += (Math.random() - 0.5) * 12;
-        shakeVelocity.y -= 7;
-        addBubblePower(2.5, false);
-      }
-    });
-
-    crankHandle.addEventListener('click', () => {
-      initAudio();
-      if (!isFull || isCranking) {
+    if (tankContainer) {
+      tankContainer.addEventListener('click', () => {
+        initAudio();
         if (!isFull) {
-          crankVisual.style.transform = 'rotate(15deg)';
-          setTimeout(() => {
-            crankVisual.style.transform = 'rotate(0deg)';
-          }, 150);
+          shakeVelocity.x += (Math.random() - 0.5) * 12;
+          shakeVelocity.y -= 7;
+          addBubblePower(0.35, false);
         }
-        return;
-      }
+      });
+    }
 
-      isCranking = true;
-      handlePrompt.style.opacity = '0';
-      crankVisual.classList.remove('crank-ready-glow');
-      crankVisual.classList.add('brass-crank-rotating');
-      playCrankSound();
-      if (navigator.vibrate) navigator.vibrate([80, 50, 80]);
+    if (crankHandle) {
+      crankHandle.addEventListener('click', () => {
+        initAudio();
+        if (!isFull || isCranking) {
+          if (!isFull && crankVisual) {
+            crankVisual.style.transform = 'rotate(15deg)';
+            setTimeout(() => {
+              crankVisual.style.transform = 'rotate(0deg)';
+            }, 150);
+          }
+          return;
+        }
 
-      setTimeout(() => {
-        crankVisual.classList.remove('brass-crank-rotating');
-        crankVisual.style.transform = 'rotate(0deg)';
-        ejectCapsuleToChute();
-      }, 950);
-    });
+        isCranking = true;
+        if (handlePrompt) handlePrompt.style.opacity = '0';
+        if (crankVisual) {
+          crankVisual.classList.remove('crank-ready-glow');
+          crankVisual.classList.add('brass-crank-rotating');
+        }
+        playCrankSound();
+        if (navigator.vibrate) navigator.vibrate([80, 50, 80]);
+
+        setTimeout(() => {
+          if (crankVisual) {
+            crankVisual.classList.remove('brass-crank-rotating');
+            crankVisual.style.transform = 'rotate(0deg)';
+          }
+          ejectCapsuleToChute();
+        }, 950);
+      });
+    }
 
     function ejectCapsuleToChute() {
+      if (!dispensedCapsule) return;
       dispensedCapsule.classList.remove('hidden');
       dispensedCapsule.classList.add('capsule-dispense-anim');
       playBubbleSound();
       if (navigator.vibrate) navigator.vibrate(60);
     }
 
-    dispensedCapsule.addEventListener('click', () => {
-      initAudio();
-      const item = BEER_ITEMS[Math.floor(Math.random() * BEER_ITEMS.length)];
-      resultName.textContent = item.name;
-      resultRarity.textContent = item.rarity;
-      resultDesc.textContent = item.desc;
+    if (dispensedCapsule) {
+      dispensedCapsule.addEventListener('click', () => {
+        initAudio();
+        const item = BEER_ITEMS[Math.floor(Math.random() * BEER_ITEMS.length)];
+        if (resultName) resultName.textContent = item.name;
+        if (resultRarity) resultRarity.textContent = item.rarity;
+        if (resultDesc) resultDesc.textContent = item.desc;
 
-      resultModal.classList.remove('hidden');
-      resultModal.classList.add('flex');
-      confetti({ particleCount: 70, spread: 80, origin: { y: 0.5 }, colors: ['#f59e0b', '#fbbf24', '#ffffff'] });
-    });
+        if (resultModal) {
+          resultModal.classList.remove('hidden');
+          resultModal.classList.add('flex');
+        }
+        confetti({ particleCount: 70, spread: 80, origin: { y: 0.5 }, colors: ['#f59e0b', '#fbbf24', '#ffffff'] });
+      });
+    }
 
-    closeModalBtn.addEventListener('click', () => {
-      resultModal.classList.add('hidden');
-      resultModal.classList.remove('flex');
-      dispensedCapsule.classList.add('hidden');
-      dispensedCapsule.classList.remove('capsule-dispense-anim');
+    if (closeModalBtn) {
+      closeModalBtn.addEventListener('click', () => {
+        if (resultModal) {
+          resultModal.classList.add('hidden');
+          resultModal.classList.remove('flex');
+        }
+        if (dispensedCapsule) {
+          dispensedCapsule.classList.add('hidden');
+          dispensedCapsule.classList.remove('capsule-dispense-anim');
+        }
 
-      bubblePower = 0;
-      isFull = false;
-      isCranking = false;
-      crankVisual.style.opacity = '0';
-      crankVisual.style.pointerEvents = 'none';
-      updateUI();
-    });
+        bubblePower = 0;
+        isFull = false;
+        isCranking = false;
+        if (crankVisual) {
+          crankVisual.style.opacity = '0';
+          crankVisual.style.pointerEvents = 'none';
+        }
+        updateUI();
+      });
+    }
 
     function animate() {
       requestAnimationFrame(animate);
