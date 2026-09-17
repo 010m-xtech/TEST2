@@ -80,6 +80,16 @@
       animation: shutterFlash 0.25s ease-out forwards;
     }
 
+    /* おすすめメニュー画面でバブルがふわふわ揺れるアニメーション */
+    @keyframes floatMenu {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      33% { transform: translateY(-8px) rotate(-1.5deg); }
+      66% { transform: translateY(-3px) rotate(1.5deg); }
+    }
+    .animate-float-menu {
+      animation: floatMenu 4.5s ease-in-out infinite;
+    }
+
     /* スクロールバー非表示 */
     .no-scrollbar::-webkit-scrollbar {
       display: none;
@@ -192,30 +202,26 @@
     </section>
 
     <!-- ======================================================== -->
-    <!-- 2. メニュー一覧モーダル画面 -->
+    <!-- 2. おすすめメニュー一覧モーダル画面（ふわふわバブル配置） -->
     <!-- ======================================================== -->
-    <div id="menuListModal" class="absolute inset-0 z-40 bg-purple-950/85 backdrop-blur-xl hidden flex-col opacity-0 transition-opacity duration-300">
+    <!-- 動画がそのまま透けるように背景色を bg-black/30 と薄めに設定 -->
+    <div id="menuListModal" class="absolute inset-0 z-40 bg-black/30 backdrop-blur-[2px] hidden flex-col opacity-0 transition-opacity duration-300">
       
       <!-- ヘッダー (閉じるボタン) -->
-      <div class="w-full flex items-center justify-between p-4 pb-3 border-b border-white/20">
+      <div class="w-full flex items-center justify-between p-4 pb-2 z-10">
         <h2 class="text-lg font-bold tracking-wider text-white font-serif-luxury drop-shadow-md flex items-center gap-2">
           <i data-lucide="book-open" class="w-5 h-5 text-amber-200"></i>
-          こだわりのお品書き
+          おすすめメニュー
         </h2>
-        <button onclick="closeMenuList()" class="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md text-white flex items-center justify-center active:scale-90 transition shadow-sm">
+        <button onclick="closeMenuList()" class="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md text-white flex items-center justify-center active:scale-90 transition shadow-sm border border-white/30">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
       <!-- メニューリスト (内部スクロール) -->
-      <div class="flex-1 overflow-y-auto px-4 py-4 pb-12 no-scrollbar">
-        <div class="text-center mb-5">
-          <p class="text-[11px] text-white/80">
-            タップすると香りのピラミッドや直近1週間の感想をご覧いただけます
-          </p>
-        </div>
-        <!-- メニューカード一覧 -->
-        <div class="flex flex-col gap-3.5" id="menuListContainer">
+      <div class="flex-1 overflow-y-auto w-full no-scrollbar">
+        <!-- ジグザグに配置されたふわふわメニューバブル -->
+        <div id="menuListContainer" class="flex flex-wrap justify-center gap-x-5 gap-y-12 pb-24 pt-4 px-2 relative">
           <!-- JavaScriptで動的生成されます -->
         </div>
       </div>
@@ -276,110 +282,45 @@
   </div>
 
   <!-- ========================================================== -->
-  <!-- 画像（image_390921.jpg）の構成を忠実に再現した詳細モーダル -->
+  <!-- 簡潔な詳細モーダル（image_48771a.jpg を参考にしたシンプルレイアウト） -->
   <!-- ========================================================== -->
-  <div id="productDetailModal" class="fixed inset-0 z-50 ambient-background-fixed hidden items-center justify-center p-3 opacity-0 transition-opacity duration-300 overflow-y-auto no-scrollbar">
+  <div id="productDetailModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
     
-    <!-- 背景の白リング気泡装飾 -->
-    <div class="absolute inset-0 pointer-events-none overflow-hidden max-w-[430px] mx-auto">
-      <div class="absolute w-20 h-20 rounded-full border border-white/40 top-8 left-4"></div>
-      <div class="absolute w-12 h-12 rounded-full border border-white/30 top-1/3 right-4"></div>
-      <div class="absolute w-28 h-28 rounded-full border border-white/25 bottom-12 left-1/4"></div>
-      <div class="absolute w-16 h-16 rounded-full border border-white/35 top-14 right-1/4"></div>
-    </div>
-
-    <!-- コンテンツカード -->
-    <div class="relative w-full max-w-[390px] rounded-3xl p-4 flex flex-col my-auto text-white">
+    <div class="relative w-full max-w-[360px] bg-[#fdfbf7] rounded-[24px] p-5 flex flex-col shadow-2xl overflow-hidden">
       
-      <!-- 閉じるボタン -->
-      <button onclick="closeProductModal()" class="absolute top-1 right-1 w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/50 text-white flex items-center justify-center active:scale-90 transition z-30 shadow-lg">
-        <i data-lucide="x" class="w-5 h-5"></i>
-      </button>
-
-      <!-- 1. 上段：添付画像の丸い写真 ＋ 上下の円弧湾曲テキスト -->
-      <div class="flex flex-col items-center justify-center relative mt-4 mb-5">
-        <div class="relative w-64 h-64 flex items-center justify-center">
-          
-          <!-- 円弧テキスト SVG -->
-          <svg viewBox="0 0 300 300" class="absolute inset-0 w-full h-full pointer-events-none z-20">
-            <path id="curveTop" d="M 35,150 A 115,115 0 1,1 265,150" fill="none" />
-            <path id="curveBottom" d="M 265,150 A 115,115 0 0,1 35,150" fill="none" />
-
-            <text class="text-[17px] font-black fill-white tracking-widest font-serif-luxury" style="filter: drop-shadow(0 2px 5px rgba(0,0,0,0.35));">
-              <textPath href="#curveTop" startOffset="50%" text-anchor="middle" id="detailCurvedTop">
-                チュベローズの香り
-              </textPath>
-            </text>
-
-            <text class="text-[14px] font-bold fill-white/95 tracking-wide" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));">
-              <textPath href="#curveBottom" startOffset="50%" text-anchor="middle" id="detailCurvedBottom">
-                ホワイトピンクの湯色（にごり）
-              </textPath>
-            </text>
-          </svg>
-
-          <!-- 中央の丸い写真フレーム -->
-          <div class="w-44 h-44 rounded-full overflow-hidden border-4 border-white shadow-2xl relative bg-white/10 flex items-center justify-center z-10">
-            <img id="detailMainImage" src="" alt="Menu Main" class="w-full h-full object-cover">
-            <div class="absolute inset-0 rounded-full border-2 border-white/50 pointer-events-none"></div>
-          </div>
-
-          <!-- 周囲の小バブル -->
-          <div class="absolute top-1 right-2 w-4 h-4 rounded-full border border-white/60 pointer-events-none"></div>
-          <div class="absolute bottom-3 left-1 w-6 h-6 rounded-full border border-white/40 pointer-events-none"></div>
-        </div>
+      <!-- ヘッダー -->
+      <div class="flex items-center justify-between mb-4 px-1 border-b border-gray-200/60 pb-2.5">
+        <h2 id="detailTitle" class="text-sm sm:text-base font-bold text-gray-800 font-serif-luxury truncate pr-2 tracking-wide">
+          タイトル
+        </h2>
+        <button onclick="closeProductModal()" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-600 flex items-center justify-center active:scale-90 transition shrink-0">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
       </div>
 
-      <!-- 2. 中段：添付画像通りのピラミッドノート -->
-      <div class="w-full max-w-[320px] mx-auto flex flex-col items-center gap-1 relative my-1">
+      <!-- メイン画像 ＆ 縦書きキャプション -->
+      <div class="relative w-full aspect-[4/3] rounded-xl overflow-hidden mb-5 shadow-sm bg-gray-100">
+        <img id="detailMainImage" src="" alt="Menu Main" class="w-full h-full object-cover">
         
-        <!-- TOP段 -->
-        <div class="relative w-[58%] bg-gradient-to-r from-orange-400/90 to-amber-400/90 text-white rounded-t-xl py-2 px-1 text-center shadow-md border-t border-x border-white/60 flex flex-col items-center justify-center">
-          <span class="text-[11px] font-black tracking-widest uppercase">TOP</span>
-          <span id="detailTopText" class="text-[10px] font-bold mt-0.5 tracking-wider leading-tight">シトラス、グリーン</span>
-
-          <div class="absolute -left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-lg bg-amber-100 z-20">
-            <img id="detailTopImg" src="" class="w-full h-full object-cover" alt="TOP note image">
-          </div>
+        <!-- 縦書きキャプション (画像右上) -->
+        <div class="absolute top-3 right-3 bg-gradient-to-b from-black/80 to-black/60 backdrop-blur-md text-white px-2.5 py-3 rounded-lg border border-white/10 shadow-lg">
+          <p id="detailVerticalText" class="text-[11.5px] font-bold tracking-[0.2em] leading-[1.8] font-serif-luxury" style="writing-mode: vertical-rl; text-orientation: mixed; max-height: 140px; word-wrap: break-word;">
+            キャッチコピー
+          </p>
         </div>
-
-        <!-- MIDDLE段 -->
-        <div class="relative w-[80%] bg-gradient-to-r from-pink-500/85 to-rose-400/85 text-white py-2.5 px-2 text-center shadow-md border-x border-white/60 flex flex-col items-center justify-center">
-          <span class="text-[11px] font-black tracking-widest uppercase">MIDDLE</span>
-          <span id="detailMidText" class="text-[10px] font-bold mt-0.5 tracking-wide leading-tight">
-            チュベローズ、ジャスミン<br>オレンジフラワー
-          </span>
-
-          <div class="absolute -right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-lg bg-rose-100 z-20">
-            <img id="detailMidImg" src="" class="w-full h-full object-cover" alt="MIDDLE note image">
-          </div>
-        </div>
-
-        <!-- BASE段 -->
-        <div class="relative w-full bg-gradient-to-r from-purple-700/85 to-pink-600/85 text-white rounded-b-xl py-2.5 px-3 text-center shadow-md border-b border-x border-white/60 flex flex-col items-center justify-center">
-          <span class="text-[11px] font-black tracking-widest uppercase">BASE</span>
-          <span id="detailBaseText" class="text-[10px] font-bold mt-0.5 tracking-wider leading-tight">ムスク、ウッド</span>
-
-          <div class="absolute -left-5 bottom-0 translate-y-1 w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-lg bg-stone-100 z-20">
-            <img id="detailBaseImg" src="" class="w-full h-full object-cover" alt="BASE note image">
-          </div>
-        </div>
-
       </div>
 
-      <!-- 3. 下段：お客様の直近1週間の口コミ -->
-      <div class="mt-4 w-full bg-white/15 backdrop-blur-md p-3 rounded-2xl border border-white/30 text-xs">
-        <div class="flex items-center justify-between mb-1 text-[10.5px] font-bold text-amber-200">
-          <span class="flex items-center gap-1">
-            <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
-            <span id="detailReviewAuthor">先週ご来店のお客様</span>
-          </span>
-          <span class="text-yellow-300">★★★★★</span>
-        </div>
-        <p id="detailReviewText" class="text-white/90 leading-relaxed font-medium text-[11px]">
-          「口当たりが驚くほど柔らかく、香りの変化が楽しめました。お肉料理との相性が最高です！」
+      <!-- 説明文 -->
+      <div class="w-full bg-[#f6f4ed] p-4 rounded-xl mb-5 border border-[#eaddc5]/70 shadow-inner">
+        <p id="detailDescription" class="text-[12px] text-gray-700 leading-relaxed font-medium">
+          説明文
         </p>
       </div>
+
+      <!-- アクションボタン -->
+      <button onclick="closeProductModal()" class="w-full py-3.5 rounded-xl bg-[#222] hover:bg-black text-white font-bold text-sm shadow-md active:scale-95 transition tracking-widest">
+        メニュー一覧へ戻る
+      </button>
 
     </div>
   </div>
@@ -409,7 +350,7 @@
   <!-- ============================================== -->
   <script>
     // ==============================================
-    // 1. メニュー＆香りのピラミッドデータ
+    // 1. メニュー＆香りのピラミッドデータ（全9個に拡張）
     // ==============================================
     const menuData = [
       {
@@ -421,18 +362,6 @@
         mainImg: 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=600&auto=format&fit=crop&q=80',
         price: '¥880',
         tag: '当店名物',
-        top: {
-          text: 'シトラス、グリーン、ラズベリー',
-          img: 'https://images.unsplash.com/photo-1534856966150-c832f7b7a005?w=200&auto=format&fit=crop&q=80'
-        },
-        mid: {
-          text: 'チュベローズ、生ホップの花\nブラッドオレンジ',
-          img: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?w=200&auto=format&fit=crop&q=80'
-        },
-        base: {
-          text: 'ロースト麦芽、フレンチオーク樽',
-          img: 'https://images.unsplash.com/photo-1508615039623-a25605d2b022?w=200&auto=format&fit=crop&q=80'
-        },
         review: {
           author: '昨日ご来店：佐藤様',
           text: '「泡が非常にきめ細やかで、注ぎたてのベリー香がテーブルいっぱいに広がって感動しました！」'
@@ -447,18 +376,6 @@
         mainImg: 'https://images.unsplash.com/photo-1608270199042-3a5665b1134e?w=600&auto=format&fit=crop&q=80',
         price: '¥880',
         tag: '女性人気No.1',
-        top: {
-          text: 'ベルガモット、レモングラス',
-          img: 'https://images.unsplash.com/photo-1582979512210-99b6a53386f9?w=200&auto=format&fit=crop&q=80'
-        },
-        mid: {
-          text: 'カモミール、白桃アロマ\nコリアンダーシード',
-          img: 'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=200&auto=format&fit=crop&q=80'
-        },
-        base: {
-          text: '小麦麦芽、ホワイトムスクの余韻',
-          img: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=200&auto=format&fit=crop&q=80'
-        },
         review: {
           author: '3日前ご来店：高橋様',
           text: '「苦味が少なく白ワインのようにフルーティー。チーズとのペアリングが完璧でした！」'
@@ -473,18 +390,6 @@
         mainImg: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop&q=80',
         price: '¥2,800',
         tag: 'シェフおすすめ',
-        top: {
-          text: '桜薪の芳ばしいスモーキーアロマ',
-          img: 'https://images.unsplash.com/photo-1509358271058-acd22cc93898?w=200&auto=format&fit=crop&q=80'
-        },
-        mid: {
-          text: '噛むほどに溢れる濃厚な肉汁\nブラックペッパー',
-          img: 'https://images.unsplash.com/photo-1558030006-450675393462?w=200&auto=format&fit=crop&q=80'
-        },
-        base: {
-          text: '淡路島ローストオニオンと赤ワインソース',
-          img: 'https://images.unsplash.com/photo-1590794056226-79ef3a8147e1?w=200&auto=format&fit=crop&q=80'
-        },
         review: {
           author: '2日前ご来店：田中様ご夫婦',
           text: '「薪の香りが香ばしく、ビールが止まりませんでした！記念日にぴったりの一皿でした。」'
@@ -499,18 +404,6 @@
         mainImg: 'https://images.unsplash.com/photo-1592417817098-8f3d6910985c?w=600&auto=format&fit=crop&q=80',
         price: '¥1,650',
         tag: '数量限定',
-        top: {
-          text: '摘みたてスイートバジルとピンクペッパー',
-          img: 'https://images.unsplash.com/photo-1608686207856-001b95cf60ca?w=200&auto=format&fit=crop&q=80'
-        },
-        mid: {
-          text: 'イタリア直輸入の濃厚モッツァレラ\n純生クリーム',
-          img: 'https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?w=200&auto=format&fit=crop&q=80'
-        },
-        base: {
-          text: 'エクストラバージンオリーブオイルと岩塩',
-          img: 'https://images.unsplash.com/photo-1595126730719-1932bd72910c?w=200&auto=format&fit=crop&q=80'
-        },
         review: {
           author: '4日前ご来店：女子会グループ様',
           text: '「泡と一緒に写真撮ったらめちゃくちゃ映えました！味もミルキーで最高です！」'
@@ -525,18 +418,6 @@
         mainImg: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600&auto=format&fit=crop&q=80',
         price: '¥1,850',
         tag: '焼きたて',
-        top: {
-          text: 'フレッシュバジルと焦がし小麦の芳香',
-          img: 'https://images.unsplash.com/photo-1582979512210-99b6a53386f9?w=200&auto=format&fit=crop&q=80'
-        },
-        mid: {
-          text: '水牛モッツァレラのジューシーな旨み',
-          img: 'https://images.unsplash.com/photo-1558030006-450675393462?w=200&auto=format&fit=crop&q=80'
-        },
-        base: {
-          text: 'サンマルツァーノ産完熟トマトソース',
-          img: 'https://images.unsplash.com/photo-1590794056226-79ef3a8147e1?w=200&auto=format&fit=crop&q=80'
-        },
         review: {
           author: '先週ご来店：木村様',
           text: '「生地が驚くほど軽くて香ばしい！ビールとの相性が抜群でペロリと完食しました。」'
@@ -551,81 +432,66 @@
         mainImg: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=600&auto=format&fit=crop&q=80',
         price: '¥750',
         tag: '食後に人気',
-        top: {
-          text: '深煎りエスプレッソカラメル',
-          img: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=200&auto=format&fit=crop&q=80'
-        },
-        mid: {
-          text: '那須御養卵と北海道リコッタチーズ',
-          img: 'https://images.unsplash.com/photo-1582979512210-99b6a53386f9?w=200&auto=format&fit=crop&q=80'
-        },
-        base: {
-          text: 'バニラビーンズの豊かな余韻',
-          img: 'https://images.unsplash.com/photo-1508615039623-a25605d2b022?w=200&auto=format&fit=crop&q=80'
-        },
         review: {
           author: '今週ご来店：女性お一人様',
           text: '「濃厚なのに甘すぎず、黒ビールとのペアリングが最高に贅沢でした！」'
+        }
+      },
+      {
+        id: 6,
+        category: 'SIDE DISH',
+        title: 'トリュフ香るフライドポテト',
+        curvedTop: '揚げたてポテトと芳醇な黒トリュフ',
+        curvedBottom: 'ビールが止まらない極上の塩気',
+        mainImg: 'https://images.unsplash.com/photo-1576107232684-1279f390859f?w=600&auto=format&fit=crop&q=80',
+        price: '¥680',
+        tag: 'おつまみ',
+        review: {
+          author: '2日前ご来店：サラリーマン様',
+          text: '「トリュフの香りが最高！ビールのお供に絶対頼むべき一品です。」'
+        }
+      },
+      {
+        id: 7,
+        category: 'APPETIZER',
+        title: '季節野菜のバーニャカウダ',
+        curvedTop: '彩り豊かな産地直送の新鮮野菜',
+        curvedBottom: '特製アンチョビガーリックソース',
+        mainImg: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&auto=format&fit=crop&q=80',
+        price: '¥1,200',
+        tag: 'ヘルシー',
+        review: {
+          author: '昨日ご来店：女性グループ様',
+          text: '「野菜が甘くてソースが濃厚！見た目も華やかで写真映えします。」'
+        }
+      },
+      {
+        id: 8,
+        category: 'COCKTAIL',
+        title: '特製スパークリングサングリア',
+        curvedTop: '自家製シロップとたっぷりフルーツ',
+        curvedBottom: 'しゅわっと弾ける爽快な甘み',
+        mainImg: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=600&auto=format&fit=crop&q=80',
+        price: '¥850',
+        tag: '映えドリンク',
+        review: {
+          author: '5日前ご来店：カップル様',
+          text: '「フルーツがゴロゴロ入っていてデザート感覚で楽しめました！」'
         }
       }
     ];
 
     // 浮遊する写真バブルの初期データ
     const bubbleInitialList = [
-      {
-        menuId: 2,
-        img: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=400&auto=format&fit=crop&q=80',
-        label: 'ステーキ',
-        sizeType: 'medium'
-      },
-      {
-        menuId: 0,
-        img: 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=400&auto=format&fit=crop&q=80',
-        label: '生エール',
-        sizeType: 'small'
-      },
-      {
-        menuId: 3,
-        img: 'https://images.unsplash.com/photo-1592417817098-8f3d6910985c?w=400&auto=format&fit=crop&q=80',
-        label: 'ブッラータ',
-        sizeType: 'medium'
-      },
-      {
-        menuId: 1,
-        img: 'https://images.unsplash.com/photo-1608270199042-3a5665b1134e?w=400&auto=format&fit=crop&q=80',
-        label: '白泡ヴァイス',
-        sizeType: 'small'
-      },
-      {
-        menuId: 4,
-        img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&auto=format&fit=crop&q=80',
-        label: '薪窯ピッツァ',
-        sizeType: 'medium'
-      },
-      {
-        menuId: 0,
-        img: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&auto=format&fit=crop&q=80',
-        label: '笑顔で乾杯',
-        sizeType: 'small'
-      },
-      {
-        menuId: 5,
-        img: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=400&auto=format&fit=crop&q=80',
-        label: '生ドルチェ',
-        sizeType: 'small'
-      },
-      {
-        menuId: 2,
-        img: 'https://images.unsplash.com/photo-1558030006-450675393462?w=400&auto=format&fit=crop&q=80',
-        label: '薪焼きの香ばしさ',
-        sizeType: 'medium'
-      },
-      {
-        menuId: 1,
-        img: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&auto=format&fit=crop&q=80',
-        label: '楽しい夜の語らい',
-        sizeType: 'small'
-      }
+      { menuId: 2, img: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=400&auto=format&fit=crop&q=80', label: 'ステーキ', sizeType: 'medium' },
+      { menuId: 0, img: 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=400&auto=format&fit=crop&q=80', label: '生エール', sizeType: 'small' },
+      { menuId: 3, img: 'https://images.unsplash.com/photo-1592417817098-8f3d6910985c?w=400&auto=format&fit=crop&q=80', label: 'ブッラータ', sizeType: 'medium' },
+      { menuId: 1, img: 'https://images.unsplash.com/photo-1608270199042-3a5665b1134e?w=400&auto=format&fit=crop&q=80', label: '白泡ヴァイス', sizeType: 'small' },
+      { menuId: 4, img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&auto=format&fit=crop&q=80', label: '薪窯ピッツァ', sizeType: 'medium' },
+      { menuId: 0, img: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&auto=format&fit=crop&q=80', label: '笑顔で乾杯', sizeType: 'small' },
+      { menuId: 5, img: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=400&auto=format&fit=crop&q=80', label: '生ドルチェ', sizeType: 'small' },
+      { menuId: 2, img: 'https://images.unsplash.com/photo-1558030006-450675393462?w=400&auto=format&fit=crop&q=80', label: '薪焼きの香ばしさ', sizeType: 'medium' },
+      { menuId: 1, img: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&auto=format&fit=crop&q=80', label: '楽しい夜の語らい', sizeType: 'small' }
     ];
 
     const userCapturedBubbleList = [];
@@ -823,7 +689,7 @@
     });
 
     // ==============================================
-    // 4. 写真バブル
+    // 4. トップ画面を泳ぐ写真バブル
     // ==============================================
     const photoContainer = document.getElementById('fullPhotoBubblesContainer');
     let floatingBubbles = [];
@@ -851,9 +717,14 @@
         this.x = 12 + (laneIndex % 3) * colWidth + Math.random() * (colWidth * 0.85);
 
         if (startFromBottom) {
+          // 下から新しく湧き上がる場合（泡が消えたあとの補充など）
           this.y = containerHeight + Math.random() * 40 + 20;
         } else {
-          this.y = containerHeight + Math.random() * 100 + delay;
+          // 初期表示時は、画面の高さに合わせてまんべんなく配置する
+          const totalItems = bubbleInitialList.length;
+          const step = containerHeight / totalItems;
+          const i = delay / 120; // 割り振られたインデックスを取得
+          this.y = step * i + (Math.random() * step * 0.8);
         }
 
         this.speedY = this.isUser ? 0.34 : (Math.random() * 0.38 + 0.28);
@@ -959,7 +830,7 @@
     }
 
     // ==============================================
-    // 5. 下部スクロール用メニューカード
+    // 5. メニュー一覧画面（ふわふわバブルのジグザグ配置）
     // ==============================================
     function renderMenuList() {
       const container = document.getElementById('menuListContainer');
@@ -967,34 +838,32 @@
 
       menuData.forEach((item, index) => {
         const card = document.createElement('div');
-        card.className = 'group cursor-pointer bg-white/20 hover:bg-white/30 backdrop-blur-lg rounded-3xl p-3.5 border border-white/50 shadow-lg transition duration-300 active:scale-[0.98] flex items-center gap-3.5';
+        // ジグザグ配置のため、奇数インデックスのものは下にマージンをつける
+        const isOdd = index % 2 !== 0;
+        const mtClass = isOdd ? 'mt-12' : 'mt-0';
+        const delay = (index * 0.4) % 2.5;
+
+        card.className = `group cursor-pointer flex flex-col items-center w-[40%] max-w-[130px] animate-float-menu transition active:scale-95 ${mtClass}`;
+        card.style.animationDelay = `${delay}s`;
         card.onclick = () => openProductModal(index);
+
+        const shortTitle = item.title.split('（')[0]; // カッコなどを除外して簡潔に
 
         card.innerHTML = `
           <!-- 丸いメニュー写真 -->
-          <div class="relative w-18 h-18 rounded-full overflow-hidden border-2 border-white/90 shadow-md shrink-0 bubble-frame-subtle">
+          <div class="relative w-full aspect-square rounded-full overflow-hidden border-[3px] border-white/90 shadow-xl shrink-0 bubble-frame-subtle">
             <img src="${item.mainImg}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
             <div class="absolute inset-0 rounded-full border border-white/40 pointer-events-none"></div>
+            <!-- ハイライト光彩 -->
+            <div class="absolute top-2 left-2.5 w-4 h-2 rounded-full bg-white/80 transform -rotate-45 pointer-events-none shadow-sm"></div>
+            <div class="absolute bottom-2 right-3 w-1.5 h-1.5 rounded-full bg-white/60 pointer-events-none"></div>
           </div>
 
-          <!-- テキスト情報 -->
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-1.5 mb-0.5">
-              <span class="text-[8.5px] font-black uppercase px-1.5 py-0.5 rounded-full bg-amber-400 text-purple-950 shadow-xs">
-                ${item.category}
-              </span>
-              ${item.tag ? `<span class="text-[8.5px] font-bold px-1.5 py-0.5 rounded-full bg-white/25 text-white border border-white/30">${item.tag}</span>` : ''}
-              <span class="text-[11px] font-bold text-amber-200 ml-auto">${item.price}</span>
-            </div>
-
-            <h3 class="text-xs sm:text-sm font-bold text-white tracking-wide truncate group-hover:text-amber-100 transition">
-              ${item.title}
-            </h3>
-
-            <div class="mt-1 flex items-center gap-1 text-[9.5px] text-amber-200 font-medium">
-              <i data-lucide="sparkles" class="w-3 h-3 text-yellow-300"></i>
-              <span>香りのピラミッドを見る</span>
-            </div>
+          <!-- メニュー名 -->
+          <div class="mt-3 text-center px-1 relative z-10 w-full flex justify-center">
+            <span class="text-[10px] sm:text-[11px] font-bold text-white bg-purple-950/80 backdrop-blur-md px-3 py-1.5 rounded-full whitespace-nowrap shadow-lg truncate max-w-[110%] border border-white/20">
+              ${shortTitle}
+            </span>
           </div>
         `;
 
@@ -1065,21 +934,12 @@
 
       const item = menuData[index] || menuData[0];
 
-      document.getElementById('detailCurvedTop').textContent = item.curvedTop;
-      document.getElementById('detailCurvedBottom').textContent = item.curvedBottom;
+      document.getElementById('detailTitle').textContent = item.title;
       document.getElementById('detailMainImage').src = item.mainImg;
-
-      document.getElementById('detailTopText').innerHTML = item.top.text.replace('\n', '<br>');
-      document.getElementById('detailTopImg').src = item.top.img;
-
-      document.getElementById('detailMidText').innerHTML = item.mid.text.replace('\n', '<br>');
-      document.getElementById('detailMidImg').src = item.mid.img;
-
-      document.getElementById('detailBaseText').innerHTML = item.base.text.replace('\n', '<br>');
-      document.getElementById('detailBaseImg').src = item.base.img;
-
-      document.getElementById('detailReviewAuthor').textContent = item.review.author;
-      document.getElementById('detailReviewText').textContent = item.review.text;
+      document.getElementById('detailVerticalText').innerHTML = item.curvedTop.replace('と', 'と<br>').replace('の', 'の<br>').replace('な', 'な<br>');
+      
+      const descText = `${item.curvedBottom}。<br><br><span class="text-[10px] text-gray-500">${item.review.author}</span><br>${item.review.text}`;
+      document.getElementById('detailDescription').innerHTML = descText;
 
       productDetailModal.classList.remove('hidden');
       productDetailModal.classList.add('flex');
@@ -1251,18 +1111,6 @@
         mainImg: currentCapturedPhotoData,
         price: 'MEMORIES',
         tag: 'NEW',
-        top: {
-          text: '注ぎたての冷涼感と弾ける笑顔',
-          img: currentCapturedPhotoData
-        },
-        mid: {
-          text: '仲間と分かち合う美味しい時間\n温かい歓声',
-          img: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=200&auto=format&fit=crop&q=80'
-        },
-        base: {
-          text: '心地よい余韻と特別な夜の思い出',
-          img: 'https://images.unsplash.com/photo-1543007630-9710e4a00a20?w=200&auto=format&fit=crop&q=80'
-        },
         review: {
           author: 'たった今撮影されたお客様',
           text: `「${comment}」`
