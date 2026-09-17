@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>ビール泡ガチャ</title>
+  <title>ビールガチャ</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Confetti Canvas -->
@@ -311,11 +311,15 @@
           <path d="M6 8h12"></path>
         </svg>
       </div>
-      <h2 class="text-base font-bold text-amber-300 font-serif tracking-wide mb-1.5">クラフトビール泡ガチャ</h2>
-      <p class="text-xs text-neutral-300 leading-relaxed mb-5">
+      <h2 class="text-base font-bold text-amber-300 font-serif tracking-wide mb-1.5">ビールガチャ</h2>
+      <p class="text-xs text-neutral-300 leading-relaxed mb-4">
         スマートフォンを振ることで<br />
-        黄金のビールと神泡が溜まります。<br />
+        ビールと泡が溜まります。<br />
         <span class="text-[11px] text-amber-400/80">※「動作と方向へのアクセス」の許可を求められます</span>
+      </p>
+      <p class="text-[11px] text-neutral-400 leading-relaxed mb-5 border-t border-white/10 pt-3">
+        もしスマホを振って反応しない場合は<br />
+        画面をタッチして溜めてください
       </p>
       <button
         id="start-sensor-btn"
@@ -366,9 +370,9 @@
 
     const BEER_ITEMS = [
       { name: "芳醇IPA エクストラ", rarity: "GOLD SPECIAL", desc: "柑橘系ホップの鮮烈なアロマと重厚な苦味が調和した極上IPA。" },
-      { name: "琥珀プレミアムピルスナー", rarity: "STANDARD", desc: "黄金の輝きと爽快な喉越し。麦芽100%の伝統クラシック。" },
+      { name: "琥珀プレミアムピルスナー", rarity: "STANDARD", desc: "琥珀の輝きと爽快な喉越し。麦芽100%の伝統クラシック。" },
       { name: "黒樽インペリアルスタウト", rarity: "DARK SPECIAL", desc: "ロースト麦芽の香ばしい深みとカカオのような濃厚なコク。" },
-      { name: "白夜ヴァイツェン", rarity: "SPECIAL WHITE", desc: "バナナを思わせるフルーティーな香りとクリーミーな神泡。" },
+      { name: "白夜ヴァイツェン", rarity: "SPECIAL WHITE", desc: "バナナを思わせるフルーティーな香りとクリーミーな泡。" },
       { name: "ベルジャン・ゴールドセゾン", rarity: "VINTAGE", desc: "スパイス感と爽やかな酸味が広がる、職人仕込みの伝統エール。" }
     ];
 
@@ -676,15 +680,26 @@
       targetTiltY = normY * 0.6;
     });
 
-    if (tankContainer) {
-      tankContainer.addEventListener('click', () => {
-        initAudio();
-        if (!isFull) {
-          shakeVelocity.x += (Math.random() - 0.5) * 12;
-          shakeVelocity.y -= 7;
-          addBubblePower(0.35, false);
-        }
-      });
+    // 画面タッチ/タップで1回につき約10%溜まるように処理（操作ボタン・ハンドルなどは除外）
+    function handleScreenTap(e) {
+      if (e.target.closest('#crank-handle') ||
+          e.target.closest('#dispensed-capsule') ||
+          e.target.closest('#result-modal') ||
+          e.target.closest('#permission-overlay')) {
+        return;
+      }
+      initAudio();
+      if (!isFull) {
+        shakeVelocity.x += (Math.random() - 0.5) * 14;
+        shakeVelocity.y -= 8;
+        addBubblePower(10.0, false);
+      }
+    }
+
+    if (machineWrapper) {
+      machineWrapper.addEventListener('click', handleScreenTap);
+    } else if (tankContainer) {
+      tankContainer.addEventListener('click', handleScreenTap);
     }
 
     if (crankHandle) {
