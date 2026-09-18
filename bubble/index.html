@@ -106,28 +106,41 @@
     <!-- ======================================================== -->
     <div id="introOverlay" class="absolute inset-0 z-50 flex items-center justify-center transition-opacity duration-1000 opacity-100 pointer-events-none">
       
-      <div id="introText" class="flex flex-row-reverse items-center justify-center gap-6 sm:gap-8 opacity-0 scale-95 translate-y-4 transition-all duration-[2000ms] ease-out transform h-full w-full">
+      <div id="introText" class="flex flex-col items-center justify-between h-full w-full py-8 px-5 opacity-0 scale-95 translate-y-4 transition-all duration-[2000ms] ease-out transform">
         
-        <!-- 1行目（右端） -->
-        <h2 class="text-white font-serif-luxury text-[22px] sm:text-[24px] font-bold tracking-[0.4em] drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] opacity-90 whitespace-nowrap" style="writing-mode: vertical-rl;">
-          ～が届けたい
-        </h2>
-        
-        <!-- 区切り線 -->
-        <div class="w-[1.5px] h-[35%] max-h-[250px] bg-gradient-to-b from-transparent via-white/90 to-transparent shadow-sm"></div>
+        <!-- 上部の余白バランス用 -->
+        <div class="w-full h-2"></div>
 
-        <!-- 2行目（中央） -->
-        <h1 class="text-white font-serif-luxury text-[26px] sm:text-[28px] font-black tracking-[0.3em] drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] whitespace-nowrap" style="writing-mode: vertical-rl;">
-          『おいしさ』と
-        </h1>
-        
-        <!-- 区切り線 -->
-        <div class="w-[1.5px] h-[35%] max-h-[250px] bg-gradient-to-b from-transparent via-white/90 to-transparent shadow-sm"></div>
+        <!-- 中央：縦書きメインメッセージ -->
+        <div class="flex flex-row-reverse items-center justify-center gap-6 sm:gap-8 my-auto">
+          <!-- 1行目（右端） -->
+          <h2 class="text-white font-serif-luxury text-[22px] sm:text-[24px] font-bold tracking-[0.4em] drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] opacity-90 whitespace-nowrap" style="writing-mode: vertical-rl;">
+            ～が届けたい
+          </h2>
+          
+          <!-- 区切り線 -->
+          <div class="w-[1.5px] h-[180px] sm:h-[220px] bg-gradient-to-b from-transparent via-white/90 to-transparent shadow-sm"></div>
 
-        <!-- 3行目（左端） -->
-        <h1 class="text-white font-serif-luxury text-[26px] sm:text-[28px] font-black tracking-[0.3em] drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] whitespace-nowrap" style="writing-mode: vertical-rl;">
-          『おもいで』
-        </h1>
+          <!-- 2行目（中央） -->
+          <h1 class="text-white font-serif-luxury text-[26px] sm:text-[28px] font-black tracking-[0.3em] drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] whitespace-nowrap" style="writing-mode: vertical-rl;">
+            『おいしさ』と
+          </h1>
+          
+          <!-- 区切り線 -->
+          <div class="w-[1.5px] h-[180px] sm:h-[220px] bg-gradient-to-b from-transparent via-white/90 to-transparent shadow-sm"></div>
+
+          <!-- 3行目（左端） -->
+          <h1 class="text-white font-serif-luxury text-[26px] sm:text-[28px] font-black tracking-[0.3em] drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] whitespace-nowrap" style="writing-mode: vertical-rl;">
+            『おもいで』
+          </h1>
+        </div>
+
+        <!-- 下箇所：縦書きサブメッセージ（3行組・小さめ） -->
+        <div class="w-full flex justify-center pb-4">
+          <p class="text-white/80 font-serif-luxury text-[10.5px] sm:text-[11.5px] font-medium tracking-[0.2em] drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] leading-[1.9]" style="writing-mode: vertical-rl;">
+            泡にのった<br>こだわりメニューと今日の思い出を<br>お楽しみください
+          </p>
+        </div>
         
       </div>
     </div>
@@ -352,24 +365,35 @@
     import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // ==============================================
-    // 0. クラウド保存＆リアルタイム同期の初期化
+    // 0. クラウド保存＆リアルタイム同期の初期化（実プロジェクト接続）
     // ==============================================
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'beerbubble-app';
     let auth = null;
     let db = null;
     let currentUser = null;
     let isCloudReady = false;
 
-    if (typeof __firebase_config !== 'undefined') {
-      try {
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        auth = getAuth(app);
-        db = getFirestore(app);
-        isCloudReady = true;
-      } catch (err) {
-        console.warn("Cloud config error:", err);
-      }
+    // ご提供いただいたFirebase設定
+    const projectFirebaseConfig = {
+      apiKey: "AIzaSyBWtai0JfLpX6jFefRgmyiHKQpE8yk_BO8",
+      authDomain: "beerbubble-app.firebaseapp.com",
+      projectId: "beerbubble-app",
+      storageBucket: "beerbubble-app.firebasestorage.app",
+      messagingSenderId: "61063610236",
+      appId: "1:61063610236:web:ed8e7a557e2b000ed56ef9"
+    };
+
+    const firebaseConfig = typeof __firebase_config !== 'undefined'
+      ? JSON.parse(__firebase_config)
+      : projectFirebaseConfig;
+
+    try {
+      const app = initializeApp(firebaseConfig);
+      auth = getAuth(app);
+      db = getFirestore(app);
+      isCloudReady = true;
+    } catch (err) {
+      console.warn("Cloud config error:", err);
     }
 
     async function initAuth() {
@@ -1026,7 +1050,7 @@
 
     // ユーザー写真の削除（クラウド＆画面同期）
     async function deleteUserBubble(bubbleId) {
-      if (isCloudReady && db && currentUser) {
+      if (isCloudReady && db) {
         try {
           const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'bubbles', bubbleId);
           await deleteDoc(docRef);
@@ -1055,7 +1079,7 @@
     // 7.5 他のお客さんとのリアルタイム同期リスナー
     // ==============================================
     function startCloudListener() {
-      if (!isCloudReady || !db || !currentUser) return;
+      if (!isCloudReady || !db) return;
 
       const bubblesCol = collection(db, 'artifacts', appId, 'public', 'data', 'bubbles');
 
@@ -1077,7 +1101,6 @@
           }
         });
 
-        // クラウドの投稿データを取り込んでメニューと泡を更新
         updateCloudBubbles(validList);
       }, (error) => {
         console.warn("Cloud bubbles snapshot error:", error);
@@ -1306,6 +1329,14 @@
       const comment = capturedCommentInput.value.trim() || '乾杯！';
       const timestamp = Date.now();
       const uniqueId = `bubble_${timestamp}_${Math.random().toString(36).substr(2, 6)}`;
+
+      if (isCloudReady && db && !currentUser) {
+        try {
+          const cred = await signInAnonymously(auth);
+          currentUser = cred.user;
+        } catch (e) {}
+      }
+
       const myUserId = currentUser ? currentUser.uid : 'local_user';
 
       const bubbleDoc = {
@@ -1316,7 +1347,7 @@
         title: 'お客様の思い出スナップ'
       };
 
-      if (isCloudReady && db && currentUser) {
+      if (isCloudReady && db) {
         try {
           const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'bubbles', uniqueId);
           await setDoc(docRef, bubbleDoc);
