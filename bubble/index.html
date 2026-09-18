@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>泡とメニューとおもいで</title>
+  <title>泡と香りのアンビエントメニュー</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons -->
@@ -324,7 +324,7 @@
         </div>
       </div>
 
-      <!-- 説明文エリア（コメント欄は完全撤廃し、純粋な料理・ビールのこだわり説明のみ） -->
+      <!-- 説明文エリア（純粋な料理・ビールのこだわり説明のみ） -->
       <div class="w-full bg-[#f6f4ed] p-3.5 rounded-xl mb-4 border border-[#eaddc5]/80 shadow-inner">
         <p id="detailDescription" class="text-[12px] text-gray-700 leading-relaxed font-medium text-justify">
           メニュー説明文
@@ -406,7 +406,7 @@
     let currentUser = null;
     let isCloudReady = false;
 
-    // ご提供いただいたFirebase設定
+    // Firebase設定
     const projectFirebaseConfig = {
       apiKey: "AIzaSyBWtai0JfLpX6jFefRgmyiHKQpE8yk_BO8",
       authDomain: "beerbubble-app.firebaseapp.com",
@@ -446,7 +446,7 @@
     }
 
     // ==============================================
-    // 1. 純粋なお店のおすすめメニューデータ（コメント欄なし・洗練された説明文のみ）
+    // 1. 純粋なお店のおすすめメニューデータ
     // ==============================================
     const defaultMenuData = [
       {
@@ -544,7 +544,7 @@
 
     const menuData = [...defaultMenuData];
 
-    // 浮遊する写真バブルの初期プール（常時8個表示のためにバランスよく配置）
+    // 浮遊する写真バブルの元データプール
     const bubbleInitialList = [
       { menuId: 'default_2', img: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=400&auto=format&fit=crop&q=80', label: 'ステーキ', sizeType: 'medium' },
       { menuId: 'default_0', img: 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=400&auto=format&fit=crop&q=80', label: '生エール', sizeType: 'small' },
@@ -598,14 +598,12 @@
       } catch (e) {}
     }
 
-    // 気泡をタップして花火のように弾けたときのきらびやかな音
     function playFireworkSound() {
       if (!isSoundOn) return;
       initAudio();
       try {
         const now = audioCtx.currentTime;
 
-        // 破裂音
         const osc1 = audioCtx.createOscillator();
         const gain1 = audioCtx.createGain();
         osc1.type = 'triangle';
@@ -619,7 +617,6 @@
         osc1.start(now);
         osc1.stop(now + 0.22);
 
-        // キラキラ高音スパーク
         const osc2 = audioCtx.createOscillator();
         const gain2 = audioCtx.createGain();
         osc2.type = 'sine';
@@ -676,16 +673,19 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    // 透明な気泡リング（タップで花火になる）
+    // 透明な気泡リング（画面下部から昇る）
     class RingBubble {
-      constructor(init = false) {
-        this.reset(init);
+      constructor(initRandomY = false) {
+        this.reset(initRandomY);
       }
-      reset(init = false) {
+      reset(initRandomY = false) {
         this.x = Math.random() * width;
-        this.y = init ? Math.random() * height : height + Math.random() * 40;
+        // 文字の時は下から徐々に昇ってくるように、初期も画面下部〜画面外からスタート
+        this.y = initRandomY 
+          ? height * 0.55 + Math.random() * (height * 0.5) 
+          : height + Math.random() * 40;
         this.radius = Math.random() * 18 + 12;
-        this.speedY = Math.random() * 0.65 + 0.3;
+        this.speedY = Math.random() * 0.75 + 0.4;
         this.wobbleSpeed = Math.random() * 0.02 + 0.008;
         this.wobbleAmp = Math.random() * 0.8 + 0.3;
         this.lineWidth = Math.random() * 0.8 + 1.2;
@@ -716,15 +716,14 @@
       }
     }
 
-    // 背景の微細な気泡
+    // 背景の微細な炭酸気泡
     class AmbientBubble {
-      constructor(init = false) {
-        this.reset(init);
+      constructor(initRandomY = false) {
+        this.reset(initRandomY);
       }
-      reset(init = false) {
+      reset(initRandomY = false) {
         this.x = Math.random() * width;
-        this.y = init ? Math.random() * height : height + Math.random() * 50;
-        
+        this.y = initRandomY ? Math.random() * height : height + Math.random() * 50;
         this.radius = Math.random() * 4 + 1.5;
         this.speedY = Math.random() * 1.6 + 0.9;
         this.wobbleSpeed = Math.random() * 0.05 + 0.03;
@@ -837,10 +836,11 @@
     function initAmbientBubbles() {
       ringBubbles = [];
       ambientBubbles = [];
-      for (let i = 0; i < 22; i++) {
-        ringBubbles.push(new RingBubble(true));
+      // 最初は文字をきれいに見せつつ、下部から心地よく湧き上がる配置
+      for (let i = 0; i < 18; i++) {
+        ringBubbles.push(new RingBubble(false));
       }
-      for (let i = 0; i < 65; i++) {
+      for (let i = 0; i < 50; i++) {
         ambientBubbles.push(new AmbientBubble(true));
       }
     }
@@ -859,7 +859,7 @@
       }
     }
 
-    // 画面タップイベント（透明泡タップで花火が弾ける判定）
+    // 画面タップイベント（透明泡タップで花火判定）
     window.addEventListener('pointerdown', (e) => {
       if (e.target && e.target.closest('.pointer-events-auto')) return;
       
@@ -890,13 +890,13 @@
     });
 
     // ==============================================
-    // 4. トップ画面を泳ぐ写真バブル（常時8個・ドラッグ＆タップ対応）
+    // 4. トップ画面を泳ぐ写真バブル（下から湧き上がり＆ドラッグ対応）
     // ==============================================
     const photoContainer = document.getElementById('fullPhotoBubblesContainer');
     let floatingBubbles = [];
 
     class FreePhotoBubble {
-      constructor(itemData, laneIndex = 0, delay = 0, startFromBottom = false) {
+      constructor(itemData, laneIndex = 0, isInitialSurge = false) {
         this.data = itemData;
         this.isUser = itemData.isUser === true;
         this.isDead = false;
@@ -917,16 +917,13 @@
         const colWidth = usableWidth / 3;
         this.x = 12 + (laneIndex % 3) * colWidth + Math.random() * (colWidth * 0.85);
 
-        if (startFromBottom) {
-          this.y = containerHeight + Math.random() * 30 + 10;
-        } else {
-          const totalItems = MAX_ONSCREEN_BUBBLES;
-          const step = containerHeight / totalItems;
-          const i = delay / 110;
-          this.y = step * (i % totalItems) + (Math.random() * (step * 0.6));
-        }
+        // 必ず画面の下端（画面外）からスタート
+        this.y = containerHeight + Math.random() * 30 + 10;
 
-        this.speedY = this.isUser ? 0.32 : (Math.random() * 0.35 + 0.26);
+        // イントロ初期に湧き上がる時は、下からスッと気持ちよく登ってきてから通常のゆったり速度に移る
+        this.targetSpeedY = this.isUser ? 0.32 : (Math.random() * 0.35 + 0.26);
+        this.speedY = isInitialSurge ? (Math.random() * 0.35 + 0.85) : this.targetSpeedY;
+
         this.wobble = Math.random() * Math.PI * 2;
         this.wobbleSpeed = Math.random() * 0.016 + 0.008;
         this.wobbleAmp = this.isUser ? 4.5 : (Math.random() * 3.5 + 2.5);
@@ -938,6 +935,13 @@
         this.dragStartY = 0;
         this.bubbleOriginX = 0;
         this.bubbleOriginY = 0;
+
+        // 初期湧き上がり時は、画面内にしっかり入った後で自然な浮遊速度に減速
+        if (isInitialSurge) {
+          setTimeout(() => {
+            this.speedY = this.targetSpeedY;
+          }, Math.random() * 1200 + 2200);
+        }
 
         this.createElement();
       }
@@ -1076,7 +1080,7 @@
       }
     }
 
-    function spawnSingleBubble() {
+    function spawnSingleBubble(isSurge = false) {
       if (floatingBubbles.length >= MAX_ONSCREEN_BUBBLES) return;
 
       let newData;
@@ -1087,18 +1091,29 @@
       }
       
       const laneIndex = Math.floor(Math.random() * 3);
-      const newBubble = new FreePhotoBubble(newData, laneIndex, 0, true);
+      const newBubble = new FreePhotoBubble(newData, laneIndex, isSurge);
       floatingBubbles.push(newBubble);
     }
 
-    function initFloatingBubbles() {
+    // ==============================================
+    // 文字の時に下から徐々に泡を湧き上がらせる初期化処理
+    // ==============================================
+    function startIntroBubbleSpawning() {
       photoContainer.innerHTML = '';
-      const pool = [...userCapturedBubbleList, ...bubbleInitialList];
-      const count = Math.min(pool.length, MAX_ONSCREEN_BUBBLES);
       floatingBubbles = [];
-      for (let i = 0; i < count; i++) {
-        const item = pool[i % pool.length];
-        floatingBubbles.push(new FreePhotoBubble(item, i % 3, i * 110, false));
+
+      const pool = [...userCapturedBubbleList, ...bubbleInitialList];
+      const totalToSpawn = MAX_ONSCREEN_BUBBLES; // 8個
+
+      // 文字表示中（0秒〜4秒）の間に、時間差で下から1個ずつポコポコと泡を昇らせる
+      for (let i = 0; i < totalToSpawn; i++) {
+        // 約0.45秒ごとに1つずつ下から打ち上げ
+        const delay = i * 460 + 250;
+        setTimeout(() => {
+          const item = pool[i % pool.length];
+          const bubble = new FreePhotoBubble(item, i % 3, true);
+          floatingBubbles.push(bubble);
+        }, delay);
       }
     }
 
@@ -1131,7 +1146,7 @@
             <div class="absolute bottom-2 right-3 w-1.5 h-1.5 rounded-full bg-white/60 pointer-events-none"></div>
           </div>
 
-          <!-- メニュー名（はみ出し防止＆文字数自動調整） -->
+          <!-- メニュー名 -->
           <div class="mt-2.5 text-center px-1 relative z-10 w-full flex justify-center">
             <span class="${fontSizeClass} font-bold text-white bg-black/65 backdrop-blur-md px-2.5 py-1 rounded-full whitespace-nowrap shadow-md max-w-full truncate border border-white/20">
               ${shortTitle}
@@ -1217,19 +1232,20 @@
         if (floatingBubbles[i].isDead) {
           floatingBubbles[i].el.remove();
           floatingBubbles.splice(i, 1);
-          spawnSingleBubble();
+          spawnSingleBubble(false);
         }
       }
 
+      // 画面上の泡が8個を下回っている場合は自然に補充
       if (floatingBubbles.length < MAX_ONSCREEN_BUBBLES && Math.random() < 0.04) {
-        spawnSingleBubble();
+        spawnSingleBubble(false);
       }
 
       requestAnimationFrame(animate);
     }
 
     // ==============================================
-    // 7. メニュー詳細モーダル制御（文字サイズ・余白・短冊の完全自動フィット）
+    // 7. メニュー詳細モーダル制御（文字サイズ・余白完全自動フィット）
     // ==============================================
     const productDetailModal = document.getElementById('productDetailModal');
 
@@ -1239,14 +1255,12 @@
 
       const item = menuData.find(m => m.id === id) || menuData[0];
 
-      // 1. 基本テキストの適用
       document.getElementById('detailCategory').textContent = item.category;
       document.getElementById('detailTag').textContent = item.tag;
       document.getElementById('detailTitle').textContent = item.title;
       document.getElementById('detailPrice').textContent = item.price;
       document.getElementById('detailMainImage').src = item.mainImg;
 
-      // 2. 縦書きキャッチコピーの自動フィット計算（はみ出し・不要な余白を完全防止）
       const captionText = item.curvedTop || '';
       const captionBox = document.getElementById('detailCaptionBox');
       const captionEl = document.getElementById('detailVerticalText');
@@ -1257,17 +1271,14 @@
 
         const len = captionText.length;
         if (len <= 10) {
-          // 短い文：ゆったり品よく配置
           captionEl.style.fontSize = '12px';
           captionEl.style.letterSpacing = '0.22em';
           captionBox.style.padding = '8px 6px';
         } else if (len <= 15) {
-          // 中くらいの文：自然に枠内にフィット
           captionEl.style.fontSize = '11px';
           captionEl.style.letterSpacing = '0.14em';
           captionBox.style.padding = '7px 5px';
         } else {
-          // やや長めの文：小さめにして縦にはみ出さないよう自動縮小
           captionEl.style.fontSize = '10px';
           captionEl.style.letterSpacing = '0.08em';
           captionBox.style.padding = '6px 4px';
@@ -1276,7 +1287,6 @@
         captionBox.classList.add('hidden');
       }
 
-      // 3. 説明文の適用（コメント欄は完全撤廃し、純粋な料理・ビールのこだわり文のみ）
       document.getElementById('detailDescription').textContent = item.description;
 
       productDetailModal.classList.remove('hidden');
@@ -1422,7 +1432,7 @@
             if (old) old.isDead = true;
           }
 
-          const newBubble = new FreePhotoBubble(bubbleData, Math.floor(Math.random() * 3), 0, true);
+          const newBubble = new FreePhotoBubble(bubbleData, Math.floor(Math.random() * 3), true);
           floatingBubbles.unshift(newBubble);
         }
       });
@@ -1636,12 +1646,7 @@
         if (old) old.isDead = true;
       }
 
-      const newBubble = new FreePhotoBubble(userBubbleData, Math.floor(Math.random() * 3), 0, true);
-      newBubble.speedY = 0.9;
-      setTimeout(() => {
-        newBubble.speedY = 0.32;
-      }, 2500);
-
+      const newBubble = new FreePhotoBubble(userBubbleData, Math.floor(Math.random() * 3), true);
       floatingBubbles.unshift(newBubble);
 
       closeCaptureModal();
@@ -1678,12 +1683,14 @@
     }
 
     // ==============================================
-    // 9. 初期化
+    // 9. 初期化（文字表示と同時に下から順次湧き上がり）
     // ==============================================
     window.addEventListener('load', () => {
       lucide.createIcons();
       resizeCanvas();
       renderMenuList();
+
+      initAmbientBubbles();
       animate();
       ensureVideoPlayback();
       initAuth();
@@ -1693,22 +1700,25 @@
       const introText = document.getElementById('introText');
       const uiElements = document.getElementById('uiElements');
 
+      // 文字表示開始
       setTimeout(() => {
         introText.classList.remove('opacity-0', 'scale-95', 'translate-y-4');
         introText.classList.add('opacity-100', 'scale-100', 'translate-y-0');
+
+        // 文字が出た直後から、画面下から時間差で1つずつ泡がポコポコと湧き上がる
+        startIntroBubbleSpawning();
       }, 400);
 
+      // 文字フェードアウト
       setTimeout(() => {
         introText.classList.remove('opacity-100', 'scale-100', 'translate-y-0');
         introText.classList.add('opacity-0', 'scale-105', '-translate-y-2');
       }, 3500);
 
+      // トップ画面へ切り替え（湧き上がった泡は一切消えず、そのまま上へ登り続ける）
       setTimeout(() => {
         introOverlay.classList.remove('opacity-100');
         introOverlay.classList.add('opacity-0');
-
-        initAmbientBubbles();
-        initFloatingBubbles();
 
         uiElements.classList.remove('opacity-0');
         uiElements.classList.add('opacity-100');
