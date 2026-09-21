@@ -898,7 +898,7 @@
     });
 
     // ==============================================
-    // 4. トップ画面を泳ぐ写真バブル（程よい横揺れ＆心地よい上昇速度）
+    // 4. トップ画面を泳ぐ写真バブル（停止防止完全対応版）
     // ==============================================
     const photoContainer = document.getElementById('fullPhotoBubblesContainer');
     let floatingBubbles = [];
@@ -942,40 +942,39 @@
         this.isDead = false;
 
         if (this.isUser) {
-          this.size = 94; // ユーザー撮影泡
+          this.size = 94;
         } else {
           const isSmall = itemData.sizeType === 'small';
           this.size = isSmall 
-            ? Math.floor(Math.random() * 5 + 74) // 74〜78px
-            : Math.floor(Math.random() * 6 + 84); // 84〜89px
+            ? Math.floor(Math.random() * 5 + 74) 
+            : Math.floor(Math.random() * 6 + 84);
         }
         
         const containerWidth = appContainer.clientWidth || 390;
         const containerHeight = appContainer.clientHeight || window.innerHeight;
 
-        // 基準となる中心軸X座標（揺れの基準線）
         this.baseX = customX !== null ? customX : getOptimalSpawnX(this.size);
         this.y = containerHeight + Math.random() * 25 + 10;
 
-        // 【速度調整】もったり感を解消し、軽やかにふわふわ昇るテンポ（0.60〜0.82px/frame）
+        // 浮遊スピード
         this.targetSpeedY = this.isUser 
           ? (Math.random() * 0.18 + 0.58) 
           : (Math.random() * 0.22 + 0.62);
         this.speedY = isInitialSurge ? (Math.random() * 0.3 + 1.15) : this.targetSpeedY;
 
-        // 【横揺れ調整】棒立ちにならず、生きた泡らしく心地よくそよぐ振幅（±2.4〜3.5px）
         this.wobble = Math.random() * Math.PI * 2;
-        this.wobbleSpeed = Math.random() * 0.015 + 0.014; // 程よくリズミカルな揺らめき周期
-        this.wobbleAmp = Math.random() * 1.1 + 2.4;     // 目で見てしっかり分かる自然な揺れ幅
+        this.wobbleSpeed = Math.random() * 0.015 + 0.014;
+        this.wobbleAmp = Math.random() * 1.1 + 2.4;
         this.isPopping = false;
 
+        // ドラッグ管理：単純タップで泡が止まらないよう厳密化
+        this.isPointerDown = false;
         this.isDragging = false;
         this.hasMoved = false;
         this.dragStartX = 0;
         this.dragStartY = 0;
         this.bubbleOriginX = 0;
         this.bubbleOriginY = 0;
-        this.lastDragTime = 0;
 
         if (isInitialSurge) {
           setTimeout(() => {
@@ -984,6 +983,14 @@
         }
 
         this.createElement();
+      }
+
+      // 要素の完全削除メソッド（取り残され停止の根絶）
+      destroy() {
+        this.isDead = true;
+        if (this.el && this.el.parentNode) {
+          this.el.parentNode.removeChild(this.el);
+        }
       }
 
       createElement() {
@@ -1016,37 +1023,38 @@
 
         this.innerEl = this.el.querySelector('.bubble-inner');
 
+        // タッチ開始（この時点ではドラッグ状態にせず停止させない）
         this.el.addEventListener('pointerdown', (e) => {
           e.stopPropagation();
           if (this.isPopping || this.isDead) return;
 
-          this.isDragging = true;
+          this.isPointerDown = true;
+          this.isDragging = false;
           this.hasMoved = false;
           this.dragStartX = e.clientX;
           this.dragStartY = e.clientY;
           this.bubbleOriginX = this.baseX;
           this.bubbleOriginY = this.y;
-          this.lastDragTime = Date.now();
 
           try {
             this.el.setPointerCapture(e.pointerId);
           } catch (err) {}
-
-          this.innerEl.style.transform = 'scale(1.06)';
         });
 
+        // 移動検知（8px以上動かして初めてドラッグ扱いにする）
         this.el.addEventListener('pointermove', (e) => {
-          if (!this.isDragging || this.isPopping || this.isDead) return;
+          if (!this.isPointerDown || this.isPopping || this.isDead) return;
 
           const deltaX = e.clientX - this.dragStartX;
           const deltaY = e.clientY - this.dragStartY;
 
-          if (Math.hypot(deltaX, deltaY) > 5) {
+          if (!this.isDragging && Math.hypot(deltaX, deltaY) > 8) {
+            this.isDragging = true;
             this.hasMoved = true;
+            this.innerEl.style.transform = 'scale(1.06)';
           }
 
-          if (this.hasMoved) {
-            this.lastDragTime = Date.now();
+          if (this.isDragging) {
             const containerWidth = appContainer.clientWidth || 390;
             const containerHeight = appContainer.clientHeight || window.innerHeight;
 
@@ -1057,8 +1065,12 @@
           }
         });
 
-        const endDragHandler = (e) => {
-          if (!this.isDragging) return;
+        const endTouchHandler = (e) => {
+          if (!this.isPointerDown) return;
+          const wasDragging = this.isDragging;
+          const moved = this.hasMoved;
+
+          this.isPointerDown = false;
           this.isDragging = false;
 
           try {
@@ -1067,7 +1079,7 @@
 
           this.innerEl.style.transform = 'scale(1)';
 
-          if (!this.hasMoved) {
+          if (!moved && !wasDragging) {
             this.popAndOpen();
           } else {
             this.innerEl.classList.add('transition-transform');
@@ -1077,9 +1089,10 @@
           }
         };
 
-        this.el.addEventListener('pointerup', endDragHandler);
-        this.el.addEventListener('pointercancel', endDragHandler);
+        this.el.addEventListener('pointerup', endTouchHandler);
+        this.el.addEventListener('pointercancel', endTouchHandler);
         this.el.addEventListener('lostpointercapture', () => {
+          this.isPointerDown = false;
           this.isDragging = false;
           this.innerEl.style.transform = 'scale(1)';
         });
@@ -1087,7 +1100,7 @@
         photoContainer.appendChild(this.el);
       }
 
-      // 近づきすぎた泡同士を滑らかに避け合わせるソフト反発
+      // 泡同士のソフト反発（上昇を邪魔しないようX方向の反発のみ適用）
       applyRepulsion(allBubbles) {
         if (this.isDragging || this.isPopping || this.isDead) return;
 
@@ -1106,16 +1119,13 @@
           const dy = myCenterY - otherCenterY;
           const dist = Math.hypot(dx, dy);
 
-          const minDist = myRadius + otherRadius + 12;
+          const minDist = myRadius + otherRadius + 10;
 
           if (dist < minDist && dist > 0.1) {
             const overlap = (minDist - dist) / minDist;
-            const pushX = (dx / dist) * overlap * 0.5;
+            // X方向の反発のみにし、Y上昇（スピード）を一切阻害・相殺しない
+            const pushX = (dx / dist) * overlap * 0.45;
             this.baseX += pushX;
-
-            if (dy > 0) {
-              this.y += 0.12;
-            }
           }
         }
       }
@@ -1123,26 +1133,21 @@
       update(allBubbles) {
         if (this.isPopping || this.isDead) return;
 
-        if (this.isDragging) {
-          if (Date.now() - this.lastDragTime > 2500) {
-            this.isDragging = false;
-            this.innerEl.style.transform = 'scale(1)';
-          } else {
-            return;
-          }
-        }
+        // 実際に指でドラッグ移動させている時だけ上昇を一時保留
+        if (this.isDragging) return;
 
-        // 泡同士のソフト反発
+        // 泡同士の反発計算
         this.applyRepulsion(allBubbles);
 
+        // スピードの安全保証（0以下になることを防止）
         if (!this.speedY || isNaN(this.speedY) || this.speedY < 0.35) {
           this.speedY = this.targetSpeedY || 0.62;
         }
 
+        // 確実に上へ昇る
         this.y -= this.speedY;
         this.wobble += this.wobbleSpeed;
 
-        // 基準軸を中心とした自然な正弦波オフセット
         const currentDisplayX = this.baseX + Math.sin(this.wobble) * this.wobbleAmp;
 
         const containerWidth = appContainer.clientWidth || 390;
@@ -1182,7 +1187,7 @@
             openProductModalById(this.data.menuId !== undefined ? this.data.menuId : 'default_0');
           }
           setTimeout(() => {
-            this.isDead = true;
+            this.destroy();
           }, 300);
         }, 220);
       }
@@ -1192,7 +1197,7 @@
     function spawnSingleBubble(isSurge = false) {
       if (floatingBubbles.length >= MAX_ONSCREEN_BUBBLES || isSpawnPending) return;
 
-      const currentUserBubblesCount = floatingBubbles.filter(b => b.isUser).length;
+      const currentUserBubblesCount = floatingBubbles.filter(b => b.isUser && !b.isDead).length;
       let newData;
 
       if (currentUserBubblesCount < MAX_USER_BUBBLES_ONSCREEN && userCapturedBubbleList.length > 0 && Math.random() < 0.3) {
@@ -1213,11 +1218,13 @@
 
     // 初期化：ポツリポツリと自然なランダムタイミングで10個が湧き上がる
     function startIntroBubbleSpawning() {
+      // 既存要素をクリーンアップ
+      floatingBubbles.forEach(b => b.destroy());
       photoContainer.innerHTML = '';
       floatingBubbles = [];
 
       const pool = [...bubbleInitialList];
-      const totalToSpawn = MAX_ONSCREEN_BUBBLES; // 10個
+      const totalToSpawn = MAX_ONSCREEN_BUBBLES;
 
       let accumulatedDelay = 180;
 
@@ -1306,7 +1313,7 @@
     window.closeMenuList = closeMenuList;
 
     // ==============================================
-    // 6. アニメーションメインループ
+    // 6. アニメーションメインループ（確実なDOM破棄と補充）
     // ==============================================
     function animate() {
       ctx.clearRect(0, 0, width, height);
@@ -1339,10 +1346,12 @@
 
       // 写真バブルの更新
       for (let i = floatingBubbles.length - 1; i >= 0; i--) {
-        floatingBubbles[i].update(floatingBubbles);
+        const bubble = floatingBubbles[i];
+        bubble.update(floatingBubbles);
 
-        if (floatingBubbles[i].isDead) {
-          floatingBubbles[i].el.remove();
+        // 画面上部から抜けきったらDOMを完全に破棄して補充
+        if (bubble.isDead) {
+          bubble.destroy();
           floatingBubbles.splice(i, 1);
           setTimeout(() => spawnSingleBubble(false), Math.random() * 350 + 180);
         }
@@ -1476,12 +1485,13 @@
 
       userCapturedBubbleList = userCapturedBubbleList.filter(u => u.menuId !== bubbleId);
 
-      floatingBubbles.forEach(bubble => {
-        if (bubble.data.menuId === bubbleId) {
-          bubble.isDead = true;
-          bubble.el.style.opacity = '0';
+      for (let i = floatingBubbles.length - 1; i >= 0; i--) {
+        const b = floatingBubbles[i];
+        if (b.data.menuId === bubbleId) {
+          b.destroy();
+          floatingBubbles.splice(i, 1);
         }
-      });
+      }
 
       closeUserPhotoModal();
     }
@@ -1540,25 +1550,28 @@
             timestamp: item.timestamp
           };
           
-          const currentUsersOnscreen = floatingBubbles.filter(b => b.isUser).length;
+          const currentUsersOnscreen = floatingBubbles.filter(b => b.isUser && !b.isDead).length;
           if (currentUsersOnscreen < MAX_USER_BUBBLES_ONSCREEN) {
+            // 上限に達していたら一番古い泡のDOMを確実に破棄
             if (floatingBubbles.length >= MAX_ONSCREEN_BUBBLES) {
-              const old = floatingBubbles.pop();
-              if (old) old.isDead = true;
+              const old = floatingBubbles.shift();
+              if (old) old.destroy();
             }
             const newBubble = new FreePhotoBubble(bubbleData, null, true);
-            floatingBubbles.unshift(newBubble);
+            floatingBubbles.push(newBubble);
           }
         }
       });
 
+      // 削除された泡のクリーンアップ
       const activeIds = new Set(cloudItems.map(item => item.id));
-      floatingBubbles.forEach(b => {
+      for (let i = floatingBubbles.length - 1; i >= 0; i--) {
+        const b = floatingBubbles[i];
         if (b.isUser && !activeIds.has(b.data.menuId)) {
-          b.isDead = true;
-          b.el.style.opacity = '0';
+          b.destroy();
+          floatingBubbles.splice(i, 1);
         }
-      });
+      }
     }
 
     function checkExpiredBubbles() {
@@ -1769,13 +1782,14 @@
 
       userCapturedBubbleList.unshift(userBubbleData);
 
+      // 【修正の核心】上限に達した場合、配列から外すだけでなくDOMも即座に完全破棄する！
       if (floatingBubbles.length >= MAX_ONSCREEN_BUBBLES) {
-        const old = floatingBubbles.pop();
-        if (old) old.isDead = true;
+        const old = floatingBubbles.shift();
+        if (old) old.destroy();
       }
 
       const newBubble = new FreePhotoBubble(userBubbleData, null, true);
-      floatingBubbles.unshift(newBubble);
+      floatingBubbles.push(newBubble);
 
       closeCaptureModal();
       playPopSound();
