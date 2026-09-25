@@ -19,9 +19,6 @@
             sans: ['"Noto Sans JP"', 'sans-serif'],
             mincho: ['"Shippori Mincho"', 'serif'],
             serifEn: ['"Cinzel"', 'serif'],
-          },
-          colors: {
-            mapbg: '#e0f4fc'
           }
         }
       }
@@ -32,6 +29,7 @@
     :root { --app-height: 100dvh; }
     html, body { height: 100%; height: 100dvh; overflow: hidden; touch-action: manipulation; }
     
+    /* 共通アニメーション */
     @keyframes pingSlow {
       0% { transform: scale(0.85); opacity: 0.9; }
       80%, 100% { transform: scale(2.4); opacity: 0; }
@@ -43,11 +41,49 @@
       50% { transform: translateY(-6px) rotateX(15deg); }
     }
     .animate-coin-float { animation: coinFloat 2.6s ease-in-out infinite; }
+
+    /* =======================================
+       背景の4エリア エフェクト用アニメーション
+       ======================================= */
+       
+    /* 左上：桜の花びら（下まで落ちる） */
+    @keyframes petalFall {
+      0% { transform: translate(0, -15px) rotate(0deg); opacity: 0; }
+      15% { opacity: 0.9; }
+      85% { opacity: 0.8; }
+      100% { transform: translate(50px, 350px) rotate(360deg); opacity: 0; }
+    }
+
+    /* 右上：泡がぷくぷく落ちる（左右に揺れながら下へ） */
+    @keyframes bubbleFall {
+      0% { transform: translate(0, -15px) scale(0.6); opacity: 0; }
+      20% { opacity: 0.9; transform: translate(15px, 60px) scale(1.1); }
+      50% { opacity: 0.9; transform: translate(-15px, 180px) scale(0.9); }
+      80% { opacity: 0.7; transform: translate(10px, 280px) scale(1.05); }
+      100% { transform: translate(0, 380px) scale(0.8); opacity: 0; }
+    }
+
+    /* 左下：新緑の落ち葉（下まで落ちる） */
+    @keyframes leafFall {
+      0% { transform: translate(0, -15px) rotate(0deg); opacity: 0; }
+      15% { opacity: 0.9; }
+      85% { opacity: 0.8; }
+      100% { transform: translate(-60px, 350px) rotate(720deg); opacity: 0; }
+    }
+
+    /* 右下：雪（下まで落ちる） */
+    @keyframes snowFall {
+      0% { transform: translateY(-15px); opacity: 0; }
+      15% { opacity: 0.9; }
+      85% { opacity: 0.8; }
+      100% { transform: translateY(350px); opacity: 0; }
+    }
     
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
+
 <body class="bg-slate-950 text-slate-800 font-sans h-full w-full select-none overflow-hidden flex flex-col justify-center items-center">
 
   <div class="relative w-full max-w-md h-[100dvh] bg-[#f8faf9] flex flex-col overflow-hidden shadow-2xl">
@@ -76,9 +112,7 @@
           <div class="inline-flex items-center gap-1.5 px-3 py-0.5 bg-emerald-800 text-white text-[10px] font-bold rounded-full mb-2 tracking-wide">
             <span id="quiz-step-label">QUESTION 1 / 4</span>
           </div>
-          <h2 id="quiz-title" class="text-[17px] font-mincho font-bold text-slate-800 leading-snug">
-            <!-- 質問文がJSでここに入ります -->
-          </h2>
+          <h2 id="quiz-title" class="text-[17px] font-mincho font-bold text-slate-800 leading-snug"></h2>
         </div>
         <div id="quiz-options-container" class="space-y-2.5 my-auto py-2">
           <!-- Options injected via JS -->
@@ -103,39 +137,41 @@
         </div>
 
         <div class="relative flex-1 bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden flex flex-col min-h-0 mb-2">
-          <!-- Background Grid (リッチなグラデーションとタイポグラフィ) -->
-          <div class="absolute inset-0 grid grid-cols-2 grid-rows-2 opacity-60 pointer-events-none overflow-hidden">
-            <!-- 左上: 華やか×スッキリ -->
-            <div class="relative bg-gradient-to-br from-rose-100 to-white/10 border-r border-b border-dashed border-slate-300 overflow-hidden flex items-start justify-start p-3">
-              <span class="text-rose-900/10 font-serifEn text-4xl font-bold -rotate-12 transform origin-top-left leading-none">FLORAL<br>CLEAR</span>
+          
+          <!-- ★ エフェクト用 Background Grid ★ -->
+          <div class="absolute inset-0 grid grid-cols-2 grid-rows-2 opacity-90 pointer-events-none overflow-hidden">
+            
+            <!-- 左上: ピンク ＋ 桜 -->
+            <div id="bg-top-left" class="relative bg-gradient-to-br from-pink-50 to-rose-100 border-r border-b border-dashed border-slate-300 overflow-hidden flex items-start justify-start p-3">
             </div>
-            <!-- 右上: 華やか×重厚 -->
-            <div class="relative bg-gradient-to-bl from-amber-100 to-white/10 border-b border-dashed border-slate-300 overflow-hidden flex items-start justify-end p-3">
-              <span class="text-amber-900/10 font-serifEn text-4xl font-bold rotate-12 transform origin-top-right text-right leading-none">RICH<br>AROMA</span>
+            
+            <!-- 右上: 水色 ＋ ぷくぷく落ちる泡 -->
+            <div id="bg-top-right" class="relative bg-gradient-to-bl from-cyan-50 to-blue-100 border-b border-dashed border-slate-300 overflow-hidden flex items-start justify-end p-3">
             </div>
-            <!-- 左下: ドライ×スッキリ -->
-            <div class="relative bg-gradient-to-tr from-cyan-100 to-white/10 border-r border-dashed border-slate-300 overflow-hidden flex items-end justify-start p-3">
-              <span class="text-cyan-900/10 font-serifEn text-4xl font-bold rotate-12 transform origin-bottom-left leading-none">CRISP<br>DRY</span>
+            
+            <!-- 左下: 薄緑 ＋ 新緑の葉 -->
+            <div id="bg-bottom-left" class="relative bg-gradient-to-br from-emerald-50 to-teal-100 border-r border-dashed border-slate-300 overflow-hidden flex items-end justify-start p-3">
             </div>
-            <!-- 右下: ドライ×重厚 -->
-            <div class="relative bg-gradient-to-tl from-stone-200 to-white/10 overflow-hidden flex items-end justify-end p-3">
-              <span class="text-stone-900/10 font-serifEn text-4xl font-bold -rotate-12 transform origin-bottom-right text-right leading-none">CLASSIC<br>DEEP</span>
+            
+            <!-- 右下: グレー ＋ 雪 -->
+            <div id="bg-bottom-right" class="relative bg-gradient-to-tl from-slate-100 to-stone-200 overflow-hidden flex items-end justify-end p-3">
             </div>
           </div>
           
-          <div class="absolute top-1.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 bg-rose-50/95 rounded-full border border-rose-200 text-[9px] font-bold text-rose-900 z-10">華やか</div>
-          <div class="absolute bottom-1.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 bg-slate-100/95 rounded-full border border-slate-200 text-[9px] font-bold text-slate-700 z-10">ドライ</div>
-          <div class="absolute left-1.5 top-1/2 -translate-y-1/2 px-1 py-2 bg-cyan-50/95 rounded-lg border border-cyan-200 text-[9px] font-bold text-cyan-900 z-10 [writing-mode:vertical-rl]">スッキリ</div>
-          <div class="absolute right-1.5 top-1/2 -translate-y-1/2 px-1 py-2 bg-amber-50/95 rounded-lg border border-amber-200 text-[9px] font-bold text-amber-900 z-10 [writing-mode:vertical-rl]">重厚・コク</div>
+          <!-- 軸のラベル -->
+          <div class="absolute top-1.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 bg-rose-50/95 rounded-full border border-rose-200 text-[9px] font-bold text-rose-900 z-20 shadow-sm">華やか</div>
+          <div class="absolute bottom-1.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 bg-slate-100/95 rounded-full border border-slate-200 text-[9px] font-bold text-slate-700 z-20 shadow-sm">ドライ</div>
+          <div class="absolute left-1.5 top-1/2 -translate-y-1/2 px-1 py-2 bg-emerald-50/95 rounded-lg border border-emerald-200 text-[9px] font-bold text-emerald-900 z-20 shadow-sm [writing-mode:vertical-rl]">スッキリ</div>
+          <div class="absolute right-1.5 top-1/2 -translate-y-1/2 px-1 py-2 bg-blue-50/95 rounded-lg border border-blue-200 text-[9px] font-bold text-blue-900 z-20 shadow-sm [writing-mode:vertical-rl]">重厚・コク</div>
 
-          <div class="absolute inset-x-6 top-1/2 h-[1px] bg-slate-200 pointer-events-none"></div>
-          <div class="absolute inset-y-6 left-1/2 w-[1px] bg-slate-200 pointer-events-none"></div>
+          <div class="absolute inset-x-6 top-1/2 h-[1px] bg-slate-200/80 pointer-events-none z-10"></div>
+          <div class="absolute inset-y-6 left-1/2 w-[1px] bg-slate-200/80 pointer-events-none z-10"></div>
 
           <!-- Pins Layer -->
-          <div id="drink-pins-layer" class="relative w-full h-full p-4"></div>
+          <div id="drink-pins-layer" class="relative w-full h-full p-4 z-30"></div>
           
           <!-- User Marker -->
-          <div id="user-position-marker" class="absolute pointer-events-none transition-all duration-700 -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center">
+          <div id="user-position-marker" class="absolute pointer-events-none transition-all duration-700 -translate-x-1/2 -translate-y-1/2 z-40 flex flex-col items-center">
             <div class="relative flex items-center justify-center">
               <span class="absolute w-7 h-7 rounded-full bg-emerald-400 animate-ping-slow"></span>
               <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-emerald-700 to-teal-500 text-white flex items-center justify-center shadow-md border-2 border-white text-[10px]"><i class="fa-solid fa-star"></i></div>
@@ -144,7 +180,7 @@
         </div>
 
         <!-- Selected Drink Card -->
-        <div id="quick-drink-card" class="bg-white rounded-2xl p-2.5 shadow-md border border-emerald-100 flex items-center justify-between flex-shrink-0 transition-opacity opacity-0 pointer-events-none">
+        <div id="quick-drink-card" class="bg-white rounded-2xl p-2.5 shadow-md border border-emerald-100 flex items-center justify-between flex-shrink-0 transition-opacity opacity-0 pointer-events-none z-40">
           <div class="flex items-center gap-2.5 overflow-hidden">
             <div class="w-11 h-11 rounded-full bg-emerald-50 border border-emerald-100 overflow-hidden flex-shrink-0">
               <img id="card-drink-img" src="" class="w-full h-full object-cover">
@@ -169,20 +205,24 @@
       <div id="view-charge" class="absolute inset-0 z-20 flex flex-col items-center justify-between opacity-0 pointer-events-none transition-all duration-400 select-none overflow-hidden bg-[#e0f4fc]">
         
         <div class="absolute inset-0 z-0 flex items-center justify-center pointer-events-none overflow-hidden pb-16">
-          <!-- アスペクト比固定のマップコンテナ -->
-          <div id="map-container" class="relative w-full max-w-[320px] aspect-[1/2] flex items-center justify-center">
+          
+          <!-- ★ ピタ貼りマッピング用の完全な構造 ★ -->
+          <div id="map-container" class="relative w-full h-auto max-w-[320px] flex items-center justify-center">
+            <!-- アスペクト比を狂わせないために img が主役になる -->
+            <img id="charge-japan-map-img" src="japan.png" onerror="this.src='https://placehold.co/400x720/e0f4fc/22c55e?text=Japan+Map'" class="w-full h-auto object-contain opacity-90" alt="日本地図">
             
-            <img id="charge-japan-map-img" src="japan.png" onerror="this.src='japan.jpg'" class="absolute inset-0 w-full h-full object-contain opacity-90" alt="日本地図">
-            
-            <!-- 目的地ピン -->
-            <div id="charge-dest-pin" class="absolute w-8 h-8 -translate-x-1/2 -translate-y-1/2 opacity-0 transition-opacity duration-500 z-10 flex items-center justify-center">
-                <span class="absolute w-full h-full rounded-full bg-emerald-400 animate-ping"></span>
-                <div class="w-3 h-3 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,1)] border border-white"></div>
-            </div>
+            <!-- マッピング用レイヤーは img とピッタリ重なる absolute -->
+            <div id="map-pin-layer" class="absolute inset-0 w-full h-full pointer-events-none">
+              <!-- 目的地ピン -->
+              <div id="charge-dest-pin" class="absolute w-8 h-8 -translate-x-1/2 -translate-y-1/2 opacity-0 transition-opacity duration-500 z-10 flex items-center justify-center">
+                  <span class="absolute w-full h-full rounded-full bg-emerald-400 animate-ping"></span>
+                  <div class="w-3 h-3 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,1)] border border-white"></div>
+              </div>
 
-            <!-- 飛行機のアニメーション -->
-            <div id="charge-orb" class="absolute w-8 h-8 flex items-center justify-center -translate-x-1/2 -translate-y-1/2 opacity-0 z-20 text-white drop-shadow-[0_2px_10px_rgba(255,255,255,0.9)] text-[32px]">
-              <i class="fa-solid fa-plane"></i>
+              <!-- 発光する純白の飛行機 -->
+              <div id="charge-orb" class="absolute w-8 h-8 flex items-center justify-center -translate-x-1/2 -translate-y-1/2 opacity-0 z-20 text-white drop-shadow-[0_0_10px_rgba(255,255,255,1)] text-[32px]">
+                <i class="fa-solid fa-plane"></i>
+              </div>
             </div>
           </div>
         </div>
@@ -197,7 +237,6 @@
         <div class="relative z-30 w-full flex flex-col items-center mt-auto pb-8">
           <div id="charge-coin-wrapper" class="relative mb-4 transition-all duration-300">
             <div id="charge-glow" class="absolute -inset-5 rounded-full bg-emerald-300/0 blur-2xl transition-all duration-200 pointer-events-none"></div>
-            <!-- コインサイズを縮小: w-24 h-24 -->
             <div id="charge-coin" class="w-24 h-24 rounded-full bg-gradient-to-tr from-amber-400 via-yellow-200 to-amber-100 p-1 shadow-[0_8px_20px_rgba(0,0,0,0.2)] cursor-pointer select-none transition-transform duration-150 animate-coin-float flex items-center justify-center relative overflow-hidden">
               <div class="w-full h-full rounded-full overflow-hidden relative shadow-inner bg-slate-900 flex items-center justify-center">
                 <img id="charge-coin-img" src="" class="w-full h-full object-cover brightness-95">
@@ -235,9 +274,7 @@
             <h1 id="story-drink-title-main" class="text-2xl font-mincho font-extrabold text-stone-900 leading-tight mt-4"></h1>
             <p id="story-drink-maker-name" class="text-sm text-stone-600 font-medium mt-1 mb-4"></p>
 
-            <div id="story-rich-description" class="text-[13px] text-stone-700 leading-relaxed space-y-3 font-mincho mb-6">
-              <!-- JS Injected -->
-            </div>
+            <div id="story-rich-description" class="text-[13px] text-stone-700 leading-relaxed space-y-3 font-mincho mb-6"></div>
 
             <!-- ペアリング -->
             <div class="relative w-full rounded-2xl overflow-hidden shadow-lg border border-stone-200 my-4 aspect-[4/3] bg-stone-900">
@@ -250,7 +287,7 @@
             </div>
           </section>
 
-          <!-- カルーセル（スライド式）ギャラリー -->
+          <!-- カルーセルギャラリー -->
           <section class="p-4 bg-[#f8f6f0] border-t border-stone-200/60 pb-8">
             <div class="flex items-center gap-1.5 text-sm font-bold text-stone-900 font-mincho mb-4">
               <span class="w-1.5 h-4 bg-emerald-700 rounded-full"></span><span>テロワールを巡る風景</span>
@@ -267,9 +304,7 @@
                   <i class="fa-solid fa-chevron-right text-xs"></i>
                 </button>
                 
-                <div id="gallery-indicators" class="absolute bottom-2.5 left-0 right-0 flex justify-center gap-1.5 z-10">
-                  <!-- JS Injected -->
-                </div>
+                <div id="gallery-indicators" class="absolute bottom-2.5 left-0 right-0 flex justify-center gap-1.5 z-10"></div>
               </div>
               <div class="p-4 h-[104px]">
                 <h4 id="gallery-slide-title" class="text-sm font-bold text-stone-900 font-mincho mb-1.5 line-clamp-1"></h4>
@@ -292,6 +327,7 @@
     let currentGalleryIndex = 0;
     let currentGalleryData = [];
 
+    // ★ 日本地図マッピング座標（ズレ解消済）
     const PREFECTURE_COORDS = {
       "北海道": {x: 75, y: 20},
       "青森県": {x: 68, y: 32},
@@ -474,12 +510,80 @@
       }
     ];
 
+    // ==========================================
+    // アニメーションエフェクト制御ロジック（大増量＆下まで落ちる版）
+    // ==========================================
+    function startBackgroundEffects() {
+      
+      // === 左上：桜の花びら（大増量） ===
+      const topLeft = document.getElementById('bg-top-left');
+      if (topLeft) {
+        setInterval(() => {
+          const petal = document.createElement('div');
+          petal.className = 'absolute w-2.5 h-2.5 bg-pink-300/70 rounded-tl-full rounded-br-full pointer-events-none';
+          petal.style.left = `${Math.random() * 100}%`;
+          petal.style.top = `-15px`;
+          petal.style.animation = `petalFall ${3 + Math.random() * 2}s linear forwards`;
+          topLeft.appendChild(petal);
+          setTimeout(() => { if(petal.parentNode) petal.remove(); }, 5000);
+        }, 300); // 頻度を多めに
+      }
+
+      // === 右上：泡がぷくぷく落ちていく ===
+      const topRight = document.getElementById('bg-top-right');
+      if (topRight) {
+        setInterval(() => {
+          const bubble = document.createElement('div');
+          // 泡のスタイルをはっきりとさせる（枠線を濃く、中も少し白く、外側にぼんやり光彩）
+          bubble.className = 'absolute rounded-full border-[1.5px] border-white/90 bg-white/40 pointer-events-none shadow-[inset_0_0_6px_rgba(255,255,255,0.8),0_0_4px_rgba(255,255,255,0.4)]';
+          const size = 8 + Math.random() * 14; // 8px ~ 22px
+          bubble.style.width = `${size}px`;
+          bubble.style.height = `${size}px`;
+          bubble.style.left = `${10 + Math.random() * 80}%`;
+          bubble.style.top = `-20px`;
+          bubble.style.animation = `bubbleFall ${2.5 + Math.random() * 2.5}s ease-in-out forwards`;
+          topRight.appendChild(bubble);
+          setTimeout(() => { if(bubble.parentNode) bubble.remove(); }, 6000);
+        }, 100); // 生成頻度を上げて泡の量を増やす
+      }
+
+      // === 左下：新緑の葉っぱ（大増量） ===
+      const bottomLeft = document.getElementById('bg-bottom-left');
+      if (bottomLeft) {
+        setInterval(() => {
+          const leaf = document.createElement('div');
+          leaf.className = 'absolute w-3 h-3 bg-emerald-400 rounded-tl-full rounded-br-full pointer-events-none opacity-80 shadow-sm';
+          leaf.style.left = `${20 + Math.random() * 80}%`;
+          leaf.style.top = `-15px`;
+          leaf.style.animation = `leafFall ${4 + Math.random() * 3}s linear forwards`;
+          bottomLeft.appendChild(leaf);
+          setTimeout(() => { if(leaf.parentNode) leaf.remove(); }, 7000);
+        }, 400); // 頻度を多めに
+      }
+
+      // === 右下：雪（大増量） ===
+      const bottomRight = document.getElementById('bg-bottom-right');
+      if (bottomRight) {
+        setInterval(() => {
+          const snow = document.createElement('div');
+          snow.className = 'absolute w-1.5 h-1.5 bg-white rounded-full pointer-events-none shadow-[0_0_5px_rgba(255,255,255,1)]';
+          snow.style.left = `${Math.random() * 100}%`;
+          snow.style.top = `-10px`;
+          snow.style.animation = `snowFall ${3 + Math.random() * 3}s linear forwards`;
+          bottomRight.appendChild(snow);
+          setTimeout(() => { if(snow.parentNode) snow.remove(); }, 6000);
+        }, 150); // 雪は特に多く
+      }
+    }
+
+    // ==========================================
+    // アプリケーションロジック
+    // ==========================================
     function renderQuiz() {
       if (!QUESTIONS || currentStep >= QUESTIONS.length) {
         showMapScreen();
         return;
       }
-      
       const qObj = QUESTIONS[currentStep];
       document.getElementById('quiz-step-label').innerText = `QUESTION ${currentStep + 1} / ${QUESTIONS.length}`;
       document.getElementById('quiz-title').innerText = qObj.q;
@@ -538,7 +642,6 @@
         card.classList.add('opacity-0', 'pointer-events-none');
         card.classList.remove('opacity-100', 'pointer-events-auto');
       }
-
       renderQuiz();
     }
 
@@ -571,7 +674,7 @@
         
         pin.innerHTML = `
           <div class="relative w-14 h-14 rounded-full border-2 border-white shadow-md bg-white overflow-hidden flex items-center justify-center group">
-            <img src="${drink.imageUrl}" class="w-full h-full object-cover">
+            <img src="${drink.imageUrl}" onerror="this.src='https://placehold.co/100x100/e2e8f0/64748b?text=Drink'" class="w-full h-full object-cover">
             <div class="absolute inset-0 bg-black/10 group-active:bg-black/30 transition"></div>
           </div>
         `;
@@ -585,7 +688,10 @@
       document.querySelectorAll('#drink-pins-layer > div > div:first-child').forEach(el => el.classList.remove('ring-4', 'ring-emerald-400', 'ring-opacity-50'));
       pinElement.querySelector('div').classList.add('ring-4', 'ring-emerald-400', 'ring-opacity-50');
       
-      document.getElementById('card-drink-img').src = drink.imageUrl;
+      const imgEl = document.getElementById('card-drink-img');
+      imgEl.src = drink.imageUrl;
+      imgEl.onerror = () => { imgEl.src = 'https://placehold.co/100x100/e2e8f0/64748b?text=Drink'; };
+      
       document.getElementById('card-drink-category').innerText = drink.category;
       document.getElementById('card-pref-text').innerText = drink.prefecture;
       document.getElementById('card-drink-name').innerText = drink.name;
@@ -597,7 +703,9 @@
 
     function startJourneyChargeModal() {
       const drink = DRINKS_DATABASE.find(d => d.id === selectedDrinkId);
-      document.getElementById('charge-coin-img').src = drink.imageUrl;
+      const coinImg = document.getElementById('charge-coin-img');
+      coinImg.src = drink.imageUrl;
+      coinImg.onerror = () => { coinImg.src = 'https://placehold.co/100x100/e2e8f0/64748b?text=Drink'; };
       
       const coords = PREFECTURE_COORDS[drink.prefecture] || {x: 50, y: 50};
       
@@ -652,7 +760,6 @@
       document.getElementById('charge-percent-text').innerText = `${chargePercent}%`;
     }
 
-    // ★ 飛行機アニメーションへの変更と画面チラつき防止のロジック
     function finishChargeAndFly() {
       const drink = DRINKS_DATABASE.find(d => d.id === selectedDrinkId);
       const coords = PREFECTURE_COORDS[drink.prefecture] || {x: 50, y: 50};
@@ -662,19 +769,20 @@
       
       const orb = document.getElementById('charge-orb');
       const coinRect = document.getElementById('charge-coin').getBoundingClientRect();
-      const mapContainer = document.getElementById('map-container');
-      const mapRect = mapContainer.getBoundingClientRect();
+      const mapPinLayer = document.getElementById('map-pin-layer');
+      const mapRect = mapPinLayer.getBoundingClientRect();
       
-      // 飛行機の初期位置をコインの中心から計算
+      // 飛行機の初期位置を計算
       const startX = ((coinRect.left + coinRect.width / 2 - mapRect.left) / mapRect.width) * 100;
       const startY = ((coinRect.top + coinRect.height / 2 - mapRect.top) / mapRect.height) * 100;
       
-      // ★ 目的地までの角度を計算し、飛行機の向きを合わせる
+      // 目的地までの角度を計算し、飛行機の向きを合わせる
       const dx = coords.x - startX;
-      const dy = (coords.y - startY) * 2; // 日本地図コンテナの比率(1:2)を考慮して補正
+      // 日本地図の画像アスペクト比を考慮した補正（おおよそ1:1.8）
+      const dy = (coords.y - startY) * 1.8;
       const angleRad = Math.atan2(dy, dx);
       let angleDeg = angleRad * (180 / Math.PI);
-      const rotation = angleDeg + 45; // FontAwesomeの飛行機は初期状態が右上(-45度)なので補正
+      const rotation = angleDeg + 45;
       
       orb.style.transition = 'none';
       orb.style.left = `${startX}%`;
@@ -686,27 +794,21 @@
         orb.style.transition = 'all 0.9s cubic-bezier(0.25, 0.1, 0.25, 1)';
         orb.style.left = `${coords.x}%`;
         orb.style.top = `${coords.y}%`;
-        orb.style.transform = `translate(-50%, -50%) rotate(${rotation}deg) scale(1.2)`; // 飛びながら少し大きく
+        orb.style.transform = `translate(-50%, -50%) rotate(${rotation}deg) scale(1.2)`;
         
         setTimeout(() => {
           orb.style.opacity = '0';
-          orb.style.transform = `translate(-50%, -50%) rotate(${rotation}deg) scale(2)`; // 到着時にふわっと消える
+          orb.style.transform = `translate(-50%, -50%) rotate(${rotation}deg) scale(2)`;
           
           setTimeout(() => {
             showStoryScreen();
-            
-            // ★ 透け（チラつき）防止：ストーリー画面が完全にフェードイン(500ms)し終わってから裏側をリセット
-            setTimeout(() => {
-              resetChargeView();
-            }, 600); 
-
+            setTimeout(() => { resetChargeView(); }, 600); 
           }, 300);
         }, 900);
       }, 50);
     }
     
     function resetChargeView() {
-      // ストーリー画面に隠れているので一瞬でリセットして大丈夫
       document.getElementById('view-charge').style.opacity = '0';
       document.getElementById('view-charge').style.pointerEvents = 'none';
       document.getElementById('view-charge').style.zIndex = '0';
@@ -740,7 +842,10 @@
       document.getElementById('story-rich-description').innerHTML = drink.richDescription;
       document.getElementById('story-pairing-description').innerText = drink.pairingDescription;
 
-      document.getElementById('story-hero-dish-img').src = drink.dishImageUrl;
+      const heroImg = document.getElementById('story-hero-dish-img');
+      heroImg.src = drink.dishImageUrl;
+      heroImg.onerror = () => { heroImg.src = 'https://placehold.co/800x600/e2e8f0/64748b?text=Dish'; };
+      
       document.getElementById('story-pairing-dish-title').innerText = drink.pairingDishTitle;
       document.getElementById('story-drink-title-main').innerText = drink.name;
       document.getElementById('story-drink-maker-name').innerText = drink.brandMaker;
@@ -766,6 +871,7 @@
       imgEl.style.opacity = '0.4';
       setTimeout(() => {
         imgEl.src = slide.url;
+        imgEl.onerror = () => { imgEl.src = 'https://placehold.co/800x400/e2e8f0/64748b?text=Landscape'; };
         imgEl.style.opacity = '1';
         titleEl.innerText = slide.title;
         captionEl.innerText = slide.caption;
@@ -798,8 +904,10 @@
       document.getElementById('view-story').style.zIndex = '0';
     }
 
-    // Initialize
-    window.onload = () => { renderQuiz(); };
+    window.onload = () => { 
+      renderQuiz(); 
+      startBackgroundEffects(); // エフェクトアニメーションの開始
+    };
   </script>
 </body>
 </html>
