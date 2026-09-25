@@ -49,6 +49,7 @@
 
   <div class="relative w-full max-w-md h-[100dvh] bg-[#f8faf9] flex flex-col overflow-hidden shadow-2xl">
 
+    <!-- ヘッダー -->
     <header class="relative z-30 px-4 py-2.5 flex items-center justify-between bg-white/95 backdrop-blur-md border-b border-emerald-950/10 flex-shrink-0">
       <div class="flex items-center gap-2">
         <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-emerald-800 to-teal-600 flex items-center justify-center text-white shadow-xs">
@@ -66,6 +67,7 @@
 
     <main class="relative flex-1 w-full h-full overflow-hidden">
       
+      <!-- STEP 1: 診断画面 -->
       <div id="view-quiz" class="absolute inset-0 z-20 flex flex-col justify-between p-5 bg-gradient-to-b from-[#eef7f5] via-[#e2f2ee] to-[#d3ede2] transition-all duration-500">
         <div class="pt-2">
           <div class="inline-flex items-center gap-1.5 px-3 py-0.5 bg-emerald-800 text-white text-[10px] font-bold rounded-full mb-2 tracking-wide">
@@ -86,6 +88,7 @@
         </div>
       </div>
 
+      <!-- STEP 2: マッピング画面 -->
       <div id="view-map" class="absolute inset-0 flex flex-col justify-between p-3 opacity-0 pointer-events-none transition-all duration-500 bg-[#f4f7f6]">
         <div class="z-10 flex-shrink-0 mb-1">
           <div class="flex items-center justify-between px-1">
@@ -147,12 +150,16 @@
           </button>
         </div>
       </div>
-      <div id="view-charge" class="absolute inset-0 z-40 bg-[#f4f7f6] flex flex-col items-center justify-between opacity-0 pointer-events-none transition-all duration-400 select-none overflow-hidden">
+
+      <!-- STEP 3: 長押しチャージ画面（地図ズレ完全防止版） -->
+      <div id="view-charge" class="absolute inset-0 z-40 bg-[#e8f2ee] flex flex-col items-center justify-between opacity-0 pointer-events-none transition-all duration-400 select-none overflow-hidden">
         
-        <!-- 背景の日本地図 (アスペクト比固定でズレを完全に防止) -->
-        <div class="absolute inset-0 z-0 flex items-center justify-center pointer-events-none overflow-hidden">
-          <div id="map-container" class="relative w-full max-h-full aspect-[9/16] flex items-center justify-center">
-            <img id="charge-japan-map-img" src="./japan.png" class="absolute inset-0 w-full h-full object-contain opacity-70" alt="日本地図">
+        <!-- 背景の日本地図 (アスペクト比固定枠で囲むことでズレを防止) -->
+        <div class="absolute inset-0 z-0 flex items-center justify-center pointer-events-none overflow-hidden pb-32">
+          <!-- ここが 9:16 の固定枠。この中に地図画像をピッタリ収める -->
+          <div id="map-container" class="relative h-full aspect-[9/16] max-w-full flex items-center justify-center">
+            <!-- 万が一pngが無ければjpgを読むonerrorを追加 -->
+            <img id="charge-japan-map-img" src="japan.png" onerror="this.src='japan.jpg'" class="absolute inset-0 w-full h-full object-contain opacity-80" alt="日本地図">
             
             <!-- 目的地ピン -->
             <div id="charge-dest-pin" class="absolute w-8 h-8 -translate-x-1/2 -translate-y-1/2 opacity-0 transition-opacity duration-500 z-10 flex items-center justify-center">
@@ -160,38 +167,37 @@
                 <div class="w-3 h-3 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,1)] border border-white"></div>
             </div>
 
-            <!-- 飛んでいくオーブ -->
-            <div id="charge-orb" class="absolute w-6 h-6 rounded-full bg-gradient-to-tr from-amber-200 to-white shadow-[0_0_25px_15px_rgba(251,191,36,0.8)] -translate-x-1/2 -translate-y-1/2 opacity-0 z-20"></div>
+            <!-- 飛んでいく光のオーブ -->
+            <div id="charge-orb" class="absolute w-6 h-6 rounded-full bg-gradient-to-tr from-emerald-200 to-white shadow-[0_0_20px_10px_rgba(52,211,153,0.8)] -translate-x-1/2 -translate-y-1/2 opacity-0 z-20"></div>
           </div>
         </div>
 
         <div class="relative z-30 w-full flex items-center justify-between p-4 pt-6">
           <div class="w-8"></div>
-          <div class="flex flex-col items-center">
-            <p class="text-white/90 text-base font-bold tracking-wide drop-shadow mt-2">長押しして産地の物語へ</p>
-          </div>
-          <button onclick="cancelCharge()" class="w-8 h-8 rounded-full bg-white/10 text-white hover:bg-white/20 flex items-center justify-center text-sm backdrop-blur-md transition">
+          <button onclick="cancelCharge()" class="w-8 h-8 rounded-full bg-black/10 text-emerald-950 hover:bg-black/20 flex items-center justify-center text-sm backdrop-blur-md transition">
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
 
         <div class="relative z-30 w-full flex flex-col items-center mt-auto pb-12">
+          <!-- コインを小さく修正（w-24 h-24） -->
           <div id="charge-coin-wrapper" class="relative mb-6 transition-all duration-300">
-            <div id="charge-glow" class="absolute -inset-5 rounded-full bg-yellow-300/0 blur-2xl transition-all duration-200 pointer-events-none"></div>
-            <div id="charge-coin" class="w-36 h-36 rounded-full bg-gradient-to-tr from-[#d48b11] via-[#fcd34d] to-[#fffbeb] p-1.5 shadow-[0_14px_32px_rgba(0,0,0,0.65)] cursor-pointer select-none transition-transform duration-150 animate-coin-float flex items-center justify-center relative overflow-hidden">
-              <div class="w-full h-full rounded-full overflow-hidden relative border-2 border-amber-200/80 shadow-inner bg-slate-900 flex items-center justify-center">
+            <div id="charge-glow" class="absolute -inset-5 rounded-full bg-emerald-300/0 blur-2xl transition-all duration-200 pointer-events-none"></div>
+            <div id="charge-coin" class="w-24 h-24 rounded-full bg-gradient-to-tr from-amber-400 via-yellow-200 to-amber-100 p-1 shadow-[0_14px_32px_rgba(0,0,0,0.3)] cursor-pointer select-none transition-transform duration-150 animate-coin-float flex items-center justify-center relative overflow-hidden">
+              <div class="w-full h-full rounded-full overflow-hidden relative shadow-inner bg-slate-900 flex items-center justify-center">
                 <img id="charge-coin-img" src="" class="w-full h-full object-cover brightness-95">
               </div>
             </div>
           </div>
-          <div id="charge-percent-text" class="text-sm font-mono font-bold text-white tracking-widest drop-shadow mb-3">0%</div>
-          <div id="btn-hold-trigger" class="relative w-64 h-12 rounded-full border border-white/40 overflow-hidden shadow-lg cursor-pointer active:scale-98 transition-transform select-none bg-black/40 backdrop-blur-md flex items-center justify-center">
-            <div id="charge-progress-bar" class="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-200 w-0 transition-all duration-75"></div>
+          <div id="charge-percent-text" class="text-sm font-mono font-bold text-emerald-900 tracking-widest drop-shadow mb-3">0%</div>
+          <div id="btn-hold-trigger" class="relative w-64 h-12 rounded-full border border-emerald-900/10 overflow-hidden shadow-md cursor-pointer active:scale-98 transition-transform select-none bg-black/30 backdrop-blur-md flex items-center justify-center">
+            <div id="charge-progress-bar" class="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-emerald-500 via-emerald-400 to-teal-300 w-0 transition-all duration-75"></div>
             <span class="relative z-10 text-white font-bold text-xs tracking-wider drop-shadow">長押ししてはなす</span>
           </div>
         </div>
       </div>
 
+      <!-- VIEW 4: リッチな雑誌風ストーリー画面（ボタン等削除版） -->
       <div id="view-story" class="absolute inset-0 z-30 flex flex-col bg-[#fdfcf9] text-slate-900 opacity-0 pointer-events-none transition-all duration-500 overflow-hidden">
         <header class="px-4 py-2.5 flex items-center justify-between bg-[#fdfcf9]/95 backdrop-blur-md border-b border-stone-200/80 flex-shrink-0 z-20">
           <button onclick="backToFlavorMap()" class="px-3 py-1 rounded-full bg-stone-100 text-stone-800 text-[11px] font-medium flex items-center gap-1.5 transition">
@@ -202,7 +208,7 @@
           </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto overscroll-contain pb-12 text-stone-800">
+        <div class="flex-1 overflow-y-auto overscroll-contain text-stone-800">
           <section class="p-4 bg-gradient-to-b from-[#fdfcf9] to-[#f4f1ea]">
             <div class="flex items-center gap-2 mb-2">
               <span id="story-drink-type-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-stone-800 text-stone-100 tracking-wider"></span>
@@ -218,6 +224,7 @@
               <!-- JS Injected -->
             </div>
 
+            <!-- ペアリング -->
             <div class="relative w-full rounded-2xl overflow-hidden shadow-lg border border-stone-200 my-4 aspect-[4/3] bg-stone-900">
               <img id="story-hero-dish-img" src="" class="w-full h-full object-cover">
               <div class="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-stone-900/40 to-transparent flex flex-col justify-end p-4 text-white">
@@ -226,15 +233,14 @@
                 <p id="story-pairing-description" class="text-xs text-stone-200 mt-1.5 font-mincho leading-relaxed opacity-90"></p>
               </div>
             </div>
-            
           </section>
 
-          <section class="p-4 bg-[#f8f6f0] border-t border-stone-200/60">
+          <!-- カルーセル（スライド式）ギャラリー -->
+          <section class="p-4 bg-[#f8f6f0] border-t border-stone-200/60 pb-16">
             <div class="flex items-center gap-1.5 text-sm font-bold text-stone-900 font-mincho mb-4">
               <span class="w-1.5 h-4 bg-emerald-700 rounded-full"></span><span>テロワールを巡る風景</span>
             </div>
             
-            <!-- スライド式ギャラリーに変更 -->
             <div class="relative w-full bg-white rounded-xl overflow-hidden shadow-sm border border-stone-200/80">
               <div class="h-52 overflow-hidden bg-stone-200 relative">
                 <img id="gallery-slide-img" src="" class="w-full h-full object-cover transition-opacity duration-300">
@@ -247,7 +253,7 @@
                   <i class="fa-solid fa-chevron-right text-xs"></i>
                 </button>
                 
-                <!-- ドットインジケーター（いま何枚目か） -->
+                <!-- ドットインジケーター -->
                 <div id="gallery-indicators" class="absolute bottom-2.5 left-0 right-0 flex justify-center gap-1.5 z-10">
                   <!-- JS Injected -->
                 </div>
@@ -264,7 +270,7 @@
   </div>
 
   <script>
-    // 縦長のjapan.jpg（9:16比率）に合わせた正確なパーセント座標に修正
+    // アスペクト比9:16のコンテナ内における、各都道府県の正確なパーセント位置
     const PREFECTURE_COORDS = {
       "北海道": {x: 82, y: 15}, "青森県": {x: 74, y: 31}, "岩手県": {x: 76, y: 35}, "宮城県": {x: 74, y: 40},
       "秋田県": {x: 71, y: 35}, "山形県": {x: 70, y: 40}, "福島県": {x: 68, y: 46}, "茨城県": {x: 72, y: 53},
@@ -377,28 +383,28 @@
       {
         q: "いまの気分に一番フィットする飲み心地は？",
         options: [
-          { text: "① 気分をシャキッとリフレッシュする、爽やかな1杯", x: -10, y: -10 },
-          { text: "② 会話が弾むような、香り立ちの良いワクワクする1杯", x: 5, y: -10 },
-          { text: "③ ペースを落として、じっくり深く浸れる落ち着いた1杯", x: 10, y: 5 },
-          { text: "④ ここで一度口内をリセットする、キレ味鋭いクリアな1杯", x: -10, y: 10 }
+          { text: "① 気分をシャキッとリフレッシュする、爽やかな1杯", x: -15, y: -15 },
+          { text: "② 会話が弾むような、香り立ちの良いワクワクする1杯", x: 5, y: -15 },
+          { text: "③ ペースを落として、じっくり深く浸れる落ち着いた1杯", x: 15, y: 5 },
+          { text: "④ ここで一度口内をリセットする、キレ味鋭いクリアな1杯", x: -15, y: 10 }
         ]
       },
       {
         q: "グラスを近づけた時、ふわりと感じたい香りは？",
         options: [
-          { text: "① 果実やお花、柑橘のようなフルーティーで華やかなアロマ", x: -5, y: -20 },
+          { text: "① 果実やお花、柑橘のようなフルーティーで華やかなアロマ", x: -5, y: -15 },
           { text: "② ハーブや山椒、和スパイスのような心地よい清涼感", x: -5, y: -5 },
           { text: "③ 自然な甘みや麦の香ばしさ、食事に寄り添う控えめな香り", x: 5, y: 10 },
-          { text: "④ 香りは極力主張せず、澄み切ったクリーンな印象", x: 0, y: 20 }
+          { text: "④ 香りは極力主張せず、澄み切ったクリーンな印象", x: 0, y: 15 }
         ]
       },
       {
         q: "口に含んだ瞬間の「ボディ感」はどれが理想？",
         options: [
-          { text: "① 水のようにサラリと喉を通る、軽快で雑味のないタッチ", x: -20, y: 5 },
+          { text: "① 水のようにサラリと喉を通る、軽快で雑味のないタッチ", x: -15, y: 5 },
           { text: "② ほどよい瑞々しさがあり、重すぎず軽すぎない心地よさ", x: -5, y: -5 },
           { text: "③ トロッとした舌触りや、口いっぱいに広がる濃密な旨味", x: 10, y: -5 },
-          { text: "④ 舌の上にズシッと残る、飲みごたえ抜群の濃厚な重厚感", x: 20, y: 5 }
+          { text: "④ 舌の上にズシッと残る、飲みごたえ抜群の濃厚な重厚感", x: 15, y: 5 }
         ]
       },
       {
@@ -481,6 +487,7 @@
       
       DRINKS_DATABASE.forEach(drink => {
         const pin = document.createElement('div');
+        // ピンサイズを56px（w-14 h-14）に維持、絵文字なし
         pin.className = "absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform duration-300 hover:scale-110 z-10";
         pin.style.left = `${drink.x}%`;
         pin.style.top = `${drink.y}%`;
@@ -515,7 +522,7 @@
       const drink = DRINKS_DATABASE.find(d => d.id === selectedDrinkId);
       document.getElementById('charge-coin-img').src = drink.imageUrl;
       
-      // 47都道府県の自動マッピング（データベースに設定されていない場合は東京をデフォルトに）
+      // 47都道府県の自動マッピング
       const coords = PREFECTURE_COORDS[drink.prefecture] || {x: 64, y: 58};
       
       const destPin = document.getElementById('charge-dest-pin');
@@ -538,7 +545,7 @@
     function startCharge(e) {
       if(e) e.preventDefault();
       document.getElementById('charge-coin').classList.add('scale-95');
-      document.getElementById('charge-glow').classList.add('bg-yellow-300/40');
+      document.getElementById('charge-glow').classList.add('bg-emerald-300/40');
       chargeTimer = setInterval(() => {
         chargePercent += 2;
         if (chargePercent >= 100) { chargePercent = 100; stopCharge(); finishChargeAndFly(); }
@@ -550,7 +557,7 @@
       if(e) e.preventDefault();
       clearInterval(chargeTimer);
       document.getElementById('charge-coin').classList.remove('scale-95');
-      document.getElementById('charge-glow').classList.remove('bg-yellow-300/40');
+      document.getElementById('charge-glow').classList.remove('bg-emerald-300/40');
       if (chargePercent < 100) { chargePercent = 0; updateChargeUI(); }
     }
 
@@ -559,7 +566,7 @@
       document.getElementById('charge-percent-text').innerText = `${chargePercent}%`;
     }
 
-    // チャージ完了後、光のオーブが産地へ飛んでいくアニメーション
+    // チャージ完了後、光のオーブが産地へ飛んでいくアニメーション（アスペクト比対応の精密版）
     function finishChargeAndFly() {
       const drink = DRINKS_DATABASE.find(d => d.id === selectedDrinkId);
       const coords = PREFECTURE_COORDS[drink.prefecture] || {x: 65, y: 58};
@@ -597,7 +604,7 @@
           
           setTimeout(() => {
             showStoryScreen();
-            resetChargeView(); // 裏でチャージ画面を初期状態に戻しておく
+            resetChargeView();
           }, 300);
         }, 900);
       }, 50);
@@ -660,7 +667,6 @@
       const titleEl = document.getElementById('gallery-slide-title');
       const captionEl = document.getElementById('gallery-slide-caption');
       
-      // 画像切り替え時のふんわりアニメーション
       imgEl.style.opacity = '0.4';
       setTimeout(() => {
         imgEl.src = slide.url;
@@ -669,7 +675,6 @@
         captionEl.innerText = slide.caption;
       }, 150);
 
-      // 下部のドット（インジケーター）を更新
       const indicatorsContainer = document.getElementById('gallery-indicators');
       indicatorsContainer.innerHTML = '';
       currentGalleryData.forEach((_, idx) => {
@@ -694,11 +699,6 @@
     function backToFlavorMap() {
       document.getElementById('view-story').style.opacity = '0';
       document.getElementById('view-story').style.pointerEvents = 'none';
-    }
-
-    function orderDrinkModal() {
-      // alertは使用せずメッセージボックスの代わりとして、簡単なUIを作っても良いですが今回は簡略化しています
-      console.log("ご注文ありがとうございます！");
     }
 
     window.onload = () => { renderQuiz(); };
