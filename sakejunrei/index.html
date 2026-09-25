@@ -147,23 +147,23 @@
           </button>
         </div>
       </div>
-
-      <div id="view-charge" class="absolute inset-0 z-40 bg-slate-900 flex flex-col items-center justify-between opacity-0 pointer-events-none transition-all duration-400 select-none overflow-hidden">
+      <div id="view-charge" class="absolute inset-0 z-40 bg-[#f4f7f6] flex flex-col items-center justify-between opacity-0 pointer-events-none transition-all duration-400 select-none overflow-hidden">
         
-        <!-- 背景の日本地図 (画像差し替え用) -->
-        <div class="absolute inset-0 z-0 flex items-center justify-center p-0 pointer-events-none">
-          <!-- .png が無ければ .jpg を読み込むように設定 -->
-          <img id="charge-japan-map-img" src="./japan.png" onerror="this.onerror=null; this.src='./japan.jpg';" class="w-full h-full object-cover opacity-80" alt="日本地図">
-        </div>
+        <!-- 背景の日本地図 (アスペクト比固定でズレを完全に防止) -->
+        <div class="absolute inset-0 z-0 flex items-center justify-center pointer-events-none overflow-hidden">
+          <div id="map-container" class="relative w-full max-h-full aspect-[9/16] flex items-center justify-center">
+            <img id="charge-japan-map-img" src="./japan.jpg" class="absolute inset-0 w-full h-full object-contain opacity-70" alt="日本地図">
+            
+            <!-- 目的地ピン -->
+            <div id="charge-dest-pin" class="absolute w-8 h-8 -translate-x-1/2 -translate-y-1/2 opacity-0 transition-opacity duration-500 z-10 flex items-center justify-center">
+                <span class="absolute w-full h-full rounded-full bg-emerald-400 animate-ping"></span>
+                <div class="w-3 h-3 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,1)] border border-white"></div>
+            </div>
 
-        <!-- 目的地ピン (Map上の座標に配置) -->
-        <div id="charge-dest-pin" class="absolute w-8 h-8 -translate-x-1/2 -translate-y-1/2 opacity-0 transition-opacity duration-500 z-10 flex items-center justify-center pointer-events-none">
-            <span class="absolute w-full h-full rounded-full bg-emerald-400 animate-ping"></span>
-            <div class="w-3 h-3 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,1)] border border-white"></div>
+            <!-- 飛んでいくオーブ -->
+            <div id="charge-orb" class="absolute w-6 h-6 rounded-full bg-gradient-to-tr from-amber-200 to-white shadow-[0_0_25px_15px_rgba(251,191,36,0.8)] -translate-x-1/2 -translate-y-1/2 opacity-0 z-20"></div>
+          </div>
         </div>
-
-        <!-- 飛んでいくオーブ -->
-        <div id="charge-orb" class="absolute w-6 h-6 rounded-full bg-gradient-to-tr from-amber-200 to-white shadow-[0_0_25px_15px_rgba(251,191,36,0.8)] -translate-x-1/2 -translate-y-1/2 opacity-0 z-20 pointer-events-none"></div>
 
         <div class="relative z-30 w-full flex items-center justify-between p-4 pt-6">
           <div class="w-8"></div>
@@ -233,8 +233,29 @@
             <div class="flex items-center gap-1.5 text-sm font-bold text-stone-900 font-mincho mb-4">
               <span class="w-1.5 h-4 bg-emerald-700 rounded-full"></span><span>テロワールを巡る風景</span>
             </div>
-            <div class="flex flex-col gap-4" id="gallery-container">
-              <!-- JS Injected -->
+            
+            <!-- スライド式ギャラリーに変更 -->
+            <div class="relative w-full bg-white rounded-xl overflow-hidden shadow-sm border border-stone-200/80">
+              <div class="h-52 overflow-hidden bg-stone-200 relative">
+                <img id="gallery-slide-img" src="" class="w-full h-full object-cover transition-opacity duration-300">
+                
+                <!-- 左右のナビゲーションボタン -->
+                <button onclick="prevGallerySlide()" class="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-md hover:bg-black/60 active:scale-95 transition z-10">
+                  <i class="fa-solid fa-chevron-left text-xs"></i>
+                </button>
+                <button onclick="nextGallerySlide()" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-md hover:bg-black/60 active:scale-95 transition z-10">
+                  <i class="fa-solid fa-chevron-right text-xs"></i>
+                </button>
+                
+                <!-- ドットインジケーター（いま何枚目か） -->
+                <div id="gallery-indicators" class="absolute bottom-2.5 left-0 right-0 flex justify-center gap-1.5 z-10">
+                  <!-- JS Injected -->
+                </div>
+              </div>
+              <div class="p-4 h-[104px]">
+                <h4 id="gallery-slide-title" class="text-sm font-bold text-stone-900 font-mincho mb-1.5 line-clamp-1"></h4>
+                <p id="gallery-slide-caption" class="text-[11px] text-stone-600 font-mincho leading-relaxed line-clamp-3"></p>
+              </div>
             </div>
           </section>
         </div>
@@ -243,20 +264,20 @@
   </div>
 
   <script>
-    // エラーの原因になりやすい箇所のため、カンマや閉じカッコに注意して記述しています
+    // 縦長のjapan.jpg（9:16比率）に合わせた正確なパーセント座標に修正
     const PREFECTURE_COORDS = {
-      "北海道": {x: 74, y: 20}, "青森県": {x: 67, y: 35}, "岩手県": {x: 71, y: 40}, "宮城県": {x: 70, y: 45},
-      "秋田県": {x: 64, y: 39}, "山形県": {x: 64, y: 44}, "福島県": {x: 67, y: 49}, "茨城県": {x: 70, y: 54},
-      "栃木県": {x: 66, y: 53}, "群馬県": {x: 62, y: 53}, "埼玉県": {x: 65, y: 56}, "千葉県": {x: 69, y: 59},
-      "東京都": {x: 64, y: 58}, "神奈川県": {x: 63, y: 60}, "新潟県": {x: 59, y: 47}, "富山県": {x: 53, y: 51},
-      "石川県": {x: 49, y: 50}, "福井県": {x: 46, y: 54}, "山梨県": {x: 60, y: 58}, "長野県": {x: 57, y: 54},
-      "岐阜県": {x: 52, y: 56}, "静岡県": {x: 58, y: 61}, "愛知県": {x: 53, y: 61}, "三重県": {x: 49, y: 64},
-      "滋賀県": {x: 47, y: 59}, "京都府": {x: 44, y: 58}, "大阪府": {x: 43, y: 62}, "兵庫県": {x: 38, y: 60},
-      "奈良県": {x: 45, y: 63}, "和歌山県": {x: 42, y: 66}, "鳥取県": {x: 33, y: 56}, "島根県": {x: 27, y: 57},
-      "岡山県": {x: 33, y: 60}, "広島県": {x: 27, y: 61}, "山口県": {x: 21, y: 62}, "徳島県": {x: 35, y: 66},
-      "香川県": {x: 33, y: 63}, "愛媛県": {x: 27, y: 66}, "高知県": {x: 30, y: 69}, "福岡県": {x: 17, y: 64},
-      "佐賀県": {x: 14, y: 66}, "長崎県": {x: 11, y: 68}, "熊本県": {x: 16, y: 70}, "大分県": {x: 21, y: 67},
-      "宮崎県": {x: 20, y: 74}, "鹿児島県": {x: 15, y: 77}, "沖縄県": {x: 15, y: 90}
+      "北海道": {x: 82, y: 15}, "青森県": {x: 74, y: 31}, "岩手県": {x: 76, y: 35}, "宮城県": {x: 74, y: 40},
+      "秋田県": {x: 71, y: 35}, "山形県": {x: 70, y: 40}, "福島県": {x: 68, y: 46}, "茨城県": {x: 72, y: 53},
+      "栃木県": {x: 68, y: 51}, "群馬県": {x: 64, y: 51}, "埼玉県": {x: 66, y: 55}, "千葉県": {x: 70, y: 58},
+      "東京都": {x: 65, y: 58}, "神奈川県": {x: 64, y: 60}, "新潟県": {x: 58, y: 44}, "富山県": {x: 52, y: 49},
+      "石川県": {x: 48, y: 48}, "福井県": {x: 46, y: 53}, "山梨県": {x: 61, y: 58}, "長野県": {x: 55, y: 53},
+      "岐阜県": {x: 50, y: 55}, "静岡県": {x: 58, y: 62}, "愛知県": {x: 50, y: 63}, "三重県": {x: 47, y: 66},
+      "滋賀県": {x: 45, y: 60}, "京都府": {x: 42, y: 59}, "大阪府": {x: 41, y: 64}, "兵庫県": {x: 37, y: 61},
+      "奈良県": {x: 44, y: 65}, "和歌山県": {x: 40, y: 68}, "鳥取県": {x: 31, y: 57}, "島根県": {x: 24, y: 58},
+      "岡山県": {x: 32, y: 61}, "広島県": {x: 26, y: 62}, "山口県": {x: 18, y: 63}, "徳島県": {x: 34, y: 68},
+      "香川県": {x: 32, y: 65}, "愛媛県": {x: 25, y: 68}, "高知県": {x: 28, y: 72}, "福岡県": {x: 14, y: 66},
+      "佐賀県": {x: 11, y: 68}, "長崎県": {x: 8, y: 71}, "熊本県": {x: 14, y: 74}, "大分県": {x: 19, y: 69},
+      "宮崎県": {x: 18, y: 77}, "鹿児島県": {x: 14, y: 83}, "沖縄県": {x: 8, y: 92}
     };
 
     const DRINKS_DATABASE = [
@@ -396,6 +417,9 @@
     let selectedDrinkId = null;
     let chargeTimer = null;
     let chargePercent = 0;
+    
+    let currentGalleryIndex = 0;
+    let currentGalleryData = [];
 
     function renderQuiz() {
       const qObj = QUESTIONS[currentStep];
@@ -538,20 +562,21 @@
     // チャージ完了後、光のオーブが産地へ飛んでいくアニメーション
     function finishChargeAndFly() {
       const drink = DRINKS_DATABASE.find(d => d.id === selectedDrinkId);
-      const coords = PREFECTURE_COORDS[drink.prefecture] || {x: 64, y: 58};
+      const coords = PREFECTURE_COORDS[drink.prefecture] || {x: 65, y: 58};
       
       // コインを消す
       document.getElementById('charge-coin-wrapper').style.opacity = '0';
       document.getElementById('charge-coin-wrapper').style.transform = 'scale(0.5)';
       
-      // オーブを出現させるための座標計算
+      // オーブを出現させるための座標計算（ズレ防止のためコンテナ基準で計算）
       const orb = document.getElementById('charge-orb');
       const coinRect = document.getElementById('charge-coin').getBoundingClientRect();
-      const viewRect = document.getElementById('view-charge').getBoundingClientRect();
+      const mapContainer = document.getElementById('map-container');
+      const mapRect = mapContainer.getBoundingClientRect();
       
-      // コインの中心位置を % で取得
-      const startX = ((coinRect.left + coinRect.width / 2) / viewRect.width) * 100;
-      const startY = ((coinRect.top + coinRect.height / 2) / viewRect.height) * 100;
+      // コインの中心位置を コンテナに対する % で取得
+      const startX = ((coinRect.left + coinRect.width / 2 - mapRect.left) / mapRect.width) * 100;
+      const startY = ((coinRect.top + coinRect.height / 2 - mapRect.top) / mapRect.height) * 100;
       
       // 初期位置にセット
       orb.style.transition = 'none';
@@ -619,25 +644,51 @@
       document.getElementById('story-drink-title-main').innerText = drink.name;
       document.getElementById('story-drink-maker-name').innerText = drink.brandMaker;
 
-      const galleryContainer = document.getElementById('gallery-container');
-      galleryContainer.innerHTML = '';
-      drink.gallery.forEach(img => {
-        const item = document.createElement('div');
-        item.className = "w-full bg-white rounded-xl overflow-hidden shadow-sm border border-stone-200/80 mb-2";
-        item.innerHTML = `
-          <div class="h-48 overflow-hidden bg-stone-200 relative">
-            <img src="${img.url}" class="w-full h-full object-cover">
-          </div>
-          <div class="p-3.5">
-            <h4 class="text-sm font-bold text-stone-900 font-mincho mb-1.5">${img.title}</h4>
-            <p class="text-xs text-stone-600 font-mincho leading-relaxed">${img.caption}</p>
-          </div>
-        `;
-        galleryContainer.appendChild(item);
-      });
+      currentGalleryData = drink.gallery;
+      currentGalleryIndex = 0;
+      updateGallerySlide();
 
       document.getElementById('view-story').style.opacity = '1';
       document.getElementById('view-story').style.pointerEvents = 'auto';
+    }
+
+    function updateGallerySlide() {
+      if (!currentGalleryData || currentGalleryData.length === 0) return;
+      
+      const slide = currentGalleryData[currentGalleryIndex];
+      const imgEl = document.getElementById('gallery-slide-img');
+      const titleEl = document.getElementById('gallery-slide-title');
+      const captionEl = document.getElementById('gallery-slide-caption');
+      
+      // 画像切り替え時のふんわりアニメーション
+      imgEl.style.opacity = '0.4';
+      setTimeout(() => {
+        imgEl.src = slide.url;
+        imgEl.style.opacity = '1';
+        titleEl.innerText = slide.title;
+        captionEl.innerText = slide.caption;
+      }, 150);
+
+      // 下部のドット（インジケーター）を更新
+      const indicatorsContainer = document.getElementById('gallery-indicators');
+      indicatorsContainer.innerHTML = '';
+      currentGalleryData.forEach((_, idx) => {
+        const dot = document.createElement('div');
+        dot.className = `h-1.5 rounded-full transition-all duration-300 shadow-sm ${idx === currentGalleryIndex ? 'bg-white w-4' : 'bg-white/60 w-1.5'}`;
+        indicatorsContainer.appendChild(dot);
+      });
+    }
+
+    function nextGallerySlide() {
+      if (!currentGalleryData || currentGalleryData.length === 0) return;
+      currentGalleryIndex = (currentGalleryIndex + 1) % currentGalleryData.length;
+      updateGallerySlide();
+    }
+
+    function prevGallerySlide() {
+      if (!currentGalleryData || currentGalleryData.length === 0) return;
+      currentGalleryIndex = (currentGalleryIndex - 1 + currentGalleryData.length) % currentGalleryData.length;
+      updateGallerySlide();
     }
 
     function backToFlavorMap() {
