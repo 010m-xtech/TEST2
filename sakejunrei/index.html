@@ -168,8 +168,7 @@
         <div class="relative z-30 w-full flex items-center justify-between p-4 pt-6">
           <div class="w-8"></div>
           <div class="flex flex-col items-center">
-            <h2 class="text-3xl font-extrabold font-serifEn text-white tracking-wider drop-shadow-sm">STEP 3</h2>
-            <p class="text-white/90 text-xs font-bold tracking-wide mt-1 drop-shadow">長押しして産地の物語へ</p>
+            <p class="text-white/90 text-base font-bold tracking-wide drop-shadow mt-2">長押しして産地の物語へ</p>
           </div>
           <button onclick="cancelCharge()" class="w-8 h-8 rounded-full bg-white/10 text-white hover:bg-white/20 flex items-center justify-center text-sm backdrop-blur-md transition">
             <i class="fa-solid fa-xmark"></i>
@@ -203,45 +202,41 @@
           </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto overscroll-contain pb-24 text-stone-800">
+        <div class="flex-1 overflow-y-auto overscroll-contain pb-12 text-stone-800">
           <section class="p-4 bg-gradient-to-b from-[#fdfcf9] to-[#f4f1ea]">
             <div class="flex items-center gap-2 mb-2">
               <span id="story-drink-type-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-stone-800 text-stone-100 tracking-wider"></span>
-              <span id="story-drink-price" class="ml-auto text-xs font-serifEn font-bold text-stone-900"></span>
             </div>
             <div class="border-l-2 border-stone-800 pl-3 py-1 my-2">
               <h2 id="story-editorial-lead" class="text-base font-mincho font-bold text-stone-900 leading-snug"></h2>
             </div>
             
-            <div class="relative w-full rounded-2xl overflow-hidden shadow-lg border border-stone-200 my-3 aspect-[16/10] bg-stone-900">
+            <h1 id="story-drink-title-main" class="text-2xl font-mincho font-extrabold text-stone-900 leading-tight mt-4"></h1>
+            <p id="story-drink-maker-name" class="text-sm text-stone-600 font-medium mt-1 mb-4"></p>
+
+            <div id="story-rich-description" class="text-[13px] text-stone-700 leading-relaxed space-y-3 font-mincho mb-6">
+              <!-- JS Injected -->
+            </div>
+
+            <div class="relative w-full rounded-2xl overflow-hidden shadow-lg border border-stone-200 my-4 aspect-[4/3] bg-stone-900">
               <img id="story-hero-dish-img" src="" class="w-full h-full object-cover">
-              <div class="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent flex flex-col justify-end p-3 text-white">
-                <span class="text-[9px] text-amber-300 font-bold">ペアリング</span>
-                <p id="story-pairing-dish-title" class="text-sm font-mincho font-bold text-white"></p>
+              <div class="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-stone-900/40 to-transparent flex flex-col justify-end p-4 text-white">
+                <span class="inline-block px-2 py-1 bg-amber-500/90 text-stone-950 text-[10px] font-bold rounded-sm mb-1.5 w-max">極上のペアリング</span>
+                <p id="story-pairing-dish-title" class="text-base font-mincho font-bold text-white leading-tight"></p>
+                <p id="story-pairing-description" class="text-xs text-stone-200 mt-1.5 font-mincho leading-relaxed opacity-90"></p>
               </div>
             </div>
             
-            <h1 id="story-drink-title-main" class="text-xl font-mincho font-extrabold text-stone-900 leading-tight"></h1>
-            <p id="story-drink-maker-name" class="text-xs text-stone-600 font-medium mt-0.5"></p>
           </section>
 
-          <section class="p-4 bg-[#f8f6f0]">
-            <div class="flex items-center gap-1.5 text-xs font-bold text-stone-900 font-mincho mb-2">
-              <span class="w-1.5 h-3.5 bg-amber-600 rounded-full"></span><span>産地の風土と旅情</span>
+          <section class="p-4 bg-[#f8f6f0] border-t border-stone-200/60">
+            <div class="flex items-center gap-1.5 text-sm font-bold text-stone-900 font-mincho mb-4">
+              <span class="w-1.5 h-4 bg-emerald-700 rounded-full"></span><span>テロワールを巡る風景</span>
             </div>
-            <div class="flex gap-2.5 overflow-x-auto no-scrollbar pb-1" id="gallery-container">
+            <div class="flex flex-col gap-4" id="gallery-container">
               <!-- JS Injected -->
             </div>
           </section>
-        </div>
-
-        <div class="absolute bottom-0 inset-x-0 p-3 bg-white/95 backdrop-blur-md border-t border-stone-200 shadow-xl flex items-center justify-between gap-3 z-30">
-          <div class="min-w-0">
-            <div id="bar-bottom-drink-name" class="text-xs font-bold font-mincho text-stone-900 truncate"></div>
-          </div>
-          <button onclick="orderDrinkModal()" class="px-5 py-2.5 rounded-xl bg-emerald-800 text-white text-xs font-bold shadow-lg flex-shrink-0">
-            注文する
-          </button>
         </div>
       </div>
     </main>
@@ -249,87 +244,110 @@
 
   <script>
     // エラーの原因になりやすい箇所のため、カンマや閉じカッコに注意して記述しています
+    const PREFECTURE_COORDS = {
+      "北海道": {x: 74, y: 20}, "青森県": {x: 67, y: 35}, "岩手県": {x: 71, y: 40}, "宮城県": {x: 70, y: 45},
+      "秋田県": {x: 64, y: 39}, "山形県": {x: 64, y: 44}, "福島県": {x: 67, y: 49}, "茨城県": {x: 70, y: 54},
+      "栃木県": {x: 66, y: 53}, "群馬県": {x: 62, y: 53}, "埼玉県": {x: 65, y: 56}, "千葉県": {x: 69, y: 59},
+      "東京都": {x: 64, y: 58}, "神奈川県": {x: 63, y: 60}, "新潟県": {x: 59, y: 47}, "富山県": {x: 53, y: 51},
+      "石川県": {x: 49, y: 50}, "福井県": {x: 46, y: 54}, "山梨県": {x: 60, y: 58}, "長野県": {x: 57, y: 54},
+      "岐阜県": {x: 52, y: 56}, "静岡県": {x: 58, y: 61}, "愛知県": {x: 53, y: 61}, "三重県": {x: 49, y: 64},
+      "滋賀県": {x: 47, y: 59}, "京都府": {x: 44, y: 58}, "大阪府": {x: 43, y: 62}, "兵庫県": {x: 38, y: 60},
+      "奈良県": {x: 45, y: 63}, "和歌山県": {x: 42, y: 66}, "鳥取県": {x: 33, y: 56}, "島根県": {x: 27, y: 57},
+      "岡山県": {x: 33, y: 60}, "広島県": {x: 27, y: 61}, "山口県": {x: 21, y: 62}, "徳島県": {x: 35, y: 66},
+      "香川県": {x: 33, y: 63}, "愛媛県": {x: 27, y: 66}, "高知県": {x: 30, y: 69}, "福岡県": {x: 17, y: 64},
+      "佐賀県": {x: 14, y: 66}, "長崎県": {x: 11, y: 68}, "熊本県": {x: 16, y: 70}, "大分県": {x: 21, y: 67},
+      "宮崎県": {x: 20, y: 74}, "鹿児島県": {x: 15, y: 77}, "沖縄県": {x: 15, y: 90}
+    };
+
     const DRINKS_DATABASE = [
       {
         id: "sake-karakuchi", category: "日本酒", typeBadge: "超辛口・純米",
-        name: "越乃寒梅 白ラベル", brandMaker: "石本酒造（新潟県）", price: "グラス ¥700",
-        x: 15, y: 85, prefecture: "新潟県", icon: "🍶",
-        mapX: 63, mapY: 45, // 日本地図上の大体の位置 (X: 左から, Y: 上から)
+        name: "越乃寒梅 白ラベル", brandMaker: "石本酒造（新潟県）",
+        x: 15, y: 85, prefecture: "新潟県",
         editorialLead: "一切の雑味を削ぎ落とした、雪国が誇る究極の淡麗辛口。",
+        richDescription: "<p>しんしんと雪が降り積もる越後の冬。厳寒のなかで仕込まれる「越乃寒梅」は、飲む人の心に寄り添うような透明感と、凛とした佇まいを持っています。</p><p>口に含んだ瞬間は、まるで雪解け水のように清らか。そこから米本来のほのかな旨味が顔を出し、最後はスパッと心地よく切れていく。料理の味を一切邪魔せず、むしろ引き立てるために生まれた究極の食中酒です。</p>",
         pairingDishTitle: "白身魚の薄造りとすだち",
-        dishImageUrl: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=600&q=80",
+        pairingDescription: "淡白で繊細な白身魚の旨味とすだちの爽やかな酸味が、寒梅のクリアな味わいと見事に調和します。",
+        dishImageUrl: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=800&q=80",
         imageUrl: "https://images.unsplash.com/photo-1590189182193-1fd44f2b4048?w=400&q=80",
         gallery: [
-          { url: "https://images.unsplash.com/photo-1584278637775-654cb6a804bd?w=400&q=80", caption: "厳冬の仕込み" },
-          { url: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=400&q=80", caption: "越後平野" }
+          { url: "https://images.unsplash.com/photo-1584278637775-654cb6a804bd?w=800&q=80", title: "静寂に包まれる厳冬の仕込み", caption: "低温でじっくりと発酵を進めることで、雑味のない澄み切った味わいが生まれます。" },
+          { url: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800&q=80", title: "美しき雪国のテロワール", caption: "澄んだ空気と清らかな水。新潟の厳しい冬こそが、最高の酒造りの舞台となります。" }
         ]
       },
       {
         id: "gin-roku", category: "ジン", typeBadge: "クラフトジン",
-        name: "ROKU GIN (六)", brandMaker: "サントリー（大阪府）", price: "グラス ¥850",
-        x: 20, y: 20, prefecture: "大阪府", icon: "🍸",
-        mapX: 42, mapY: 62,
+        name: "ROKU GIN (六)", brandMaker: "サントリー（大阪府）",
+        x: 20, y: 20, prefecture: "大阪府",
         editorialLead: "日本の四季を彩る6つのボタニカルが華やかに香る。",
+        richDescription: "<p>桜花、桜葉、煎茶、玉露、山椒、柚子。日本ならではの6つのボタニカル（植物）を、それぞれ旬の時期に収穫し、別々に蒸溜してブレンドするこだわりの製法。</p><p>グラスを傾けると、春の桜の甘い香り、夏の緑茶の清涼感、秋の山椒のスパイシーさ、冬の柚子の爽やかさが、まるで万華鏡のように次々と表情を変えて現れます。日本の自然の豊かさを、一杯のグラスに閉じ込めたようなジンです。</p>",
         pairingDishTitle: "和柑橘のカルパッチョ",
-        dishImageUrl: "https://images.unsplash.com/photo-1511690656952-34342bb7c2f2?w=600&q=80",
+        pairingDescription: "柚子やすだちを使ったカルパッチョ。ROKUの持つ柑橘のアロマと見事に共鳴し、爽快感が増幅します。",
+        dishImageUrl: "https://images.unsplash.com/photo-1511690656952-34342bb7c2f2?w=800&q=80",
         imageUrl: "https://images.unsplash.com/photo-1609355655543-9800a75f5bbd?w=400&q=80",
         gallery: [
-          { url: "https://images.unsplash.com/photo-1523368749929-6b2bf370dbf8?w=400&q=80", caption: "ボタニカル" },
-          { url: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=400&q=80", caption: "蒸溜所" }
+          { url: "https://images.unsplash.com/photo-1523368749929-6b2bf370dbf8?w=800&q=80", title: "旬を切り取るボタニカル", caption: "最も香りが良くなる「旬」の時期に収穫された素材だけを贅沢に使用しています。" },
+          { url: "https://images.unsplash.com/photo-1563514757351-f29e1eb123b3?w=800&q=80", title: "伝統のブレンド技術", caption: "繊細な日本の職人技が、複雑で調和のとれた香りを作り出します。" }
         ]
       },
       {
         id: "sake-kimoto", category: "日本酒", typeBadge: "生酛造り",
-        name: "大七 純米生酛", brandMaker: "大七酒造（福島県）", price: "グラス ¥800",
-        x: 80, y: 80, prefecture: "福島県", icon: "🍶",
-        mapX: 71, mapY: 38,
+        name: "大七 純米生酛", brandMaker: "大七酒造（福島県）",
+        x: 80, y: 80, prefecture: "福島県",
         editorialLead: "複雑で骨太な旨味と力強いキレが同居する伝統の味。",
+        richDescription: "<p>江戸時代から続く伝統製法「生酛（きもと）造り」にこだわり抜く大七酒造。自然の乳酸菌の力を借りて、通常の倍以上の時間と手間をかけて酵母を育てます。</p><p>その味わいは、一言でいえば「豊潤」。幾重にも重なる奥深いコク、クリーミーな舌触り、そして後から追いかけてくる力強い酸味による鮮やかなキレ。お燗にするとさらに旨味がふくらみ、至福のひとときをもたらします。</p>",
         pairingDishTitle: "豚の角煮 辛子添え",
-        dishImageUrl: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=600&q=80",
+        pairingDescription: "濃厚な豚の脂と甘辛いタレを、生酛特有のしっかりとした酸味が受け止め、旨味を倍増させます。",
+        dishImageUrl: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=800&q=80",
         imageUrl: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400&q=80",
         gallery: [
-          { url: "https://images.unsplash.com/photo-1584278637775-654cb6a804bd?w=400&q=80", caption: "木桶仕込み" },
-          { url: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=400&q=80", caption: "福島の自然" }
+          { url: "https://images.unsplash.com/photo-1574621100236-d25089c36209?w=800&q=80", title: "自然の摂理に従う生酛造り", caption: "空気中の乳酸菌を取り込む、昔ながらの力強い酒造り。" },
+          { url: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=800&q=80", title: "豊かな自然に抱かれて", caption: "福島の豊かな土壌と気候が、ふくよかな米の旨味を育みます。" }
         ]
       },
       {
         id: "wine-red", category: "ワイン", typeBadge: "フルボディ赤",
-        name: "シャトー・メルシャン", brandMaker: "メルシャン（長野県）", price: "グラス ¥1,200",
-        x: 85, y: 15, prefecture: "長野県", icon: "🍷",
-        mapX: 58, mapY: 48,
+        name: "シャトー・メルシャン", brandMaker: "メルシャン（長野県）",
+        x: 85, y: 15, prefecture: "長野県",
         editorialLead: "濃密な果実味とエレガントな樽香が織りなす最高峰。",
+        richDescription: "<p>日本のワイン造りを牽引し続けるシャトー・メルシャン。長野県・桔梗ヶ原をはじめとする冷涼な気候下で育まれた上質なブドウのみを使用しています。</p><p>カシスやダークチェリーのような凝縮された黒系果実の香りに、オーク樽由来のバニラやスパイスのニュアンスが溶け込んでいます。しっかりとしたタンニン（渋み）がありながらも、口当たりはビロードのように滑らか。日本ワインのポテンシャルの高さを証明する一本です。</p>",
         pairingDishTitle: "和牛の赤ワイン煮込み",
-        dishImageUrl: "https://images.unsplash.com/photo-1544025162-8315ea07525b?w=600&q=80",
+        pairingDescription: "和牛の深いコクと、ワインの重厚な果実味・タンニンが互いに高め合い、贅沢なマリアージュを生み出します。",
+        dishImageUrl: "https://images.unsplash.com/photo-1544025162-8315ea07525b?w=800&q=80",
         imageUrl: "https://images.unsplash.com/photo-1585553616435-2dc0a54e271d?w=400&q=80",
         gallery: [
-          { url: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=400&q=80", caption: "ブドウ畑" },
-          { url: "https://images.unsplash.com/photo-1523368749929-6b2bf370dbf8?w=400&q=80", caption: "樽熟成庫" }
+          { url: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=800&q=80", title: "太陽の恵みを受けるブドウ畑", caption: "昼夜の寒暖差が大きい長野の気候が、色の濃い高品質なブドウを育てます。" },
+          { url: "https://images.unsplash.com/photo-1523368749929-6b2bf370dbf8?w=800&q=80", title: "静かな時が流れる樽熟成庫", caption: "フレンチオーク樽の中で、ワインはゆっくりと複雑な香りをまとっていきます。" }
         ]
       },
       {
         id: "wine-white", category: "ワイン", typeBadge: "辛口白",
-        name: "甲州 鳥居平畑", brandMaker: "中央葡萄酒（山梨県）", price: "グラス ¥900",
-        x: 40, y: 35, prefecture: "山梨県", icon: "🍷",
-        mapX: 53, mapY: 53,
+        name: "甲州 鳥居平畑", brandMaker: "中央葡萄酒（山梨県）",
+        x: 40, y: 35, prefecture: "山梨県",
         editorialLead: "和柑橘の爽やかな香りと、凛とした酸味。",
+        richDescription: "<p>日本固有のブドウ品種「甲州」。その中でも最高のテロワールとされる勝沼の「鳥居平（とりいびら）地区」で栽培されたブドウを使用した、世界に誇る白ワインです。</p><p>すだちやカボスといった和柑橘を思わせる清々しい香りと、微かな白胡椒のスパイス感。そして何より、ピュアで伸びやかな酸味が特徴です。出汁の旨味を大切にする和食と、これ以上ないほど見事に寄り添います。</p>",
         pairingDishTitle: "天ぷらの盛り合わせ",
-        dishImageUrl: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=600&q=80",
+        pairingDescription: "サクッと揚がった天ぷらの油分を、甲州の爽やかな酸味がスッと洗い流し、次の一口を誘います。",
+        dishImageUrl: "https://images.unsplash.com/photo-1580476262798-bddd9f4b7369?w=800&q=80",
         imageUrl: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=400&q=80",
         gallery: [
-          { url: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=400&q=80", caption: "勝沼の棚" }
+          { url: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=800&q=80", title: "歴史ある勝沼のブドウ棚", caption: "急斜面で水はけの良い鳥居平の畑が、凝縮感のあるブドウを生み出します。" },
+          { url: "https://images.unsplash.com/photo-1551887196-72e32cb14b09?w=800&q=80", title: "日本固有品種「甲州」", caption: "淡い藤色の果皮を持つ甲州ブドウ。繊細な日本の美意識を体現する味わいです。" }
         ]
       },
       {
         id: "sake-ginjo", category: "日本酒", typeBadge: "純米吟醸",
-        name: "醸し人九平次", brandMaker: "萬乗醸造（愛知県）", price: "グラス ¥950",
-        x: 60, y: 45, prefecture: "愛知県", icon: "🍶",
-        mapX: 52, mapY: 58,
+        name: "醸し人九平次", brandMaker: "萬乗醸造（愛知県）",
+        x: 60, y: 45, prefecture: "愛知県",
         editorialLead: "お米の優しい甘みと、ワイングラスで映えるモダンな酸味。",
+        richDescription: "<p>フランスの三ツ星レストランのワインリストにも名を連ねる、革新的な日本酒「醸し人九平次」。パリのソムリエたちを驚嘆させたのは、そのモダンでエレガントな造りにあります。</p><p>グラスに注ぐと、洋梨やメロンのような華やかで瑞々しい香りが立ち上ります。口に含むとお米のピュアな甘味が広がり、そのすぐ後から、白ワインを思わせるような立体的で心地よい酸味が全体を引き締めます。ぜひワイングラスでお楽しみください。</p>",
         pairingDishTitle: "鴨のロースト",
-        dishImageUrl: "https://images.unsplash.com/photo-1544025162-8315ea07525b?w=600&q=80",
+        pairingDescription: "鴨肉の野性味あふれる旨味と、九平次のフルーティーな甘味・酸味が、口の中で極上のソースのように絡み合います。",
+        dishImageUrl: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80",
         imageUrl: "https://images.unsplash.com/photo-1590189182193-1fd44f2b4048?w=400&q=80",
         gallery: [
-          { url: "https://images.unsplash.com/photo-1584278637775-654cb6a804bd?w=400&q=80", caption: "酒米作り" }
+          { url: "https://images.unsplash.com/photo-1584278637775-654cb6a804bd?w=800&q=80", title: "自社栽培へのこだわり", caption: "「良い酒は良い米から」。自らの手で田んぼに立ち、最高の酒米「山田錦」を育て上げています。" },
+          { url: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=800&q=80", title: "世界を魅了するエレガンス", caption: "和食の枠を超え、フレンチやイタリアンとも見事に調和する新しい日本酒の形です。" }
         ]
       }
     ];
@@ -473,10 +491,12 @@
       const drink = DRINKS_DATABASE.find(d => d.id === selectedDrinkId);
       document.getElementById('charge-coin-img').src = drink.imageUrl;
       
-      // 目的地のピンを日本地図上に配置
+      // 47都道府県の自動マッピング（データベースに設定されていない場合は東京をデフォルトに）
+      const coords = PREFECTURE_COORDS[drink.prefecture] || {x: 64, y: 58};
+      
       const destPin = document.getElementById('charge-dest-pin');
-      destPin.style.left = `${drink.mapX}%`;
-      destPin.style.top = `${drink.mapY}%`;
+      destPin.style.left = `${coords.x}%`;
+      destPin.style.top = `${coords.y}%`;
       destPin.style.opacity = '1';
 
       document.getElementById('view-charge').style.opacity = '1';
@@ -518,6 +538,7 @@
     // チャージ完了後、光のオーブが産地へ飛んでいくアニメーション
     function finishChargeAndFly() {
       const drink = DRINKS_DATABASE.find(d => d.id === selectedDrinkId);
+      const coords = PREFECTURE_COORDS[drink.prefecture] || {x: 64, y: 58};
       
       // コインを消す
       document.getElementById('charge-coin-wrapper').style.opacity = '0';
@@ -541,8 +562,8 @@
       // 少し待ってから目的地へ飛ばす
       setTimeout(() => {
         orb.style.transition = 'all 0.9s cubic-bezier(0.25, 0.1, 0.25, 1)';
-        orb.style.left = `${drink.mapX}%`;
-        orb.style.top = `${drink.mapY}%`;
+        orb.style.left = `${coords.x}%`;
+        orb.style.top = `${coords.y}%`;
         
         // 目的地に到着後、弾けてストーリー画面へ
         setTimeout(() => {
@@ -588,25 +609,28 @@
       const drink = DRINKS_DATABASE.find(d => d.id === selectedDrinkId);
       document.getElementById('story-region-header-tag').innerText = drink.prefecture;
       document.getElementById('story-drink-type-badge').innerText = drink.typeBadge;
-      document.getElementById('story-drink-price').innerText = drink.price;
       document.getElementById('story-editorial-lead').innerText = drink.editorialLead;
+      
+      document.getElementById('story-rich-description').innerHTML = drink.richDescription;
+      document.getElementById('story-pairing-description').innerText = drink.pairingDescription;
+
       document.getElementById('story-hero-dish-img').src = drink.dishImageUrl;
       document.getElementById('story-pairing-dish-title').innerText = drink.pairingDishTitle;
       document.getElementById('story-drink-title-main').innerText = drink.name;
       document.getElementById('story-drink-maker-name').innerText = drink.brandMaker;
-      document.getElementById('bar-bottom-drink-name').innerText = drink.name;
 
       const galleryContainer = document.getElementById('gallery-container');
       galleryContainer.innerHTML = '';
       drink.gallery.forEach(img => {
         const item = document.createElement('div');
-        item.className = "flex-shrink-0 w-44 bg-white rounded-xl overflow-hidden shadow-xs border border-stone-200";
+        item.className = "w-full bg-white rounded-xl overflow-hidden shadow-sm border border-stone-200/80 mb-2";
         item.innerHTML = `
-          <div class="h-28 overflow-hidden bg-stone-200">
+          <div class="h-48 overflow-hidden bg-stone-200 relative">
             <img src="${img.url}" class="w-full h-full object-cover">
           </div>
-          <div class="p-2">
-            <p class="text-[10px] font-bold text-stone-800 font-mincho truncate">${img.caption}</p>
+          <div class="p-3.5">
+            <h4 class="text-sm font-bold text-stone-900 font-mincho mb-1.5">${img.title}</h4>
+            <p class="text-xs text-stone-600 font-mincho leading-relaxed">${img.caption}</p>
           </div>
         `;
         galleryContainer.appendChild(item);
