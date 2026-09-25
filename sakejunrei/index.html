@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>味覚マップ & テロワールストーリー</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Shippori+Mincho:wght@400;600;700;800&family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans JP"', 'sans-serif'],
+            mincho: ['"Shippori Mincho"', 'serif'],
+            serifEn: ['"Cinzel"', 'serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root { --app-height: 100dvh; }
+    html, body { height: 100%; height: 100dvh; overflow: hidden; touch-action: manipulation; }
+    
+    @keyframes pingSlow {
+      0% { transform: scale(0.85); opacity: 0.9; }
+      80%, 100% { transform: scale(2.4); opacity: 0; }
+    }
+    .animate-ping-slow { animation: pingSlow 1.8s cubic-bezier(0, 0, 0.2, 1) infinite; }
+    
+    @keyframes coinFloat {
+      0%, 100% { transform: translateY(0px) rotateX(10deg); }
+      50% { transform: translateY(-6px) rotateX(15deg); }
+    }
+    .animate-coin-float { animation: coinFloat 2.6s ease-in-out infinite; }
+    
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-800 font-sans h-full w-full select-none overflow-hidden flex flex-col justify-center items-center">
+
+  <div class="relative w-full max-w-md h-[100dvh] bg-[#f8faf9] flex flex-col overflow-hidden shadow-2xl">
+
+    <!-- Header -->
+    <header class="relative z-30 px-4 py-2.5 flex items-center justify-between bg-white/95 backdrop-blur-md border-b border-emerald-950/10 flex-shrink-0">
+      <div class="flex items-center gap-2">
+        <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-emerald-800 to-teal-600 flex items-center justify-center text-white shadow-xs">
+          <i class="fa-solid fa-compass text-xs"></i>
+        </div>
+        <div>
+          <span class="text-[9px] uppercase tracking-widest text-emerald-800 font-bold block leading-none font-serifEn">TERROIR & TASTE</span>
+          <h1 class="text-xs font-mincho font-bold text-slate-800 leading-snug">味覚を巡る1杯</h1>
+        </div>
+      </div>
+      <button onclick="restartDiagnosis()" class="text-[11px] bg-emerald-50 active:bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full font-medium transition flex items-center gap-1 border border-emerald-200/60">
+        <i class="fa-solid fa-rotate-right text-[10px]"></i><span>再診断</span>
+      </button>
+    </header>
+
+    <main class="relative flex-1 w-full h-full overflow-hidden">
+      
+      <!-- VIEW 1: Quiz Screen -->
+      <div id="view-quiz" class="absolute inset-0 z-20 flex flex-col justify-between p-5 bg-gradient-to-b from-[#eef7f5] via-[#e2f2ee] to-[#d3ede2] transition-all duration-500">
+        <div class="pt-2">
+          <div class="inline-flex items-center gap-1.5 px-3 py-0.5 bg-emerald-800 text-white text-[10px] font-bold rounded-full mb-2 tracking-wide">
+            <i class="fa-solid fa-sparkles text-[9px]"></i>
+            <span id="quiz-step-label">QUESTION 1 / 4</span>
+          </div>
+          <h2 id="quiz-title" class="text-[17px] font-mincho font-bold text-slate-800 leading-snug">
+            質問タイトル
+          </h2>
+        </div>
+        <div id="quiz-options-container" class="space-y-2.5 my-auto py-2">
+          <!-- Options injected via JS -->
+        </div>
+        <div class="pb-3 flex-shrink-0">
+          <div class="w-full bg-emerald-200/80 h-1.5 rounded-full overflow-hidden">
+            <div id="quiz-progress-bar" class="bg-gradient-to-r from-teal-500 to-emerald-700 h-full w-1/4 transition-all duration-300"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 2: Map Screen -->
+      <div id="view-map" class="absolute inset-0 flex flex-col justify-between p-3 opacity-0 pointer-events-none transition-all duration-500 bg-[#f4f7f6]">
+        <div class="z-10 flex-shrink-0 mb-1">
+          <div class="flex items-center justify-between px-1">
+            <div class="flex items-center gap-1.5">
+              <span class="inline-flex w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+              <span class="text-[11px] font-bold text-emerald-950 font-mincho">あなたの現在地</span>
+            </div>
+            <span class="text-[10px] text-slate-500 font-medium">お酒を選択</span>
+          </div>
+        </div>
+
+        <div class="relative flex-1 bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden flex flex-col min-h-0 mb-2">
+          <!-- Background Grid (X:0=スッキリ, X:100=コク / Y:0=華やか, Y:100=ドライ) -->
+          <div class="absolute inset-0 grid grid-cols-2 grid-rows-2 opacity-30 pointer-events-none">
+            <div class="bg-rose-50 border-r border-b border-dashed border-slate-300"></div>
+            <div class="bg-amber-50 border-b border-dashed border-slate-300"></div>
+            <div class="bg-cyan-50 border-r border-dashed border-slate-300"></div>
+            <div class="bg-emerald-50"></div>
+          </div>
+          
+          <div class="absolute top-1.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 bg-rose-50/95 rounded-full border border-rose-200 text-[9px] font-bold text-rose-900 z-10">華やか</div>
+          <div class="absolute bottom-1.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 bg-slate-100/95 rounded-full border border-slate-200 text-[9px] font-bold text-slate-700 z-10">ドライ</div>
+          <div class="absolute left-1.5 top-1/2 -translate-y-1/2 px-1 py-2 bg-cyan-50/95 rounded-lg border border-cyan-200 text-[9px] font-bold text-cyan-900 z-10 [writing-mode:vertical-rl]">スッキリ</div>
+          <div class="absolute right-1.5 top-1/2 -translate-y-1/2 px-1 py-2 bg-amber-50/95 rounded-lg border border-amber-200 text-[9px] font-bold text-amber-900 z-10 [writing-mode:vertical-rl]">重厚・コク</div>
+
+          <div class="absolute inset-x-6 top-1/2 h-[1px] bg-slate-200 pointer-events-none"></div>
+          <div class="absolute inset-y-6 left-1/2 w-[1px] bg-slate-200 pointer-events-none"></div>
+
+          <!-- Pins Layer -->
+          <div id="drink-pins-layer" class="relative w-full h-full p-4"></div>
+          
+          <!-- User Marker -->
+          <div id="user-position-marker" class="absolute pointer-events-none transition-all duration-700 -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center">
+            <div class="relative flex items-center justify-center">
+              <span class="absolute w-7 h-7 rounded-full bg-emerald-400 animate-ping-slow"></span>
+              <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-emerald-700 to-teal-500 text-white flex items-center justify-center shadow-md border-2 border-white text-[10px]"><i class="fa-solid fa-star"></i></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selected Drink Card -->
+        <div id="quick-drink-card" class="bg-white rounded-2xl p-2.5 shadow-md border border-emerald-100 flex items-center justify-between flex-shrink-0 transition-opacity opacity-0 pointer-events-none">
+          <div class="flex items-center gap-2.5 overflow-hidden">
+            <div class="w-11 h-11 rounded-full bg-emerald-50 border border-emerald-100 overflow-hidden flex-shrink-0">
+              <img id="card-drink-img" src="" class="w-full h-full object-cover">
+            </div>
+            <div class="min-w-0 pr-1">
+              <div class="flex items-center gap-1.5">
+                <span id="card-drink-category" class="text-[9px] px-1 py-0.2 bg-slate-100 text-slate-700 rounded font-medium"></span>
+                <span class="text-[10px] text-emerald-900 font-semibold truncate flex items-center gap-0.5">
+                  <i class="fa-solid fa-location-dot text-[9px] text-rose-500"></i> <span id="card-pref-text"></span>
+                </span>
+              </div>
+              <h3 id="card-drink-name" class="font-bold text-xs text-slate-900 font-mincho truncate leading-tight mt-0.5"></h3>
+            </div>
+          </div>
+          <button onclick="startJourneyChargeModal()" class="flex-shrink-0 px-3.5 py-2.5 bg-gradient-to-r from-amber-500 to-emerald-700 text-white rounded-xl text-[11px] font-bold shadow-md transition flex items-center gap-1.5">
+            <span>物語をひらく</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- VIEW 3: Charge (Simple) -->
+      <div id="view-charge" class="absolute inset-0 z-40 bg-gradient-to-b from-[#e65c00] via-[#f37321] to-[#ff9033] flex flex-col items-center justify-between p-4 pb-8 opacity-0 pointer-events-none transition-all duration-400 select-none">
+        <div class="relative z-10 w-full flex items-center justify-between pt-2">
+          <div class="w-7"></div>
+          <div class="flex flex-col items-center">
+            <h2 class="text-3xl font-extrabold font-serifEn text-white tracking-wider drop-shadow-sm">STEP 3</h2>
+            <p class="text-white text-sm font-bold tracking-wide mt-0.5 drop-shadow">長押しして産地の物語へ</p>
+          </div>
+          <button onclick="cancelCharge()" class="w-7 h-7 rounded-full bg-black/15 text-white/90 hover:text-white flex items-center justify-center text-sm backdrop-blur-xs transition">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="relative z-10 w-full flex flex-col items-center mt-auto">
+          <div id="charge-coin-wrapper" class="relative mb-4 transition-transform duration-200">
+            <div id="charge-glow" class="absolute -inset-5 rounded-full bg-yellow-300/0 blur-2xl transition-all duration-200 pointer-events-none"></div>
+            <div id="charge-coin" class="w-36 h-36 rounded-full bg-gradient-to-tr from-[#d48b11] via-[#fcd34d] to-[#fffbeb] p-1.5 shadow-[0_14px_32px_rgba(180,83,9,0.65)] cursor-pointer select-none transition-transform duration-150 animate-coin-float flex items-center justify-center relative overflow-hidden">
+              <div class="w-full h-full rounded-full overflow-hidden relative border-2 border-amber-200/80 shadow-inner bg-slate-900 flex items-center justify-center">
+                <img id="charge-coin-img" src="" class="w-full h-full object-cover brightness-95">
+              </div>
+            </div>
+          </div>
+          <div id="charge-percent-text" class="text-sm font-mono font-bold text-white tracking-widest drop-shadow mb-2">0%</div>
+          <div id="btn-hold-trigger" class="relative w-64 h-12 rounded-full border-2 border-white/95 overflow-hidden shadow-lg cursor-pointer active:scale-98 transition-transform select-none bg-black/10 backdrop-blur-xs flex items-center justify-center">
+            <div id="charge-progress-bar" class="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-200 w-0 transition-all duration-75"></div>
+            <span class="relative z-10 text-white font-bold text-xs tracking-wider drop-shadow">長押ししてはなす</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 4: Story Magazine -->
+      <div id="view-story" class="absolute inset-0 z-30 flex flex-col bg-[#fdfcf9] text-slate-900 opacity-0 pointer-events-none transition-all duration-500 overflow-hidden">
+        <header class="px-4 py-2.5 flex items-center justify-between bg-[#fdfcf9]/95 backdrop-blur-md border-b border-stone-200/80 flex-shrink-0 z-20">
+          <button onclick="backToFlavorMap()" class="px-3 py-1 rounded-full bg-stone-100 text-stone-800 text-[11px] font-medium flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-arrow-left text-[10px]"></i><span>戻る</span>
+          </button>
+          <div class="text-right">
+            <span id="story-region-header-tag" class="text-[11px] font-mincho font-bold text-stone-700"></span>
+          </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto overscroll-contain pb-24 text-stone-800">
+          <section class="p-4 bg-gradient-to-b from-[#fdfcf9] to-[#f4f1ea]">
+            <div class="flex items-center gap-2 mb-2">
+              <span id="story-drink-type-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-stone-800 text-stone-100 tracking-wider"></span>
+              <span id="story-drink-price" class="ml-auto text-xs font-serifEn font-bold text-stone-900"></span>
+            </div>
+            <div class="border-l-2 border-stone-800 pl-3 py-1 my-2">
+              <h2 id="story-editorial-lead" class="text-base font-mincho font-bold text-stone-900 leading-snug"></h2>
+            </div>
+            
+            <div class="relative w-full rounded-2xl overflow-hidden shadow-lg border border-stone-200 my-3 aspect-[16/10] bg-stone-900">
+              <img id="story-hero-dish-img" src="" class="w-full h-full object-cover">
+              <div class="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent flex flex-col justify-end p-3 text-white">
+                <span class="text-[9px] text-amber-300 font-bold">ペアリング</span>
+                <p id="story-pairing-dish-title" class="text-sm font-mincho font-bold text-white"></p>
+              </div>
+            </div>
+            
+            <h1 id="story-drink-title-main" class="text-xl font-mincho font-extrabold text-stone-900 leading-tight"></h1>
+            <p id="story-drink-maker-name" class="text-xs text-stone-600 font-medium mt-0.5"></p>
+          </section>
+
+          <section class="p-4 bg-[#f8f6f0]">
+            <div class="flex items-center gap-1.5 text-xs font-bold text-stone-900 font-mincho mb-2">
+              <span class="w-1.5 h-3.5 bg-amber-600 rounded-full"></span><span>産地の風土と旅情</span>
+            </div>
+            <div class="flex gap-2.5 overflow-x-auto no-scrollbar pb-1" id="gallery-container">
+              <!-- JS Injected -->
+            </div>
+          </section>
+        </div>
+
+        <div class="absolute bottom-0 inset-x-0 p-3 bg-white/95 backdrop-blur-md border-t border-stone-200 shadow-xl flex items-center justify-between gap-3 z-30">
+          <div class="min-w-0">
+            <div id="bar-bottom-drink-name" class="text-xs font-bold font-mincho text-stone-900 truncate"></div>
+          </div>
+          <button onclick="orderDrinkModal()" class="px-5 py-2.5 rounded-xl bg-emerald-800 text-white text-xs font-bold shadow-lg flex-shrink-0">
+            注文する
+          </button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const DRINKS_DATABASE = [
+      {
+        id: "sake-karakuchi", category: "日本酒", typeBadge: "超辛口・純米",
+        name: "越乃寒梅 白ラベル", brandMaker: "石本酒造（新潟県）", price: "グラス ¥700",
+        x: 15, y: 85, prefecture: "新潟県", icon: "🍶",
+        editorialLead: "一切の雑味を削ぎ落とした、雪国が誇る究極の淡麗辛口。",
+        pairingDishTitle: "白身魚の薄造りとすだち",
+        dishImageUrl: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=600&q=80",
+        imageUrl: "https://images.unsplash.com/photo-1590189182193-1fd44f2b4048?w=400&q=80",
+        gallery: [
+          { url: "https://images.unsplash.com/photo-1584278637775-654cb6a804bd?w=400&q=80", caption: "厳冬の仕込み" },
+          { url: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=400&q=80", caption: "越後平野" }
+        ]
+      },
+      {
+        id: "gin-roku", category: "ジン", typeBadge: "クラフトジン",
+        name: "ROKU GIN (六)", brandMaker: "サントリー（大阪府）", price: "グラス ¥850",
+        x: 20, y: 20, prefecture: "大阪府", icon: "🍸",
+        editorialLead: "日本の四季を彩る6つのボタニカルが華やかに香る。",
+        pairingDishTitle: "和柑橘のカルパッチョ",
+        dishImageUrl: "https://images.unsplash.com/photo-1511690656952-34342bb7c2f2?w=600&q=80",
+        imageUrl: "https://images.unsplash.com/photo-1609355655543-9800a75f5bbd?w=400&q=80",
+        gallery: [
+          { url: "https://images.unsplash.com/photo-1523368749929-6b2bf370dbf8?w=400&q=80", caption: "ボタニカル" },
+          { url: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=400&q=80", caption: "蒸溜所" }
+        ]
+      },
+      {
+        id: "sake-kimoto", category: "日本酒", typeBadge: "生酛造り",
+        name: "大七 純米生酛", brandMaker: "大七酒造（福島県）", price: "グラス ¥800",
+        x: 80, y: 80, prefecture: "福島県", icon: "🍶",
+        editorialLead: "複雑で骨太な旨味と力強いキレが同居する伝統の味。",
+        pairingDishTitle: "豚の角煮 辛子添え",
+        dishImageUrl: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=600&q=80",
+        imageUrl: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400&q=80",
+        gallery: [
+          { url: "https://images.unsplash.com/photo-1584278637775-654cb6a804bd?w=400&q=80", caption: "木桶仕込み" },
+          { url: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=400&q=80", caption: "福島の自然" }
+        ]
+      },
+      {
+        id: "wine-red", category: "ワイン", typeBadge: "フルボディ赤",
+        name: "シャトー・メルシャン", brandMaker: "メルシャン（長野県）", price: "グラス ¥1,200",
+        x: 85, y: 15, prefecture: "長野県", icon: "🍷",
+        editorialLead: "濃密な果実味とエレガントな樽香が織りなす最高峰。",
+        pairingDishTitle: "和牛の赤ワイン煮込み",
+        dishImageUrl: "https://images.unsplash.com/photo-1544025162-8315ea07525b?w=600&q=80",
+        imageUrl: "https://images.unsplash.com/photo-1585553616435-2dc0a54e271d?w=400&q=80",
+        gallery: [
+          { url: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=400&q=80", caption: "ブドウ畑" },
+          { url: "https://images.unsplash.com/photo-1523368749929-6b2bf370dbf8?w=400&q=80", caption: "樽熟成庫" }
+        ]
+      },
+      {
+        id: "wine-white", category: "ワイン", typeBadge: "辛口白",
+        name: "甲州 鳥居平畑", brandMaker: "中央葡萄酒（山梨県）", price: "グラス ¥900",
+        x: 40, y: 35, prefecture: "山梨県", icon: "🍷",
+        editorialLead: "和柑橘の爽やかな香りと、凛とした酸味。",
+        pairingDishTitle: "天ぷらの盛り合わせ",
+        dishImageUrl: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=600&q=80",
+        imageUrl: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=400&q=80",
+        gallery: [
+          { url: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=400&q=80", caption: "勝沼の棚" }
+        ]
+      },
+      {
+        id: "sake-ginjo", category: "日本酒", typeBadge: "純米吟醸",
+        name: "醸し人九平次", brandMaker: "萬乗醸造（愛知県）", price: "グラス ¥950",
+        x: 60, y: 45, prefecture: "愛知県", icon: "🍶",
+        editorialLead: "お米の優しい甘みと、ワイングラスで映えるモダンな酸味。",
+        pairingDishTitle: "鴨のロースト",
+        dishImageUrl: "https://images.unsplash.com/photo-1544025162-8315ea07525b?w=600&q=80",
+        imageUrl: "https://images.unsplash.com/photo-1590189182193-1fd44f2b4048?w=400&q=80",
+        gallery: [
+          { url: "https://images.unsplash.com/photo-1584278637775-654cb6a804bd?w=400&q=80", caption: "酒米作り" }
+        ]
+      }
+    ];
+
+    // 新しい4問の質問と座標ウェイト（X: 0スッキリ〜100コク, Y: 0華やか〜100ドライ）
+    const QUESTIONS = [
+      {
+        q: "いまの気分に一番フィットする飲み心地は？",
+        options: [
+          { text: "① 気分をシャキッとリフレッシュする、爽やかな1杯", x: -15, y: 15 },
+          { text: "② 会話が弾むような、香り立ちの良いワクワクする1杯", x: -15, y: -20 },
+          { text: "③ ペースを落として、じっくり深く浸れる落ち着いた1杯", x: 15, y: 15 },
+          { text: "④ ここで一度口内をリセットする、キレ味鋭いクリアな1杯", x: -10, y: 25 }
+        ]
+      },
+      {
+        q: "グラスを近づけた時、ふわりと感じたい香りは？",
+        options: [
+          { text: "① 果実やお花、柑橘のようなフルーティーで華やかなアロマ", x: -5, y: -25 },
+          { text: "② ハーブや山椒、和スパイスのような心地よい清涼感", x: -10, y: -10 },
+          { text: "③ 自然な甘みや麦の香ばしさ、食事に寄り添う控えめな香り", x: 10, y: 15 },
+          { text: "④ 香りは極力主張せず、澄み切ったクリーンな印象", x: -5, y: 25 }
+        ]
+      },
+      {
+        q: "口に含んだ瞬間の「ボディ感」はどれが理想？",
+        options: [
+          { text: "① 水のようにサラリと喉を通る、軽快で雑味のないタッチ", x: -25, y: 0 },
+          { text: "② ほどよい瑞々しさがあり、重すぎず軽すぎない心地よさ", x: -10, y: 0 },
+          { text: "③ トロッとした舌触りや、口いっぱいに広がる濃密な旨味", x: 15, y: 0 },
+          { text: "④ 舌の上にズシッと残る、飲みごたえ抜群の濃厚な重厚感", x: 25, y: 0 }
+        ]
+      },
+      {
+        q: "ゴクリと飲み干したあとの「余韻」はどうしたい？",
+        options: [
+          { text: "① 一瞬でスパッと消え去り、次の一口や箸が進むキレ", x: -10, y: 15 },
+          { text: "② 鼻腔からフワッと心地よい果実やボタニカルの香りが抜けていく", x: -5, y: -15 },
+          { text: "③ 喉の奥にじんわりとお酒本来のふくよかな温かみが続く", x: 15, y: 5 },
+          { text: "④ 何層にも変化する濃厚な深みやビター感を長く味わいたい", x: 20, y: -10 }
+        ]
+      }
+    ];
+
+    let currentStep = 0;
+    let userScore = { x: 50, y: 50 };
+    let selectedDrinkId = null;
+
+    function renderQuiz() {
+      const qObj = QUESTIONS[currentStep];
+      document.getElementById('quiz-step-label').innerText = `QUESTION ${currentStep + 1} / ${QUESTIONS.length}`;
+      document.getElementById('quiz-title').innerText = qObj.q;
+      
+      const container = document.getElementById('quiz-options-container');
+      container.innerHTML = '';
+      qObj.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = "w-full text-left p-3.5 bg-white rounded-xl shadow-sm border border-emerald-100/80 active:bg-emerald-50 active:border-emerald-300 transition text-sm font-medium text-slate-700 font-mincho hover:shadow-md leading-relaxed";
+        btn.innerText = opt.text;
+        btn.onclick = () => answerQuestion(opt.x, opt.y);
+        container.appendChild(btn);
+      });
+      
+      const progress = ((currentStep + 1) / QUESTIONS.length) * 100;
+      document.getElementById('quiz-progress-bar').style.width = `${progress}%`;
+    }
+
+    function answerQuestion(xDelta, yDelta) {
+      userScore.x = Math.max(5, Math.min(95, userScore.x + xDelta));
+      userScore.y = Math.max(5, Math.min(95, userScore.y + yDelta));
+      
+      currentStep++;
+      if (currentStep < QUESTIONS.length) {
+        renderQuiz();
+      } else {
+        showMapScreen();
+      }
+    }
+
+    function restartDiagnosis() {
+      currentStep = 0;
+      userScore = { x: 50, y: 50 };
+      document.getElementById('view-quiz').style.opacity = '1';
+      document.getElementById('view-quiz').style.pointerEvents = 'auto';
+      document.getElementById('view-map').style.opacity = '0';
+      document.getElementById('view-map').style.pointerEvents = 'none';
+      renderQuiz();
+    }
+
+    function showMapScreen() {
+      document.getElementById('view-quiz').style.opacity = '0';
+      document.getElementById('view-quiz').style.pointerEvents = 'none';
+      document.getElementById('view-map').style.opacity = '1';
+      document.getElementById('view-map').style.pointerEvents = 'auto';
+      
+      const userMarker = document.getElementById('user-position-marker');
+      userMarker.style.left = `${userScore.x}%`;
+      userMarker.style.top = `${userScore.y}%`;
+      
+      drawDrinkPins();
+    }
+
+    function drawDrinkPins() {
+      const layer = document.getElementById('drink-pins-layer');
+      layer.innerHTML = '';
+      
+      DRINKS_DATABASE.forEach(drink => {
+        const pin = document.createElement('div');
+        pin.className = "absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform duration-300 hover:scale-110 z-10";
+        pin.style.left = `${drink.x}%`;
+        pin.style.top = `${drink.y}%`;
+        
+        pin.innerHTML = `
+          <div class="relative w-14 h-14 rounded-full border-2 border-white shadow-md bg-white overflow-hidden flex items-center justify-center group">
+            <img src="${drink.imageUrl}" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-black/10 group-active:bg-black/30 transition"></div>
+          </div>
+        `;
+        pin.onclick = () => selectDrink(drink, pin);
+        layer.appendChild(pin);
+      });
+    }
+
+    function selectDrink(drink, pinElement) {
+      selectedDrinkId = drink.id;
+      document.querySelectorAll('#drink-pins-layer > div > div:first-child').forEach(el => el.classList.remove('ring-4', 'ring-emerald-400', 'ring-opacity-50'));
+      pinElement.querySelector('div').classList.add('ring-4', 'ring-emerald-400', 'ring-opacity-50');
+      
+      document.getElementById('card-drink-img').src = drink.imageUrl;
+      document.getElementById('card-drink-category').innerText = drink.category;
+      document.getElementById('card-pref-text').innerText = drink.prefecture;
+      document.getElementById('card-drink-name').innerText = drink.name;
+      
+      const card = document.getElementById('quick-drink-card');
+      card.classList.remove('opacity-0', 'pointer-events-none');
+      card.classList.add('opacity-100', 'pointer-events-auto');
+    }
+
+    let chargeTimer = null;
+    let chargePercent = 0;
+
+    function startJourneyChargeModal() {
+      const drink = DRINKS_DATABASE.find(d => d.id === selectedDrinkId);
+      document.getElementById('charge-coin-img').src = drink.imageUrl;
+      document.getElementById('view-charge').style.opacity = '1';
+      document.getElementById('view-charge').style.pointerEvents = 'auto';
+      chargePercent = 0;
+      updateChargeUI();
+    }
+
+    function cancelCharge() {
+      document.getElementById('view-charge').style.opacity = '0';
+      document.getElementById('view-charge').style.pointerEvents = 'none';
+      stopCharge();
+    }
+
+    function startCharge(e) {
+      if(e) e.preventDefault();
+      document.getElementById('charge-coin').classList.add('scale-95');
+      document.getElementById('charge-glow').classList.add('bg-yellow-300/40');
+      chargeTimer = setInterval(() => {
+        chargePercent += 2;
+        if (chargePercent >= 100) { chargePercent = 100; stopCharge(); finishChargeAndFly(); }
+        updateChargeUI();
+      }, 25);
+    }
+
+    function stopCharge(e) {
+      if(e) e.preventDefault();
+      clearInterval(chargeTimer);
+      document.getElementById('charge-coin').classList.remove('scale-95');
+      document.getElementById('charge-glow').classList.remove('bg-yellow-300/40');
+      if (chargePercent < 100) { chargePercent = 0; updateChargeUI(); }
+    }
+
+    function updateChargeUI() {
+      document.getElementById('charge-progress-bar').style.width = `${chargePercent}%`;
+      document.getElementById('charge-percent-text').innerText = `${chargePercent}%`;
+    }
+
+    function finishChargeAndFly() {
+      setTimeout(() => { showStoryScreen(); cancelCharge(); }, 200);
+    }
+
+    const triggerBtn = document.getElementById('btn-hold-trigger');
+    const coinObj = document.getElementById('charge-coin');
+    ['mousedown', 'touchstart'].forEach(evt => {
+      triggerBtn.addEventListener(evt, startCharge, {passive: false});
+      coinObj.addEventListener(evt, startCharge, {passive: false});
+    });
+    ['mouseup', 'mouseleave', 'touchend'].forEach(evt => {
+      triggerBtn.addEventListener(evt, stopCharge);
+      coinObj.addEventListener(evt, stopCharge);
+    });
+
+    function showStoryScreen() {
+      const drink = DRINKS_DATABASE.find(d => d.id === selectedDrinkId);
+      document.getElementById('story-region-header-tag').innerText = drink.prefecture;
+      document.getElementById('story-drink-type-badge').innerText = drink.typeBadge;
+      document.getElementById('story-drink-price').innerText = drink.price;
+      document.getElementById('story-editorial-lead').innerText = drink.editorialLead;
+      document.getElementById('story-hero-dish-img').src = drink.dishImageUrl;
+      document.getElementById('story-pairing-dish-title').innerText = drink.pairingDishTitle;
+      document.getElementById('story-drink-title-main').innerText = drink.name;
+      document.getElementById('story-drink-maker-name').innerText = drink.brandMaker;
+      document.getElementById('bar-bottom-drink-name').innerText = drink.name;
+
+      const galleryContainer = document.getElementById('gallery-container');
+      galleryContainer.innerHTML = '';
+      drink.gallery.forEach(img => {
+        const item = document.createElement('div');
+        item.className = "flex-shrink-0 w-44 bg-white rounded-xl overflow-hidden shadow-xs border border-stone-200";
+        item.innerHTML = `
+          <div class="h-28 overflow-hidden bg-stone-200">
+            <img src="${img.url}" class="w-full h-full object-cover">
+          </div>
+          <div class="p-2">
+            <p class="text-[10px] font-bold text-stone-800 font-mincho truncate">${img.caption}</p>
+          </div>
+        `;
+        galleryContainer.appendChild(item);
+      });
+
+      document.getElementById('view-story').style.opacity = '1';
+      document.getElementById('view-story').style.pointerEvents = 'auto';
+    }
+
+    function backToFlavorMap() {
+      document.getElementById('view-story').style.opacity = '0';
+      document.getElementById('view-story').style.pointerEvents = 'none';
+    }
+
+    function orderDrinkModal() {
+      alert("ご注文ありがとうございます！店員がグラスをお持ちいたします。");
+    }
+
+    window.onload = () => { renderQuiz(); };
+  </script>
+</body>
+</html>
