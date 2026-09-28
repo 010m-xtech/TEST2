@@ -36,12 +36,6 @@
     }
     .animate-ping-slow { animation: pingSlow 1.8s cubic-bezier(0, 0, 0.2, 1) infinite; }
     
-    @keyframes coinFloat {
-      0%, 100% { transform: translateY(0px) rotateX(10deg); }
-      50% { transform: translateY(-6px) rotateX(15deg); }
-    }
-    .animate-coin-float { animation: coinFloat 2.6s ease-in-out infinite; }
-
     /* =======================================
        背景の4エリア エフェクト用アニメーション
        ======================================= */
@@ -51,16 +45,16 @@
       0% { transform: translate(0, -15px) rotate(0deg); opacity: 0; }
       15% { opacity: 0.9; }
       85% { opacity: 0.8; }
-      100% { transform: translate(50px, 350px) rotate(360deg); opacity: 0; }
+      100% { transform: translate(60px, 450px) rotate(360deg); opacity: 0; }
     }
 
     /* 右上：泡がぷくぷく落ちる（左右に揺れながら下へ） */
     @keyframes bubbleFall {
       0% { transform: translate(0, -15px) scale(0.6); opacity: 0; }
-      20% { opacity: 0.9; transform: translate(15px, 60px) scale(1.1); }
-      50% { opacity: 0.9; transform: translate(-15px, 180px) scale(0.9); }
-      80% { opacity: 0.7; transform: translate(10px, 280px) scale(1.05); }
-      100% { transform: translate(0, 380px) scale(0.8); opacity: 0; }
+      20% { opacity: 1; transform: translate(15px, 100px) scale(1.1); }
+      50% { opacity: 0.9; transform: translate(-15px, 250px) scale(0.9); }
+      80% { opacity: 0.8; transform: translate(10px, 400px) scale(1.05); }
+      100% { transform: translate(0, 500px) scale(0.8); opacity: 0; }
     }
 
     /* 左下：新緑の落ち葉（下まで落ちる） */
@@ -68,7 +62,7 @@
       0% { transform: translate(0, -15px) rotate(0deg); opacity: 0; }
       15% { opacity: 0.9; }
       85% { opacity: 0.8; }
-      100% { transform: translate(-60px, 350px) rotate(720deg); opacity: 0; }
+      100% { transform: translate(-80px, 450px) rotate(720deg); opacity: 0; }
     }
 
     /* 右下：雪（下まで落ちる） */
@@ -76,7 +70,7 @@
       0% { transform: translateY(-15px); opacity: 0; }
       15% { opacity: 0.9; }
       85% { opacity: 0.8; }
-      100% { transform: translateY(350px); opacity: 0; }
+      100% { transform: translateY(450px); opacity: 0; }
     }
     
     .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -124,138 +118,92 @@
         </div>
       </div>
 
-      <!-- STEP 2: マッピング画面 -->
-      <div id="view-map" class="absolute inset-0 z-30 flex flex-col justify-between p-3 opacity-0 pointer-events-none transition-all duration-500 bg-[#f4f7f6]">
-        <div class="z-10 flex-shrink-0 mb-1">
-          <div class="flex items-center justify-between px-1">
-            <div class="flex items-center gap-1.5">
-              <span class="inline-flex w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-              <span class="text-[11px] font-bold text-emerald-950 font-mincho">あなたの現在地</span>
+      <!-- STEP 2: 味覚MAP + おすすめ3杯 -->
+      <div id="view-map" class="absolute inset-0 z-30 flex flex-col p-3 opacity-0 pointer-events-none transition-all duration-500 bg-[#fbfaf7]">
+        <div class="flex-shrink-0 px-1 pb-2">
+          <div class="flex items-end justify-between">
+            <div>
+              <span class="text-[9px] tracking-[0.2em] text-emerald-800 font-serifEn">YOUR TASTE POSITION</span>
+              <h2 class="text-base font-mincho font-bold text-stone-900">あなたの味覚MAP</h2>
             </div>
-            <span class="text-[10px] text-slate-500 font-medium">お酒を選択</span>
+            <span class="text-[9px] text-stone-500">近い順に3杯をご提案</span>
           </div>
         </div>
+        
+        <div class="relative flex-1 min-h-0 rounded-[24px] overflow-hidden border border-stone-200 shadow-sm bg-white">
+          <!-- 背景コンテナ：文字なし・グラデーションカラー -->
+          <div class="absolute inset-0 grid grid-cols-2 grid-rows-2">
+            <!-- 左上: ピンク (華やかxスッキリ) -->
+            <div class="relative bg-gradient-to-br from-pink-50 to-pink-100/50 overflow-hidden" id="bg-top-left"></div>
+            <!-- 右上: 水色 (華やかx重厚) -->
+            <div class="relative bg-gradient-to-bl from-sky-50 to-blue-100/40 overflow-hidden" id="bg-top-right"></div>
+            <!-- 左下: 薄緑 (ドライxスッキリ) -->
+            <div class="relative bg-gradient-to-tr from-emerald-50 to-teal-50/50 overflow-hidden" id="bg-bottom-left"></div>
+            <!-- 右下: グレー (ドライx重厚) -->
+            <div class="relative bg-gradient-to-tl from-stone-100 to-stone-200/40 overflow-hidden" id="bg-bottom-right"></div>
+          </div>
 
-        <div class="relative flex-1 bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden flex flex-col min-h-0 mb-2">
-          
-          <!-- ★ エフェクト用 Background Grid ★ -->
-          <div class="absolute inset-0 grid grid-cols-2 grid-rows-2 opacity-90 pointer-events-none overflow-hidden">
-            
-            <!-- 左上: ピンク ＋ 桜 -->
-            <div id="bg-top-left" class="relative bg-gradient-to-br from-pink-50 to-rose-100 border-r border-b border-dashed border-slate-300 overflow-hidden flex items-start justify-start p-3">
-            </div>
-            
-            <!-- 右上: 水色 ＋ ぷくぷく落ちる泡 -->
-            <div id="bg-top-right" class="relative bg-gradient-to-bl from-cyan-50 to-blue-100 border-b border-dashed border-slate-300 overflow-hidden flex items-start justify-end p-3">
-            </div>
-            
-            <!-- 左下: 薄緑 ＋ 新緑の葉 -->
-            <div id="bg-bottom-left" class="relative bg-gradient-to-br from-emerald-50 to-teal-100 border-r border-dashed border-slate-300 overflow-hidden flex items-end justify-start p-3">
-            </div>
-            
-            <!-- 右下: グレー ＋ 雪 -->
-            <div id="bg-bottom-right" class="relative bg-gradient-to-tl from-slate-100 to-stone-200 overflow-hidden flex items-end justify-end p-3">
-            </div>
+          <!-- マップの軸線 -->
+          <div class="absolute inset-0 pointer-events-none">
+            <div class="absolute inset-x-0 top-1/2 h-px border-t border-dashed border-stone-300/80"></div>
+            <div class="absolute inset-y-0 left-1/2 w-px border-l border-dashed border-stone-300/80"></div>
           </div>
           
           <!-- 軸のラベル -->
-          <div class="absolute top-1.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 bg-rose-50/95 rounded-full border border-rose-200 text-[9px] font-bold text-rose-900 z-20 shadow-sm">華やか</div>
-          <div class="absolute bottom-1.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 bg-slate-100/95 rounded-full border border-slate-200 text-[9px] font-bold text-slate-700 z-20 shadow-sm">ドライ</div>
-          <div class="absolute left-1.5 top-1/2 -translate-y-1/2 px-1 py-2 bg-emerald-50/95 rounded-lg border border-emerald-200 text-[9px] font-bold text-emerald-900 z-20 shadow-sm [writing-mode:vertical-rl]">スッキリ</div>
-          <div class="absolute right-1.5 top-1/2 -translate-y-1/2 px-1 py-2 bg-blue-50/95 rounded-lg border border-blue-200 text-[9px] font-bold text-blue-900 z-20 shadow-sm [writing-mode:vertical-rl]">重厚・コク</div>
+          <div class="absolute top-3 left-1/2 -translate-x-1/2 text-[9px] font-bold text-pink-700 bg-white/80 px-2 py-1 rounded-full backdrop-blur-sm">華やか・香り</div>
+          <div class="absolute bottom-3 left-1/2 -translate-x-1/2 text-[9px] font-bold text-stone-500 bg-white/80 px-2 py-1 rounded-full backdrop-blur-sm">ドライ・キレ</div>
+          <div class="absolute left-2 top-1/2 -translate-y-1/2 text-[9px] font-bold text-teal-700 bg-white/80 px-1 py-2 rounded-full backdrop-blur-sm [writing-mode:vertical-rl]">スッキリ・軽快</div>
+          <div class="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] font-bold text-stone-600 bg-white/80 px-1 py-2 rounded-full backdrop-blur-sm [writing-mode:vertical-rl]">濃厚・コク</div>
 
-          <div class="absolute inset-x-6 top-1/2 h-[1px] bg-slate-200/80 pointer-events-none z-10"></div>
-          <div class="absolute inset-y-6 left-1/2 w-[1px] bg-slate-200/80 pointer-events-none z-10"></div>
-
-          <!-- Pins Layer -->
-          <div id="drink-pins-layer" class="relative w-full h-full p-4 z-30"></div>
+          <!-- お酒のピンが置かれるレイヤー -->
+          <div id="drink-pins-layer" class="absolute inset-0 z-20"></div>
           
-          <!-- User Marker -->
+          <!-- ユーザーの現在地マーカー -->
           <div id="user-position-marker" class="absolute pointer-events-none transition-all duration-700 -translate-x-1/2 -translate-y-1/2 z-40 flex flex-col items-center">
-            <div class="relative flex items-center justify-center">
-              <span class="absolute w-7 h-7 rounded-full bg-emerald-400 animate-ping-slow"></span>
-              <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-emerald-700 to-teal-500 text-white flex items-center justify-center shadow-md border-2 border-white text-[10px]"><i class="fa-solid fa-star"></i></div>
+            <span class="absolute w-12 h-12 rounded-full bg-emerald-400/30 animate-ping-slow"></span>
+            <div class="relative w-9 h-9 rounded-full bg-gradient-to-tr from-emerald-800 to-teal-500 text-white flex items-center justify-center shadow-lg border-2 border-white text-xs">
+              <i class="fa-solid fa-star"></i>
             </div>
+            <span class="mt-1 px-2 py-0.5 rounded-full bg-emerald-900 text-white text-[8px] font-bold whitespace-nowrap">あなた</span>
           </div>
         </div>
 
-        <!-- Selected Drink Card -->
-        <div id="quick-drink-card" class="bg-white rounded-2xl p-2.5 shadow-md border border-emerald-100 flex items-center justify-between flex-shrink-0 transition-opacity opacity-0 pointer-events-none z-40">
-          <div class="flex items-center gap-2.5 overflow-hidden">
-            <div class="w-11 h-11 rounded-full bg-emerald-50 border border-emerald-100 overflow-hidden flex-shrink-0">
-              <img id="card-drink-img" src="" class="w-full h-full object-cover">
-            </div>
-            <div class="min-w-0 pr-1">
-              <div class="flex items-center gap-1.5">
-                <span id="card-drink-category" class="text-[9px] px-1 py-0.2 bg-slate-100 text-slate-700 rounded font-medium"></span>
-                <span class="text-[10px] text-emerald-900 font-semibold truncate flex items-center gap-0.5">
-                  <i class="fa-solid fa-location-dot text-[9px] text-rose-500"></i> <span id="card-pref-text"></span>
-                </span>
-              </div>
-              <h3 id="card-drink-name" class="font-bold text-xs text-slate-900 font-mincho truncate leading-tight mt-0.5"></h3>
-            </div>
+        <div class="flex-shrink-0 pt-2">
+          <div class="flex items-center justify-between mb-1.5 px-1">
+            <span class="text-[10px] font-bold text-stone-700">あなたに近い3杯</span>
+            <span class="text-[9px] text-stone-400">気になる一杯を選択</span>
           </div>
-          <button onclick="startJourneyChargeModal()" class="flex-shrink-0 px-3.5 py-2.5 bg-gradient-to-r from-amber-500 to-emerald-700 text-white rounded-xl text-[11px] font-bold shadow-md transition flex items-center gap-1.5">
-            <span>物語をひらく</span>
+          <div id="recommendation-list" class="grid grid-cols-3 gap-2"></div>
+        </div>
+
+        <!-- 旅へ出発するアクションボタン（初期は隠れている） -->
+        <div id="action-journey-container" class="absolute bottom-6 left-0 right-0 px-4 transition-all duration-500 translate-y-24 opacity-0 pointer-events-none z-50">
+          <button onclick="startJourney()" class="w-full py-3.5 rounded-2xl bg-stone-900 text-white font-mincho font-bold shadow-[0_10px_25px_rgba(0,0,0,0.3)] flex items-center justify-center gap-2 hover:bg-stone-800 active:scale-95 transition-all">
+            <span>お酒の故郷へ旅立つ</span>
+            <i class="fa-solid fa-plane text-sm"></i>
           </button>
         </div>
       </div>
 
-      <!-- STEP 3: 長押しチャージ画面 -->
-      <div id="view-charge" class="absolute inset-0 z-20 flex flex-col items-center justify-between opacity-0 pointer-events-none transition-all duration-400 select-none overflow-hidden bg-[#e0f4fc]">
-        
-        <div class="absolute inset-0 z-0 flex items-center justify-center pointer-events-none overflow-hidden pb-16">
-          
-          <!-- ★ ピタ貼りマッピング用の完全な構造 ★ -->
-          <div id="map-container" class="relative w-full h-auto max-w-[320px] flex items-center justify-center">
-            <!-- アスペクト比を狂わせないために img が主役になる -->
-            <img id="charge-japan-map-img" src="japan.png" onerror="this.src='https://placehold.co/400x720/e0f4fc/22c55e?text=Japan+Map'" class="w-full h-auto object-contain opacity-90" alt="日本地図">
-            
-            <!-- マッピング用レイヤーは img とピッタリ重なる absolute -->
-            <div id="map-pin-layer" class="absolute inset-0 w-full h-full pointer-events-none">
-              <!-- 目的地ピン -->
-              <div id="charge-dest-pin" class="absolute w-8 h-8 -translate-x-1/2 -translate-y-1/2 opacity-0 transition-opacity duration-500 z-10 flex items-center justify-center">
-                  <span class="absolute w-full h-full rounded-full bg-emerald-400 animate-ping"></span>
-                  <div class="w-3 h-3 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,1)] border border-white"></div>
-              </div>
-
-              <!-- 発光する純白の飛行機 -->
-              <div id="charge-orb" class="absolute w-8 h-8 flex items-center justify-center -translate-x-1/2 -translate-y-1/2 opacity-0 z-20 text-white drop-shadow-[0_0_10px_rgba(255,255,255,1)] text-[32px]">
-                <i class="fa-solid fa-plane"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="relative z-30 w-full flex items-center justify-between p-4 pt-6">
-          <div class="w-8"></div>
-          <button onclick="cancelCharge()" class="w-8 h-8 rounded-full bg-black/10 text-emerald-950 hover:bg-black/20 flex items-center justify-center text-sm backdrop-blur-md transition">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        </div>
-
-        <div class="relative z-30 w-full flex flex-col items-center mt-auto pb-8">
-          <div id="charge-coin-wrapper" class="relative mb-4 transition-all duration-300">
-            <div id="charge-glow" class="absolute -inset-5 rounded-full bg-emerald-300/0 blur-2xl transition-all duration-200 pointer-events-none"></div>
-            <div id="charge-coin" class="w-24 h-24 rounded-full bg-gradient-to-tr from-amber-400 via-yellow-200 to-amber-100 p-1 shadow-[0_8px_20px_rgba(0,0,0,0.2)] cursor-pointer select-none transition-transform duration-150 animate-coin-float flex items-center justify-center relative overflow-hidden">
-              <div class="w-full h-full rounded-full overflow-hidden relative shadow-inner bg-slate-900 flex items-center justify-center">
-                <img id="charge-coin-img" src="" class="w-full h-full object-cover brightness-95">
-              </div>
-            </div>
-          </div>
-          <div id="charge-percent-text" class="text-sm font-mono font-bold text-emerald-900 tracking-widest drop-shadow mb-2">0%</div>
-          <div id="btn-hold-trigger" class="relative w-48 h-10 rounded-full border border-emerald-900/10 overflow-hidden shadow-md cursor-pointer active:scale-98 transition-transform select-none bg-black/40 backdrop-blur-md flex items-center justify-center">
-            <div id="charge-progress-bar" class="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-emerald-500 via-emerald-400 to-teal-300 w-0 transition-all duration-75"></div>
-            <span class="relative z-10 text-white font-bold text-[11px] tracking-wider drop-shadow">長押ししてはなす</span>
-          </div>
-        </div>
+      <!-- STEP 3: 動画再生ビュー (日本地図の代わり) -->
+      <div id="view-video" class="absolute inset-0 z-50 flex flex-col opacity-0 pointer-events-none transition-all duration-700 bg-black">
+        <video id="trip-video" playsinline class="w-full h-full object-cover">
+          <!-- 1. ユーザー指定の動画 (存在すれば再生される) -->
+          <source src="trip.mp4" type="video/mp4">
+          <!-- 2. フォールバック (trip.mp4が無い場合のダミー動画) -->
+          <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+        </video>
+        <!-- スキップボタン -->
+        <button onclick="skipVideo()" class="absolute top-6 right-4 px-3 py-1.5 bg-black/40 text-white text-[10px] font-bold rounded-full backdrop-blur-md border border-white/20 active:scale-95 transition-transform z-10">
+          SKIP <i class="fa-solid fa-forward-step ml-1"></i>
+        </button>
       </div>
 
-      <!-- VIEW 4: リッチな雑誌風ストーリー画面 -->
-      <div id="view-story" class="absolute inset-0 z-10 flex flex-col bg-[#fdfcf9] text-slate-900 opacity-0 pointer-events-none transition-all duration-500 overflow-hidden">
+      <!-- STEP 4: リッチな雑誌風ストーリー画面 -->
+      <div id="view-story" class="absolute inset-0 z-40 flex flex-col bg-[#fdfcf9] text-slate-900 opacity-0 pointer-events-none transition-all duration-500 overflow-hidden">
         <header class="px-4 py-2.5 flex items-center justify-between bg-[#fdfcf9]/95 backdrop-blur-md border-b border-stone-200/80 flex-shrink-0 z-20">
           <button onclick="backToFlavorMap()" class="px-3 py-1 rounded-full bg-stone-100 text-stone-800 text-[11px] font-medium flex items-center gap-1.5 transition">
-            <i class="fa-solid fa-arrow-left text-[10px]"></i><span>戻る</span>
+            <i class="fa-solid fa-arrow-left text-[10px]"></i><span>マップに戻る</span>
           </button>
           <div class="text-right">
             <span id="story-region-header-tag" class="text-[11px] font-mincho font-bold text-stone-700"></span>
@@ -321,62 +269,8 @@
     let currentStep = 0;
     let userScore = { x: 50, y: 50 };
     let selectedDrinkId = null;
-    let chargeTimer = null;
-    let chargePercent = 0;
-    
     let currentGalleryIndex = 0;
     let currentGalleryData = [];
-
-    // ★ 日本地図マッピング座標（ズレ解消済）
-    const PREFECTURE_COORDS = {
-      "北海道": {x: 75, y: 20},
-      "青森県": {x: 68, y: 32},
-      "岩手県": {x: 72, y: 37},
-      "宮城県": {x: 70, y: 42},
-      "秋田県": {x: 65, y: 36},
-      "山形県": {x: 65, y: 40},
-      "福島県": {x: 66, y: 45},
-      "茨城県": {x: 71, y: 51},
-      "栃木県": {x: 67, y: 49},
-      "群馬県": {x: 63, y: 50},
-      "埼玉県": {x: 65, y: 52},
-      "千葉県": {x: 70, y: 55},
-      "東京都": {x: 66, y: 55},
-      "神奈川県": {x: 64, y: 57},
-      "新潟県": {x: 58, y: 44},
-      "富山県": {x: 51, y: 49},
-      "石川県": {x: 48, y: 46},
-      "福井県": {x: 46, y: 52},
-      "山梨県": {x: 61, y: 54},
-      "長野県": {x: 56, y: 52},
-      "岐阜県": {x: 52, y: 55},
-      "静岡県": {x: 60, y: 59},
-      "愛知県": {x: 54, y: 60},
-      "三重県": {x: 50, y: 62},
-      "滋賀県": {x: 48, y: 57},
-      "京都府": {x: 45, y: 57},
-      "大阪府": {x: 43, y: 61},
-      "兵庫県": {x: 39, y: 59},
-      "奈良県": {x: 46, y: 62},
-      "和歌山県": {x: 43, y: 65},
-      "鳥取県": {x: 35, y: 55},
-      "島根県": {x: 29, y: 56},
-      "岡山県": {x: 35, y: 59},
-      "広島県": {x: 31, y: 60},
-      "山口県": {x: 23, y: 61},
-      "徳島県": {x: 37, y: 65},
-      "香川県": {x: 36, y: 62},
-      "愛媛県": {x: 31, y: 65},
-      "高知県": {x: 32, y: 68},
-      "福岡県": {x: 21, y: 65},
-      "佐賀県": {x: 18, y: 66},
-      "長崎県": {x: 15, y: 68},
-      "熊本県": {x: 21, y: 70},
-      "大分県": {x: 25, y: 68},
-      "宮崎県": {x: 25, y: 73},
-      "鹿児島県": {x: 21, y: 77},
-      "沖縄県": {x: 10, y: 90}
-    };
 
     const DRINKS_DATABASE = [
       {
@@ -510,75 +404,67 @@
       }
     ];
 
-    // ==========================================
-    // アニメーションエフェクト制御ロジック（大増量＆下まで落ちる版）
-    // ==========================================
     function startBackgroundEffects() {
-      
-      // === 左上：桜の花びら（大増量） ===
+      // === 左上：桜の花びら ===
       const topLeft = document.getElementById('bg-top-left');
       if (topLeft) {
         setInterval(() => {
           const petal = document.createElement('div');
-          petal.className = 'absolute w-2.5 h-2.5 bg-pink-300/70 rounded-tl-full rounded-br-full pointer-events-none';
+          petal.className = 'absolute w-2.5 h-2.5 bg-pink-300/80 rounded-tl-full rounded-br-full pointer-events-none drop-shadow-sm';
           petal.style.left = `${Math.random() * 100}%`;
           petal.style.top = `-15px`;
           petal.style.animation = `petalFall ${3 + Math.random() * 2}s linear forwards`;
           topLeft.appendChild(petal);
-          setTimeout(() => { if(petal.parentNode) petal.remove(); }, 5000);
-        }, 300); // 頻度を多めに
+          setTimeout(() => { if(petal.parentNode) petal.remove(); }, 6000);
+        }, 250); 
       }
 
-      // === 右上：泡がぷくぷく落ちていく ===
+      // === 右上：はっきりとした泡がぷくぷく ===
       const topRight = document.getElementById('bg-top-right');
       if (topRight) {
         setInterval(() => {
           const bubble = document.createElement('div');
-          // 泡のスタイルをはっきりとさせる（枠線を濃く、中も少し白く、外側にぼんやり光彩）
-          bubble.className = 'absolute rounded-full border-[1.5px] border-white/90 bg-white/40 pointer-events-none shadow-[inset_0_0_6px_rgba(255,255,255,0.8),0_0_4px_rgba(255,255,255,0.4)]';
-          const size = 8 + Math.random() * 14; // 8px ~ 22px
+          bubble.className = 'absolute rounded-full border-2 border-white bg-white/30 pointer-events-none shadow-[inset_0_0_8px_rgba(255,255,255,0.9),0_0_5px_rgba(255,255,255,0.6)]';
+          const size = 12 + Math.random() * 16; 
           bubble.style.width = `${size}px`;
           bubble.style.height = `${size}px`;
           bubble.style.left = `${10 + Math.random() * 80}%`;
-          bubble.style.top = `-20px`;
-          bubble.style.animation = `bubbleFall ${2.5 + Math.random() * 2.5}s ease-in-out forwards`;
+          bubble.style.top = `-25px`;
+          bubble.style.animation = `bubbleFall ${3 + Math.random() * 2}s ease-in-out forwards`;
           topRight.appendChild(bubble);
           setTimeout(() => { if(bubble.parentNode) bubble.remove(); }, 6000);
-        }, 100); // 生成頻度を上げて泡の量を増やす
+        }, 150);
       }
 
-      // === 左下：新緑の葉っぱ（大増量） ===
+      // === 左下：新緑の葉っぱ ===
       const bottomLeft = document.getElementById('bg-bottom-left');
       if (bottomLeft) {
         setInterval(() => {
           const leaf = document.createElement('div');
-          leaf.className = 'absolute w-3 h-3 bg-emerald-400 rounded-tl-full rounded-br-full pointer-events-none opacity-80 shadow-sm';
+          leaf.className = 'absolute w-3.5 h-3.5 bg-emerald-400 rounded-tl-full rounded-br-full pointer-events-none opacity-90 shadow-sm';
           leaf.style.left = `${20 + Math.random() * 80}%`;
           leaf.style.top = `-15px`;
           leaf.style.animation = `leafFall ${4 + Math.random() * 3}s linear forwards`;
           bottomLeft.appendChild(leaf);
           setTimeout(() => { if(leaf.parentNode) leaf.remove(); }, 7000);
-        }, 400); // 頻度を多めに
+        }, 300);
       }
 
-      // === 右下：雪（大増量） ===
+      // === 右下：雪 ===
       const bottomRight = document.getElementById('bg-bottom-right');
       if (bottomRight) {
         setInterval(() => {
           const snow = document.createElement('div');
-          snow.className = 'absolute w-1.5 h-1.5 bg-white rounded-full pointer-events-none shadow-[0_0_5px_rgba(255,255,255,1)]';
+          snow.className = 'absolute w-1.5 h-1.5 bg-white rounded-full pointer-events-none shadow-[0_0_6px_rgba(255,255,255,1)]';
           snow.style.left = `${Math.random() * 100}%`;
           snow.style.top = `-10px`;
           snow.style.animation = `snowFall ${3 + Math.random() * 3}s linear forwards`;
           bottomRight.appendChild(snow);
           setTimeout(() => { if(snow.parentNode) snow.remove(); }, 6000);
-        }, 150); // 雪は特に多く
+        }, 120);
       }
     }
 
-    // ==========================================
-    // アプリケーションロジック
-    // ==========================================
     function renderQuiz() {
       if (!QUESTIONS || currentStep >= QUESTIONS.length) {
         showMapScreen();
@@ -614,227 +500,128 @@
       }
     }
 
+    function getNearestDrinks() {
+      return [...DRINKS_DATABASE].sort((a,b) => Math.hypot(a.x-userScore.x,a.y-userScore.y)-Math.hypot(b.x-userScore.x,b.y-userScore.y)).slice(0,3);
+    }
+    
     function restartDiagnosis() {
-      currentStep = 0;
-      userScore = { x: 50, y: 50 };
-      selectedDrinkId = null;
-      stopCharge();
-      
-      const views = ['view-quiz', 'view-map', 'view-charge', 'view-story'];
-      views.forEach(id => {
+      currentStep=0; userScore={x:50,y:50}; selectedDrinkId=null;
+      // 全ビューを非表示
+      ['view-quiz','view-map','view-video','view-story'].forEach(id=>{
         const el = document.getElementById(id);
-        if(el) {
-          el.style.opacity = '0';
-          el.style.pointerEvents = 'none';
-          el.style.zIndex = '0';
-        }
+        if(el){ el.style.opacity='0'; el.style.pointerEvents='none'; el.style.zIndex='0'; }
       });
-      
-      const quizView = document.getElementById('view-quiz');
-      if(quizView) {
-        quizView.style.opacity = '1';
-        quizView.style.pointerEvents = 'auto';
-        quizView.style.zIndex = '40';
-      }
-      
-      const card = document.getElementById('quick-drink-card');
-      if(card) {
-        card.classList.add('opacity-0', 'pointer-events-none');
-        card.classList.remove('opacity-100', 'pointer-events-auto');
-      }
+      // 旅へボタンも隠す
+      document.getElementById('action-journey-container').classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
+      // クイズ表示
+      const q = document.getElementById('view-quiz'); 
+      q.style.opacity='1'; q.style.pointerEvents='auto'; q.style.zIndex='40'; 
       renderQuiz();
     }
-
+    
     function showMapScreen() {
-      document.getElementById('view-quiz').style.opacity = '0';
-      document.getElementById('view-quiz').style.pointerEvents = 'none';
-      document.getElementById('view-quiz').style.zIndex = '0';
-      
-      const mapScreen = document.getElementById('view-map');
-      mapScreen.style.opacity = '1';
-      mapScreen.style.pointerEvents = 'auto';
-      mapScreen.style.zIndex = '30';
-      
-      const userMarker = document.getElementById('user-position-marker');
-      userMarker.style.left = `${userScore.x}%`;
-      userMarker.style.top = `${userScore.y}%`;
-      
+      const q = document.getElementById('view-quiz'); q.style.opacity='0'; q.style.pointerEvents='none'; q.style.zIndex='0';
+      const m = document.getElementById('view-map'); m.style.opacity='1'; m.style.pointerEvents='auto'; m.style.zIndex='30';
+      const u = document.getElementById('user-position-marker'); u.style.left=`${userScore.x}%`; u.style.top=`${userScore.y}%`;
       drawDrinkPins();
+      renderRecommendations();
     }
-
-    function drawDrinkPins() {
+    
+    function drawDrinkPins(){
       const layer = document.getElementById('drink-pins-layer');
       layer.innerHTML = '';
-      
       DRINKS_DATABASE.forEach(drink => {
-        const pin = document.createElement('div');
-        pin.className = "absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-transform duration-300 hover:scale-110 z-10";
+        const pin = document.createElement('button');
+        pin.className = 'absolute -translate-x-1/2 -translate-y-1/2 w-11 h-11 rounded-full border-2 border-white shadow-md bg-white overflow-hidden transition-transform duration-300 hover:scale-110 active:scale-95';
         pin.style.left = `${drink.x}%`;
         pin.style.top = `${drink.y}%`;
-        
-        pin.innerHTML = `
-          <div class="relative w-14 h-14 rounded-full border-2 border-white shadow-md bg-white overflow-hidden flex items-center justify-center group">
-            <img src="${drink.imageUrl}" onerror="this.src='https://placehold.co/100x100/e2e8f0/64748b?text=Drink'" class="w-full h-full object-cover">
-            <div class="absolute inset-0 bg-black/10 group-active:bg-black/30 transition"></div>
-          </div>
-        `;
+        pin.title = drink.name;
+        pin.innerHTML = `<img src="${drink.imageUrl}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/e2e8f0/64748b?text=Drink'">`;
         pin.onclick = () => selectDrink(drink, pin);
         layer.appendChild(pin);
       });
     }
 
-    function selectDrink(drink, pinElement) {
+    function renderRecommendations(){
+      const list = document.getElementById('recommendation-list');
+      list.innerHTML = '';
+      getNearestDrinks().forEach((drink, index) => {
+        const card = document.createElement('button');
+        card.id = `rec-card-${drink.id}`;
+        card.className = 'text-left bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm active:scale-[.98] transition';
+        card.innerHTML = `<div class="h-16 overflow-hidden"><img src="${drink.imageUrl}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/300x200/e2e8f0/64748b?text=Drink'"></div><div class="p-2"><div class="text-[8px] text-emerald-700 font-bold">${index+1} / ${drink.category}</div><div class="text-[10px] font-mincho font-bold text-stone-900 truncate mt-0.5">${drink.name}</div><div class="text-[8px] text-stone-500 truncate">${drink.prefecture}</div></div>`;
+        card.onclick = () => selectDrink(drink, null);
+        list.appendChild(card);
+      });
+    }
+
+    function selectDrink(drink, pinElement){
       selectedDrinkId = drink.id;
-      document.querySelectorAll('#drink-pins-layer > div > div:first-child').forEach(el => el.classList.remove('ring-4', 'ring-emerald-400', 'ring-opacity-50'));
-      pinElement.querySelector('div').classList.add('ring-4', 'ring-emerald-400', 'ring-opacity-50');
       
-      const imgEl = document.getElementById('card-drink-img');
-      imgEl.src = drink.imageUrl;
-      imgEl.onerror = () => { imgEl.src = 'https://placehold.co/100x100/e2e8f0/64748b?text=Drink'; };
+      // ピンのハイライトをリセット
+      document.querySelectorAll('#drink-pins-layer button').forEach(el => el.classList.remove('ring-4','ring-emerald-400'));
+      document.querySelectorAll('#recommendation-list button').forEach(el => el.classList.remove('ring-2','ring-emerald-400'));
       
-      document.getElementById('card-drink-category').innerText = drink.category;
-      document.getElementById('card-pref-text').innerText = drink.prefecture;
-      document.getElementById('card-drink-name').innerText = drink.name;
-      
-      const card = document.getElementById('quick-drink-card');
-      card.classList.remove('opacity-0', 'pointer-events-none');
-      card.classList.add('opacity-100', 'pointer-events-auto');
-    }
-
-    function startJourneyChargeModal() {
-      const drink = DRINKS_DATABASE.find(d => d.id === selectedDrinkId);
-      const coinImg = document.getElementById('charge-coin-img');
-      coinImg.src = drink.imageUrl;
-      coinImg.onerror = () => { coinImg.src = 'https://placehold.co/100x100/e2e8f0/64748b?text=Drink'; };
-      
-      const coords = PREFECTURE_COORDS[drink.prefecture] || {x: 50, y: 50};
-      
-      const destPin = document.getElementById('charge-dest-pin');
-      destPin.style.left = `${coords.x}%`;
-      destPin.style.top = `${coords.y}%`;
-      destPin.style.opacity = '1';
-
-      const chargeView = document.getElementById('view-charge');
-      chargeView.style.opacity = '1';
-      chargeView.style.pointerEvents = 'auto';
-      chargeView.style.zIndex = '40';
-      
-      chargePercent = 0;
-      updateChargeUI();
-    }
-
-    function cancelCharge() {
-      document.getElementById('view-charge').style.opacity = '0';
-      document.getElementById('view-charge').style.pointerEvents = 'none';
-      stopCharge();
-    }
-
-    function startCharge(e) {
-      if(e) e.preventDefault();
-      document.getElementById('charge-coin').classList.add('scale-95');
-      document.getElementById('charge-glow').classList.add('bg-emerald-300/40');
-      chargeTimer = setInterval(() => {
-        chargePercent += 2;
-        if (chargePercent >= 100) { 
-          chargePercent = 100; 
-          stopCharge(); 
-          finishChargeAndFly(); 
-        }
-        updateChargeUI();
-      }, 25);
-    }
-
-    function stopCharge(e) {
-      if(e) e.preventDefault();
-      clearInterval(chargeTimer);
-      document.getElementById('charge-coin').classList.remove('scale-95');
-      document.getElementById('charge-glow').classList.remove('bg-emerald-300/40');
-      if (chargePercent < 100) { 
-        chargePercent = 0; 
-        updateChargeUI(); 
+      // 選択したピンをハイライト
+      if(pinElement) {
+        pinElement.classList.add('ring-4','ring-emerald-400');
+      } else {
+        // おすすめリストから選択された場合は、マップ上の対応するピンを探してハイライト
+        const matchingPinIndex = DRINKS_DATABASE.findIndex(d => d.id === drink.id);
+        const pins = document.querySelectorAll('#drink-pins-layer button');
+        if(pins[matchingPinIndex]) pins[matchingPinIndex].classList.add('ring-4','ring-emerald-400');
+        // カードもハイライト
+        const card = document.getElementById(`rec-card-${drink.id}`);
+        if(card) card.classList.add('ring-2','ring-emerald-400');
       }
+
+      // 「旅へ出発」ボタンを下から表示する
+      const journeyBtn = document.getElementById('action-journey-container');
+      journeyBtn.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
     }
 
-    function updateChargeUI() {
-      document.getElementById('charge-progress-bar').style.width = `${chargePercent}%`;
-      document.getElementById('charge-percent-text').innerText = `${chargePercent}%`;
+    function startJourney() {
+      if(!selectedDrinkId) return;
+
+      const map = document.getElementById('view-map');
+      const videoView = document.getElementById('view-video');
+      const video = document.getElementById('trip-video');
+
+      // マップをフェードアウト
+      map.style.opacity = '0';
+      map.style.pointerEvents = 'none';
+      map.style.zIndex = '0';
+      
+      // 動画ビューをフェードイン
+      videoView.style.opacity = '1';
+      videoView.style.pointerEvents = 'auto';
+      videoView.style.zIndex = '50';
+
+      // 動画の再生処理
+      video.currentTime = 0;
+      // playsinline属性をつけているのでスマホでもインライン再生可能
+      video.play().catch(e => {
+        console.warn("動画の自動再生がブロックされました。強制的に次へ進みます。", e);
+        // 再生できなかった場合は少し待ってから強制遷移
+        setTimeout(showStoryScreen, 1500);
+      });
     }
 
-    function finishChargeAndFly() {
-      const drink = DRINKS_DATABASE.find(d => d.id === selectedDrinkId);
-      const coords = PREFECTURE_COORDS[drink.prefecture] || {x: 50, y: 50};
-      
-      document.getElementById('charge-coin-wrapper').style.opacity = '0';
-      document.getElementById('charge-coin-wrapper').style.transform = 'scale(0.5)';
-      
-      const orb = document.getElementById('charge-orb');
-      const coinRect = document.getElementById('charge-coin').getBoundingClientRect();
-      const mapPinLayer = document.getElementById('map-pin-layer');
-      const mapRect = mapPinLayer.getBoundingClientRect();
-      
-      // 飛行機の初期位置を計算
-      const startX = ((coinRect.left + coinRect.width / 2 - mapRect.left) / mapRect.width) * 100;
-      const startY = ((coinRect.top + coinRect.height / 2 - mapRect.top) / mapRect.height) * 100;
-      
-      // 目的地までの角度を計算し、飛行機の向きを合わせる
-      const dx = coords.x - startX;
-      // 日本地図の画像アスペクト比を考慮した補正（おおよそ1:1.8）
-      const dy = (coords.y - startY) * 1.8;
-      const angleRad = Math.atan2(dy, dx);
-      let angleDeg = angleRad * (180 / Math.PI);
-      const rotation = angleDeg + 45;
-      
-      orb.style.transition = 'none';
-      orb.style.left = `${startX}%`;
-      orb.style.top = `${startY}%`;
-      orb.style.transform = `translate(-50%, -50%) rotate(${rotation}deg) scale(0.5)`;
-      orb.style.opacity = '1';
-      
-      setTimeout(() => {
-        orb.style.transition = 'all 0.9s cubic-bezier(0.25, 0.1, 0.25, 1)';
-        orb.style.left = `${coords.x}%`;
-        orb.style.top = `${coords.y}%`;
-        orb.style.transform = `translate(-50%, -50%) rotate(${rotation}deg) scale(1.2)`;
-        
-        setTimeout(() => {
-          orb.style.opacity = '0';
-          orb.style.transform = `translate(-50%, -50%) rotate(${rotation}deg) scale(2)`;
-          
-          setTimeout(() => {
-            showStoryScreen();
-            setTimeout(() => { resetChargeView(); }, 600); 
-          }, 300);
-        }, 900);
-      }, 50);
+    function skipVideo() {
+      const video = document.getElementById('trip-video');
+      video.pause();
+      showStoryScreen();
     }
-    
-    function resetChargeView() {
-      document.getElementById('view-charge').style.opacity = '0';
-      document.getElementById('view-charge').style.pointerEvents = 'none';
-      document.getElementById('view-charge').style.zIndex = '0';
-      
-      document.getElementById('charge-coin-wrapper').style.opacity = '1';
-      document.getElementById('charge-coin-wrapper').style.transform = 'scale(1)';
-      document.getElementById('charge-dest-pin').style.opacity = '0';
-      
-      const orb = document.getElementById('charge-orb');
-      orb.style.transition = 'none';
-      orb.style.opacity = '0';
-    }
-
-    const triggerBtn = document.getElementById('btn-hold-trigger');
-    const coinObj = document.getElementById('charge-coin');
-    ['mousedown', 'touchstart'].forEach(evt => {
-      triggerBtn.addEventListener(evt, startCharge, {passive: false});
-      coinObj.addEventListener(evt, startCharge, {passive: false});
-    });
-    ['mouseup', 'mouseleave', 'touchend'].forEach(evt => {
-      triggerBtn.addEventListener(evt, stopCharge);
-      coinObj.addEventListener(evt, stopCharge);
-    });
 
     function showStoryScreen() {
+      const videoView = document.getElementById('view-video');
+      videoView.style.opacity = '0';
+      videoView.style.pointerEvents = 'none';
+      videoView.style.zIndex = '0';
+
       const drink = DRINKS_DATABASE.find(d => d.id === selectedDrinkId);
+      if(!drink) return;
+
       document.getElementById('story-region-header-tag').innerText = drink.prefecture;
       document.getElementById('story-drink-type-badge').innerText = drink.typeBadge;
       document.getElementById('story-editorial-lead').innerText = drink.editorialLead;
@@ -899,12 +686,32 @@
     }
 
     function backToFlavorMap() {
-      document.getElementById('view-story').style.opacity = '0';
-      document.getElementById('view-story').style.pointerEvents = 'none';
-      document.getElementById('view-story').style.zIndex = '0';
+      const story = document.getElementById('view-story');
+      story.style.opacity = '0';
+      story.style.pointerEvents = 'none';
+      story.style.zIndex = '0';
+      
+      const map = document.getElementById('view-map');
+      map.style.opacity = '1';
+      map.style.pointerEvents = 'auto';
+      map.style.zIndex = '30';
+      
+      // 戻ったときはボタンを表示したままにする
+      const journeyBtn = document.getElementById('action-journey-container');
+      journeyBtn.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
+      
+      drawDrinkPins();
+      renderRecommendations();
     }
 
+    // イベントリスナーの登録
     window.onload = () => { 
+      // 動画の再生終了時に自動でストーリー画面へ遷移
+      const video = document.getElementById('trip-video');
+      video.addEventListener('ended', showStoryScreen);
+      // 万が一動画ソースが見つからずにエラーになった場合も強制遷移
+      video.addEventListener('error', showStoryScreen);
+
       renderQuiz(); 
       startBackgroundEffects(); // エフェクトアニメーションの開始
     };
