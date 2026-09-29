@@ -205,18 +205,20 @@ function intro(){
       setTimeout(next, 200);
     }
 
-    // 順番にタイピングを実行
-    typeHTML(m1, texts[0], function(){
-      typeHTML(m2, texts[1], function(){
-        typeHTML(m3, texts[2], function(){
-          var stWrap = document.getElementById('st-wrap');
-          stWrap.style.opacity = 1; // 最後にボタンを表示
-          setTimeout(function() {
-            stWrap.scrollIntoView({ behavior: 'smooth', block: 'end' });
-          }, 200); // ボタンが表示されてから少しだけ待って自然にスクロール
+    // 順番にタイピングを実行 (画面表示から1.5秒後に開始)
+    setTimeout(function() {
+      typeHTML(m1, texts[0], function(){
+        typeHTML(m2, texts[1], function(){
+          typeHTML(m3, texts[2], function(){
+            var stWrap = document.getElementById('st-wrap');
+            stWrap.style.opacity = 1; // 最後にボタンを表示
+            setTimeout(function() {
+              stWrap.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }, 200); // ボタンが表示されてから少しだけ待って自然にスクロール
+          });
         });
       });
-    });
+    }, 1500);
 }
 function item(d){
 v.innerHTML='<h2>'+d.c+'</h2><p class="why"><b>大将がすすめる理由</b><br>'+d.r+'</p>'+ps(d.i)+'<div id="wd"></div><div class="rv" id="rv"><div class="taste"><p class="lb">味わいどころ</p><p style="margin:0">'+d.t+'</p></div></div><button class="btn" id="nx" hidden>'+(s<4?'次の一本へ':'ここから先は、特別なメニュー')+'</button>';
