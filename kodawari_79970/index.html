@@ -7,9 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--fg:#1a1a1a;--mut:#1a1a1a;--acc:#b8651f;--line:#d8d2c4;--card:rgba(255,253,246,.5);--po:.55;--tint:rgba(184,101,31,.16);--bg:#f1ebdc;--stick:#a89a80;--raw:#e6cfa8;--done:#8a3e12;
+:root{--fg:#1a1a1a;--mut:#1a1a1a;--acc:#b8651f;--line:#d8d2c4;--card:rgba(255,253,246,.5);--msg-bg:rgba(255,253,246,.25);--po:.55;--tint:rgba(184,101,31,.16);--bg:#f1ebdc;--stick:#a89a80;--raw:#e6cfa8;--done:#8a3e12;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-:root[data-theme="dark"]{--bg:#17203a;--fg:#f1ece0;--mut:#f1ece0;--acc:#e6a04d;--card:rgba(255,255,255,.06);--po:.22;--tint:rgba(230,160,77,.2);--line:#34426b;--stick:#7d8aab;--raw:#c9b58e;--done:#c2571f}
+:root[data-theme="dark"]{--bg:#17203a;--fg:#f1ece0;--mut:#f1ece0;--acc:#e6a04d;--card:rgba(255,255,255,.06);--msg-bg:rgba(255,255,255,.03);--po:.22;--tint:rgba(230,160,77,.2);--line:#34426b;--stick:#7d8aab;--raw:#c9b58e;--done:#c2571f}
 *{box-sizing:border-box}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{word-break:auto-phrase;line-break:strict;text-wrap:pretty;margin:0;background:var(--bg);color:var(--fg);font:400 17px/1.9 "Shippori Mincho B1","Hiragino Mincho ProN","Yu Mincho",serif}
@@ -87,9 +87,9 @@ button{font:inherit;cursor:pointer}
 .seg .act{background:var(--acc)}
 .hero-container { display: flex; flex-direction: column; align-items: center; margin: 24px 0 16px; }
 .hero-image { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 3px solid var(--acc); background: var(--tint); margin-bottom: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
-.msg-window { width: 100%; background: var(--card); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid var(--line); border-radius: 16px; padding: 24px 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.06); position: relative; }
+.msg-window { width: 100%; background: var(--msg-bg); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); border: 1px solid var(--line); border-radius: 16px; padding: 24px 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.06); position: relative; }
 .msg-window::before { content: ""; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); border-width: 0 14px 14px 14px; border-style: solid; border-color: transparent transparent var(--line) transparent; }
-.msg-window::after { content: ""; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); border-width: 0 12px 12px 12px; border-style: solid; border-color: transparent transparent var(--card) transparent; }
+.msg-window::after { content: ""; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); border-width: 0 12px 12px 12px; border-style: solid; border-color: transparent transparent var(--msg-bg) transparent; }
 .msg-window p { margin: 0 0 1.2em; }
 .msg-window p:last-child { margin-bottom: 0; }
 .type-cursor::after { content: " |"; font-weight: normal; color: var(--mut); animation: blink 1s infinite; }
@@ -209,7 +209,11 @@ function intro(){
     typeHTML(m1, texts[0], function(){
       typeHTML(m2, texts[1], function(){
         typeHTML(m3, texts[2], function(){
-          document.getElementById('st-wrap').style.opacity = 1; // 最後にボタンを表示
+          var stWrap = document.getElementById('st-wrap');
+          stWrap.style.opacity = 1; // 最後にボタンを表示
+          setTimeout(function() {
+            stWrap.scrollIntoView({ behavior: 'smooth', block: 'end' });
+          }, 200); // ボタンが表示されてから少しだけ待って自然にスクロール
         });
       });
     });
