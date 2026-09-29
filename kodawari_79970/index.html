@@ -85,6 +85,19 @@ button{font:inherit;cursor:pointer}
 .blank.ans{background:none}
 .seg button{border-color:var(--acc);background:var(--tint)}
 .seg .act{background:var(--acc)}
+.hero-container { display: flex; flex-direction: column; align-items: center; margin: 24px 0 16px; }
+.hero-image { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 3px solid var(--acc); background: var(--tint); margin-bottom: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+.msg-window { width: 100%; background: var(--card); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid var(--line); border-radius: 16px; padding: 24px 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.06); position: relative; }
+.msg-window::before { content: ""; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); border-width: 0 14px 14px 14px; border-style: solid; border-color: transparent transparent var(--line) transparent; }
+.msg-window::after { content: ""; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); border-width: 0 12px 12px 12px; border-style: solid; border-color: transparent transparent var(--card) transparent; }
+.msg-window p { margin: 0 0 1.2em; }
+.msg-window p:last-child { margin-bottom: 0; }
+.type-cursor::after { content: " |"; font-weight: normal; color: var(--mut); animation: blink 1s infinite; }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+.msg-window .lead { font-size: clamp(14px, calc((100vw - 60px) / 17), 18px); white-space: nowrap; letter-spacing: -0.05em; }
+.msg-window .greeting-text { font-size: clamp(12px, calc((100vw - 60px) / 21.5), 20px); }
+.anim-fade{opacity:0;animation:fadeIn 1s ease-out forwards}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
@@ -129,8 +142,77 @@ function bar(){
 pg.innerHTML=s<0?"":(s>=5?"":"<b>"+D[s].n+"</b>　"+(s+1)+"/5")}
 function go(n){s=n;bar();window.scrollTo(0,0);if(s<0)intro();else if(s<5)item(D[s]);else reward()}
 function intro(){
-    v.innerHTML='<h1>炭火焼 なみひら<br><span class="sub-title">大将から、ご挨拶</span></h1><p class="lead" style="margin-top:18px"><b>ご来店ありがとうございます。<br>大将の江田です。</b></p><p class="lead"><b>お料理の提供まで、<br>「まずはこれを食べてほしい」と思う<br><span style="color:var(--acc)">５本の焼き鳥</span>を紹介させてください。</b></p><p class="greeting-text"><b>お料理の提供をお待ちいただく間に、<br>少しでも<span style="color:var(--acc)">こだわり</span>を知っていただき、<br>より美味しくお召し上がりいただけたら幸いです。</b></p><p class="small"><b>読み終えるまで、3〜4分ほどです。</b></p><button class="btn" id="st">はじめる</button>';
-    document.getElementById("st").onclick=function(){go(0)}
+    v.innerHTML='<h1>炭火焼 なみひら<br><span class="sub-title">大将から、ご挨拶</span></h1>'+
+    '<div class="hero-container">'+
+      '<img src="eda.webp" class="hero-image" alt="大将" onerror="this.style.display=\'none\'">'+
+      '<div class="msg-window">'+
+        '<p class="lead" id="m1"></p>'+
+        '<p class="lead" id="m2"></p>'+
+        '<p class="greeting-text" id="m3"></p>'+
+      '</div>'+
+    '</div>'+
+    '<div id="st-wrap" style="opacity:0; transition: opacity 1s ease-out; margin-top: 24px">'+
+      '<p class="small" style="text-align:center;margin:0 0 16px"><b>読み終えるまで、3〜4分ほどです。</b></p>'+
+      '<button class="btn" id="st" style="margin-top:0">はじめる</button>'+
+    '</div>';
+
+    document.getElementById("st").onclick=function(){go(0)};
+
+    var texts = [
+      '<b>ご来店ありがとうございます。<br>大将の江田です。</b>',
+      '<b>お料理の提供まで、<br>「まずはこれを食べてほしい」と思う<br><span style="color:var(--acc)">５本の焼き鳥</span>を紹介させてください。</b>',
+      '<b>お料理の提供をお待ちいただく間に、<br>少しでも<span style="color:var(--acc)">こだわり</span>を知っていただき、<br>より美味しくお召し上がりいただけたら幸いです。</b>'
+    ];
+
+    var m1 = document.getElementById('m1');
+    var m2 = document.getElementById('m2');
+    var m3 = document.getElementById('m3');
+
+    // タイピング中に要素の高さがガタガタ動かないよう、あらかじめ高さを確保します
+    m1.innerHTML = texts[0]; m2.innerHTML = texts[1]; m3.innerHTML = texts[2];
+    m1.style.minHeight = m1.offsetHeight + 'px';
+    m2.style.minHeight = m2.offsetHeight + 'px';
+    m3.style.minHeight = m3.offsetHeight + 'px';
+    m1.innerHTML = ''; m2.innerHTML = ''; m3.innerHTML = '';
+
+    // 1文字ずつ表示するタイピング処理
+    function typeHTML(el, html, cb) {
+      el.classList.add('type-cursor'); // カーソルの点滅を追加
+      var parts = html.split(/(<[^>]+>)/g);
+      var arr = [];
+      parts.forEach(function(p){
+        if(p.startsWith('<')) arr.push({t:'tag', c:p});
+        else {
+          for(var i=0; i<p.length; i++) arr.push({t:'char', c:p[i]});
+        }
+      });
+      
+      var idx = 0;
+      function next() {
+        if(idx < arr.length) {
+          var htmlStr = "";
+          for(var j=0; j<=idx; j++) htmlStr += arr[j].c;
+          el.innerHTML = htmlStr;
+          idx++;
+          // 人間が打っているようなランダムな遅延を加える
+          var delay = arr[idx-1].t === 'tag' ? 0 : 40 + Math.random() * 60;
+          setTimeout(next, delay);
+        } else {
+          el.classList.remove('type-cursor'); // 打ち終わったらカーソルを消す
+          setTimeout(cb, 400); // 次の文章までの少しの間
+        }
+      }
+      setTimeout(next, 200);
+    }
+
+    // 順番にタイピングを実行
+    typeHTML(m1, texts[0], function(){
+      typeHTML(m2, texts[1], function(){
+        typeHTML(m3, texts[2], function(){
+          document.getElementById('st-wrap').style.opacity = 1; // 最後にボタンを表示
+        });
+      });
+    });
 }
 function item(d){
 v.innerHTML='<h2>'+d.c+'</h2><p class="why"><b>大将がすすめる理由</b><br>'+d.r+'</p>'+ps(d.i)+'<div id="wd"></div><div class="rv" id="rv"><div class="taste"><p class="lb">味わいどころ</p><p style="margin:0">'+d.t+'</p></div></div><button class="btn" id="nx" hidden>'+(s<4?'次の一本へ':'ここから先は、特別なメニュー')+'</button>';
