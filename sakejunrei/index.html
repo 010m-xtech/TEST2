@@ -130,27 +130,28 @@
         </div>
 
         <!-- 余白を削減し、リストのコンテナを作成 -->
-        <div class="flex-shrink-0 pt-3 pb-24">
+        <div class="flex-shrink-0 pt-3 pb-20">
           <div class="flex items-center justify-between mb-2 px-1">
             <span class="text-[11px] font-bold text-stone-700">あなたに近い3杯</span>
             <span class="text-[9px] text-stone-400">気になる一杯を選択</span>
           </div>
           <div id="recommendation-list" class="grid grid-cols-3 gap-2.5"></div>
         </div>
-      </div>
 
-      <!-- 旅へ出発するアクションボタン（常に表示・未選択時は非活性） -->
-      <div id="action-journey-container" class="absolute bottom-6 left-0 right-0 px-4 z-50">
-        <button id="journey-btn" onclick="startJourney()" disabled class="w-full py-3.5 rounded-2xl bg-stone-900 text-white font-mincho font-bold shadow-[0_10px_25px_rgba(0,0,0,0.3)] flex items-center justify-center gap-2 hover:bg-stone-800 active:scale-95 transition-all disabled:opacity-50 disabled:bg-stone-400 disabled:pointer-events-none">
-          <span>美味しいを巡る旅へ</span>
-          <i class="fa-solid fa-plane text-sm"></i>
-        </button>
+        <!-- 旅へ出発するアクションボタン（マップ画面のみ表示・未選択時は非活性） -->
+        <div id="action-journey-container" class="absolute bottom-6 left-0 right-0 px-4 z-50">
+          <button id="journey-btn" onclick="startJourney()" disabled class="w-full py-3.5 rounded-2xl bg-stone-900 text-white font-mincho font-bold shadow-[0_10px_25px_rgba(0,0,0,0.3)] flex items-center justify-center gap-2 hover:bg-stone-800 active:scale-95 transition-all disabled:opacity-50 disabled:bg-stone-400 disabled:pointer-events-none">
+            <span>美味しいを巡る旅へ</span>
+            <i class="fa-solid fa-plane text-sm"></i>
+          </button>
+        </div>
       </div>
 
       <!-- STEP 3: 動画再生ビュー -->
       <div id="view-video" class="absolute inset-0 z-0 flex flex-col opacity-0 pointer-events-none transition-opacity duration-1000 bg-black">
         <video id="trip-video" playsinline muted class="w-full h-full object-cover">
-          <!-- ダミー動画 -->
+          <source src="trip.mp4" type="video/mp4">
+          <!-- フォールバック動画 -->
           <source src="https://cdn.pixabay.com/video/2021/08/04/83866-584738595_tiny.mp4" type="video/mp4">
         </video>
         <button onclick="skipVideo()" class="absolute top-6 right-4 px-3 py-1.5 bg-black/40 text-white text-[10px] font-bold rounded-full backdrop-blur-md border border-white/20 active:scale-95 transition-transform z-10">
@@ -448,8 +449,8 @@
         const card = document.createElement('button');
         card.id = `rec-card-${drink.id}`;
         card.className = 'text-left bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm active:scale-[.98] transition flex flex-col h-full';
-        // 画像を h-24 に拡大
-        card.innerHTML = `<div class="h-24 w-full overflow-hidden shrink-0"><img src="${drink.imageUrl}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/300x200/e2e8f0/64748b?text=Drink'"></div><div class="p-2 flex-1 flex flex-col justify-center"><div class="text-[9px] text-emerald-700 font-bold">${index+1} / ${drink.category}</div><div class="text-[11px] font-mincho font-bold text-stone-900 line-clamp-1 mt-0.5">${drink.name}</div><div class="text-[9px] text-stone-500 truncate mt-1">${drink.prefecture}</div></div>`;
+        // 画像を h-16 に縮小しマップ領域を広げる
+        card.innerHTML = `<div class="h-16 w-full overflow-hidden shrink-0"><img src="${drink.imageUrl}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/300x200/e2e8f0/64748b?text=Drink'"></div><div class="p-2 flex-1 flex flex-col justify-center"><div class="text-[8px] text-emerald-700 font-bold">${index+1} / ${drink.category}</div><div class="text-[10px] font-mincho font-bold text-stone-900 line-clamp-1 mt-0.5">${drink.name}</div><div class="text-[8px] text-stone-500 truncate mt-1">${drink.prefecture}</div></div>`;
         card.onclick = () => selectDrink(drink, null);
         list.appendChild(card);
       });
