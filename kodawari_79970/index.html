@@ -51,6 +51,7 @@ button{font:inherit;cursor:pointer}
 :focus-visible{outline:3px solid var(--acc);outline-offset:3px}
 .lead{font-size:18px}
 .small{font-size:14px;color:var(--mut)}
+.greeting-text{font-size:clamp(11px, calc((100vw - 44px) / 24), 16px);white-space:nowrap;letter-spacing:-0.03em;}
 .code{border:2px solid var(--acc);border-radius:6px;text-align:center;padding:16px 8px;margin:18px 0;font-size:28px;font-weight:800;letter-spacing:.15em}
 .foot{margin-top:40px;text-align:center;font-size:12px;color:var(--mut)}
 [hidden]{display:none!important}
@@ -122,12 +123,10 @@ function ps(t){return t.split("|").map(function(x){return "<p>"+x+"</p>"}).join(
 function bar(){
 pg.innerHTML=s<0?"":(s>=5?"":"<b>"+D[s].n+"</b>　"+(s+1)+"/5")}
 function go(n){s=n;bar();window.scrollTo(0,0);if(s<0)intro();else if(s<5)item(D[s]);else reward()}
-
 function intro(){
-    v.innerHTML='<h1>炭火焼 なみひら<br><span class="sub-title">大将から、ご挨拶</span></h1><p class="lead" style="margin-top:18px">ご来店ありがとうございます。<br>大将の江田です。</p><p class="lead">お料理の提供まで、<br>「まずはこれを食べてほしい」と思う<br>５本の焼き鳥を紹介させてください。</p><p>お料理の提供をお待ちいただく間に、<br>少しでもこだわりを知っていただき、<br>より美味しくお召し上がりいただけたら幸いです。</p><p class="small">読み終えるまで、3〜4分ほどです。</p><button class="btn" id="st">はじめる</button>';
+    v.innerHTML='<h1>炭火焼 なみひら<br><span class="sub-title">大将から、ご挨拶</span></h1><p class="lead" style="margin-top:18px">ご来店ありがとうございます。<br>大将の江田です。</p><p class="lead">お料理の提供まで、<br>「まずはこれを食べてほしい」と思う<br>５本の焼き鳥を紹介させてください。</p><p class="greeting-text">お料理の提供をお待ちいただく間に、<br>少しでもこだわりを知っていただき、<br>より美味しくお召し上がりいただけたら幸いです。</p><p class="small">読み終えるまで、3〜4分ほどです。</p><button class="btn" id="st">はじめる</button>';
     document.getElementById("st").onclick=function(){go(0)}
 }
-
 function item(d){
 v.innerHTML='<h2>'+d.c+'</h2><p class="why"><b>大将がすすめる理由</b><br>'+d.r+'</p>'+ps(d.i)+'<div id="wd"></div><div class="rv" id="rv"><div class="taste"><p class="lb">味わいどころ</p><p style="margin:0">'+d.t+'</p></div></div><button class="btn" id="nx" hidden>'+(s<4?'次の一本へ':'ここから先は、特別なメニュー')+'</button>';
 var ok=false,rv=document.getElementById("rv"),nx=document.getElementById("nx");
