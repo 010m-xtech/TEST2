@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>焼き上がりまでの、ひとつ話</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--fg:#1a1a1a;--mut:#1a1a1a;--acc:#b8651f;--line:#d8d2c4;--card:rgba(255,253,246,.5);--po:.55;--tint:rgba(184,101,31,.16);--bg:#f1ebdc;--stick:#a89a80;--raw:#e6cfa8;--done:#8a3e12;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17203a;--fg:#f1ece0;--mut:#f1ece0;--acc:#e6a04d;--line:#33406300;--card:rgba(255,255,255,.06);--po:.22;--tint:rgba(230,160,77,.2);--line:#34426b;--stick:#7d8aab;--raw:#c9b58e;--done:#c2571f}}
+:root[data-theme="dark"]{--bg:#17203a;--fg:#f1ece0;--mut:#f1ece0;--acc:#e6a04d;--card:rgba(255,255,255,.06);--po:.22;--tint:rgba(230,160,77,.2);--line:#34426b;--stick:#7d8aab;--raw:#c9b58e;--done:#c2571f}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{word-break:auto-phrase;line-break:strict;text-wrap:pretty;margin:0;background:var(--bg);color:var(--fg);font:400 17px/1.9 "Shippori Mincho B1","Hiragino Mincho ProN","Yu Mincho",serif}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:var(--po);background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='360' height='360'><filter id='a'><feTurbulence type='fractalNoise' baseFrequency='.035 .8' numOctaves='3' seed='7'/><feColorMatrix values='0 0 0 0 .42 0 0 0 0 .34 0 0 0 0 .22 0 0 0 .9 -.28'/></filter><filter id='b'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' seed='3'/><feColorMatrix values='0 0 0 0 .5 0 0 0 0 .42 0 0 0 0 .3 0 0 0 .55 -.15'/></filter><rect width='100%25' height='100%25' filter='url(%23a)'/><rect width='100%25' height='100%25' filter='url(%23b)'/></svg>")}
+main{max-width:520px;margin:0 auto;padding:20px 22px 64px}
+h1,h2{text-shadow:1px 2px 3px rgba(0,0,0,.28);text-wrap:balance;font-weight:800;line-height:1.4;margin:0}
+h1{font-size:30px}
+h2{font-size:26px;margin:6px 0 14px}
+p{margin:0 0 1em}
+.sk{display:flex;gap:14px;justify-content:center;padding:6px 0 10px}
+.sk svg{width:16px;height:64px}
+.sk .pc{fill:var(--raw);transition:fill .6s}
+.sk .st{stroke:var(--stick)}
+.sk .on .pc{fill:var(--done)}
+.sk .cur .st{stroke:var(--acc);stroke-width:3}
+.pg{text-align:center;font-size:16px;color:var(--mut);margin-bottom:26px}
+.pg b{font-size:28px;font-weight:800;color:var(--fg);letter-spacing:.08em}
+.why{border-left:3px solid var(--acc);padding:2px 0 2px 14px;margin:0 0 22px;color:var(--mut);font-size:14px;line-height:1.8}
+.ln{display:block;white-space:nowrap;font-size:min(14px,2.9vw)}
+.ln2{display:block;white-space:nowrap;font-size:min(17px,3.5vw)}
+.why b{color:var(--acc)}
+.q{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px;margin:0 0 20px}
+.q .qt{margin:0 0 12px;font-weight:700}
+.ch{display:flex;flex-wrap:wrap;gap:10px}
+button{font:inherit;cursor:pointer}
+.ch button{background:none;color:var(--fg);border:1.5px solid var(--fg);border-radius:999px;padding:6px 16px;line-height:1.6;font-size:16px}
+.ch button:hover:not(:disabled){border-color:var(--acc);color:var(--acc)}
+.ch button:disabled{cursor:default;opacity:.55}
+.ch button.sel{opacity:1;border-style:dashed}
+.ch button.ans{opacity:1;background:var(--acc);border-color:var(--acc);color:var(--bg)}
+.rv{display:none;margin-top:16px}
+.rv.show{display:block}
+.rv .lb{font-size:14px;color:var(--acc);font-weight:700;margin:0 0 2px}
+.taste{border-top:1px solid var(--line);padding-top:16px;margin-top:6px}
+.btn{display:block;width:100%;background:var(--acc);color:var(--bg);border:0;border-radius:6px;padding:14px;font-weight:700;font-size:18px;margin-top:22px}
+.btn.ghost{background:none;color:var(--mut);border:1px solid var(--line);font-size:15px;font-weight:400}
+:focus-visible{outline:3px solid var(--acc);outline-offset:3px}
+.lead{font-size:18px}
+.small{font-size:14px;color:var(--mut)}
+.code{border:2px solid var(--acc);border-radius:6px;text-align:center;padding:16px 8px;margin:18px 0;font-size:28px;font-weight:800;letter-spacing:.15em}
+.foot{margin-top:40px;text-align:center;font-size:12px;color:var(--mut)}
+[hidden]{display:none!important}
+.cd{display:grid;width:100%;background:none;border:0;padding:0;perspective:900px;text-align:left;color:inherit;margin:8px 0 20px}
+.fc{grid-area:1/1;display:flex;flex-direction:column;justify-content:center;gap:8px;padding:22px 18px;min-height:190px;border-radius:6px;border:1px solid var(--line);backface-visibility:hidden;transition:transform .6s}
+.fr{background:var(--card);font-size:18px}.fr small{color:var(--acc);font-size:14px}
+.bk{background:var(--acc);color:var(--bg);transform:rotateY(180deg);font-size:16px;line-height:1.8}
+.cd.on .fr{transform:rotateY(-180deg)}.cd.on .bk{transform:rotateY(0)}
+.bl{margin:8px 0 20px}
+.blank{background:none;border:0;border-bottom:2px dashed var(--acc);color:var(--acc);font-weight:700;padding:0 4px;margin:0 2px}
+.blank.ans{border-bottom-style:solid;color:var(--fg)}
+.stp{padding-left:1.5em;margin:8px 0 14px}.stp li{font-weight:700;margin:0 0 8px}
+.nt{margin:0 0 20px;color:var(--mut);font-size:15px}
+.seg{display:flex;gap:10px;margin:8px 0 12px}
+.seg button{flex:1;background:none;color:var(--fg);border:1.5px solid var(--fg);border-radius:6px;padding:10px 4px;font-size:16px}
+.seg .act{background:var(--acc);border-color:var(--acc);color:var(--bg)}
+.cbox{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px;margin:0 0 20px;min-height:84px}
+.pcs{display:flex;gap:4px;position:relative;margin:12px 0}
+.pcs::before{content:"";position:absolute;left:-6px;right:-6px;top:50%;height:3px;background:var(--stick)}
+.pcs button{position:relative;flex:1;height:58px;border:0;border-radius:12px;color:#fff;font-weight:700;font-size:16px}
+.pcs .m{background:#a85a2c}.pcs .n{background:#6f8f4a}
+@media (prefers-reduced-motion:reduce){.fc{transition:none}}
+.fr{border:2px solid var(--acc);background:var(--tint)}
+.fr small{align-self:flex-start;background:var(--acc);color:var(--bg);padding:2px 12px;border-radius:999px;font-weight:700}
+.blank{background:var(--tint);border:0;border-bottom:2px solid var(--acc);border-radius:4px 4px 0 0;padding:2px 12px}
+.blank.ans{background:none}
+.seg button{border-color:var(--acc);background:var(--tint)}
+.seg .act{background:var(--acc)}
+</style>
+</head>
+<body>
+<main>
+<div class="pg" id="pg"></div>
+<div id="v"></div>
+</main>
+<script>
+var D=[
+{n:"砂肝",c:"歯ごたえは、切り方で決まる",r:"食感の魅力が、いちばん伝わる一本。",
+i:"砂肝は、鶏が石をのみ込んで食べ物をすりつぶす胃の一部。つまりほぼ筋肉のかたまりで、そのまま焼くと硬くなりがちです。|うちでは、焼く前にひと手間かけています。",
+w:["flip","焼く前のひと手間とは？","タップして裏返す","銀皮を丁寧に取って、切り込みを入れます。|噛みきれない硬さだけを取り除くと、噛んだ瞬間の「コリッ」だけが残ります。"],
+t:"最初の一口は、噛み始めの「コリッ」に集中してみてください。"},
+{n:"せせり",c:"少ししかとれないから、火を急がない",r:"少ししかとれない、脂の旨みの塊。",
+i:"せせりは、鶏が絶えず動かしている首まわりの肉。|よく動く筋肉なので、脂と肉の旨みが濃いのが特徴です。",
+w:["blank","1羽からとれる量は、","ほんのわずか","。貴重な部位だからこそ、脂を落としすぎず、焼き切りもしない火加減にこだわっています。"],
+t:"噛むほどに広がる脂の甘さを、ゆっくり味わってください。"},
+{n:"手羽先",c:"パリッと、じゅわっと、両立させる",r:"パリッとじゅわっと、両方味わえる。",
+i:"手羽先の魅力は、皮のパリッと感と、中のジューシーさ。|この二つを両立させるために、こんな流れで仕上げます。",
+w:["steps",["焼く前に、表面の余分な水分を抜く","串に打って、じっくり焼く","皮はパリッ、中はじゅわっ"],"水分が残っていると皮が蒸されてしまうので、最初の水抜きがいちばん大事です。"],
+t:"一口目は、皮を割る音と香りを楽しんでください。"},
+{n:"心臓",c:"「内臓は苦手」を、変える一本",r:"「内臓は苦手」が変わる一本。",
+i:"心臓（ハツ）は、内臓と聞いて身構える人も多い部位。|でも、うちのハツはクセがなく食べやすいと言っていただけます。",
+w:["cmp","よくある印象","うちのハツ","においやクセがあって、ちょっと食べにくい。","クセがなく、すっきり。鮮度と、丁寧な下処理のおかげです。"],
+t:"歯を入れたときの弾力と、あと味のすっきり感に注目してみてください。"},
+{n:"豚ねぎま",c:"ネギは、肉に寄り添わせる",r:"肉とネギの相性が、いちばん分かる。",
+i:"ねぎまは、串の打ち方で味が変わります。|うちでは、ネギを肉と肉の間に挟んでいます。串をタップして、理由を見てみてください。",
+w:["skw","焼いている間に、肉の脂と肉汁がネギに移っていきます。","肉の旨みを吸って、ネギの甘さがぐっと増します。"],
+t:"肉、ネギ、肉と、交互に食べてみてください。ネギの甘さが違います。"}
+];
+var W={
+flip:function(e,w,f){e.innerHTML='<button class="cd"><span class="fc fr"><b>'+w[1]+'</b><small>'+w[2]+'</small></span><span class="fc bk">'+w[3].split("|").join("<br><br>")+'</span></button>';var c=e.firstChild;c.onclick=function(){c.classList.toggle("on");f()}},
+blank:function(e,w,f){e.innerHTML='<p class="bl">'+w[1]+'<button class="blank">タップして見る</button><span hidden>'+w[3]+'</span></p>';var b=e.querySelector("button"),sp=e.querySelector("span");b.onclick=function(){b.textContent=w[2];b.classList.add("ans");b.disabled=true;sp.hidden=false;f()}},
+steps:function(e,w,f){var n=0;e.innerHTML='<ol class="stp"></ol><button class="btn" style="margin-top:0">つぎのステップを見る</button><p class="nt" hidden>'+w[2]+'</p>';var ol=e.querySelector("ol"),b=e.querySelector("button"),nt=e.querySelector(".nt");function add(){var li=document.createElement("li");li.textContent=w[1][n++];ol.appendChild(li);if(n==w[1].length){b.hidden=true;nt.hidden=false;f()}}add();b.onclick=add},
+cmp:function(e,w,f){var seen={};e.innerHTML='<div class="seg"><button>'+w[1]+'</button><button>'+w[2]+'</button></div><p class="cbox">それぞれをタップして、見比べてください。</p>';var bs=e.querySelectorAll("button"),cb=e.querySelector(".cbox");bs.forEach(function(b,k){b.onclick=function(){bs.forEach(function(x){x.classList.remove("act")});b.classList.add("act");cb.textContent=w[3+k];seen[k]=1;if(seen[0]&&seen[1])f()}})},
+skw:function(e,w,f){var seen={},P=["肉","ネギ","肉","ネギ","肉"];e.innerHTML='<div class="pcs">'+P.map(function(t){return '<button class="'+(t=="肉"?"m":"n")+'">'+t+'</button>'}).join("")+'</div><p class="cbox">串をタップしてみてください。</p>';var cb=e.querySelector(".cbox");e.querySelectorAll(".pcs button").forEach(function(b,k){b.onclick=function(){var t=P[k]=="肉"?0:1;cb.textContent=w[1+t];seen[t]=1;if(seen[0]&&seen[1])f()}})}
+};
+var s=-1,v=document.getElementById("v"),pg=document.getElementById("pg");
+function skew(i,st){return '<svg viewBox="0 0 16 64" class="'+st+'"><line class="st" x1="8" y1="2" x2="8" y2="62" stroke-width="2" stroke-linecap="round"/><rect class="pc" x="2" y="14" width="12" height="9" rx="4"/><rect class="pc" x="2" y="27" width="12" height="9" rx="4"/><rect class="pc" x="2" y="40" width="12" height="9" rx="4"/></svg>'}
+function ps(t){return t.split("|").map(function(x){return "<p>"+x+"</p>"}).join("")}
+function bar(){
+pg.innerHTML=s<0?"":(s>=5?"":"<b>"+D[s].n+"</b>　"+(s+1)+"/5")}
+function go(n){s=n;bar();window.scrollTo(0,0);if(s<0)intro();else if(s<5)item(D[s]);else reward()}
+function intro(){v.innerHTML='<h1>食べる前に知ってほしい、大将のこだわり。</h1><p class="lead" style="margin-top:18px">ご来店ありがとうございます。<br>大将の江田です。</p><p class="lead">お料理の提供まで、うちが「まずはこれを食べてほしい」と思う５本を紹介させてください。</p><p>焼き上がるまでの数分、それぞれのこだわりを、少しだけ。少しでも、感じていただければ幸いです。</p><p class="small">読み終えるまで、3〜4分ほどです。<br>途中でお料理が届いたら、そこで閉じていただいて大丈夫です。</p><button class="btn" id="st">はじめる</button>';
+document.getElementById("st").onclick=function(){go(0)}}
+function item(d){
+v.innerHTML='<h2>'+d.c+'</h2><p class="why"><b>大将がすすめる理由</b><br>'+d.r+'</p>'+ps(d.i)+'<div id="wd"></div><div class="rv" id="rv"><div class="taste"><p class="lb">味わいどころ</p><p style="margin:0">'+d.t+'</p></div></div><button class="btn" id="nx" hidden>'+(s<4?'次の一本へ':'ここから先は、特別なメニュー')+'</button>';
+var ok=false,rv=document.getElementById("rv"),nx=document.getElementById("nx");
+W[d.w[0]](document.getElementById("wd"),d.w,function(){if(ok)return;ok=true;rv.classList.add("show");nx.hidden=false;rv.scrollIntoView({behavior:"smooth",block:"nearest"})});
+nx.onclick=function(){go(s+1)}}
+function reward(){
+v.innerHTML='<h2>ここまで読んでくれた方へ。</h2><p class="lead">おすすめ5本のこだわり、ぜんぶ読んでいただき、ありがとうございます。</p><p>じつは、ここまで知ってくれた方だけにお伝えしている、特別なコースがあります。</p><p class="why"><b>裏のコース</b><br><span class="ln">食材にとことんこだわり、刺し方も焼き方も、普段とはちがう。</span><span class="ln">大将が本気で仕立てる、鶏づくしのコースです。</span></p><p><span class="ln2">このコースは、前もってのご予約が必要です。</span><span class="ln2">ご予約の際に、この合言葉を大将にお伝えください。</span></p><div class="code" aria-label="合言葉">ちゃんす</div><p>焼き上がるまでもうしばらくお待ちください。</p><button class="btn ghost" id="rp">もういちど読む</button>';
+document.getElementById("rp").onclick=function(){go(-1)}}
+go(-1);
+</script>
+</body>
+</html>
