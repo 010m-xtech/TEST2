@@ -29,20 +29,17 @@
     :root { --app-height: 100dvh; }
     html, body { height: 100%; height: 100dvh; overflow: hidden; touch-action: manipulation; }
     
-    /* 共通アニメーション */
     @keyframes pingSlow {
       0% { transform: scale(0.85); opacity: 0.9; }
       80%, 100% { transform: scale(2.4); opacity: 0; }
     }
     .animate-ping-slow { animation: pingSlow 1.8s cubic-bezier(0, 0, 0.2, 1) infinite; }
     
-    /* 動画の円状トランジション用 */
     @keyframes expandCircle {
       0% { clip-path: circle(0% at 50% 50%); }
       100% { clip-path: circle(150% at 50% 50%); }
     }
 
-    /* ストーリー画面のフェードイン用 */
     @keyframes fadeInStory {
       0% { opacity: 0; transform: scale(0.95); }
       100% { opacity: 1; transform: scale(1); }
@@ -57,7 +54,6 @@
 
   <div class="relative w-full max-w-md h-[100dvh] bg-[#f8faf9] flex flex-col overflow-hidden shadow-2xl">
 
-    <!-- ヘッダー -->
     <header class="relative z-50 px-4 py-2.5 flex items-center justify-between bg-white/95 backdrop-blur-md border-b border-emerald-950/10 flex-shrink-0">
       <div class="flex items-center gap-2">
         <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-emerald-800 to-teal-600 flex items-center justify-center text-white shadow-xs">
@@ -75,7 +71,6 @@
 
     <main class="relative flex-1 w-full h-full overflow-hidden">
       
-      <!-- STEP 1: 診断画面 -->
       <div id="view-quiz" class="absolute inset-0 z-40 flex flex-col justify-between p-5 bg-gradient-to-b from-[#eef7f5] via-[#e2f2ee] to-[#d3ede2] transition-all duration-500">
         <div class="pt-2">
           <div class="inline-flex items-center gap-1.5 px-3 py-0.5 bg-emerald-800 text-white text-[10px] font-bold rounded-full mb-2 tracking-wide">
@@ -93,11 +88,9 @@
         </div>
       </div>
 
-      <!-- STEP 2: 味覚MAP + おすすめ3杯 -->
       <div id="view-map" class="absolute inset-0 z-30 flex flex-col p-3 pt-4 opacity-0 pointer-events-none transition-all duration-500 bg-[#fbfaf7]">
         
         <div class="relative flex-1 min-h-0 rounded-[24px] overflow-hidden border border-stone-200 shadow-sm bg-white">
-          <!-- 背景コンテナ：文字なし・グラデーションカラー -->
           <div class="absolute inset-0 grid grid-cols-2 grid-rows-2">
             <div class="relative bg-gradient-to-br from-pink-50 to-pink-100/50 overflow-hidden" id="bg-top-left"></div>
             <div class="relative bg-gradient-to-bl from-sky-50 to-blue-100/40 overflow-hidden" id="bg-top-right"></div>
@@ -105,22 +98,18 @@
             <div class="relative bg-gradient-to-tl from-stone-100 to-stone-200/40 overflow-hidden" id="bg-bottom-right"></div>
           </div>
 
-          <!-- マップの軸線 -->
           <div class="absolute inset-0 pointer-events-none">
             <div class="absolute inset-x-0 top-1/2 h-px border-t border-dashed border-stone-300/80"></div>
             <div class="absolute inset-y-0 left-1/2 w-px border-l border-dashed border-stone-300/80"></div>
           </div>
           
-          <!-- 軸のラベル (スッキリ4キーワードに統一) -->
-          <div class="absolute top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold text-pink-700 bg-white/80 px-2.5 py-1 rounded-full backdrop-blur-sm z-10 shadow-sm">フルーティー</div>
-          <div class="absolute bottom-3 left-1/2 -translate-x-1/2 text-[10px] font-bold text-stone-500 bg-white/80 px-2.5 py-1 rounded-full backdrop-blur-sm z-10 shadow-sm">スパイシー</div>
-          <div class="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-teal-700 bg-white/80 px-1 py-2 rounded-full backdrop-blur-sm [writing-mode:vertical-rl] z-10 shadow-sm">軽快</div>
-          <div class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-stone-600 bg-white/80 px-1 py-2 rounded-full backdrop-blur-sm [writing-mode:vertical-rl] z-10 shadow-sm">重厚</div>
+          <div class="absolute top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold text-pink-700 bg-white/80 px-2.5 py-1 rounded-full backdrop-blur-sm z-10 shadow-sm">華やか・香り</div>
+          <div class="absolute bottom-3 left-1/2 -translate-x-1/2 text-[10px] font-bold text-stone-500 bg-white/80 px-2.5 py-1 rounded-full backdrop-blur-sm z-10 shadow-sm">ドライ・キレ</div>
+          <div class="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-teal-700 bg-white/80 px-1 py-2 rounded-full backdrop-blur-sm [writing-mode:vertical-rl] z-10 shadow-sm">スッキリ・軽快</div>
+          <div class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-stone-600 bg-white/80 px-1 py-2 rounded-full backdrop-blur-sm [writing-mode:vertical-rl] z-10 shadow-sm">濃厚・コク</div>
 
-          <!-- お酒のピンが置かれるレイヤー -->
           <div id="drink-pins-layer" class="absolute inset-0 z-20"></div>
           
-          <!-- ユーザーの現在地マーカー (少し大きく調整) -->
           <div id="user-position-marker" class="absolute pointer-events-none transition-all duration-700 -translate-x-1/2 -translate-y-1/2 z-40 flex flex-col items-center">
             <span class="absolute w-16 h-16 rounded-full bg-emerald-400/30 animate-ping-slow"></span>
             <div class="relative w-11 h-11 rounded-full bg-gradient-to-tr from-emerald-800 to-teal-500 text-white flex items-center justify-center shadow-lg border-2 border-white text-[10px] font-bold uppercase tracking-wider">
@@ -129,29 +118,21 @@
           </div>
         </div>
 
-        <!-- 余白を削減し、リストのコンテナを作成 -->
         <div class="flex-shrink-0 pt-3 pb-20">
-          <div class="flex items-center justify-between mb-2 px-1">
-            <span class="text-[11px] font-bold text-stone-700">あなたに近い3杯</span>
-            <span class="text-[9px] text-stone-400">気になる一杯を選択</span>
-          </div>
           <div id="recommendation-list" class="grid grid-cols-3 gap-2.5"></div>
         </div>
 
-        <!-- 旅へ出発するアクションボタン（マップ画面のみ表示・未選択時は非活性） -->
-        <div id="action-journey-container" class="absolute bottom-6 left-0 right-0 px-4 z-50">
-          <button id="journey-btn" onclick="startJourney()" disabled class="w-full py-3.5 rounded-2xl bg-stone-900 text-white font-mincho font-bold shadow-[0_10px_25px_rgba(0,0,0,0.3)] flex items-center justify-center gap-2 hover:bg-stone-800 active:scale-95 transition-all disabled:opacity-50 disabled:bg-stone-400 disabled:pointer-events-none">
+        <div id="action-journey-container" class="absolute bottom-6 left-0 right-0 px-4 z-50 opacity-0 pointer-events-none transition-all duration-500 translate-y-12">
+          <button id="journey-btn" onclick="startJourney()" class="w-full py-3.5 rounded-2xl bg-stone-900 text-white font-mincho font-bold shadow-[0_10px_25px_rgba(0,0,0,0.3)] flex items-center justify-center gap-2 hover:bg-stone-800 active:scale-95 transition-all">
             <span>美味しいを巡る旅へ</span>
             <i class="fa-solid fa-plane text-sm"></i>
           </button>
         </div>
       </div>
 
-      <!-- STEP 3: 動画再生ビュー -->
       <div id="view-video" class="absolute inset-0 z-0 flex flex-col opacity-0 pointer-events-none transition-opacity duration-1000 bg-black">
         <video id="trip-video" playsinline muted class="w-full h-full object-cover">
           <source src="trip.mp4" type="video/mp4">
-          <!-- フォールバック動画 -->
           <source src="https://cdn.pixabay.com/video/2021/08/04/83866-584738595_tiny.mp4" type="video/mp4">
         </video>
         <button onclick="skipVideo()" class="absolute top-6 right-4 px-3 py-1.5 bg-black/40 text-white text-[10px] font-bold rounded-full backdrop-blur-md border border-white/20 active:scale-95 transition-transform z-10">
@@ -159,7 +140,6 @@
         </button>
       </div>
 
-      <!-- STEP 4: リッチな雑誌風ストーリー画面 -->
       <div id="view-story" class="absolute inset-0 z-0 flex flex-col bg-[#fdfcf9] text-slate-900 opacity-0 pointer-events-none transition-opacity duration-1000 overflow-hidden">
         <header class="px-4 py-2.5 flex items-center justify-between bg-[#fdfcf9]/95 backdrop-blur-md border-b border-stone-200/80 flex-shrink-0 z-20">
           <button onclick="backToFlavorMap()" class="px-3 py-1 rounded-full bg-stone-100 text-stone-800 text-[11px] font-medium flex items-center gap-1.5 transition active:bg-stone-200">
@@ -172,31 +152,21 @@
 
         <div class="flex-1 overflow-y-auto overscroll-contain text-stone-800 pb-8">
           <section class="p-4 bg-gradient-to-b from-[#fdfcf9] to-[#f4f1ea]">
-            <div class="flex items-center gap-2 mb-2">
-              <span id="story-drink-type-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-stone-800 text-stone-100 tracking-wider"></span>
-            </div>
-            <div class="border-l-2 border-stone-800 pl-3 py-1 my-2">
-              <h2 id="story-editorial-lead" class="text-base font-mincho font-bold text-stone-900 leading-snug"></h2>
-            </div>
             
-            <h1 id="story-drink-title-main" class="text-2xl font-mincho font-extrabold text-stone-900 leading-tight mt-4"></h1>
+            <h1 id="story-drink-title-main" class="text-2xl font-mincho font-extrabold text-stone-900 leading-tight mt-2"></h1>
             <p id="story-drink-maker-name" class="text-sm text-stone-600 font-medium mt-1 mb-4"></p>
 
             <div id="story-rich-description" class="text-[13px] text-stone-700 leading-relaxed space-y-3 font-mincho mb-6"></div>
 
-            <div class="relative w-full rounded-2xl overflow-hidden shadow-lg border border-stone-200 my-4 aspect-[4/3] bg-stone-900">
-              <img id="story-hero-dish-img" src="" class="w-full h-full object-cover">
-              <div class="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-stone-900/40 to-transparent flex flex-col justify-end p-4 text-white">
-                <span class="inline-block px-2 py-1 bg-amber-500/90 text-stone-950 text-[10px] font-bold rounded-sm mb-1.5 w-max">極上のペアリング</span>
-                <p id="story-pairing-dish-title" class="text-base font-mincho font-bold text-white leading-tight"></p>
-                <p id="story-pairing-description" class="text-xs text-stone-200 mt-1.5 font-mincho leading-relaxed opacity-90"></p>
-              </div>
+            <div class="relative w-full rounded-2xl overflow-hidden shadow-sm border border-stone-200 my-4 aspect-[4/3] bg-white">
+              <img id="story-hero-dish-img-1" src="" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 opacity-100">
+              <img id="story-hero-dish-img-2" src="" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 opacity-0">
             </div>
           </section>
 
           <section class="p-4 bg-[#f8f6f0] border-t border-stone-200/60 pb-8">
             <div class="flex items-center gap-1.5 text-sm font-bold text-stone-900 font-mincho mb-4">
-              <span class="w-1.5 h-4 bg-emerald-700 rounded-full"></span><span>テロワールを巡る風景</span>
+              <span class="w-1.5 h-4 bg-emerald-700 rounded-full"></span><span>お酒を巡る風景</span>
             </div>
             
             <div class="relative w-full bg-white rounded-xl overflow-hidden shadow-sm border border-stone-200/80">
@@ -212,9 +182,8 @@
                 
                 <div id="gallery-indicators" class="absolute bottom-2.5 left-0 right-0 flex justify-center gap-1.5 z-10"></div>
               </div>
-              <div class="p-4 h-[104px]">
-                <h4 id="gallery-slide-title" class="text-sm font-bold text-stone-900 font-mincho mb-1.5 line-clamp-1"></h4>
-                <p id="gallery-slide-caption" class="text-[11px] text-stone-600 font-mincho leading-relaxed line-clamp-3"></p>
+              <div class="p-4 min-h-[104px]">
+                <p id="gallery-slide-caption" class="text-[12px] text-stone-700 font-mincho leading-relaxed"></p>
               </div>
             </div>
           </section>
@@ -229,96 +198,69 @@
     let selectedDrinkId = null;
     let currentGalleryIndex = 0;
     let currentGalleryData = [];
+    let slideshowInterval = null;
+    let currentSlideIndex = 0;
+    let drinkImages = [];
 
     const DRINKS_DATABASE = [
       {
-        id: "sake-karakuchi", category: "日本酒", typeBadge: "超辛口・純米",
-        name: "越乃寒梅 白ラベル", brandMaker: "石本酒造（新潟県）",
-        x: 15, y: 85, prefecture: "新潟県",
-        editorialLead: "一切の雑味を削ぎ落とした、雪国が誇る究極の淡麗辛口。",
-        richDescription: "<p>しんしんと雪が降り積もる越後の冬。厳寒のなかで仕込まれる「越乃寒梅」は、飲む人の心に寄り添うような透明感と、凛とした佇まいを持っています。</p><p>口に含んだ瞬間は、まるで雪解け水のように清らか。そこから米本来のほのかな旨味が顔を出し、最後はスパッと心地よく切れていく。料理の味を一切邪魔せず、むしろ引き立てるために生まれた究極の食中酒です。</p>",
-        pairingDishTitle: "白身魚の薄造りとすだち",
-        pairingDescription: "淡白で繊細な白身魚の旨味とすだちの爽やかな酸味が、寒梅のクリアな味わいと見事に調和します。",
-        dishImageUrl: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=800&q=80",
-        imageUrl: "https://images.unsplash.com/photo-1590189182193-1fd44f2b4048?w=400&q=80",
+        id: "sake-enasan", category: "日本酒", 
+        name: "恵那山 純米吟醸", brandMaker: "はざま酒造（岐阜県中津川市）",
+        x: 25, y: 45, prefecture: "岐阜県",
+        richDescription: "<p>恵那山は穏やかに香るフルーツのような吟醸香。<br>口当たりがよく、湧きたつような味わいと米本来の持つ甘みを引き出した中津川の清流を彷彿とさせる軽やかな余韻。味と香りのバランスをお楽しみいただけるお酒です。</p><p class='mt-2 text-xs font-bold text-stone-600'>●受賞歴<br>IWC2016 純米吟醸シルバーメダル<br>IWC2018 純米吟醸シルバーメダル<br>IWC2019 純米吟醸ブロンズメダル</p>",
+        imageUrl: "恵那山①.webp",
+        images: ["恵那山①.webp", "恵那山②.webp", "恵那山③.webp"],
         gallery: [
-          { url: "https://images.unsplash.com/photo-1584278637775-654cb6a804bd?w=800&q=80", title: "静寂に包まれる厳冬の仕込み", caption: "低温でじっくりと発酵を進めることで、雑味のない澄み切った味わいが生まれます。" },
-          { url: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800&q=80", title: "美しき雪国のテロワール", caption: "澄んだ空気と清らかな水。新潟の厳しい冬こそが、最高の酒造りの舞台となります。" }
+          { url: "https://images.unsplash.com/photo-1614088924036-70e03e7a04f2?w=800&q=80", caption: "恵那山の伏流水を敷地内の井戸から組み上げて使用。恵那山に降り積もった雨雪が、長い時間をかけて地中に染み込み磨かれてできた水は、日本酒をやわらかい味わいにします。" },
+          { url: "https://images.unsplash.com/photo-1601618335026-6d601b04a8c9?w=800&q=80", caption: "中山道・馬籠宿。石畳が続く歴史ある宿場町は、往時の面影を色濃く残し、訪れる人々をタイムスリップしたかのような気分にさせてくれます。" }
         ]
       },
       {
-        id: "gin-roku", category: "ジン", typeBadge: "クラフトジン",
+        id: "gin-roku", category: "ジン", 
         name: "ROKU GIN (六)", brandMaker: "サントリー（大阪府）",
         x: 20, y: 20, prefecture: "大阪府",
-        editorialLead: "日本の四季を彩る6つのボタニカルが華やかに香る。",
         richDescription: "<p>桜花、桜葉、煎茶、玉露、山椒、柚子。日本ならではの6つのボタニカル（植物）を、それぞれ旬の時期に収穫し、別々に蒸溜してブレンドするこだわりの製法。</p><p>グラスを傾けると、春の桜の甘い香り、夏の緑茶の清涼感、秋の山椒のスパイシーさ、冬の柚子の爽やかさが、まるで万華鏡のように次々と表情を変えて現れます。日本の自然の豊かさを、一杯のグラスに閉じ込めたようなジンです。</p>",
-        pairingDishTitle: "和柑橘のカルパッチョ",
-        pairingDescription: "柚子やすだちを使ったカルパッチョ。ROKUの持つ柑橘のアロマと見事に共鳴し、爽快感が増幅します。",
-        dishImageUrl: "https://images.unsplash.com/photo-1511690656952-34342bb7c2f2?w=800&q=80",
         imageUrl: "https://images.unsplash.com/photo-1609355655543-9800a75f5bbd?w=400&q=80",
+        images: ["https://images.unsplash.com/photo-1609355655543-9800a75f5bbd?w=800&q=80", "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&q=80"],
         gallery: [
-          { url: "https://images.unsplash.com/photo-1523368749929-6b2bf370dbf8?w=800&q=80", title: "旬を切り取るボタニカル", caption: "最も香りが良くなる「旬」の時期に収穫された素材だけを贅沢に使用しています。" },
-          { url: "https://images.unsplash.com/photo-1563514757351-f29e1eb123b3?w=800&q=80", title: "伝統のブレンド技術", caption: "繊細な日本の職人技が、複雑で調和のとれた香りを作り出します。" }
+          { url: "https://images.unsplash.com/photo-1523368749929-6b2bf370dbf8?w=800&q=80", caption: "最も香りが良くなる「旬」の時期に収穫された素材だけを贅沢に使用しています。" },
+          { url: "https://images.unsplash.com/photo-1563514757351-f29e1eb123b3?w=800&q=80", caption: "繊細な日本の職人技が、複雑で調和のとれた香りを作り出します。" }
         ]
       },
       {
-        id: "sake-kimoto", category: "日本酒", typeBadge: "生酛造り",
+        id: "sake-kimoto", category: "日本酒", 
         name: "大七 純米生酛", brandMaker: "大七酒造（福島県）",
         x: 80, y: 80, prefecture: "福島県",
-        editorialLead: "複雑で骨太な旨味と力強いキレが同居する伝統の味。",
         richDescription: "<p>江戸時代から続く伝統製法「生酛（きもと）造り」にこだわり抜く大七酒造。自然の乳酸菌の力を借りて、通常の倍以上の時間と手間をかけて酵母を育てます。</p><p>その味わいは、一言でいえば「豊潤」。幾重にも重なる奥深いコク、クリーミーな舌触り、そして後から追いかけてくる力強い酸味による鮮やかなキレ。お燗にするとさらに旨味がふくらみ、至福のひとときをもたらします。</p>",
-        pairingDishTitle: "豚の角煮 辛子添え",
-        pairingDescription: "濃厚な豚の脂と甘辛いタレを、生酛特有のしっかりとした酸味が受け止め、旨味を倍増させます。",
-        dishImageUrl: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=800&q=80",
         imageUrl: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400&q=80",
+        images: ["https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=800&q=80", "https://images.unsplash.com/photo-1574621100236-d25089c36209?w=800&q=80"],
         gallery: [
-          { url: "https://images.unsplash.com/photo-1574621100236-d25089c36209?w=800&q=80", title: "自然の摂理に従う生酛造り", caption: "空気中の乳酸菌を取り込む、昔ながらの力強い酒造り。" },
-          { url: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=800&q=80", title: "豊かな自然に抱かれて", caption: "福島の豊かな土壌と気候が、ふくよかな米の旨味を育みます。" }
+          { url: "https://images.unsplash.com/photo-1574621100236-d25089c36209?w=800&q=80", caption: "空気中の乳酸菌を取り込む、昔ながらの力強い酒造り。" },
+          { url: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=800&q=80", caption: "福島の豊かな土壌と気候が、ふくよかな米の旨味を育みます。" }
         ]
       },
       {
-        id: "wine-red", category: "ワイン", typeBadge: "フルボディ赤",
+        id: "wine-red", category: "ワイン", 
         name: "シャトー・メルシャン", brandMaker: "メルシャン（長野県）",
         x: 85, y: 15, prefecture: "長野県",
-        editorialLead: "濃密な果実味とエレガントな樽香が織りなす最高峰。",
         richDescription: "<p>日本のワイン造りを牽引し続けるシャトー・メルシャン。長野県・桔梗ヶ原をはじめとする冷涼な気候下で育まれた上質なブドウのみを使用しています。</p><p>カシスやダークチェリーのような凝縮された黒系果実の香りに、オーク樽由来のバニラやスパイスのニュアンスが溶け込んでいます。しっかりとしたタンニン（渋み）がありながらも、口当たりはビロードのように滑らか。日本ワインのポテンシャルの高さを証明する一本です。</p>",
-        pairingDishTitle: "和牛の赤ワイン煮込み",
-        pairingDescription: "和牛の深いコクと、ワインの重厚な果実味・タンニンが互いに高め合い、贅沢なマリアージュを生み出します。",
-        dishImageUrl: "https://images.unsplash.com/photo-1544025162-8315ea07525b?w=800&q=80",
         imageUrl: "https://images.unsplash.com/photo-1585553616435-2dc0a54e271d?w=400&q=80",
+        images: ["https://images.unsplash.com/photo-1585553616435-2dc0a54e271d?w=800&q=80", "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=800&q=80"],
         gallery: [
-          { url: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=800&q=80", title: "太陽の恵みを受けるブドウ畑", caption: "昼夜の寒暖差が大きい長野の気候が、色の濃い高品質なブドウを育てます。" },
-          { url: "https://images.unsplash.com/photo-1523368749929-6b2bf370dbf8?w=800&q=80", title: "静かな時が流れる樽熟成庫", caption: "フレンチオーク樽の中で、ワインはゆっくりと複雑な香りをまとっていきます。" }
+          { url: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=800&q=80", caption: "昼夜の寒暖差が大きい長野の気候が、色の濃い高品質なブドウを育てます。" },
+          { url: "https://images.unsplash.com/photo-1523368749929-6b2bf370dbf8?w=800&q=80", caption: "フレンチオーク樽の中で、ワインはゆっくりと複雑な香りをまとっていきます。" }
         ]
       },
       {
-        id: "wine-white", category: "ワイン", typeBadge: "辛口白",
+        id: "wine-white", category: "ワイン", 
         name: "甲州 鳥居平畑", brandMaker: "中央葡萄酒（山梨県）",
         x: 40, y: 35, prefecture: "山梨県",
-        editorialLead: "和柑橘の爽やかな香りと、凛とした酸味。",
         richDescription: "<p>日本固有のブドウ品種「甲州」。その中でも最高のテロワールとされる勝沼の「鳥居平（とりいびら）地区」で栽培されたブドウを使用した、世界に誇る白ワインです。</p><p>すだちやカボスといった和柑橘を思わせる清々しい香りと、微かな白胡椒のスパイス感。そして何より、ピュアで伸びやかな酸味が特徴です。出汁の旨味を大切にする和食と、これ以上ないほど見事に寄り添います。</p>",
-        pairingDishTitle: "天ぷらの盛り合わせ",
-        pairingDescription: "サクッと揚がった天ぷらの油分を、甲州の爽やかな酸味がスッと洗い流し、次の一口を誘います。",
-        dishImageUrl: "https://images.unsplash.com/photo-1580476262798-bddd9f4b7369?w=800&q=80",
         imageUrl: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=400&q=80",
+        images: ["https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=800&q=80", "https://images.unsplash.com/photo-1551887196-72e32cb14b09?w=800&q=80"],
         gallery: [
-          { url: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=800&q=80", title: "歴史ある勝沼のブドウ棚", caption: "急斜面で水はけの良い鳥居平の畑が、凝縮感のあるブドウを生み出します。" },
-          { url: "https://images.unsplash.com/photo-1551887196-72e32cb14b09?w=800&q=80", title: "日本固有品種「甲州」", caption: "淡い藤色の果皮を持つ甲州ブドウ。繊細な日本の美意識を体現する味わいです。" }
-        ]
-      },
-      {
-        id: "sake-ginjo", category: "日本酒", typeBadge: "純米吟醸",
-        name: "醸し人九平次", brandMaker: "萬乗醸造（愛知県）",
-        x: 60, y: 45, prefecture: "愛知県",
-        editorialLead: "お米の優しい甘みと、ワイングラスで映えるモダンな酸味。",
-        richDescription: "<p>フランスの三ツ星レストランのワインリストにも名を連ねる、革新的な日本酒「醸し人九平次」。パリのソムリエたちを驚嘆させたのは、そのモダンでエレガントな造りにあります。</p><p>グラスに注ぐと、洋梨やメロンのような華やかで瑞々しい香りが立ち上ります。口に含むとお米のピュアな甘味が広がり、そのすぐ後から、白ワインを思わせるような立体的で心地よい酸味が全体を引き締めます。ぜひワイングラスでお楽しみください。</p>",
-        pairingDishTitle: "鴨のロースト",
-        pairingDescription: "鴨肉の野性味あふれる旨味と、九平次のフルーティーな甘味・酸味が、口の中で極上のソースのように絡み合います。",
-        dishImageUrl: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80",
-        imageUrl: "https://images.unsplash.com/photo-1590189182193-1fd44f2b4048?w=400&q=80",
-        gallery: [
-          { url: "https://images.unsplash.com/photo-1584278637775-654cb6a804bd?w=800&q=80", title: "自社栽培へのこだわり", caption: "「良い酒は良い米から」。自らの手で田んぼに立ち、最高の酒米「山田錦」を育て上げています。" },
-          { url: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=800&q=80", title: "世界を魅了するエレガンス", caption: "和食の枠を超え、フレンチやイタリアンとも見事に調和する新しい日本酒の形です。" }
+          { url: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=800&q=80", caption: "急斜面で水はけの良い鳥居平の畑が、凝縮感のあるブドウを生み出します。" },
+          { url: "https://images.unsplash.com/photo-1551887196-72e32cb14b09?w=800&q=80", caption: "淡い藤色の果皮を持つ甲州ブドウ。繊細な日本の美意識を体現する味わいです。" }
         ]
       }
     ];
@@ -403,16 +345,16 @@
     
     function restartDiagnosis() {
       currentStep=0; userScore={x:50,y:50}; selectedDrinkId=null;
-      // 全ビューを非表示
       ['view-quiz','view-map','view-video','view-story'].forEach(id=>{
         const el = document.getElementById(id);
         if(el){ el.style.opacity='0'; el.style.pointerEvents='none'; el.style.zIndex='0'; el.style.animation='none'; }
       });
-      // 旅へボタンを無効化
-      const journeyBtn = document.getElementById('journey-btn');
-      if (journeyBtn) journeyBtn.disabled = true;
+      const journeyBtn = document.getElementById('action-journey-container');
+      if (journeyBtn) {
+        journeyBtn.classList.remove('opacity-100', 'pointer-events-auto', 'translate-y-0');
+        journeyBtn.classList.add('opacity-0', 'pointer-events-none', 'translate-y-12');
+      }
 
-      // クイズ表示
       const q = document.getElementById('view-quiz'); 
       q.style.opacity='1'; q.style.pointerEvents='auto'; q.style.zIndex='40'; 
       renderQuiz();
@@ -431,7 +373,6 @@
       layer.innerHTML = '';
       DRINKS_DATABASE.forEach(drink => {
         const pin = document.createElement('button');
-        // w-14 h-14 に拡大
         pin.className = 'absolute -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full border-2 border-white shadow-md bg-white overflow-hidden transition-transform duration-300 hover:scale-110 active:scale-95';
         pin.style.left = `${drink.x}%`;
         pin.style.top = `${drink.y}%`;
@@ -449,8 +390,7 @@
         const card = document.createElement('button');
         card.id = `rec-card-${drink.id}`;
         card.className = 'text-left bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm active:scale-[.98] transition flex flex-col h-full';
-        // 画像を h-16 に縮小しマップ領域を広げる
-        card.innerHTML = `<div class="h-16 w-full overflow-hidden shrink-0"><img src="${drink.imageUrl}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/300x200/e2e8f0/64748b?text=Drink'"></div><div class="p-2 flex-1 flex flex-col justify-center"><div class="text-[8px] text-emerald-700 font-bold">${index+1} / ${drink.category}</div><div class="text-[10px] font-mincho font-bold text-stone-900 line-clamp-1 mt-0.5">${drink.name}</div><div class="text-[8px] text-stone-500 truncate mt-1">${drink.prefecture}</div></div>`;
+        card.innerHTML = `<div class="h-24 w-full overflow-hidden shrink-0"><img src="${drink.imageUrl}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/300x200/e2e8f0/64748b?text=Drink'"></div><div class="p-2 flex-1 flex flex-col justify-center"><div class="text-[9px] text-emerald-700 font-bold">${index+1} / ${drink.category}</div><div class="text-[11px] font-mincho font-bold text-stone-900 line-clamp-1 mt-0.5">${drink.name}</div><div class="text-[9px] text-stone-500 truncate mt-1">${drink.prefecture}</div></div>`;
         card.onclick = () => selectDrink(drink, null);
         list.appendChild(card);
       });
@@ -472,9 +412,11 @@
         if(card) card.classList.add('ring-2','ring-emerald-400');
       }
 
-      // お酒を選択したらボタンを活性化（クリック可能に）
-      const journeyBtn = document.getElementById('journey-btn');
-      if (journeyBtn) journeyBtn.disabled = false;
+      const journeyBtn = document.getElementById('action-journey-container');
+      if (journeyBtn) {
+        journeyBtn.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-12');
+        journeyBtn.classList.add('opacity-100', 'pointer-events-auto', 'translate-y-0');
+      }
     }
 
     function startJourney() {
@@ -484,27 +426,23 @@
       const videoView = document.getElementById('view-video');
       const video = document.getElementById('trip-video');
 
-      // マップをフェードアウト
       map.style.opacity = '0';
       map.style.pointerEvents = 'none';
       map.style.zIndex = '0';
       
-      // 動画ビューを表示し、円状アニメーション適用
       videoView.style.opacity = '1';
       videoView.style.pointerEvents = 'auto';
       videoView.style.zIndex = '50';
       
-      // アニメーションリセット＆再適用
       videoView.style.animation = 'none';
-      videoView.offsetHeight; /* reflow */
+      videoView.offsetHeight; 
       videoView.style.animation = 'expandCircle 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards';
 
       video.currentTime = 0;
       video.play().catch(e => {
-        console.warn("動画の自動再生がブロックされました。", e);
+        console.warn("動画ブロック", e);
       });
 
-      // 3.5秒後にストーリー画面へ遷移
       setTimeout(() => {
         showStoryScreen();
       }, 3500);
@@ -531,19 +469,39 @@
       if(!drink) return;
 
       document.getElementById('story-region-header-tag').innerText = drink.prefecture;
-      document.getElementById('story-drink-type-badge').innerText = drink.typeBadge;
-      document.getElementById('story-editorial-lead').innerText = drink.editorialLead;
-      
       document.getElementById('story-rich-description').innerHTML = drink.richDescription;
-      document.getElementById('story-pairing-description').innerText = drink.pairingDescription;
-
-      const heroImg = document.getElementById('story-hero-dish-img');
-      heroImg.src = drink.dishImageUrl;
-      heroImg.onerror = () => { heroImg.src = 'https://placehold.co/800x600/e2e8f0/64748b?text=Dish'; };
-      
-      document.getElementById('story-pairing-dish-title').innerText = drink.pairingDishTitle;
       document.getElementById('story-drink-title-main').innerText = drink.name;
       document.getElementById('story-drink-maker-name').innerText = drink.brandMaker;
+
+      // クロスフェードスライドショーの初期化
+      drinkImages = drink.images || [drink.imageUrl];
+      currentSlideIndex = 0;
+      const img1 = document.getElementById('story-hero-dish-img-1');
+      const img2 = document.getElementById('story-hero-dish-img-2');
+      img1.src = drinkImages[0];
+      img1.onerror = () => { img1.src = 'https://placehold.co/800x600/e2e8f0/64748b?text=Drink'; };
+      img1.style.opacity = 1;
+      img2.style.opacity = 0;
+
+      if(slideshowInterval) clearInterval(slideshowInterval);
+      if(drinkImages.length > 1) {
+        slideshowInterval = setInterval(() => {
+          currentSlideIndex = (currentSlideIndex + 1) % drinkImages.length;
+          const nextImgSrc = drinkImages[currentSlideIndex];
+          
+          if(img1.style.opacity == 1) {
+            img2.src = nextImgSrc;
+            img2.onerror = () => { img2.src = 'https://placehold.co/800x600/e2e8f0/64748b?text=Drink'; };
+            img2.style.opacity = 1;
+            img1.style.opacity = 0;
+          } else {
+            img1.src = nextImgSrc;
+            img1.onerror = () => { img1.src = 'https://placehold.co/800x600/e2e8f0/64748b?text=Drink'; };
+            img1.style.opacity = 1;
+            img2.style.opacity = 0;
+          }
+        }, 1500); // 1秒間隔で切り替え
+      }
 
       currentGalleryData = drink.gallery;
       currentGalleryIndex = 0;
@@ -554,7 +512,6 @@
       storyView.style.pointerEvents = 'auto';
       storyView.style.zIndex = '40';
       
-      // ふんわりフェードイン
       storyView.style.animation = 'none';
       storyView.offsetHeight; 
       storyView.style.animation = 'fadeInStory 1s cubic-bezier(0.25, 1, 0.5, 1) forwards';
@@ -565,7 +522,6 @@
       
       const slide = currentGalleryData[currentGalleryIndex];
       const imgEl = document.getElementById('gallery-slide-img');
-      const titleEl = document.getElementById('gallery-slide-title');
       const captionEl = document.getElementById('gallery-slide-caption');
       
       imgEl.style.opacity = '0.4';
@@ -573,7 +529,6 @@
         imgEl.src = slide.url;
         imgEl.onerror = () => { imgEl.src = 'https://placehold.co/800x400/e2e8f0/64748b?text=Landscape'; };
         imgEl.style.opacity = '1';
-        titleEl.innerText = slide.title;
         captionEl.innerText = slide.caption;
       }, 150);
 
@@ -599,6 +554,8 @@
     }
 
     function backToFlavorMap() {
+      if(slideshowInterval) clearInterval(slideshowInterval);
+
       const story = document.getElementById('view-story');
       story.style.opacity = '0';
       story.style.pointerEvents = 'none';
