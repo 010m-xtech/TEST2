@@ -1183,11 +1183,41 @@
       return commonsCache[keyword];
     }
 
+    // Wikimedia Commons のファイル名を指定した写真（作者・ライセンスも取得）
+    //   取得できなかったときも、写真とファイルのページへのリンクは表示する
+    function fetchCommonsFile(fileName) {
+      const name = fileName.replace(/^(File|ファイル):/, '');
+      const key = 'file:' + name;
+      if(!commonsCache[key]) {
+        commonsCache[key] = (async () => {
+          const title = 'File:' + name;
+          const data = await fetchJson(`https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=1000&titles=${encodeURIComponent(title)}`);
+          const pages = data && data.query && data.query.pages;
+          const info = pages && Object.values(pages)[0].imageinfo && Object.values(pages)[0].imageinfo[0];
+          const ext = (info && info.extmetadata) || {};
+          return {
+            image: info ? (info.thumburl || info.url) : `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(name)}?width=1000`,
+            author: stripHtml(ext.Artist && ext.Artist.value),
+            license: stripHtml(ext.LicenseShortName && ext.LicenseShortName.value),
+            href: (info && info.descriptionurl) || `https://commons.wikimedia.org/wiki/${encodeURIComponent(title)}`,
+            fileName: name
+          };
+        })();
+      }
+      return commonsCache[key];
+    }
+
     async function resolveGalleryItem(item) {
+      if(!item.wiki && item.file) {
+        const photo = await fetchCommonsFile(item.file);
+        return { image: photo.image, title: item.title || '', caption: item.caption || '', source: null, photoCredit: photo };
+      }
       if(!item.wiki) return { image: item.url, title: item.title || '', caption: item.caption || '', source: null, photoCredit: null };
       const wiki = await fetchWikiSummary(item.wiki);
-      // 自分で用意した写真（url）があればそれを優先
-      const photo = item.url ? null : ((wiki && wiki.photo) || await searchCommonsPhoto(item.wiki));
+      // 写真の優先順位：自分で用意した写真（url）→ 指定したファイル（file）→ 記事の代表写真 → Commonsで検索
+      const photo = item.url ? null
+        : item.file ? await fetchCommonsFile(item.file)
+        : ((wiki && wiki.photo) || await searchCommonsPhoto(item.wiki));
       if(!wiki && !photo && !item.caption) return null;
       const extract = wiki ? (wiki.extract.length > 110 ? wiki.extract.slice(0, 110) + '…' : wiki.extract) : '';
       return {
@@ -1252,12 +1282,20 @@
           link.textContent = label;
           return link;
         };
-        if(slide.source) credit.append('出典：', makeLink(slide.source.label, slide.source.href));
+        if(slide.source) {
+          const line = document.createElement('span');
+          line.className = 'block';
+          line.append('参考文献：', makeLink(slide.source.label, slide.source.href));
+          credit.appendChild(line);
+        }
         if(slide.photoCredit && slide.image) {
-          const who = [slide.photoCredit.author, slide.photoCredit.license].filter(Boolean).join(' / ');
-          if(credit.childNodes.length) credit.append('　');
-          credit.append('写真：');
-          credit.append(slide.photoCredit.href ? makeLink(who || 'Wikimedia Commons', slide.photoCredit.href) : (who || 'Wikimedia Commons'));
+          const pc = slide.photoCredit;
+          const who = [pc.author, pc.license].filter(Boolean).join(' / ');
+          const label = who || (pc.fileName ? `Wikimedia Commons「${pc.fileName}」` : 'Wikimedia Commons');
+          const line = document.createElement('span');
+          line.className = 'block';
+          line.append('写真：', pc.href ? makeLink(label, pc.href) : label, who ? '（Wikimedia Commons）' : '');
+          credit.appendChild(line);
         }
       }, 150);
 
