@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>味覚マップ & テロワールストーリー</title>
+  <title>味覚マップ</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -97,3 +97,104 @@
             <div class="relative bg-gradient-to-tr from-emerald-50 to-teal-50/50 overflow-hidden" id="bg-bottom-left"></div>
             <div class="relative bg-gradient-to-tl from-stone-100 to-stone-200/40 overflow-hidden" id="bg-bottom-right"></div>
           </div>
+
+          <div class="absolute inset-0 pointer-events-none">
+            <div class="absolute inset-x-0 top-1/2 h-px border-t border-dashed border-stone-300/80"></div>
+            <div class="absolute inset-y-0 left-1/2 w-px border-l border-dashed border-stone-300/80"></div>
+          </div>
+          
+          <div class="absolute top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold text-pink-700 bg-white/80 px-2.5 py-1 rounded-full backdrop-blur-sm z-10 shadow-sm">華やか・香り</div>
+          <div class="absolute bottom-3 left-1/2 -translate-x-1/2 text-[10px] font-bold text-stone-500 bg-white/80 px-2.5 py-1 rounded-full backdrop-blur-sm z-10 shadow-sm">ドライ・キレ</div>
+          <div class="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-teal-700 bg-white/80 px-1 py-2 rounded-full backdrop-blur-sm [writing-mode:vertical-rl] z-10 shadow-sm">スッキリ・軽快</div>
+          <div class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-stone-600 bg-white/80 px-1 py-2 rounded-full backdrop-blur-sm [writing-mode:vertical-rl] z-10 shadow-sm">濃厚・コク</div>
+
+          <div id="drink-pins-layer" class="absolute inset-0 z-20"></div>
+          
+          <div id="user-position-marker" class="absolute pointer-events-none transition-all duration-700 -translate-x-1/2 -translate-y-1/2 z-40 flex flex-col items-center">
+            <span class="absolute w-16 h-16 rounded-full bg-emerald-400/30 animate-ping-slow"></span>
+            <div class="relative w-11 h-11 rounded-full bg-gradient-to-tr from-emerald-800 to-teal-500 text-white flex items-center justify-center shadow-lg border-2 border-white text-[10px] font-bold uppercase tracking-wider">
+              YOU
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-shrink-0 pt-3 pb-20">
+          <div id="recommendation-list" class="grid grid-cols-3 gap-2.5"></div>
+        </div>
+
+        <div id="action-journey-container" class="absolute bottom-6 left-0 right-0 px-4 z-50 opacity-0 pointer-events-none transition-all duration-500 translate-y-12">
+          <button id="journey-btn" onclick="startJourney()" class="w-full py-3.5 rounded-2xl bg-stone-900 text-white font-mincho font-bold shadow-[0_10px_25px_rgba(0,0,0,0.3)] flex items-center justify-center gap-2 hover:bg-stone-800 active:scale-95 transition-all">
+            <span>美味しいを巡る旅へ</span>
+            <i class="fa-solid fa-plane text-sm"></i>
+          </button>
+        </div>
+      </div>
+
+      <div id="view-trip" onclick="skipTrip()" class="absolute inset-0 z-0 opacity-0 pointer-events-none transition-opacity duration-700 bg-[#f3efe6] overflow-hidden">
+        <svg id="trip-map" class="absolute inset-0 w-full h-full" preserveAspectRatio="xMidYMid meet">
+          <g id="trip-prefectures"></g>
+          <path id="trip-route" d="" fill="none" stroke="#047857" stroke-width="2.5" stroke-dasharray="2 7" stroke-linecap="round" vector-effect="non-scaling-stroke"></path>
+        </svg>
+
+        <div id="trip-origin-marker" class="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
+          <div class="w-3 h-3 rounded-full bg-stone-700 border-2 border-white shadow"></div>
+          <span id="trip-origin-label" class="mt-1 text-[10px] font-bold text-stone-600 bg-white/80 px-1.5 rounded"></span>
+        </div>
+
+        <div id="trip-dest-marker" class="absolute -translate-x-1/2 -translate-y-1/2 opacity-0 transition-opacity duration-300 pointer-events-none">
+          <span class="absolute -inset-4 rounded-full bg-emerald-500/40 animate-ping-slow"></span>
+          <div class="relative w-4 h-4 rounded-full bg-emerald-700 border-2 border-white shadow-lg"></div>
+        </div>
+
+        <div id="trip-plane" class="absolute w-9 h-9 -ml-[18px] -mt-[18px] flex items-center justify-center rounded-full bg-white text-emerald-800 shadow-lg pointer-events-none">
+          <i class="fa-solid fa-plane text-base"></i>
+        </div>
+
+        <div class="absolute top-0 inset-x-0 pt-6 px-5 pointer-events-none">
+          <span class="font-serifEn text-[10px] tracking-[0.3em] text-emerald-800 font-bold">NOW TRAVELING TO</span>
+          <p id="trip-destination-label" class="font-mincho font-extrabold text-2xl text-stone-900 mt-1"></p>
+        </div>
+
+        <div id="trip-arrival-card" class="absolute bottom-8 inset-x-5 bg-white rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.15)] border border-stone-200 p-4 pr-20 opacity-0 translate-y-8 transition-all duration-500 pointer-events-none">
+          <span class="font-serifEn text-[10px] tracking-[0.3em] text-stone-500 font-bold">ARRIVAL</span>
+          <p id="trip-arrival-name" class="font-mincho font-extrabold text-lg text-stone-900 leading-snug mt-1"></p>
+          <p id="trip-arrival-maker" class="text-[11px] text-stone-500 mt-0.5"></p>
+          <div id="trip-arrival-stamp" class="absolute right-4 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full border-2 border-red-700 text-red-700 flex items-center justify-center font-mincho font-extrabold text-sm -rotate-12 opacity-0 scale-150 transition-all duration-300">到着</div>
+        </div>
+
+        <button onclick="event.stopPropagation(); skipTrip()" class="absolute top-6 right-4 px-3 py-1.5 bg-stone-900/70 text-white text-[10px] font-bold rounded-full backdrop-blur-md active:scale-95 transition-transform">
+          SKIP <i class="fa-solid fa-forward-step ml-1"></i>
+        </button>
+      </div>
+
+      <div id="view-story" class="absolute inset-0 z-0 flex flex-col bg-[#f2f7f4] text-slate-900 opacity-0 pointer-events-none transition-opacity duration-1000 overflow-hidden">
+        <header class="px-4 py-2.5 flex items-center justify-between bg-[#f2f7f4]/95 backdrop-blur-md border-b border-emerald-900/10 flex-shrink-0 z-20">
+          <button onclick="backToFlavorMap()" class="px-3 py-1 rounded-full bg-white/80 text-emerald-900 text-[11px] font-medium flex items-center gap-1.5 transition active:bg-emerald-50 shadow-sm border border-emerald-100">
+            <i class="fa-solid fa-arrow-left text-[10px]"></i><span>マップに戻る</span>
+          </button>
+          <div class="text-right">
+            <span id="story-region-header-tag" class="text-[11px] font-mincho font-bold text-emerald-800"></span>
+          </div>
+        </header>
+
+        <div id="story-scroll-area" class="flex-1 overflow-y-auto overscroll-contain text-stone-800 pb-8">
+          <section class="p-4 bg-gradient-to-b from-[#fdfcf9] to-[#f4f1ea]">
+            
+            <h1 id="story-drink-title-main" class="text-2xl font-mincho font-extrabold text-stone-900 leading-tight mt-2"></h1>
+            <p id="story-drink-maker-name" class="text-sm text-stone-600 font-medium mt-1 mb-4"></p>
+
+            <div id="story-rich-description" class="text-[13px] text-stone-700 leading-relaxed space-y-3 font-mincho mb-6"></div>
+
+            <div class="relative w-full rounded-xl overflow-hidden shadow-sm border border-stone-200 my-4 bg-black">
+              <!-- Removed aspect-[4/3] and changed inner padding/object-fit -->
+              <div class="relative w-full pb-[66.66%]"> <!-- 3:2 aspect ratio container -->
+                <img id="story-hero-dish-img-1" src="" class="absolute inset-0 w-full h-full object-contain transition-opacity duration-1000 opacity-100">
+                <img id="story-hero-dish-img-2" src="" class="absolute inset-0 w-full h-full object-contain transition-opacity duration-1000 opacity-0">
+              </div>
+            </div>
+          </section>
+
+          <section class="p-4 bg-[#f8f6f0] border-t border-stone-200/60 pb-8">
+            
+            <div class="relative w-full bg-white rounded-xl overflow-hidden shadow-sm border border-emerald-100">
+              <div class="h-52 overflow-hidden bg-stone-200 relative">
