@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>味覚マップ</title>
+  <title>味覚マップ & テロワールストーリー</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -198,3 +198,536 @@
             
             <div class="relative w-full bg-white rounded-xl overflow-hidden shadow-sm border border-emerald-100">
               <div class="h-52 overflow-hidden bg-stone-200 relative">
+                <img id="gallery-slide-img" src="" class="w-full h-full object-cover transition-opacity duration-300">
+                
+                <button onclick="prevGallerySlide()" class="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-md hover:bg-black/60 active:scale-95 transition z-10">
+                  <i class="fa-solid fa-chevron-left text-xs"></i>
+                </button>
+                <button onclick="nextGallerySlide()" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-md hover:bg-black/60 active:scale-95 transition z-10">
+                  <i class="fa-solid fa-chevron-right text-xs"></i>
+                </button>
+                
+                <div id="gallery-indicators" class="absolute bottom-2.5 left-0 right-0 flex justify-center gap-1.5 z-10"></div>
+              </div>
+              <div class="p-4 min-h-[104px]">
+                <p id="gallery-slide-caption" class="text-[12px] text-stone-700 font-mincho leading-relaxed"></p>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="japan-map.js"></script>
+  <script>
+    // 旅の出発地（お店の場所に合わせて変更してください）
+    const TRIP_ORIGIN = { label: "現在地", lat: 35.681, lon: 139.767 };
+
+    let currentStep = 0;
+    let userScore = { x: 50, y: 50 };
+    let selectedDrinkId = null;
+    let currentGalleryIndex = 0;
+    let currentGalleryData = [];
+    let slideshowInterval = null;
+    let currentSlideIndex = 0;
+    let drinkImages = [];
+    let tripAnimationFrame = null;
+    let tripTimers = [];
+
+    const DRINKS_DATABASE = [
+      {
+        id: "sake-enasan", category: "日本酒", 
+        name: "恵那山 純米吟醸", brandMaker: "はざま酒造（岐阜県中津川市）",
+        x: 25, y: 45, prefecture: "岐阜県", lat: 35.487, lon: 137.500,
+        richDescription: `<p>恵那山は穏やかに香るフルーツのような吟醸香。<br>口当たりがよく、湧きたつような味わいと米本来の持つ甘みを引き出した中津川の清流を彷彿とさせる軽やかな余韻。味と香りのバランスをお楽しみいただけるお酒です。</p>
+        <div class="mt-4 flex flex-wrap gap-4 text-[11px] text-stone-800 bg-white/60 p-3 rounded-lg border border-emerald-900/10 shadow-sm">
+          <div class="flex-1 min-w-[120px]">
+            <p class="font-bold mb-1.5 border-b border-emerald-900/20 pb-1 text-emerald-950">●受賞歴</p>
+            <p class="leading-relaxed">IWC2016 純米吟醸シルバー<br>IWC2018 純米吟醸シルバー<br>IWC2019 純米吟醸ブロンズ</p>
+          </div>
+          <div class="flex-1 min-w-[120px]">
+            <p class="font-bold mb-1.5 border-b border-emerald-900/20 pb-1 text-emerald-950">●スペック</p>
+            <p class="leading-relaxed">種類：純米吟醸酒 火入れ<br>原料米：山田錦<br>精米歩合：50％<br>アルコール度数：16％</p>
+          </div>
+        </div>`,
+        imageUrl: "恵那山①.webp",
+        images: ["恵那山①.webp", "恵那山②.webp", "恵那山③.webp"],
+        gallery: [
+          { url: "https://images.unsplash.com/photo-1612470984931-1e967a5b3a3c?w=800&q=80", caption: "恵那山の伏流水を敷地内の井戸から組み上げて使用。恵那山に降り積もった雨雪が、長い時間をかけて地中に染み込み磨かれてできた水は、日本酒をやわらかい味わいにします。" },
+          { url: "https://images.unsplash.com/photo-1596701062635-c637482f09ba?w=800&q=80", caption: "中山道・馬籠宿。石畳が続く歴史ある宿場町は、往時の面影を色濃く残し、訪れる人々をタイムスリップしたかのような気分にさせてくれます。" }
+        ]
+      },
+      {
+        id: "gin-roku", category: "ジン", 
+        name: "ROKU GIN (六)", brandMaker: "サントリー（大阪府）",
+        x: 20, y: 20, prefecture: "大阪府", lat: 34.693, lon: 135.502,
+        richDescription: "<p>桜花、桜葉、煎茶、玉露、山椒、柚子。日本ならではの6つのボタニカル（植物）を、それぞれ旬の時期に収穫し、別々に蒸溜してブレンドするこだわりの製法。</p><p>グラスを傾けると、春の桜の甘い香り、夏の緑茶の清涼感、秋の山椒のスパイシーさ、冬の柚子の爽やかさが、まるで万華鏡のように次々と表情を変えて現れます。日本の自然の豊かさを、一杯のグラスに閉じ込めたようなジンです。</p>",
+        imageUrl: "https://images.unsplash.com/photo-1609355655543-9800a75f5bbd?w=400&q=80",
+        images: [
+          "https://images.unsplash.com/photo-1609355655543-9800a75f5bbd?w=800&q=80", 
+          "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&q=80",
+          "https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=800&q=80"
+        ],
+        gallery: [
+          { url: "https://images.unsplash.com/photo-1523368749929-6b2bf370dbf8?w=800&q=80", caption: "最も香りが良くなる「旬」の時期に収穫された素材だけを贅沢に使用しています。" },
+          { url: "https://images.unsplash.com/photo-1563514757351-f29e1eb123b3?w=800&q=80", caption: "繊細な日本の職人技が、複雑で調和のとれた香りを作り出します。" }
+        ]
+      },
+      {
+        id: "sake-kimoto", category: "日本酒", 
+        name: "大七 純米生酛", brandMaker: "大七酒造（福島県）",
+        x: 80, y: 80, prefecture: "福島県", lat: 37.585, lon: 140.431,
+        richDescription: "<p>江戸時代から続く伝統製法「生酛（きもと）造り」にこだわり抜く大七酒造。自然の乳酸菌の力を借りて、通常の倍以上の時間と手間をかけて酵母を育てます。</p><p>その味わいは、一言でいえば「豊潤」。幾重にも重なる奥深いコク、クリーミーな舌触り、そして後から追いかけてくる力強い酸味による鮮やかなキレ。お燗にするとさらに旨味がふくらみ、至福のひとときをもたらします。</p>",
+        imageUrl: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400&q=80",
+        images: [
+          "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=800&q=80", 
+          "https://images.unsplash.com/photo-1574621100236-d25089c36209?w=800&q=80",
+          "https://images.unsplash.com/photo-1599839619722-39751411ea63?w=800&q=80"
+        ],
+        gallery: [
+          { url: "https://images.unsplash.com/photo-1574621100236-d25089c36209?w=800&q=80", caption: "空気中の乳酸菌を取り込む、昔ながらの力強い酒造り。" },
+          { url: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=800&q=80", caption: "福島の豊かな土壌と気候が、ふくよかな米の旨味を育みます。" }
+        ]
+      },
+      {
+        id: "wine-red", category: "ワイン", 
+        name: "シャトー・メルシャン", brandMaker: "メルシャン（長野県）",
+        x: 85, y: 15, prefecture: "長野県", lat: 36.115, lon: 137.953,
+        richDescription: "<p>日本のワイン造りを牽引し続けるシャトー・メルシャン。長野県・桔梗ヶ原をはじめとする冷涼な気候下で育まれた上質なブドウのみを使用しています。</p><p>カシスやダークチェリーのような凝縮された黒系果実の香りに、オーク樽由来のバニラやスパイスのニュアンスが溶け込んでいます。しっかりとしたタンニン（渋み）がありながらも、口当たりはビロードのように滑らか。日本ワインのポテンシャルの高さを証明する一本です。</p>",
+        imageUrl: "https://images.unsplash.com/photo-1585553616435-2dc0a54e271d?w=400&q=80",
+        images: [
+          "https://images.unsplash.com/photo-1585553616435-2dc0a54e271d?w=800&q=80", 
+          "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=800&q=80",
+          "https://images.unsplash.com/photo-1504675099198-5240aec35728?w=800&q=80"
+        ],
+        gallery: [
+          { url: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=800&q=80", caption: "昼夜の寒暖差が大きい長野の気候が、色の濃い高品質なブドウを育てます。" },
+          { url: "https://images.unsplash.com/photo-1523368749929-6b2bf370dbf8?w=800&q=80", caption: "フレンチオーク樽の中で、ワインはゆっくりと複雑な香りをまとっていきます。" }
+        ]
+      },
+      {
+        id: "wine-white", category: "ワイン", 
+        name: "甲州 鳥居平畑", brandMaker: "中央葡萄酒（山梨県）",
+        x: 40, y: 35, prefecture: "山梨県", lat: 35.662, lon: 138.730,
+        richDescription: "<p>日本固有のブドウ品種「甲州」。その中でも最高のテロワールとされる勝沼の「鳥居平（とりいびら）地区」で栽培されたブドウを使用した、世界に誇る白ワインです。</p><p>すだちやカボスといった和柑橘を思わせる清々しい香りと、微かな白胡椒のスパイス感。そして何より、ピュアで伸びやかな酸味が特徴です。出汁の旨味を大切にする和食と、これ以上ないほど見事に寄り添います。</p>",
+        imageUrl: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=400&q=80",
+        images: [
+          "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=800&q=80", 
+          "https://images.unsplash.com/photo-1551887196-72e32cb14b09?w=800&q=80",
+          "https://images.unsplash.com/photo-1595855761358-0026e64402a5?w=800&q=80"
+        ],
+        gallery: [
+          { url: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=800&q=80", caption: "急斜面で水はけの良い鳥居平の畑が、凝縮感のあるブドウを生み出します。" },
+          { url: "https://images.unsplash.com/photo-1551887196-72e32cb14b09?w=800&q=80", caption: "淡い藤色の果皮を持つ甲州ブドウ。繊細な日本の美意識を体現する味わいです。" }
+        ]
+      }
+    ];
+
+    const QUESTIONS = [
+      {
+        q: "Q1. いまの気分に一番フィットする飲み心地は？",
+        options: [
+          { text: "① 気分をシャキッとリフレッシュする、爽やかな1杯", dx: -15, dy: -5 },
+          { text: "② 会話が弾むような、香り立ちの良いワクワクする1杯", dx: 0, dy: -15 },
+          { text: "③ ペースを落として、じっくり深く浸れる落ち着いた1杯", dx: 15, dy: 5 },
+          { text: "④ ここで一度口内をリセットする、キレ味鋭いクリアな1杯", dx: -10, dy: 10 }
+        ]
+      },
+      {
+        q: "Q2. グラスを近づけた時、ふわりと感じたい香りは？",
+        options: [
+          { text: "① 果実やお花、柑橘のようなフルーティーで華やかなアロマ", dx: -5, dy: -15 },
+          { text: "② ハーブや山椒、和スパイスのような心地よい清涼感", dx: -5, dy: -5 },
+          { text: "③ 自然な甘みや麦の香ばしさ、食事に寄り添う控えめな香り", dx: 5, dy: 10 },
+          { text: "④ 香りは極力主張せず、澄み切ったクリーンな印象", dx: -5, dy: 15 }
+        ]
+      },
+      {
+        q: "Q3. 口に含んだ瞬間の「ボディ感」はどれが理想？",
+        options: [
+          { text: "① 水のようにサラリと喉を通る、軽快で雑味のないタッチ", dx: -15, dy: 5 },
+          { text: "② ほどよい瑞々しさがあり、重すぎず軽すぎない心地よさ", dx: -5, dy: 0 },
+          { text: "③ トロッとした舌触りや、口いっぱいに広がる濃密な旨味", dx: 10, dy: -5 },
+          { text: "④ 舌の上にズシッと残る、飲みごたえ抜群の濃厚な重厚感", dx: 15, dy: 0 }
+        ]
+      },
+      {
+        q: "Q4. ゴクリと飲み干したあとの「余韻」はどうしたい？",
+        options: [
+          { text: "① 一瞬でスパッと消え去り、次の一口や箸が進むキレ", dx: -10, dy: 10 },
+          { text: "② 鼻腔からフワッと心地よい果実やボタニカルの香りが抜けていく", dx: 0, dy: -10 },
+          { text: "③ 喉の奥にじんわりとお酒本来のふくよかな温かみが続く", dx: 10, dy: 0 },
+          { text: "④ 何層にも変化する濃厚な深みやビター感を長く味わいたい", dx: 15, dy: -5 }
+        ]
+      }
+    ];
+
+    function renderQuiz() {
+      if (!QUESTIONS || currentStep >= QUESTIONS.length) {
+        showMapScreen();
+        return;
+      }
+      const qObj = QUESTIONS[currentStep];
+      document.getElementById('quiz-step-label').innerText = `QUESTION ${currentStep + 1} / ${QUESTIONS.length}`;
+      document.getElementById('quiz-title').innerText = qObj.q;
+      
+      const container = document.getElementById('quiz-options-container');
+      container.innerHTML = '';
+      
+      qObj.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = "w-full text-left p-3.5 bg-white rounded-xl shadow-sm border border-emerald-100/80 active:bg-emerald-50 active:border-emerald-300 transition text-sm font-medium text-slate-700 font-mincho hover:shadow-md leading-relaxed";
+        btn.innerText = opt.text;
+        btn.onclick = function() { answerQuestion(opt.dx, opt.dy); };
+        container.appendChild(btn);
+      });
+      
+      const progress = ((currentStep + 1) / QUESTIONS.length) * 100;
+      document.getElementById('quiz-progress-bar').style.width = `${progress}%`;
+    }
+
+    function answerQuestion(xDelta, yDelta) {
+      userScore.x = Math.max(5, Math.min(95, userScore.x + xDelta));
+      userScore.y = Math.max(5, Math.min(95, userScore.y + yDelta));
+      currentStep++;
+      if (currentStep < QUESTIONS.length) {
+        renderQuiz();
+      } else {
+        showMapScreen();
+      }
+    }
+
+    function getNearestDrinks() {
+      return [...DRINKS_DATABASE].sort((a,b) => Math.hypot(a.x-userScore.x,a.y-userScore.y)-Math.hypot(b.x-userScore.x,b.y-userScore.y)).slice(0,3);
+    }
+    
+    function restartDiagnosis() {
+      currentStep=0; userScore={x:50,y:50}; selectedDrinkId=null;
+      cancelTrip();
+      if(slideshowInterval) clearInterval(slideshowInterval);
+      ['view-quiz','view-map','view-trip','view-story'].forEach(id=>{
+        const el = document.getElementById(id);
+        if(el){ el.style.opacity='0'; el.style.pointerEvents='none'; el.style.zIndex='0'; el.style.animation='none'; }
+      });
+      const journeyBtn = document.getElementById('action-journey-container');
+      if (journeyBtn) {
+        journeyBtn.classList.remove('opacity-100', 'pointer-events-auto', 'translate-y-0');
+        journeyBtn.classList.add('opacity-0', 'pointer-events-none', 'translate-y-12');
+      }
+
+      const q = document.getElementById('view-quiz'); 
+      q.style.opacity='1'; q.style.pointerEvents='auto'; q.style.zIndex='40'; 
+      renderQuiz();
+    }
+    
+    function showMapScreen() {
+      const q = document.getElementById('view-quiz'); q.style.opacity='0'; q.style.pointerEvents='none'; q.style.zIndex='0';
+      const m = document.getElementById('view-map'); m.style.opacity='1'; m.style.pointerEvents='auto'; m.style.zIndex='30';
+      const u = document.getElementById('user-position-marker'); u.style.left=`${userScore.x}%`; u.style.top=`${userScore.y}%`;
+      drawDrinkPins();
+      renderRecommendations();
+    }
+    
+    function drawDrinkPins(){
+      const layer = document.getElementById('drink-pins-layer');
+      layer.innerHTML = '';
+      DRINKS_DATABASE.forEach(drink => {
+        const pin = document.createElement('button');
+        pin.className = 'absolute -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full border-2 border-white shadow-md bg-white overflow-hidden transition-transform duration-300 hover:scale-110 active:scale-95';
+        pin.style.left = `${drink.x}%`;
+        pin.style.top = `${drink.y}%`;
+        pin.title = drink.name;
+        pin.innerHTML = `<img src="${drink.imageUrl}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/e2e8f0/64748b?text=Drink'">`;
+        pin.onclick = () => selectDrink(drink, pin);
+        layer.appendChild(pin);
+      });
+    }
+
+    function renderRecommendations(){
+      const list = document.getElementById('recommendation-list');
+      list.innerHTML = '';
+      getNearestDrinks().forEach((drink, index) => {
+        const card = document.createElement('button');
+        card.id = `rec-card-${drink.id}`;
+        card.className = 'text-left bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm active:scale-[.98] transition flex flex-col h-full';
+        card.innerHTML = `<div class="h-24 w-full overflow-hidden shrink-0 bg-stone-50"><img src="${drink.imageUrl}" class="w-full h-full object-contain p-1" onerror="this.src='https://placehold.co/300x200/e2e8f0/64748b?text=Drink'"></div><div class="p-2 flex-1 flex flex-col justify-center"><div class="text-[9px] text-emerald-700 font-bold">${index+1} / ${drink.category}</div><div class="text-[11px] font-mincho font-bold text-stone-900 line-clamp-1 mt-0.5">${drink.name}</div><div class="text-[9px] text-stone-500 truncate mt-1">${drink.prefecture}</div></div>`;
+        card.onclick = () => selectDrink(drink, null);
+        list.appendChild(card);
+      });
+    }
+
+    function selectDrink(drink, pinElement){
+      selectedDrinkId = drink.id;
+      
+      document.querySelectorAll('#drink-pins-layer button').forEach(el => el.classList.remove('ring-4','ring-emerald-400'));
+      document.querySelectorAll('#recommendation-list button').forEach(el => el.classList.remove('ring-2','ring-emerald-400'));
+      
+      if(pinElement) {
+        pinElement.classList.add('ring-4','ring-emerald-400');
+      } else {
+        const matchingPinIndex = DRINKS_DATABASE.findIndex(d => d.id === drink.id);
+        const pins = document.querySelectorAll('#drink-pins-layer button');
+        if(pins[matchingPinIndex]) pins[matchingPinIndex].classList.add('ring-4','ring-emerald-400');
+      }
+      const card = document.getElementById(`rec-card-${drink.id}`);
+      if(card) card.classList.add('ring-2','ring-emerald-400');
+
+      const journeyBtn = document.getElementById('action-journey-container');
+      if (journeyBtn) {
+        journeyBtn.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-12');
+        journeyBtn.classList.add('opacity-100', 'pointer-events-auto', 'translate-y-0');
+      }
+    }
+
+    function renderTripPrefectures() {
+      document.getElementById('trip-prefectures').innerHTML = Object.entries(JAPAN_PREFECTURE_PATHS).map(([name, d]) =>
+        `<path d="${d}" data-pref="${name}" fill="#dde8e1" stroke="#f3efe6" stroke-width="1" vector-effect="non-scaling-stroke" style="transition: fill 0.6s"></path>`
+      ).join('');
+    }
+
+    const clamp01 = v => Math.max(0, Math.min(1, v));
+    const easeInOut = t => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    const lerp = (a, b, t) => a + (b - a) * t;
+
+    function cancelTrip() {
+      if(tripAnimationFrame) cancelAnimationFrame(tripAnimationFrame);
+      tripAnimationFrame = null;
+      tripTimers.forEach(clearTimeout);
+      tripTimers = [];
+    }
+
+    function startJourney() {
+      if(!selectedDrinkId) return;
+      const drink = DRINKS_DATABASE.find(d => d.id === selectedDrinkId);
+      if(!drink) return;
+      cancelTrip();
+
+      const map = document.getElementById('view-map');
+      const tripView = document.getElementById('view-trip');
+
+      map.style.opacity = '0';
+      map.style.pointerEvents = 'none';
+      map.style.zIndex = '0';
+
+      tripView.style.opacity = '1';
+      tripView.style.pointerEvents = 'auto';
+      tripView.style.zIndex = '50';
+
+      tripView.style.animation = 'none';
+      tripView.offsetHeight;
+      tripView.style.animation = 'expandCircle 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards';
+
+      // 表示内容をリセット
+      document.getElementById('trip-destination-label').innerText = `${drink.prefecture}へ`;
+      document.getElementById('trip-origin-label').innerText = TRIP_ORIGIN.label;
+      document.getElementById('trip-arrival-name').innerText = drink.name;
+      document.getElementById('trip-arrival-maker').innerText = drink.brandMaker;
+      const card = document.getElementById('trip-arrival-card');
+      const stamp = document.getElementById('trip-arrival-stamp');
+      const destMarker = document.getElementById('trip-dest-marker');
+      const plane = document.getElementById('trip-plane');
+      const originMarker = document.getElementById('trip-origin-marker');
+      const route = document.getElementById('trip-route');
+      card.classList.add('opacity-0', 'translate-y-8');
+      stamp.classList.add('opacity-0', 'scale-150');
+      destMarker.style.opacity = '0';
+      plane.style.opacity = '1';
+      document.querySelectorAll('#trip-prefectures path').forEach(p => p.setAttribute('fill', '#dde8e1'));
+      const destPref = document.querySelector(`#trip-prefectures path[data-pref="${drink.prefecture}"]`);
+
+      // 出発地 → 目的地を結ぶ弧（2次ベジェ曲線）
+      const p0 = projectLatLon(TRIP_ORIGIN.lat, TRIP_ORIGIN.lon);
+      const p2 = projectLatLon(drink.lat, drink.lon);
+      const dx = p2.x - p0.x, dy = p2.y - p0.y;
+      const dist = Math.hypot(dx, dy) || 1;
+      let nx = -dy / dist, ny = dx / dist;
+      if(ny > 0) { nx = -nx; ny = -ny; } // 弧が北側にふくらむ向きにする
+      const bend = Math.max(dist * 0.35, 40);
+      const p1 = { x: (p0.x + p2.x) / 2 + nx * bend, y: (p0.y + p2.y) / 2 + ny * bend };
+      const bezier = t => ({
+        x: (1 - t) * (1 - t) * p0.x + 2 * (1 - t) * t * p1.x + t * t * p2.x,
+        y: (1 - t) * (1 - t) * p0.y + 2 * (1 - t) * t * p1.y + t * t * p2.y
+      });
+
+      // カメラ：日本全体 → 航路全体 → 目的地へズーム（画面の縦横比に合わせたviewBox）
+      const svg = document.getElementById('trip-map');
+      const W = svg.clientWidth, H = svg.clientHeight, aspect = H / W;
+      const M = JAPAN_MAP_PROJECTION;
+      const fullW = Math.max(M.width, M.height / aspect) * 1.05;
+      const fullVB = { x: M.width / 2 - fullW / 2, y: M.height / 2 - fullW * aspect / 2, w: fullW, h: fullW * aspect };
+      const minX = Math.min(p0.x, p1.x, p2.x), maxX = Math.max(p0.x, p1.x, p2.x);
+      const minY = Math.min(p0.y, p1.y, p2.y), maxY = Math.max(p0.y, p1.y, p2.y);
+      const routeW = Math.min(fullW, Math.max(600, (maxX - minX) * 1.8, (maxY - minY) * 1.8 / aspect));
+      const routeVB = { x: (minX + maxX) / 2 - routeW / 2, y: (minY + maxY) / 2 - routeW * aspect / 2, w: routeW, h: routeW * aspect };
+      const zoomW = 480;
+      const zoomVB = { x: p2.x - zoomW / 2, y: p2.y - zoomW * aspect * 0.4, w: zoomW, h: zoomW * aspect };
+      const lerpVB = (a, b, t) => ({ x: lerp(a.x, b.x, t), y: lerp(a.y, b.y, t), w: lerp(a.w, b.w, t), h: lerp(a.h, b.h, t) });
+
+      const INTRO_END = 800, FLY_START = 500, FLY_END = 2100, ZOOM_END = 2900, FINISH = 4000;
+      const startTime = performance.now();
+
+      function frame(now) {
+        const t = now - startTime;
+        const fly = easeInOut(clamp01((t - FLY_START) / (FLY_END - FLY_START)));
+        const vb = t < FLY_END
+          ? lerpVB(fullVB, routeVB, easeInOut(clamp01(t / INTRO_END)))
+          : lerpVB(routeVB, zoomVB, easeInOut(clamp01((t - FLY_END) / (ZOOM_END - FLY_END))));
+        svg.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
+        const place = (el, p) => {
+          el.style.left = `${(p.x - vb.x) / vb.w * W}px`;
+          el.style.top = `${(p.y - vb.y) / vb.h * H}px`;
+        };
+
+        // ここまで飛んだ部分の弧だけを描く
+        const c1 = { x: lerp(p0.x, p1.x, fly), y: lerp(p0.y, p1.y, fly) };
+        const cur = bezier(fly);
+        route.setAttribute('d', `M${p0.x},${p0.y} Q${c1.x},${c1.y} ${cur.x},${cur.y}`);
+
+        const tx = 2 * (1 - fly) * (p1.x - p0.x) + 2 * fly * (p2.x - p1.x);
+        const ty = 2 * (1 - fly) * (p1.y - p0.y) + 2 * fly * (p2.y - p1.y);
+        place(plane, cur);
+        plane.style.transform = `rotate(${Math.atan2(ty, tx) * 180 / Math.PI}deg)`;
+        place(originMarker, p0);
+        place(destMarker, p2);
+
+        if(t < ZOOM_END) tripAnimationFrame = requestAnimationFrame(frame);
+      }
+      tripAnimationFrame = requestAnimationFrame(frame);
+
+      tripTimers.push(setTimeout(() => {
+        plane.style.opacity = '0';
+        destMarker.style.opacity = '1';
+        if(destPref) destPref.setAttribute('fill', '#10b981');
+      }, FLY_END));
+      tripTimers.push(setTimeout(() => card.classList.remove('opacity-0', 'translate-y-8'), FLY_END + 400));
+      tripTimers.push(setTimeout(() => stamp.classList.remove('opacity-0', 'scale-150'), FLY_END + 800));
+      tripTimers.push(setTimeout(showStoryScreen, FINISH));
+    }
+
+    function skipTrip() {
+      showStoryScreen();
+    }
+
+    function showStoryScreen() {
+      cancelTrip();
+      const tripView = document.getElementById('view-trip');
+      tripView.style.opacity = '0';
+      tripView.style.pointerEvents = 'none';
+      setTimeout(() => {
+          tripView.style.zIndex = '0';
+      }, 700);
+
+      const drink = DRINKS_DATABASE.find(d => d.id === selectedDrinkId);
+      if(!drink) return;
+
+      document.getElementById('story-region-header-tag').innerText = drink.prefecture;
+      document.getElementById('story-rich-description').innerHTML = drink.richDescription;
+      document.getElementById('story-drink-title-main').innerText = drink.name;
+      document.getElementById('story-drink-maker-name').innerText = drink.brandMaker;
+      document.getElementById('story-scroll-area').scrollTop = 0;
+
+      // クロスフェードスライドショーの初期化
+      drinkImages = drink.images || [drink.imageUrl];
+      currentSlideIndex = 0;
+      const img1 = document.getElementById('story-hero-dish-img-1');
+      const img2 = document.getElementById('story-hero-dish-img-2');
+      img1.src = drinkImages[0];
+      img1.onerror = () => { img1.src = 'https://placehold.co/800x600/e2e8f0/64748b?text=Drink'; };
+      img1.style.opacity = 1;
+      img2.style.opacity = 0;
+
+      if(slideshowInterval) clearInterval(slideshowInterval);
+      if(drinkImages.length > 1) {
+        slideshowInterval = setInterval(() => {
+          currentSlideIndex = (currentSlideIndex + 1) % drinkImages.length;
+          const nextImgSrc = drinkImages[currentSlideIndex];
+          
+          if(img1.style.opacity == 1) {
+            img2.src = nextImgSrc;
+            img2.onerror = () => { img2.src = 'https://placehold.co/800x600/e2e8f0/64748b?text=Drink'; };
+            img2.style.opacity = 1;
+            img1.style.opacity = 0;
+          } else {
+            img1.src = nextImgSrc;
+            img1.onerror = () => { img1.src = 'https://placehold.co/800x600/e2e8f0/64748b?text=Drink'; };
+            img1.style.opacity = 1;
+            img2.style.opacity = 0;
+          }
+        }, 3000); // 3秒間隔で切り替え（1500から変更）
+      }
+
+      currentGalleryData = drink.gallery;
+      currentGalleryIndex = 0;
+      updateGallerySlide();
+
+      const storyView = document.getElementById('view-story');
+      storyView.style.opacity = '1';
+      storyView.style.pointerEvents = 'auto';
+      storyView.style.zIndex = '40';
+      
+      storyView.style.animation = 'none';
+      storyView.offsetHeight; 
+      storyView.style.animation = 'fadeInStory 1s cubic-bezier(0.25, 1, 0.5, 1) forwards';
+    }
+
+    function updateGallerySlide() {
+      if (!currentGalleryData || currentGalleryData.length === 0) return;
+      
+      const slide = currentGalleryData[currentGalleryIndex];
+      const imgEl = document.getElementById('gallery-slide-img');
+      const captionEl = document.getElementById('gallery-slide-caption');
+      
+      imgEl.style.opacity = '0.4';
+      setTimeout(() => {
+        imgEl.src = slide.url;
+        imgEl.onerror = () => { imgEl.src = 'https://placehold.co/800x400/e2e8f0/64748b?text=Landscape'; };
+        imgEl.style.opacity = '1';
+        captionEl.innerText = slide.caption;
+      }, 150);
+
+      const indicatorsContainer = document.getElementById('gallery-indicators');
+      indicatorsContainer.innerHTML = '';
+      currentGalleryData.forEach((_, idx) => {
+        const dot = document.createElement('div');
+        dot.className = `h-1.5 rounded-full transition-all duration-300 shadow-sm ${idx === currentGalleryIndex ? 'bg-white w-4' : 'bg-white/60 w-1.5'}`;
+        indicatorsContainer.appendChild(dot);
+      });
+    }
+
+    function nextGallerySlide() {
+      if (!currentGalleryData || currentGalleryData.length === 0) return;
+      currentGalleryIndex = (currentGalleryIndex + 1) % currentGalleryData.length;
+      updateGallerySlide();
+    }
+
+    function prevGallerySlide() {
+      if (!currentGalleryData || currentGalleryData.length === 0) return;
+      currentGalleryIndex = (currentGalleryIndex - 1 + currentGalleryData.length) % currentGalleryData.length;
+      updateGallerySlide();
+    }
+
+    function backToFlavorMap() {
+      if(slideshowInterval) clearInterval(slideshowInterval);
+
+      const story = document.getElementById('view-story');
+      story.style.opacity = '0';
+      story.style.pointerEvents = 'none';
+      story.style.zIndex = '0';
+      
+      const map = document.getElementById('view-map');
+      map.style.opacity = '1';
+      map.style.pointerEvents = 'auto';
+      map.style.zIndex = '30';
+      
+      drawDrinkPins();
+      renderRecommendations();
+    }
+
+    window.onload = () => { 
+      renderTripPrefectures();
+      renderQuiz(); 
+    };
+  </script>
+</body>
+</html>
