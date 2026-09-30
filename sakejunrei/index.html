@@ -61,7 +61,7 @@
         </div>
         <div>
           <span class="text-[9px] uppercase tracking-widest text-emerald-800 font-bold block leading-none font-serifEn">YOUR TASTE POSITION</span>
-          <h1 class="text-xs font-mincho font-bold text-slate-800 leading-snug">あなたの味覚MAP<span class="text-[10px] text-stone-500 font-sans ml-1 font-normal">〜味覚を巡る1杯〜</span></h1>
+          <h1 class="text-xs font-mincho font-bold text-slate-800 leading-snug"><span id="app-title">あなたの味覚MAP</span><span id="app-subtitle" class="text-[10px] text-stone-500 font-sans ml-1 font-normal">〜味覚を巡る1杯〜</span></h1>
         </div>
       </div>
       <button onclick="restartDiagnosis()" class="text-[11px] bg-emerald-50 active:bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full font-medium transition flex items-center gap-1 border border-emerald-200/60 relative z-50">
@@ -194,7 +194,7 @@
             </div>
           </section>
 
-          <section class="p-4 bg-[#f8f6f0] border-t border-stone-200/60 pb-8">
+          <section id="story-gallery-section" class="p-4 bg-[#f8f6f0] border-t border-stone-200/60 pb-8">
             
             <div class="relative w-full bg-white rounded-xl overflow-hidden shadow-sm border border-emerald-100">
               <div class="h-52 overflow-hidden bg-stone-200 relative">
@@ -220,10 +220,8 @@
   </div>
 
   <script src="japan-map.js"></script>
+  <script src="drinks.js"></script>
   <script>
-    // 旅の出発地（お店の場所に合わせて変更してください）
-    const TRIP_ORIGIN = { label: "現在地", lat: 35.681, lon: 139.767 };
-
     let currentStep = 0;
     let userScore = { x: 50, y: 50 };
     let selectedDrinkId = null;
@@ -234,95 +232,6 @@
     let drinkImages = [];
     let tripAnimationFrame = null;
     let tripTimers = [];
-
-    const DRINKS_DATABASE = [
-      {
-        id: "sake-enasan", category: "日本酒", 
-        name: "恵那山 純米吟醸", brandMaker: "はざま酒造（岐阜県中津川市）",
-        x: 25, y: 45, prefecture: "岐阜県", lat: 35.487, lon: 137.500,
-        richDescription: `<p>恵那山は穏やかに香るフルーツのような吟醸香。<br>口当たりがよく、湧きたつような味わいと米本来の持つ甘みを引き出した中津川の清流を彷彿とさせる軽やかな余韻。味と香りのバランスをお楽しみいただけるお酒です。</p>
-        <div class="mt-4 flex flex-wrap gap-4 text-[11px] text-stone-800 bg-white/60 p-3 rounded-lg border border-emerald-900/10 shadow-sm">
-          <div class="flex-1 min-w-[120px]">
-            <p class="font-bold mb-1.5 border-b border-emerald-900/20 pb-1 text-emerald-950">●受賞歴</p>
-            <p class="leading-relaxed">IWC2016 純米吟醸シルバー<br>IWC2018 純米吟醸シルバー<br>IWC2019 純米吟醸ブロンズ</p>
-          </div>
-          <div class="flex-1 min-w-[120px]">
-            <p class="font-bold mb-1.5 border-b border-emerald-900/20 pb-1 text-emerald-950">●スペック</p>
-            <p class="leading-relaxed">種類：純米吟醸酒 火入れ<br>原料米：山田錦<br>精米歩合：50％<br>アルコール度数：16％</p>
-          </div>
-        </div>`,
-        imageUrl: "恵那山①.webp",
-        images: ["恵那山①.webp", "恵那山②.webp", "恵那山③.webp"],
-        gallery: [
-          { url: "https://images.unsplash.com/photo-1612470984931-1e967a5b3a3c?w=800&q=80", caption: "恵那山の伏流水を敷地内の井戸から組み上げて使用。恵那山に降り積もった雨雪が、長い時間をかけて地中に染み込み磨かれてできた水は、日本酒をやわらかい味わいにします。" },
-          { url: "https://images.unsplash.com/photo-1596701062635-c637482f09ba?w=800&q=80", caption: "中山道・馬籠宿。石畳が続く歴史ある宿場町は、往時の面影を色濃く残し、訪れる人々をタイムスリップしたかのような気分にさせてくれます。" }
-        ]
-      },
-      {
-        id: "gin-roku", category: "ジン", 
-        name: "ROKU GIN (六)", brandMaker: "サントリー（大阪府）",
-        x: 20, y: 20, prefecture: "大阪府", lat: 34.693, lon: 135.502,
-        richDescription: "<p>桜花、桜葉、煎茶、玉露、山椒、柚子。日本ならではの6つのボタニカル（植物）を、それぞれ旬の時期に収穫し、別々に蒸溜してブレンドするこだわりの製法。</p><p>グラスを傾けると、春の桜の甘い香り、夏の緑茶の清涼感、秋の山椒のスパイシーさ、冬の柚子の爽やかさが、まるで万華鏡のように次々と表情を変えて現れます。日本の自然の豊かさを、一杯のグラスに閉じ込めたようなジンです。</p>",
-        imageUrl: "https://images.unsplash.com/photo-1609355655543-9800a75f5bbd?w=400&q=80",
-        images: [
-          "https://images.unsplash.com/photo-1609355655543-9800a75f5bbd?w=800&q=80", 
-          "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&q=80",
-          "https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=800&q=80"
-        ],
-        gallery: [
-          { url: "https://images.unsplash.com/photo-1523368749929-6b2bf370dbf8?w=800&q=80", caption: "最も香りが良くなる「旬」の時期に収穫された素材だけを贅沢に使用しています。" },
-          { url: "https://images.unsplash.com/photo-1563514757351-f29e1eb123b3?w=800&q=80", caption: "繊細な日本の職人技が、複雑で調和のとれた香りを作り出します。" }
-        ]
-      },
-      {
-        id: "sake-kimoto", category: "日本酒", 
-        name: "大七 純米生酛", brandMaker: "大七酒造（福島県）",
-        x: 80, y: 80, prefecture: "福島県", lat: 37.585, lon: 140.431,
-        richDescription: "<p>江戸時代から続く伝統製法「生酛（きもと）造り」にこだわり抜く大七酒造。自然の乳酸菌の力を借りて、通常の倍以上の時間と手間をかけて酵母を育てます。</p><p>その味わいは、一言でいえば「豊潤」。幾重にも重なる奥深いコク、クリーミーな舌触り、そして後から追いかけてくる力強い酸味による鮮やかなキレ。お燗にするとさらに旨味がふくらみ、至福のひとときをもたらします。</p>",
-        imageUrl: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400&q=80",
-        images: [
-          "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=800&q=80", 
-          "https://images.unsplash.com/photo-1574621100236-d25089c36209?w=800&q=80",
-          "https://images.unsplash.com/photo-1599839619722-39751411ea63?w=800&q=80"
-        ],
-        gallery: [
-          { url: "https://images.unsplash.com/photo-1574621100236-d25089c36209?w=800&q=80", caption: "空気中の乳酸菌を取り込む、昔ながらの力強い酒造り。" },
-          { url: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=800&q=80", caption: "福島の豊かな土壌と気候が、ふくよかな米の旨味を育みます。" }
-        ]
-      },
-      {
-        id: "wine-red", category: "ワイン", 
-        name: "シャトー・メルシャン", brandMaker: "メルシャン（長野県）",
-        x: 85, y: 15, prefecture: "長野県", lat: 36.115, lon: 137.953,
-        richDescription: "<p>日本のワイン造りを牽引し続けるシャトー・メルシャン。長野県・桔梗ヶ原をはじめとする冷涼な気候下で育まれた上質なブドウのみを使用しています。</p><p>カシスやダークチェリーのような凝縮された黒系果実の香りに、オーク樽由来のバニラやスパイスのニュアンスが溶け込んでいます。しっかりとしたタンニン（渋み）がありながらも、口当たりはビロードのように滑らか。日本ワインのポテンシャルの高さを証明する一本です。</p>",
-        imageUrl: "https://images.unsplash.com/photo-1585553616435-2dc0a54e271d?w=400&q=80",
-        images: [
-          "https://images.unsplash.com/photo-1585553616435-2dc0a54e271d?w=800&q=80", 
-          "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=800&q=80",
-          "https://images.unsplash.com/photo-1504675099198-5240aec35728?w=800&q=80"
-        ],
-        gallery: [
-          { url: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=800&q=80", caption: "昼夜の寒暖差が大きい長野の気候が、色の濃い高品質なブドウを育てます。" },
-          { url: "https://images.unsplash.com/photo-1523368749929-6b2bf370dbf8?w=800&q=80", caption: "フレンチオーク樽の中で、ワインはゆっくりと複雑な香りをまとっていきます。" }
-        ]
-      },
-      {
-        id: "wine-white", category: "ワイン", 
-        name: "甲州 鳥居平畑", brandMaker: "中央葡萄酒（山梨県）",
-        x: 40, y: 35, prefecture: "山梨県", lat: 35.662, lon: 138.730,
-        richDescription: "<p>日本固有のブドウ品種「甲州」。その中でも最高のテロワールとされる勝沼の「鳥居平（とりいびら）地区」で栽培されたブドウを使用した、世界に誇る白ワインです。</p><p>すだちやカボスといった和柑橘を思わせる清々しい香りと、微かな白胡椒のスパイス感。そして何より、ピュアで伸びやかな酸味が特徴です。出汁の旨味を大切にする和食と、これ以上ないほど見事に寄り添います。</p>",
-        imageUrl: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=400&q=80",
-        images: [
-          "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=800&q=80", 
-          "https://images.unsplash.com/photo-1551887196-72e32cb14b09?w=800&q=80",
-          "https://images.unsplash.com/photo-1595855761358-0026e64402a5?w=800&q=80"
-        ],
-        gallery: [
-          { url: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=800&q=80", caption: "急斜面で水はけの良い鳥居平の畑が、凝縮感のあるブドウを生み出します。" },
-          { url: "https://images.unsplash.com/photo-1551887196-72e32cb14b09?w=800&q=80", caption: "淡い藤色の果皮を持つ甲州ブドウ。繊細な日本の美意識を体現する味わいです。" }
-        ]
-      }
-    ];
 
     const QUESTIONS = [
       {
@@ -362,6 +271,24 @@
         ]
       }
     ];
+
+    const PLACEHOLDER_IMAGE = 'https://placehold.co/300x300/e2e8f0/64748b?text=Drink';
+
+    const isDomestic = drink => drink.origin.country === '日本' && drink.origin.lat != null && drink.origin.lon != null;
+    const getThumbnail = drink => (drink.images && drink.images[0]) || PLACEHOLDER_IMAGE;
+    // 産地の短い表示（例：岐阜県 ／ フランス）
+    const getOriginLabel = drink => drink.origin.country === '日本' ? drink.origin.prefecture : drink.origin.country;
+    // 産地の詳しい表示（例：岐阜県中津川市 ／ フランス・ボルドー）
+    const getOriginDetail = drink => drink.origin.country === '日本'
+      ? `${drink.origin.prefecture}${drink.origin.area || ''}`
+      : [drink.origin.country, drink.origin.area].filter(Boolean).join('・');
+    const getMakerLine = drink => `${drink.maker}（${getOriginDetail(drink)}）`;
+
+    function applyStoreConfig() {
+      document.title = STORE_CONFIG.pageTitle;
+      document.getElementById('app-title').innerText = STORE_CONFIG.appTitle;
+      document.getElementById('app-subtitle').innerText = STORE_CONFIG.appSubtitle;
+    }
 
     function renderQuiz() {
       if (!QUESTIONS || currentStep >= QUESTIONS.length) {
@@ -438,7 +365,7 @@
         pin.style.left = `${drink.x}%`;
         pin.style.top = `${drink.y}%`;
         pin.title = drink.name;
-        pin.innerHTML = `<img src="${drink.imageUrl}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/e2e8f0/64748b?text=Drink'">`;
+        pin.innerHTML = `<img src="${getThumbnail(drink)}" class="w-full h-full object-cover" onerror="this.src='${PLACEHOLDER_IMAGE}'">`;
         pin.onclick = () => selectDrink(drink, pin);
         layer.appendChild(pin);
       });
@@ -451,7 +378,7 @@
         const card = document.createElement('button');
         card.id = `rec-card-${drink.id}`;
         card.className = 'text-left bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm active:scale-[.98] transition flex flex-col h-full';
-        card.innerHTML = `<div class="h-24 w-full overflow-hidden shrink-0 bg-stone-50"><img src="${drink.imageUrl}" class="w-full h-full object-contain p-1" onerror="this.src='https://placehold.co/300x200/e2e8f0/64748b?text=Drink'"></div><div class="p-2 flex-1 flex flex-col justify-center"><div class="text-[9px] text-emerald-700 font-bold">${index+1} / ${drink.category}</div><div class="text-[11px] font-mincho font-bold text-stone-900 line-clamp-1 mt-0.5">${drink.name}</div><div class="text-[9px] text-stone-500 truncate mt-1">${drink.prefecture}</div></div>`;
+        card.innerHTML = `<div class="h-24 w-full overflow-hidden shrink-0 bg-stone-50"><img src="${getThumbnail(drink)}" class="w-full h-full object-contain p-1" onerror="this.src='${PLACEHOLDER_IMAGE}'"></div><div class="p-2 flex-1 flex flex-col justify-center"><div class="text-[9px] text-emerald-700 font-bold">${index+1} / ${drink.category}</div><div class="text-[11px] font-mincho font-bold text-stone-900 line-clamp-1 mt-0.5">${drink.name}</div><div class="text-[9px] text-stone-500 truncate mt-1">${getOriginLabel(drink)}</div></div>`;
         card.onclick = () => selectDrink(drink, null);
         list.appendChild(card);
       });
@@ -519,10 +446,10 @@
       tripView.style.animation = 'expandCircle 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards';
 
       // 表示内容をリセット
-      document.getElementById('trip-destination-label').innerText = `${drink.prefecture}へ`;
-      document.getElementById('trip-origin-label').innerText = TRIP_ORIGIN.label;
+      document.getElementById('trip-destination-label').innerText = `${getOriginLabel(drink)}へ`;
+      document.getElementById('trip-origin-label').innerText = STORE_CONFIG.tripOrigin.label;
       document.getElementById('trip-arrival-name').innerText = drink.name;
-      document.getElementById('trip-arrival-maker').innerText = drink.brandMaker;
+      document.getElementById('trip-arrival-maker').innerText = getMakerLine(drink);
       const card = document.getElementById('trip-arrival-card');
       const stamp = document.getElementById('trip-arrival-stamp');
       const destMarker = document.getElementById('trip-dest-marker');
@@ -534,11 +461,22 @@
       destMarker.style.opacity = '0';
       plane.style.opacity = '1';
       document.querySelectorAll('#trip-prefectures path').forEach(p => p.setAttribute('fill', '#dde8e1'));
-      const destPref = document.querySelector(`#trip-prefectures path[data-pref="${drink.prefecture}"]`);
+
+      // 海外のお酒：地図は出さず、到着カードとスタンプだけ
+      const mapLayers = [document.getElementById('trip-map'), originMarker, destMarker, plane];
+      if(!isDomestic(drink)) {
+        mapLayers.forEach(el => el.style.visibility = 'hidden');
+        tripTimers.push(setTimeout(() => card.classList.remove('opacity-0', 'translate-y-8'), 300));
+        tripTimers.push(setTimeout(() => stamp.classList.remove('opacity-0', 'scale-150'), 700));
+        tripTimers.push(setTimeout(showStoryScreen, 2200));
+        return;
+      }
+      mapLayers.forEach(el => el.style.visibility = '');
+      const destPref = document.querySelector(`#trip-prefectures path[data-pref="${drink.origin.prefecture}"]`);
 
       // 出発地 → 目的地を結ぶ弧（2次ベジェ曲線）
-      const p0 = projectLatLon(TRIP_ORIGIN.lat, TRIP_ORIGIN.lon);
-      const p2 = projectLatLon(drink.lat, drink.lon);
+      const p0 = projectLatLon(STORE_CONFIG.tripOrigin.lat, STORE_CONFIG.tripOrigin.lon);
+      const p2 = projectLatLon(drink.origin.lat, drink.origin.lon);
       const dx = p2.x - p0.x, dy = p2.y - p0.y;
       const dist = Math.hypot(dx, dy) || 1;
       let nx = -dy / dist, ny = dx / dist;
@@ -621,14 +559,14 @@
       const drink = DRINKS_DATABASE.find(d => d.id === selectedDrinkId);
       if(!drink) return;
 
-      document.getElementById('story-region-header-tag').innerText = drink.prefecture;
-      document.getElementById('story-rich-description').innerHTML = drink.richDescription;
+      document.getElementById('story-region-header-tag').innerText = getOriginLabel(drink);
+      renderStoryDescription(drink);
       document.getElementById('story-drink-title-main').innerText = drink.name;
-      document.getElementById('story-drink-maker-name').innerText = drink.brandMaker;
+      document.getElementById('story-drink-maker-name').innerText = getMakerLine(drink);
       document.getElementById('story-scroll-area').scrollTop = 0;
 
       // クロスフェードスライドショーの初期化
-      drinkImages = drink.images || [drink.imageUrl];
+      drinkImages = drink.images && drink.images.length ? drink.images : [PLACEHOLDER_IMAGE];
       currentSlideIndex = 0;
       const img1 = document.getElementById('story-hero-dish-img-1');
       const img2 = document.getElementById('story-hero-dish-img-2');
@@ -657,8 +595,9 @@
         }, 3000); // 3秒間隔で切り替え（1500から変更）
       }
 
-      currentGalleryData = drink.gallery;
+      currentGalleryData = drink.gallery || [];
       currentGalleryIndex = 0;
+      document.getElementById('story-gallery-section').style.display = currentGalleryData.length ? '' : 'none';
       updateGallerySlide();
 
       const storyView = document.getElementById('view-story');
@@ -669,6 +608,39 @@
       storyView.style.animation = 'none';
       storyView.offsetHeight; 
       storyView.style.animation = 'fadeInStory 1s cubic-bezier(0.25, 1, 0.5, 1) forwards';
+    }
+
+    // 説明文・受賞歴・スペックを描画
+    function renderStoryDescription(drink) {
+      const container = document.getElementById('story-rich-description');
+      container.innerHTML = '';
+      (drink.description || []).forEach(text => {
+        const p = document.createElement('p');
+        p.className = 'whitespace-pre-line';
+        p.textContent = text;
+        container.appendChild(p);
+      });
+
+      const columns = [];
+      if(drink.awards && drink.awards.length) columns.push({ title: '受賞歴', lines: drink.awards });
+      if(drink.specs && drink.specs.length) columns.push({ title: 'スペック', lines: drink.specs.map(s => `${s.label}：${s.value}`) });
+      if(!columns.length) return;
+
+      const box = document.createElement('div');
+      box.className = 'mt-4 flex flex-wrap gap-4 text-[11px] text-stone-800 bg-white/60 p-3 rounded-lg border border-emerald-900/10 shadow-sm';
+      columns.forEach(col => {
+        const colEl = document.createElement('div');
+        colEl.className = 'flex-1 min-w-[120px]';
+        const title = document.createElement('p');
+        title.className = 'font-bold mb-1.5 border-b border-emerald-900/20 pb-1 text-emerald-950';
+        title.textContent = `●${col.title}`;
+        const body = document.createElement('p');
+        body.className = 'leading-relaxed whitespace-pre-line';
+        body.textContent = col.lines.join('\n');
+        colEl.append(title, body);
+        box.appendChild(colEl);
+      });
+      container.appendChild(box);
     }
 
     function updateGallerySlide() {
@@ -725,6 +697,7 @@
     }
 
     window.onload = () => { 
+      applyStoreConfig();
       renderTripPrefectures();
       renderQuiz(); 
     };
