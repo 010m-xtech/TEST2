@@ -19,6 +19,16 @@
             sans: ['"Noto Sans JP"', 'sans-serif'],
             mincho: ['"Shippori Mincho"', 'serif'],
             serifEn: ['"Cinzel"', 'serif'],
+          },
+          // デザインの共通カラー（差し色は drinks.js の STORE_CONFIG.accentColor で変更）
+          colors: {
+            accent: 'rgb(var(--accent) / <alpha-value>)',
+            paper: '#F7F5F0',
+            surface: '#FFFFFF',
+            ink: '#1C1917',
+            muted: '#6B6560',
+            line: '#E7E2D9',
+            stamp: '#B91C1C'
           }
         }
       }
@@ -26,15 +36,75 @@
   </script>
 
   <style>
-    :root { --app-height: 100dvh; }
+    /* ===== デザインの共通ルール ===== */
+    :root {
+      --accent: 31 107 79;          /* 差し色（緑） */
+      --shadow-card: 0 1px 2px rgba(28, 25, 23, 0.04), 0 6px 20px rgba(28, 25, 23, 0.06);
+      --radius: 16px;               /* 角丸は 16px と 丸（full）の2種類だけ */
+    }
     html, body { height: 100%; height: 100dvh; overflow: hidden; touch-action: manipulation; }
-    
+
+    /* 見出し上の小さな英字ラベル */
+    .eyebrow { font-family: "Cinzel", serif; font-size: 12px; font-weight: 700; letter-spacing: 0.25em; color: rgb(var(--accent)); }
+
+    /* カード */
+    .card { background: #fff; border: 1px solid #E7E2D9; border-radius: var(--radius); box-shadow: var(--shadow-card); }
+
+    /* メインボタン：画面の主役の操作（旅へ出発など） */
+    .btn-primary {
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+      width: 100%; height: 56px; border-radius: var(--radius);
+      background: rgb(var(--accent)); color: #fff;
+      font-family: "Shippori Mincho", serif; font-weight: 700; font-size: 16px; letter-spacing: 0.05em;
+      box-shadow: 0 8px 20px rgb(var(--accent) / 0.28);
+      transition: transform 0.15s, filter 0.15s;
+    }
+    .btn-primary:active { transform: scale(0.97); filter: brightness(0.92); }
+
+    /* サブボタン：戻る・再診断など */
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 0.375rem;
+      height: 34px; padding: 0 14px; border-radius: 9999px;
+      background: #fff; border: 1px solid #E7E2D9; color: #1C1917;
+      font-size: 13px; font-weight: 500; transition: background 0.15s, transform 0.15s;
+    }
+    .btn-secondary:active { background: #F7F5F0; transform: scale(0.97); }
+
+    /* 選択肢ボタン：診断の回答 */
+    .option-card {
+      display: flex; align-items: center; gap: 0.75rem; width: 100%; text-align: left;
+      padding: 16px; border-radius: var(--radius);
+      background: #fff; border: 1.5px solid #E7E2D9; color: #1C1917;
+      font-size: 15px; line-height: 1.6; transition: border-color 0.15s, background 0.15s, transform 0.15s;
+    }
+    .option-card:active { transform: scale(0.99); }
+    .option-card .option-check {
+      flex-shrink: 0; width: 22px; height: 22px; border-radius: 9999px; border: 1.5px solid #E7E2D9;
+      display: flex; align-items: center; justify-content: center; color: transparent; font-size: 11px;
+      transition: all 0.15s;
+    }
+    .option-card.is-selected { border-color: rgb(var(--accent)); background: rgb(var(--accent) / 0.06); }
+    .option-card.is-selected .option-check { background: rgb(var(--accent)); border-color: rgb(var(--accent)); color: #fff; }
+
+    /* 小さなラベル（種類・産地など） */
+    .chip {
+      display: inline-flex; align-items: center; gap: 0.25rem; padding: 2px 10px; border-radius: 9999px;
+      background: rgb(var(--accent) / 0.1); color: rgb(var(--accent)); font-size: 12px; font-weight: 700;
+    }
+
+    /* ストーリー画面の章見出し */
+    .chapter {
+      display: flex; align-items: baseline; gap: 0.625rem; margin-bottom: 1rem; padding-bottom: 0.625rem;
+      border-bottom: 1px solid #E7E2D9; font-family: "Shippori Mincho", serif; font-size: 20px; font-weight: 800; color: #1C1917;
+    }
+    .chapter-num { color: rgb(var(--accent)); font-size: 15px; }
+
     @keyframes pingSlow {
       0% { transform: scale(0.85); opacity: 0.9; }
       80%, 100% { transform: scale(2.4); opacity: 0; }
     }
     .animate-ping-slow { animation: pingSlow 1.8s cubic-bezier(0, 0, 0.2, 1) infinite; }
-    
+
     @keyframes expandCircle {
       0% { clip-path: circle(0% at 50% 50%); }
       100% { clip-path: circle(150% at 50% 50%); }
@@ -44,75 +114,64 @@
       0% { opacity: 0; transform: scale(0.95); }
       100% { opacity: 1; transform: scale(1); }
     }
-    
+
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
 
-<body class="bg-slate-950 text-slate-800 font-sans h-full w-full select-none overflow-hidden flex flex-col justify-center items-center">
+<body class="bg-stone-900 text-ink font-sans h-full w-full select-none overflow-hidden flex flex-col justify-center items-center">
 
-  <div class="relative w-full max-w-md h-[100dvh] bg-[#f8faf9] flex flex-col overflow-hidden shadow-2xl">
+  <div class="relative w-full max-w-md h-[100dvh] bg-paper flex flex-col overflow-hidden shadow-2xl">
 
-    <header class="relative z-50 px-4 py-2.5 flex items-center justify-between bg-white/95 backdrop-blur-md border-b border-emerald-950/10 flex-shrink-0">
-      <div class="flex items-center gap-2">
-        <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-emerald-800 to-teal-600 flex items-center justify-center text-white shadow-xs">
-          <i class="fa-solid fa-compass text-xs"></i>
+    <header class="relative z-50 px-4 py-3 flex items-center justify-between bg-surface border-b border-line flex-shrink-0">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-white flex-shrink-0">
+          <i class="fa-solid fa-compass text-sm"></i>
         </div>
-        <div>
-          <span class="text-[9px] uppercase tracking-widest text-emerald-800 font-bold block leading-none font-serifEn">YOUR TASTE POSITION</span>
-          <h1 class="text-xs font-mincho font-bold text-slate-800 leading-snug"><span id="app-title">あなたの味覚MAP</span><span id="app-subtitle" class="text-[10px] text-stone-500 font-sans ml-1 font-normal">〜味覚を巡る1杯〜</span></h1>
+        <div class="min-w-0">
+          <h1 id="app-title" class="text-[15px] font-mincho font-bold text-ink leading-tight truncate">あなたの味覚MAP</h1>
+          <p id="app-subtitle" class="text-xs text-muted leading-tight truncate">〜味覚を巡る1杯〜</p>
         </div>
       </div>
-      <button onclick="restartDiagnosis()" class="text-[11px] bg-emerald-50 active:bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full font-medium transition flex items-center gap-1 border border-emerald-200/60 relative z-50">
-        <i class="fa-solid fa-rotate-right text-[10px]"></i><span>再診断</span>
+      <button onclick="restartDiagnosis()" class="btn-secondary flex-shrink-0">
+        <i class="fa-solid fa-rotate-right text-xs"></i><span>再診断</span>
       </button>
     </header>
 
-    <main class="relative flex-1 w-full h-full overflow-hidden">
-      
-      <div id="view-quiz" class="absolute inset-0 z-40 flex flex-col justify-between p-5 bg-gradient-to-b from-[#eef7f5] via-[#e2f2ee] to-[#d3ede2] transition-all duration-500">
-        <div class="pt-2">
-          <div class="inline-flex items-center gap-1.5 px-3 py-0.5 bg-emerald-800 text-white text-[10px] font-bold rounded-full mb-2 tracking-wide">
-            <span id="quiz-step-label">QUESTION 1 / 4</span>
+    <main class="relative flex-1 w-full h-full overflow-clip">
+
+      <div id="view-quiz" class="absolute inset-0 z-40 flex flex-col px-5 pt-6 pb-6 bg-paper transition-all duration-500">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <span id="quiz-step-label" class="eyebrow">QUESTION 1 / 4</span>
           </div>
-          <h2 id="quiz-title" class="text-[17px] font-mincho font-bold text-slate-800 leading-snug"></h2>
+          <div id="quiz-progress" class="flex gap-1.5 mb-6"></div>
+          <h2 id="quiz-title" class="text-xl font-mincho font-bold text-ink leading-snug"></h2>
         </div>
-        <div id="quiz-options-container" class="space-y-2.5 my-auto py-2">
+        <div id="quiz-options-container" class="space-y-3 mt-auto">
           <!-- Options injected via JS -->
-        </div>
-        <div class="pb-3 flex-shrink-0">
-          <div class="w-full bg-emerald-200/80 h-1.5 rounded-full overflow-hidden">
-            <div id="quiz-progress-bar" class="bg-gradient-to-r from-teal-500 to-emerald-700 h-full w-1/4 transition-all duration-300"></div>
-          </div>
         </div>
       </div>
 
-      <div id="view-map" class="absolute inset-0 z-30 flex flex-col p-3 pt-4 opacity-0 pointer-events-none transition-all duration-500 bg-[#fbfaf7]">
-        
-        <div class="relative flex-1 min-h-0 rounded-[24px] overflow-hidden border border-stone-200 shadow-sm bg-white">
-          <div class="absolute inset-0 grid grid-cols-2 grid-rows-2">
-            <div class="relative bg-gradient-to-br from-pink-50 to-pink-100/50 overflow-hidden" id="bg-top-left"></div>
-            <div class="relative bg-gradient-to-bl from-sky-50 to-blue-100/40 overflow-hidden" id="bg-top-right"></div>
-            <div class="relative bg-gradient-to-tr from-emerald-50 to-teal-50/50 overflow-hidden" id="bg-bottom-left"></div>
-            <div class="relative bg-gradient-to-tl from-stone-100 to-stone-200/40 overflow-hidden" id="bg-bottom-right"></div>
+      <div id="view-map" class="absolute inset-0 z-30 flex flex-col p-4 opacity-0 pointer-events-none transition-all duration-500 bg-paper">
+
+        <div class="relative flex-1 min-h-0 overflow-hidden card">
+          <div class="absolute inset-0 pointer-events-none">
+            <div class="absolute inset-x-0 top-1/2 h-px border-t border-dashed border-line"></div>
+            <div class="absolute inset-y-0 left-1/2 w-px border-l border-dashed border-line"></div>
           </div>
 
-          <div class="absolute inset-0 pointer-events-none">
-            <div class="absolute inset-x-0 top-1/2 h-px border-t border-dashed border-stone-300/80"></div>
-            <div class="absolute inset-y-0 left-1/2 w-px border-l border-dashed border-stone-300/80"></div>
-          </div>
-          
-          <div class="absolute top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold text-pink-700 bg-white/80 px-2.5 py-1 rounded-full backdrop-blur-sm z-10 shadow-sm">華やか・香り</div>
-          <div class="absolute bottom-3 left-1/2 -translate-x-1/2 text-[10px] font-bold text-stone-500 bg-white/80 px-2.5 py-1 rounded-full backdrop-blur-sm z-10 shadow-sm">ドライ・キレ</div>
-          <div class="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-teal-700 bg-white/80 px-1 py-2 rounded-full backdrop-blur-sm [writing-mode:vertical-rl] z-10 shadow-sm">スッキリ・軽快</div>
-          <div class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-stone-600 bg-white/80 px-1 py-2 rounded-full backdrop-blur-sm [writing-mode:vertical-rl] z-10 shadow-sm">濃厚・コク</div>
+          <div class="absolute top-3 left-1/2 -translate-x-1/2 text-xs font-bold text-muted bg-surface/90 px-2.5 py-1 rounded-full z-10">華やか・香り</div>
+          <div class="absolute bottom-3 left-1/2 -translate-x-1/2 text-xs font-bold text-muted bg-surface/90 px-2.5 py-1 rounded-full z-10">ドライ・キレ</div>
+          <div class="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-muted bg-surface/90 px-1 py-2.5 rounded-full [writing-mode:vertical-rl] z-10">スッキリ・軽快</div>
+          <div class="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-muted bg-surface/90 px-1 py-2.5 rounded-full [writing-mode:vertical-rl] z-10">濃厚・コク</div>
 
           <div id="drink-pins-layer" class="absolute inset-0 z-20"></div>
-          
+
           <div id="user-position-marker" class="absolute pointer-events-none transition-all duration-700 -translate-x-1/2 -translate-y-1/2 z-40 flex flex-col items-center">
-            <span class="absolute w-16 h-16 rounded-full bg-emerald-400/30 animate-ping-slow"></span>
-            <div class="relative w-11 h-11 rounded-full bg-gradient-to-tr from-emerald-800 to-teal-500 text-white flex items-center justify-center shadow-lg border-2 border-white text-[10px] font-bold uppercase tracking-wider">
+            <span class="absolute w-16 h-16 rounded-full bg-accent/20 animate-ping-slow"></span>
+            <div class="relative w-11 h-11 rounded-full bg-accent text-white flex items-center justify-center shadow-lg border-2 border-white text-xs font-bold tracking-wider">
               YOU
             </div>
           </div>
@@ -122,97 +181,127 @@
           <div id="recommendation-list" class="grid grid-cols-3 gap-2.5"></div>
         </div>
 
-        <div id="action-journey-container" class="absolute bottom-6 left-0 right-0 px-4 z-50 opacity-0 pointer-events-none transition-all duration-500 translate-y-12">
-          <button id="journey-btn" onclick="startJourney()" class="w-full py-3.5 rounded-2xl bg-stone-900 text-white font-mincho font-bold shadow-[0_10px_25px_rgba(0,0,0,0.3)] flex items-center justify-center gap-2 hover:bg-stone-800 active:scale-95 transition-all">
+        <div id="action-journey-container" class="absolute bottom-5 left-0 right-0 px-4 z-50 opacity-0 pointer-events-none transition-all duration-500 translate-y-12">
+          <button id="journey-btn" onclick="startJourney()" class="btn-primary">
             <span>美味しいを巡る旅へ</span>
             <i class="fa-solid fa-plane text-sm"></i>
           </button>
         </div>
       </div>
 
-      <div id="view-trip" onclick="skipTrip()" class="absolute inset-0 z-0 opacity-0 pointer-events-none transition-opacity duration-700 bg-[#f3efe6] overflow-hidden">
-        <svg id="trip-map" class="absolute inset-0 w-full h-full" preserveAspectRatio="xMidYMid meet">
+      <div id="view-trip" onclick="skipTrip()" class="absolute inset-0 z-0 opacity-0 pointer-events-none transition-opacity duration-700 bg-paper overflow-hidden">
+        <svg id="trip-map" class="trip-map-layer absolute inset-0 w-full h-full transition-opacity duration-500" preserveAspectRatio="xMidYMid meet">
           <g id="trip-prefectures"></g>
-          <path id="trip-route" d="" fill="none" stroke="#047857" stroke-width="2.5" stroke-dasharray="2 7" stroke-linecap="round" vector-effect="non-scaling-stroke"></path>
+          <path id="trip-route" d="" fill="none" style="stroke: rgb(var(--accent))" stroke-width="2.5" stroke-dasharray="2 7" stroke-linecap="round" vector-effect="non-scaling-stroke"></path>
         </svg>
 
-        <div id="trip-origin-marker" class="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
-          <div class="w-3 h-3 rounded-full bg-stone-700 border-2 border-white shadow"></div>
-          <span id="trip-origin-label" class="mt-1 text-[10px] font-bold text-stone-600 bg-white/80 px-1.5 rounded"></span>
+        <div id="trip-origin-marker" class="trip-map-layer absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none transition-opacity duration-500">
+          <div class="w-3 h-3 rounded-full bg-ink border-2 border-white shadow"></div>
+          <span id="trip-origin-label" class="mt-1 whitespace-nowrap text-xs font-bold text-muted bg-surface/90 px-1.5 rounded-full"></span>
         </div>
 
         <div id="trip-dest-marker" class="absolute -translate-x-1/2 -translate-y-1/2 opacity-0 transition-opacity duration-300 pointer-events-none">
-          <span class="absolute -inset-4 rounded-full bg-emerald-500/40 animate-ping-slow"></span>
-          <div class="relative w-4 h-4 rounded-full bg-emerald-700 border-2 border-white shadow-lg"></div>
+          <span class="absolute -inset-4 rounded-full bg-accent/30 animate-ping-slow"></span>
+          <div class="relative w-4 h-4 rounded-full bg-accent border-2 border-white shadow-lg"></div>
         </div>
 
-        <div id="trip-plane" class="absolute w-9 h-9 -ml-[18px] -mt-[18px] flex items-center justify-center rounded-full bg-white text-emerald-800 shadow-lg pointer-events-none">
+        <div id="trip-plane" class="trip-map-layer absolute w-9 h-9 -ml-[18px] -mt-[18px] flex items-center justify-center rounded-full bg-surface text-accent shadow-lg pointer-events-none transition-opacity duration-500">
           <i class="fa-solid fa-plane text-base"></i>
         </div>
 
         <div class="absolute top-0 inset-x-0 pt-6 px-5 pointer-events-none">
-          <span class="font-serifEn text-[10px] tracking-[0.3em] text-emerald-800 font-bold">NOW TRAVELING TO</span>
-          <p id="trip-destination-label" class="font-mincho font-extrabold text-2xl text-stone-900 mt-1"></p>
+          <span class="eyebrow">NOW TRAVELING TO</span>
+          <p id="trip-destination-label" class="font-mincho font-extrabold text-[26px] text-ink mt-1"></p>
         </div>
 
-        <div id="trip-arrival-card" class="absolute bottom-8 inset-x-5 bg-white rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.15)] border border-stone-200 p-4 pr-20 opacity-0 translate-y-8 transition-all duration-500 pointer-events-none">
-          <span class="font-serifEn text-[10px] tracking-[0.3em] text-stone-500 font-bold">ARRIVAL</span>
-          <p id="trip-arrival-name" class="font-mincho font-extrabold text-lg text-stone-900 leading-snug mt-1"></p>
-          <p id="trip-arrival-maker" class="text-[11px] text-stone-500 mt-0.5"></p>
-          <div id="trip-arrival-stamp" class="absolute right-4 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full border-2 border-red-700 text-red-700 flex items-center justify-center font-mincho font-extrabold text-sm -rotate-12 opacity-0 scale-150 transition-all duration-300">到着</div>
+        <div id="trip-arrival-card" class="card absolute bottom-8 inset-x-5 p-5 pr-24 opacity-0 translate-y-8 transition-all duration-500 pointer-events-none">
+          <span class="eyebrow text-muted" style="color: #6B6560">ARRIVAL</span>
+          <p id="trip-arrival-name" class="font-mincho font-extrabold text-lg text-ink leading-snug mt-1"></p>
+          <p id="trip-arrival-maker" class="text-xs text-muted mt-1"></p>
+          <div id="trip-arrival-stamp" class="absolute right-5 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full border-2 border-stamp text-stamp flex items-center justify-center font-mincho font-extrabold text-base -rotate-12 opacity-0 scale-150 transition-all duration-300">到着</div>
         </div>
 
-        <button onclick="event.stopPropagation(); skipTrip()" class="absolute top-6 right-4 px-3 py-1.5 bg-stone-900/70 text-white text-[10px] font-bold rounded-full backdrop-blur-md active:scale-95 transition-transform">
+        <button onclick="event.stopPropagation(); skipTrip()" class="absolute top-6 right-4 h-8 px-3.5 bg-ink/70 text-white text-xs font-bold rounded-full backdrop-blur-md active:scale-95 transition-transform">
           SKIP <i class="fa-solid fa-forward-step ml-1"></i>
         </button>
       </div>
 
-      <div id="view-story" class="absolute inset-0 z-0 flex flex-col bg-[#f2f7f4] text-slate-900 opacity-0 pointer-events-none transition-opacity duration-1000 overflow-hidden">
-        <header class="px-4 py-2.5 flex items-center justify-between bg-[#f2f7f4]/95 backdrop-blur-md border-b border-emerald-900/10 flex-shrink-0 z-20">
-          <button onclick="backToFlavorMap()" class="px-3 py-1 rounded-full bg-white/80 text-emerald-900 text-[11px] font-medium flex items-center gap-1.5 transition active:bg-emerald-50 shadow-sm border border-emerald-100">
-            <i class="fa-solid fa-arrow-left text-[10px]"></i><span>マップに戻る</span>
+      <div id="view-story" class="absolute inset-0 z-0 flex flex-col bg-paper text-ink opacity-0 pointer-events-none transition-opacity duration-1000 overflow-hidden">
+        <header class="px-4 py-2.5 flex items-center justify-between bg-paper/95 backdrop-blur-md border-b border-line flex-shrink-0 z-20">
+          <button onclick="backToFlavorMap()" class="btn-secondary">
+            <i class="fa-solid fa-arrow-left text-xs"></i><span>マップに戻る</span>
           </button>
-          <div class="text-right">
-            <span id="story-region-header-tag" class="text-[11px] font-mincho font-bold text-emerald-800"></span>
-          </div>
+          <span id="story-region-header-tag" class="chip"></span>
         </header>
 
-        <div id="story-scroll-area" class="flex-1 overflow-y-auto overscroll-contain text-stone-800 pb-8">
-          <section class="p-4 bg-gradient-to-b from-[#fdfcf9] to-[#f4f1ea]">
-            
-            <h1 id="story-drink-title-main" class="text-2xl font-mincho font-extrabold text-stone-900 leading-tight mt-2"></h1>
-            <p id="story-drink-maker-name" class="text-sm text-stone-600 font-medium mt-1 mb-4"></p>
+        <div id="story-scroll-area" class="flex-1 overflow-y-auto overscroll-contain pb-10">
 
-            <div id="story-rich-description" class="text-[13px] text-stone-700 leading-relaxed space-y-3 font-mincho mb-6"></div>
+          <!-- ヒーロー：商品写真（背景は同じ写真をぼかしたもの） -->
+          <section class="relative overflow-hidden">
+            <img id="story-hero-bg" src="" alt="" class="absolute inset-0 w-full h-full object-cover scale-125 blur-2xl opacity-50">
+            <div class="absolute inset-0 bg-gradient-to-b from-paper/0 via-paper/40 to-paper"></div>
+            <div class="relative h-72">
+              <img id="story-hero-dish-img-1" src="" alt="" class="absolute inset-x-0 top-6 mx-auto h-60 w-full object-contain drop-shadow-xl transition-opacity duration-1000 opacity-100">
+              <img id="story-hero-dish-img-2" src="" alt="" class="absolute inset-x-0 top-6 mx-auto h-60 w-full object-contain drop-shadow-xl transition-opacity duration-1000 opacity-0">
+            </div>
+            <div class="relative px-5 pt-2">
+              <div id="story-chips" class="flex flex-wrap gap-1.5 mb-2"></div>
+              <h1 id="story-drink-title-main" class="text-[28px] font-mincho font-extrabold text-ink leading-tight"></h1>
+              <p id="story-drink-maker-name" class="text-[13px] text-muted mt-1.5"></p>
+            </div>
+          </section>
 
-            <div class="relative w-full rounded-xl overflow-hidden shadow-sm border border-stone-200 my-4 bg-black">
-              <!-- Removed aspect-[4/3] and changed inner padding/object-fit -->
-              <div class="relative w-full pb-[66.66%]"> <!-- 3:2 aspect ratio container -->
-                <img id="story-hero-dish-img-1" src="" class="absolute inset-0 w-full h-full object-contain transition-opacity duration-1000 opacity-100">
-                <img id="story-hero-dish-img-2" src="" class="absolute inset-0 w-full h-full object-contain transition-opacity duration-1000 opacity-0">
+          <!-- 相性と味わいのゲージ -->
+          <section class="px-5 pt-5">
+            <div class="card p-4">
+              <div class="flex items-center justify-between mb-4">
+                <span class="text-[13px] font-bold text-ink">あなたとの相性</span>
+                <span class="font-mincho font-extrabold text-accent leading-none"><span id="story-match" class="text-[32px]"></span><span class="text-base ml-0.5">%</span></span>
+              </div>
+              <div id="story-taste-gauges" class="space-y-4"></div>
+              <div class="flex gap-4 mt-4 text-xs text-muted">
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-accent"></span>このお酒</span>
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full border-2 border-muted bg-surface"></span>あなた</span>
               </div>
             </div>
           </section>
 
-          <section id="story-gallery-section" class="p-4 bg-[#f8f6f0] border-t border-stone-200/60 pb-8">
-            
-            <div class="relative w-full bg-white rounded-xl overflow-hidden shadow-sm border border-emerald-100">
-              <div class="h-52 overflow-hidden bg-stone-200 relative">
-                <img id="gallery-slide-img" src="" class="w-full h-full object-cover transition-opacity duration-300">
-                
-                <button onclick="prevGallerySlide()" class="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-md hover:bg-black/60 active:scale-95 transition z-10">
+          <!-- 一 味わい -->
+          <section class="px-5 pt-9">
+            <h2 class="chapter"><span class="chapter-num">一</span>味わい</h2>
+            <div id="story-rich-description" class="text-[15px] text-ink/80 leading-loose space-y-4"></div>
+          </section>
+
+          <!-- 二 つくり手と土地 -->
+          <section class="px-5 pt-9">
+            <h2 class="chapter"><span class="chapter-num">二</span>つくり手と土地<span class="eyebrow ml-auto">TERROIR</span></h2>
+            <div id="story-land-map" class="card overflow-hidden"></div>
+
+            <div id="story-gallery-section" class="card relative overflow-hidden mt-4">
+              <div class="h-52 overflow-hidden bg-line relative">
+                <img id="gallery-slide-img" src="" alt="" class="w-full h-full object-cover transition-opacity duration-300">
+
+                <button id="gallery-prev" onclick="prevGallerySlide()" aria-label="前の写真" class="absolute left-2.5 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full bg-surface/85 text-ink shadow active:scale-95 transition z-10">
                   <i class="fa-solid fa-chevron-left text-xs"></i>
                 </button>
-                <button onclick="nextGallerySlide()" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-md hover:bg-black/60 active:scale-95 transition z-10">
+                <button id="gallery-next" onclick="nextGallerySlide()" aria-label="次の写真" class="absolute right-2.5 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full bg-surface/85 text-ink shadow active:scale-95 transition z-10">
                   <i class="fa-solid fa-chevron-right text-xs"></i>
                 </button>
-                
+
                 <div id="gallery-indicators" class="absolute bottom-2.5 left-0 right-0 flex justify-center gap-1.5 z-10"></div>
               </div>
-              <div class="p-4 min-h-[104px]">
-                <p id="gallery-slide-caption" class="text-[12px] text-stone-700 font-mincho leading-relaxed"></p>
+              <div class="p-4">
+                <p id="gallery-slide-title" class="font-mincho font-bold text-base text-ink mb-1"></p>
+                <p id="gallery-slide-caption" class="text-sm text-ink/80 leading-relaxed"></p>
+                <p id="gallery-slide-credit" class="text-xs text-muted mt-2.5 break-all"></p>
               </div>
             </div>
+          </section>
+
+          <section class="px-5 pt-9">
+            <button onclick="backToFlavorMap()" class="btn-secondary w-full justify-center" style="height: 48px">
+              <i class="fa-solid fa-map-location-dot text-sm"></i><span>他のおすすめを見る</span>
+            </button>
           </section>
         </div>
       </div>
@@ -229,45 +318,44 @@
     let currentGalleryData = [];
     let slideshowInterval = null;
     let currentSlideIndex = 0;
-    let drinkImages = [];
     let tripAnimationFrame = null;
     let tripTimers = [];
 
     const QUESTIONS = [
       {
-        q: "Q1. いまの気分に一番フィットする飲み心地は？",
+        q: "いまの気分に一番フィットする飲み心地は？",
         options: [
-          { text: "① 気分をシャキッとリフレッシュする、爽やかな1杯", dx: -15, dy: -5 },
-          { text: "② 会話が弾むような、香り立ちの良いワクワクする1杯", dx: 0, dy: -15 },
-          { text: "③ ペースを落として、じっくり深く浸れる落ち着いた1杯", dx: 15, dy: 5 },
-          { text: "④ ここで一度口内をリセットする、キレ味鋭いクリアな1杯", dx: -10, dy: 10 }
+          { text: "気分をシャキッとリフレッシュする、爽やかな1杯", dx: -15, dy: -5 },
+          { text: "会話が弾むような、香り立ちの良いワクワクする1杯", dx: 0, dy: -15 },
+          { text: "ペースを落として、じっくり深く浸れる落ち着いた1杯", dx: 15, dy: 5 },
+          { text: "ここで一度口内をリセットする、キレ味鋭いクリアな1杯", dx: -10, dy: 10 }
         ]
       },
       {
-        q: "Q2. グラスを近づけた時、ふわりと感じたい香りは？",
+        q: "グラスを近づけた時、ふわりと感じたい香りは？",
         options: [
-          { text: "① 果実やお花、柑橘のようなフルーティーで華やかなアロマ", dx: -5, dy: -15 },
-          { text: "② ハーブや山椒、和スパイスのような心地よい清涼感", dx: -5, dy: -5 },
-          { text: "③ 自然な甘みや麦の香ばしさ、食事に寄り添う控えめな香り", dx: 5, dy: 10 },
-          { text: "④ 香りは極力主張せず、澄み切ったクリーンな印象", dx: -5, dy: 15 }
+          { text: "果実やお花、柑橘のようなフルーティーで華やかなアロマ", dx: -5, dy: -15 },
+          { text: "ハーブや山椒、和スパイスのような心地よい清涼感", dx: -5, dy: -5 },
+          { text: "自然な甘みや麦の香ばしさ、食事に寄り添う控えめな香り", dx: 5, dy: 10 },
+          { text: "香りは極力主張せず、澄み切ったクリーンな印象", dx: -5, dy: 15 }
         ]
       },
       {
-        q: "Q3. 口に含んだ瞬間の「ボディ感」はどれが理想？",
+        q: "口に含んだ瞬間の「ボディ感」はどれが理想？",
         options: [
-          { text: "① 水のようにサラリと喉を通る、軽快で雑味のないタッチ", dx: -15, dy: 5 },
-          { text: "② ほどよい瑞々しさがあり、重すぎず軽すぎない心地よさ", dx: -5, dy: 0 },
-          { text: "③ トロッとした舌触りや、口いっぱいに広がる濃密な旨味", dx: 10, dy: -5 },
-          { text: "④ 舌の上にズシッと残る、飲みごたえ抜群の濃厚な重厚感", dx: 15, dy: 0 }
+          { text: "水のようにサラリと喉を通る、軽快で雑味のないタッチ", dx: -15, dy: 5 },
+          { text: "ほどよい瑞々しさがあり、重すぎず軽すぎない心地よさ", dx: -5, dy: 0 },
+          { text: "トロッとした舌触りや、口いっぱいに広がる濃密な旨味", dx: 10, dy: -5 },
+          { text: "舌の上にズシッと残る、飲みごたえ抜群の濃厚な重厚感", dx: 15, dy: 0 }
         ]
       },
       {
-        q: "Q4. ゴクリと飲み干したあとの「余韻」はどうしたい？",
+        q: "ゴクリと飲み干したあとの「余韻」はどうしたい？",
         options: [
-          { text: "① 一瞬でスパッと消え去り、次の一口や箸が進むキレ", dx: -10, dy: 10 },
-          { text: "② 鼻腔からフワッと心地よい果実やボタニカルの香りが抜けていく", dx: 0, dy: -10 },
-          { text: "③ 喉の奥にじんわりとお酒本来のふくよかな温かみが続く", dx: 10, dy: 0 },
-          { text: "④ 何層にも変化する濃厚な深みやビター感を長く味わいたい", dx: 15, dy: -5 }
+          { text: "一瞬でスパッと消え去り、次の一口や箸が進むキレ", dx: -10, dy: 10 },
+          { text: "鼻腔からフワッと心地よい果実やボタニカルの香りが抜けていく", dx: 0, dy: -10 },
+          { text: "喉の奥にじんわりとお酒本来のふくよかな温かみが続く", dx: 10, dy: 0 },
+          { text: "何層にも変化する濃厚な深みやビター感を長く味わいたい", dx: 15, dy: -5 }
         ]
       }
     ];
@@ -275,7 +363,27 @@
     const PLACEHOLDER_IMAGE = 'https://placehold.co/300x300/e2e8f0/64748b?text=Drink';
 
     const isDomestic = drink => drink.origin.country === '日本' && drink.origin.lat != null && drink.origin.lon != null;
-    const getThumbnail = drink => (drink.images && drink.images[0]) || PLACEHOLDER_IMAGE;
+    // ---- 商品画像 ----
+    // images を省略したお酒は images/<id>.webp（なければ .jpg / .jpeg / .png）を自動で使う
+    const IMAGE_EXTENSIONS = ['webp', 'jpg', 'jpeg', 'png'];
+    function getProductSlides(drink) {
+      if(drink.images && drink.images.length) return drink.images.map(src => [src]);
+      return [IMAGE_EXTENSIONS.map(ext => `images/${drink.id}.${ext}`)];
+    }
+    // 候補を順番に試し、どれも読めなければプレースホルダーを表示
+    function loadImage(img, candidates) {
+      const list = [...candidates, PLACEHOLDER_IMAGE];
+      let i = 0;
+      img.onerror = () => { i++; if(i < list.length) img.src = list[i]; else img.onerror = null; };
+      img.src = list[0];
+    }
+    function createProductImage(drink, className) {
+      const img = document.createElement('img');
+      img.className = className;
+      img.alt = drink.name;
+      loadImage(img, getProductSlides(drink)[0]);
+      return img;
+    }
     // 産地の短い表示（例：岐阜県 ／ フランス）
     const getOriginLabel = drink => drink.origin.country === '日本' ? drink.origin.prefecture : drink.origin.country;
     // 産地の詳しい表示（例：岐阜県中津川市 ／ フランス・ボルドー）
@@ -285,6 +393,12 @@
     const getMakerLine = drink => `${drink.maker}（${getOriginDetail(drink)}）`;
 
     function applyStoreConfig() {
+      // 差し色（#RRGGBB）をCSS変数に反映
+      const hex = (STORE_CONFIG.accentColor || '').replace('#', '');
+      if(/^[0-9a-fA-F]{6}$/.test(hex)) {
+        const rgb = [0, 2, 4].map(i => parseInt(hex.slice(i, i + 2), 16)).join(' ');
+        document.documentElement.style.setProperty('--accent', rgb);
+      }
       document.title = STORE_CONFIG.pageTitle;
       document.getElementById('app-title').innerText = STORE_CONFIG.appTitle;
       document.getElementById('app-subtitle').innerText = STORE_CONFIG.appSubtitle;
@@ -302,16 +416,25 @@
       const container = document.getElementById('quiz-options-container');
       container.innerHTML = '';
       
+      let answered = false;
       qObj.options.forEach(opt => {
         const btn = document.createElement('button');
-        btn.className = "w-full text-left p-3.5 bg-white rounded-xl shadow-sm border border-emerald-100/80 active:bg-emerald-50 active:border-emerald-300 transition text-sm font-medium text-slate-700 font-mincho hover:shadow-md leading-relaxed";
-        btn.innerText = opt.text;
-        btn.onclick = function() { answerQuestion(opt.dx, opt.dy); };
+        btn.className = 'option-card';
+        btn.innerHTML = '<span class="option-check"><i class="fa-solid fa-check"></i></span><span class="option-text"></span>';
+        btn.querySelector('.option-text').textContent = opt.text;
+        btn.onclick = function() {
+          if(answered) return;
+          answered = true;
+          btn.classList.add('is-selected');
+          // 選んだ状態を少し見せてから次の質問へ
+          setTimeout(() => answerQuestion(opt.dx, opt.dy), 220);
+        };
         container.appendChild(btn);
       });
-      
-      const progress = ((currentStep + 1) / QUESTIONS.length) * 100;
-      document.getElementById('quiz-progress-bar').style.width = `${progress}%`;
+
+      document.getElementById('quiz-progress').innerHTML = QUESTIONS.map((_, i) =>
+        `<div class="h-1 flex-1 rounded-full transition-colors duration-300 ${i <= currentStep ? 'bg-accent' : 'bg-line'}"></div>`
+      ).join('');
     }
 
     function answerQuestion(xDelta, yDelta) {
@@ -365,7 +488,7 @@
         pin.style.left = `${drink.x}%`;
         pin.style.top = `${drink.y}%`;
         pin.title = drink.name;
-        pin.innerHTML = `<img src="${getThumbnail(drink)}" class="w-full h-full object-cover" onerror="this.src='${PLACEHOLDER_IMAGE}'">`;
+        pin.appendChild(createProductImage(drink, 'w-full h-full object-cover'));
         pin.onclick = () => selectDrink(drink, pin);
         layer.appendChild(pin);
       });
@@ -377,28 +500,42 @@
       getNearestDrinks().forEach((drink, index) => {
         const card = document.createElement('button');
         card.id = `rec-card-${drink.id}`;
-        card.className = 'text-left bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm active:scale-[.98] transition flex flex-col h-full';
-        card.innerHTML = `<div class="h-24 w-full overflow-hidden shrink-0 bg-stone-50"><img src="${getThumbnail(drink)}" class="w-full h-full object-contain p-1" onerror="this.src='${PLACEHOLDER_IMAGE}'"></div><div class="p-2 flex-1 flex flex-col justify-center"><div class="text-[9px] text-emerald-700 font-bold">${index+1} / ${drink.category}</div><div class="text-[11px] font-mincho font-bold text-stone-900 line-clamp-1 mt-0.5">${drink.name}</div><div class="text-[9px] text-stone-500 truncate mt-1">${getOriginLabel(drink)}</div></div>`;
+        card.className = 'card text-left overflow-hidden active:scale-[.98] transition flex flex-col h-full';
+        card.innerHTML = `<div class="rec-image h-16 w-full overflow-hidden shrink-0 bg-paper"></div><div class="p-2.5 flex-1 flex flex-col justify-center"><div class="text-xs text-accent font-bold">${index+1}・${drink.category}</div><div class="rec-name font-mincho font-bold text-ink leading-snug whitespace-nowrap overflow-hidden text-ellipsis mt-0.5" style="font-size: 13px">${drink.name}</div><div class="text-xs text-muted truncate mt-0.5">${getOriginLabel(drink)}</div></div>`;
+        card.querySelector('.rec-image').appendChild(createProductImage(drink, 'w-full h-full object-contain p-1'));
         card.onclick = () => selectDrink(drink, null);
         list.appendChild(card);
+      });
+      fitRecommendationNames();
+    }
+
+    // 品名が1行に収まるよう、文字サイズを自動で小さくする（13px → 最小10px）
+    function fitRecommendationNames() {
+      document.querySelectorAll('#recommendation-list .rec-name').forEach(el => {
+        let size = 13;
+        el.style.fontSize = `${size}px`;
+        while(el.scrollWidth > el.clientWidth && size > 10) {
+          size -= 0.5;
+          el.style.fontSize = `${size}px`;
+        }
       });
     }
 
     function selectDrink(drink, pinElement){
       selectedDrinkId = drink.id;
       
-      document.querySelectorAll('#drink-pins-layer button').forEach(el => el.classList.remove('ring-4','ring-emerald-400'));
-      document.querySelectorAll('#recommendation-list button').forEach(el => el.classList.remove('ring-2','ring-emerald-400'));
+      document.querySelectorAll('#drink-pins-layer button').forEach(el => el.classList.remove('ring-4','ring-accent'));
+      document.querySelectorAll('#recommendation-list button').forEach(el => el.classList.remove('ring-2','ring-accent'));
       
       if(pinElement) {
-        pinElement.classList.add('ring-4','ring-emerald-400');
+        pinElement.classList.add('ring-4','ring-accent');
       } else {
         const matchingPinIndex = DRINKS_DATABASE.findIndex(d => d.id === drink.id);
         const pins = document.querySelectorAll('#drink-pins-layer button');
-        if(pins[matchingPinIndex]) pins[matchingPinIndex].classList.add('ring-4','ring-emerald-400');
+        if(pins[matchingPinIndex]) pins[matchingPinIndex].classList.add('ring-4','ring-accent');
       }
       const card = document.getElementById(`rec-card-${drink.id}`);
-      if(card) card.classList.add('ring-2','ring-emerald-400');
+      if(card) card.classList.add('ring-2','ring-accent');
 
       const journeyBtn = document.getElementById('action-journey-container');
       if (journeyBtn) {
@@ -409,7 +546,7 @@
 
     function renderTripPrefectures() {
       document.getElementById('trip-prefectures').innerHTML = Object.entries(JAPAN_PREFECTURE_PATHS).map(([name, d]) =>
-        `<path d="${d}" data-pref="${name}" fill="#dde8e1" stroke="#f3efe6" stroke-width="1" vector-effect="non-scaling-stroke" style="transition: fill 0.6s"></path>`
+        `<path d="${d}" data-pref="${name}" fill="#E6E0D4" stroke="#F7F5F0" stroke-width="1" vector-effect="non-scaling-stroke" style="transition: fill 0.6s"></path>`
       ).join('');
     }
 
@@ -460,57 +597,76 @@
       stamp.classList.add('opacity-0', 'scale-150');
       destMarker.style.opacity = '0';
       plane.style.opacity = '1';
-      document.querySelectorAll('#trip-prefectures path').forEach(p => p.setAttribute('fill', '#dde8e1'));
+      document.querySelectorAll('#trip-prefectures path').forEach(p => p.style.fill = '');
+      const mapLayers = document.querySelectorAll('.trip-map-layer');
+      mapLayers.forEach(el => el.style.opacity = '1');
 
-      // 海外のお酒：地図は出さず、到着カードとスタンプだけ
-      const mapLayers = [document.getElementById('trip-map'), originMarker, destMarker, plane];
-      if(!isDomestic(drink)) {
-        mapLayers.forEach(el => el.style.visibility = 'hidden');
-        tripTimers.push(setTimeout(() => card.classList.remove('opacity-0', 'translate-y-8'), 300));
-        tripTimers.push(setTimeout(() => stamp.classList.remove('opacity-0', 'scale-150'), 700));
-        tripTimers.push(setTimeout(showStoryScreen, 2200));
-        return;
-      }
-      mapLayers.forEach(el => el.style.visibility = '');
-      const destPref = document.querySelector(`#trip-prefectures path[data-pref="${drink.origin.prefecture}"]`);
+      const domestic = isDomestic(drink);
+      // 海外のお酒は到着カードを画面の中央に出す
+      card.style.bottom = domestic ? '' : 'calc(50% - 60px)';
+      const destPref = domestic ? document.querySelector(`#trip-prefectures path[data-pref="${drink.origin.prefecture}"]`) : null;
 
       // 出発地 → 目的地を結ぶ弧（2次ベジェ曲線）
       const p0 = projectLatLon(STORE_CONFIG.tripOrigin.lat, STORE_CONFIG.tripOrigin.lon);
-      const p2 = projectLatLon(drink.origin.lat, drink.origin.lon);
+      let p2;
+      if(domestic) {
+        p2 = projectLatLon(drink.origin.lat, drink.origin.lon);
+      } else {
+        // 海外：目的地の方角へ、日本の外まで飛んでいく
+        const hasCoords = drink.origin.lat != null && drink.origin.lon != null;
+        const bearing = hasCoords
+          ? bearingDeg(STORE_CONFIG.tripOrigin.lat, STORE_CONFIG.tripOrigin.lon, drink.origin.lat, drink.origin.lon)
+          : 300;
+        const rad = bearing * Math.PI / 180;
+        p2 = { x: p0.x + Math.sin(rad) * 1800, y: p0.y - Math.cos(rad) * 1800 };
+      }
       const dx = p2.x - p0.x, dy = p2.y - p0.y;
       const dist = Math.hypot(dx, dy) || 1;
       let nx = -dy / dist, ny = dx / dist;
       if(ny > 0) { nx = -nx; ny = -ny; } // 弧が北側にふくらむ向きにする
-      const bend = Math.max(dist * 0.35, 40);
+      const bend = domestic ? Math.max(dist * 0.35, 40) : dist * 0.08;
       const p1 = { x: (p0.x + p2.x) / 2 + nx * bend, y: (p0.y + p2.y) / 2 + ny * bend };
       const bezier = t => ({
         x: (1 - t) * (1 - t) * p0.x + 2 * (1 - t) * t * p1.x + t * t * p2.x,
         y: (1 - t) * (1 - t) * p0.y + 2 * (1 - t) * t * p1.y + t * t * p2.y
       });
 
-      // カメラ：日本全体 → 航路全体 → 目的地へズーム（画面の縦横比に合わせたviewBox）
+      // カメラ（画面の縦横比に合わせたviewBox）
+      //   国内：日本全体 → 航路全体 → 目的地へズーム
+      //   海外：日本全体から少しずつ引いていく
       const svg = document.getElementById('trip-map');
       const W = svg.clientWidth, H = svg.clientHeight, aspect = H / W;
       const M = JAPAN_MAP_PROJECTION;
       const fullW = Math.max(M.width, M.height / aspect) * 1.05;
       const fullVB = { x: M.width / 2 - fullW / 2, y: M.height / 2 - fullW * aspect / 2, w: fullW, h: fullW * aspect };
-      const minX = Math.min(p0.x, p1.x, p2.x), maxX = Math.max(p0.x, p1.x, p2.x);
-      const minY = Math.min(p0.y, p1.y, p2.y), maxY = Math.max(p0.y, p1.y, p2.y);
-      const routeW = Math.min(fullW, Math.max(600, (maxX - minX) * 1.8, (maxY - minY) * 1.8 / aspect));
-      const routeVB = { x: (minX + maxX) / 2 - routeW / 2, y: (minY + maxY) / 2 - routeW * aspect / 2, w: routeW, h: routeW * aspect };
-      const zoomW = 480;
-      const zoomVB = { x: p2.x - zoomW / 2, y: p2.y - zoomW * aspect * 0.4, w: zoomW, h: zoomW * aspect };
       const lerpVB = (a, b, t) => ({ x: lerp(a.x, b.x, t), y: lerp(a.y, b.y, t), w: lerp(a.w, b.w, t), h: lerp(a.h, b.h, t) });
+      let routeVB, zoomVB;
+      if(domestic) {
+        const minX = Math.min(p0.x, p1.x, p2.x), maxX = Math.max(p0.x, p1.x, p2.x);
+        const minY = Math.min(p0.y, p1.y, p2.y), maxY = Math.max(p0.y, p1.y, p2.y);
+        const routeW = Math.min(fullW, Math.max(600, (maxX - minX) * 1.8, (maxY - minY) * 1.8 / aspect));
+        routeVB = { x: (minX + maxX) / 2 - routeW / 2, y: (minY + maxY) / 2 - routeW * aspect / 2, w: routeW, h: routeW * aspect };
+        const zoomW = 480;
+        zoomVB = { x: p2.x - zoomW / 2, y: p2.y - zoomW * aspect * 0.4, w: zoomW, h: zoomW * aspect };
+      } else {
+        const farW = fullW * 1.25;
+        routeVB = { x: M.width / 2 - farW / 2, y: M.height / 2 - farW * aspect / 2, w: farW, h: farW * aspect };
+        zoomVB = routeVB;
+      }
 
-      const INTRO_END = 800, FLY_START = 500, FLY_END = 2100, ZOOM_END = 2900, FINISH = 4000;
+      // タイムライン（ミリ秒）
+      const T = domestic
+        ? { intro: 800, flyStart: 500, flyEnd: 2100, zoomEnd: 2900, finish: 4000 }
+        : { intro: 1900, flyStart: 400, flyEnd: 2600, cut: 1900, finish: 4000 };
+      const flyEase = domestic ? easeInOut : (t => t * t); // 海外は加速しながら飛び去る
       const startTime = performance.now();
 
       function frame(now) {
         const t = now - startTime;
-        const fly = easeInOut(clamp01((t - FLY_START) / (FLY_END - FLY_START)));
-        const vb = t < FLY_END
-          ? lerpVB(fullVB, routeVB, easeInOut(clamp01(t / INTRO_END)))
-          : lerpVB(routeVB, zoomVB, easeInOut(clamp01((t - FLY_END) / (ZOOM_END - FLY_END))));
+        const fly = flyEase(clamp01((t - T.flyStart) / (T.flyEnd - T.flyStart)));
+        const vb = !domestic || t < T.flyEnd
+          ? lerpVB(fullVB, routeVB, easeInOut(clamp01(t / T.intro)))
+          : lerpVB(routeVB, zoomVB, easeInOut(clamp01((t - T.flyEnd) / (T.zoomEnd - T.flyEnd))));
         svg.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
         const place = (el, p) => {
           el.style.left = `${(p.x - vb.x) / vb.w * W}px`;
@@ -529,18 +685,34 @@
         place(originMarker, p0);
         place(destMarker, p2);
 
-        if(t < ZOOM_END) tripAnimationFrame = requestAnimationFrame(frame);
+        const endAt = domestic ? T.zoomEnd : T.cut + 500;
+        if(t < endAt) tripAnimationFrame = requestAnimationFrame(frame);
       }
       tripAnimationFrame = requestAnimationFrame(frame);
 
-      tripTimers.push(setTimeout(() => {
-        plane.style.opacity = '0';
-        destMarker.style.opacity = '1';
-        if(destPref) destPref.setAttribute('fill', '#10b981');
-      }, FLY_END));
-      tripTimers.push(setTimeout(() => card.classList.remove('opacity-0', 'translate-y-8'), FLY_END + 400));
-      tripTimers.push(setTimeout(() => stamp.classList.remove('opacity-0', 'scale-150'), FLY_END + 800));
-      tripTimers.push(setTimeout(showStoryScreen, FINISH));
+      if(domestic) {
+        tripTimers.push(setTimeout(() => {
+          plane.style.opacity = '0';
+          destMarker.style.opacity = '1';
+          if(destPref) destPref.style.fill = 'rgb(var(--accent))';
+        }, T.flyEnd));
+        tripTimers.push(setTimeout(() => card.classList.remove('opacity-0', 'translate-y-8'), T.flyEnd + 400));
+        tripTimers.push(setTimeout(() => stamp.classList.remove('opacity-0', 'scale-150'), T.flyEnd + 800));
+      } else {
+        // 日本を飛び出していく途中で、地図を消して到着カードへ切り替え
+        tripTimers.push(setTimeout(() => mapLayers.forEach(el => el.style.opacity = '0'), T.cut));
+        tripTimers.push(setTimeout(() => card.classList.remove('opacity-0', 'translate-y-8'), T.cut + 400));
+        tripTimers.push(setTimeout(() => stamp.classList.remove('opacity-0', 'scale-150'), T.cut + 800));
+      }
+      tripTimers.push(setTimeout(showStoryScreen, T.finish));
+    }
+
+    // 2地点間の方角（北=0°、東=90°）
+    function bearingDeg(lat1, lon1, lat2, lon2) {
+      const r = Math.PI / 180;
+      const y = Math.sin((lon2 - lon1) * r) * Math.cos(lat2 * r);
+      const x = Math.cos(lat1 * r) * Math.sin(lat2 * r) - Math.sin(lat1 * r) * Math.cos(lat2 * r) * Math.cos((lon2 - lon1) * r);
+      return Math.atan2(y, x) / r;
     }
 
     function skipTrip() {
@@ -560,45 +732,37 @@
       if(!drink) return;
 
       document.getElementById('story-region-header-tag').innerText = getOriginLabel(drink);
-      renderStoryDescription(drink);
       document.getElementById('story-drink-title-main').innerText = drink.name;
       document.getElementById('story-drink-maker-name').innerText = getMakerLine(drink);
+      renderStoryChips(drink);
+      renderTasteGauges(drink);
+      renderStoryDescription(drink);
+      renderLandMap(drink);
+      loadGallery(drink);
       document.getElementById('story-scroll-area').scrollTop = 0;
 
-      // クロスフェードスライドショーの初期化
-      drinkImages = drink.images && drink.images.length ? drink.images : [PLACEHOLDER_IMAGE];
+      // 商品写真のクロスフェードスライドショー（背景のぼかし写真も一緒に切り替え）
+      const slides = getProductSlides(drink);
       currentSlideIndex = 0;
       const img1 = document.getElementById('story-hero-dish-img-1');
       const img2 = document.getElementById('story-hero-dish-img-2');
-      img1.src = drinkImages[0];
-      img1.onerror = () => { img1.src = 'https://placehold.co/800x600/e2e8f0/64748b?text=Drink'; };
+      const heroBg = document.getElementById('story-hero-bg');
+      loadImage(img1, slides[0]);
+      loadImage(heroBg, slides[0]);
       img1.style.opacity = 1;
       img2.style.opacity = 0;
 
       if(slideshowInterval) clearInterval(slideshowInterval);
-      if(drinkImages.length > 1) {
+      if(slides.length > 1) {
         slideshowInterval = setInterval(() => {
-          currentSlideIndex = (currentSlideIndex + 1) % drinkImages.length;
-          const nextImgSrc = drinkImages[currentSlideIndex];
-          
-          if(img1.style.opacity == 1) {
-            img2.src = nextImgSrc;
-            img2.onerror = () => { img2.src = 'https://placehold.co/800x600/e2e8f0/64748b?text=Drink'; };
-            img2.style.opacity = 1;
-            img1.style.opacity = 0;
-          } else {
-            img1.src = nextImgSrc;
-            img1.onerror = () => { img1.src = 'https://placehold.co/800x600/e2e8f0/64748b?text=Drink'; };
-            img1.style.opacity = 1;
-            img2.style.opacity = 0;
-          }
-        }, 3000); // 3秒間隔で切り替え（1500から変更）
+          currentSlideIndex = (currentSlideIndex + 1) % slides.length;
+          const [show, hide] = img1.style.opacity == 1 ? [img2, img1] : [img1, img2];
+          loadImage(show, slides[currentSlideIndex]);
+          loadImage(heroBg, slides[currentSlideIndex]);
+          show.style.opacity = 1;
+          hide.style.opacity = 0;
+        }, 3000);
       }
-
-      currentGalleryData = drink.gallery || [];
-      currentGalleryIndex = 0;
-      document.getElementById('story-gallery-section').style.display = currentGalleryData.length ? '' : 'none';
-      updateGallerySlide();
 
       const storyView = document.getElementById('view-story');
       storyView.style.opacity = '1';
@@ -608,6 +772,77 @@
       storyView.style.animation = 'none';
       storyView.offsetHeight; 
       storyView.style.animation = 'fadeInStory 1s cubic-bezier(0.25, 1, 0.5, 1) forwards';
+    }
+
+    // あなたとの相性（味覚マップ上の距離から計算）
+    function getMatchPercent(drink) {
+      const d = Math.hypot(drink.x - userScore.x, drink.y - userScore.y);
+      return Math.max(50, Math.round(100 - d * 0.7));
+    }
+
+    // ヒーローのラベル（種類・度数）
+    function renderStoryChips(drink) {
+      const chips = [drink.category];
+      const abv = (drink.specs || []).find(s => /アルコール|度数|ABV/.test(s.label));
+      if(abv) chips.push(`${abv.value}`);
+      const box = document.getElementById('story-chips');
+      box.innerHTML = '';
+      chips.forEach(text => {
+        const el = document.createElement('span');
+        el.className = 'chip';
+        el.textContent = text;
+        box.appendChild(el);
+      });
+    }
+
+    // 味わいゲージ（このお酒と、あなたの位置）
+    function renderTasteGauges(drink) {
+      document.getElementById('story-match').innerText = getMatchPercent(drink);
+      const axes = [
+        { left: 'スッキリ・軽快', right: '濃厚・コク', value: drink.x, you: userScore.x },
+        { left: '華やか・香り', right: 'ドライ・キレ', value: drink.y, you: userScore.y }
+      ];
+      document.getElementById('story-taste-gauges').innerHTML = axes.map(a => `
+        <div>
+          <div class="flex justify-between text-xs text-muted mb-2"><span>${a.left}</span><span>${a.right}</span></div>
+          <div class="relative h-2 rounded-full bg-line">
+            <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full border-2 border-muted bg-surface" style="left: ${a.you}%"></div>
+            <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-accent border-2 border-white shadow" style="left: ${a.value}%"></div>
+          </div>
+        </div>`).join('');
+    }
+
+    // 「つくり手と土地」の地図（国内：県を光らせた地図／海外：国名カード）
+    function renderLandMap(drink) {
+      const box = document.getElementById('story-land-map');
+      const info = `<div class="px-4 py-3 flex items-center gap-2 text-sm border-t border-line">
+          <i class="fa-solid fa-location-dot text-accent"></i><span class="font-bold">${getOriginDetail(drink)}</span><span class="text-muted truncate">・${drink.maker}</span>
+        </div>`;
+      const prefPath = isDomestic(drink) && JAPAN_PREFECTURE_PATHS[drink.origin.prefecture];
+      if(!prefPath) {
+        box.innerHTML = `<div class="h-36 flex flex-col items-center justify-center gap-2 bg-accent/10">
+            <i class="fa-solid fa-earth-asia text-3xl text-accent"></i>
+            <span class="font-mincho font-extrabold text-2xl text-ink">${[drink.origin.country, drink.origin.area].filter(Boolean).join('・')}</span>
+          </div>` + info;
+        return;
+      }
+      const paths = Object.entries(JAPAN_PREFECTURE_PATHS).map(([name, d]) =>
+        `<path d="${d}" ${name === drink.origin.prefecture ? 'id="story-land-pref" style="fill: rgb(var(--accent))"' : 'fill="#E6E0D4"'} stroke="#F7F5F0" stroke-width="1" vector-effect="non-scaling-stroke"></path>`
+      ).join('');
+      box.innerHTML = `<svg id="story-land-svg" class="block w-full h-44 bg-paper" preserveAspectRatio="xMidYMid meet">${paths}<circle id="story-land-dot" fill="#fff" stroke="#1C1917" stroke-width="2" vector-effect="non-scaling-stroke"></circle></svg>` + info;
+
+      // 県が画面の中央に大きく入るように表示範囲を決める
+      const svg = document.getElementById('story-land-svg');
+      const bb = document.getElementById('story-land-pref').getBBox();
+      const aspect = (svg.clientHeight || 176) / (svg.clientWidth || 350);
+      const w = Math.max(bb.width, bb.height / aspect) * 2.4;
+      const h = w * aspect;
+      svg.setAttribute('viewBox', `${bb.x + bb.width / 2 - w / 2} ${bb.y + bb.height / 2 - h / 2} ${w} ${h}`);
+      const dot = document.getElementById('story-land-dot');
+      const p = projectLatLon(drink.origin.lat, drink.origin.lon);
+      dot.setAttribute('cx', p.x);
+      dot.setAttribute('cy', p.y);
+      dot.setAttribute('r', w / 45);
     }
 
     // 説明文・受賞歴・スペックを描画
@@ -627,15 +862,14 @@
       if(!columns.length) return;
 
       const box = document.createElement('div');
-      box.className = 'mt-4 flex flex-wrap gap-4 text-[11px] text-stone-800 bg-white/60 p-3 rounded-lg border border-emerald-900/10 shadow-sm';
+      box.className = 'card mt-5 p-4 space-y-4 text-[13px] text-ink';
       columns.forEach(col => {
         const colEl = document.createElement('div');
-        colEl.className = 'flex-1 min-w-[120px]';
         const title = document.createElement('p');
-        title.className = 'font-bold mb-1.5 border-b border-emerald-900/20 pb-1 text-emerald-950';
-        title.textContent = `●${col.title}`;
+        title.className = 'text-xs font-bold text-accent tracking-wider mb-2 pb-1.5 border-b border-line';
+        title.textContent = col.title;
         const body = document.createElement('p');
-        body.className = 'leading-relaxed whitespace-pre-line';
+        body.className = 'leading-relaxed whitespace-pre-line text-ink/80';
         body.textContent = col.lines.join('\n');
         colEl.append(title, body);
         box.appendChild(colEl);
@@ -643,19 +877,109 @@
       container.appendChild(box);
     }
 
+    // ---- 「つくり手と土地」の写真 ----
+    // gallery の各項目は { url, caption } か { wiki: "記事名", caption } のどちらか。
+    // wiki を指定すると、Wikipedia の写真と説明文を自動で読み込む（出典も自動で表示）。
+    const wikiCache = {};
+    let galleryRequestId = 0;
+
+    function fetchJson(url) {
+      return fetch(url).then(r => r.ok ? r.json() : null).catch(() => null);
+    }
+
+    // Wikipedia の記事の要約（写真・説明文）と、写真の作者・ライセンスを取得
+    function fetchWikiSummary(title) {
+      if(!wikiCache[title]) {
+        wikiCache[title] = (async () => {
+          const data = await fetchJson(`https://ja.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
+          if(!data || !data.thumbnail) return null;
+          const original = data.originalimage;
+          const image = original && original.width <= 1600
+            ? original.source
+            : data.thumbnail.source.replace(/\/\d+px-/, '/800px-');
+          const result = {
+            title: data.title,
+            extract: data.extract || '',
+            image,
+            page: data.content_urls && data.content_urls.desktop ? data.content_urls.desktop.page : `https://ja.wikipedia.org/wiki/${encodeURIComponent(title)}`,
+            author: '', license: ''
+          };
+          // 写真のファイル情報（作者・ライセンス）
+          const src = (original || data.thumbnail).source;
+          const match = src.match(/\/wikipedia\/(commons|ja)\/(?:thumb\/)?[0-9a-f]\/[0-9a-f]{2}\/([^/]+)/);
+          if(match) {
+            const host = match[1] === 'commons' ? 'commons.wikimedia.org' : 'ja.wikipedia.org';
+            const file = decodeURIComponent(match[2]);
+            const meta = await fetchJson(`https://${host}/w/api.php?action=query&format=json&origin=*&prop=imageinfo&iiprop=extmetadata&titles=${encodeURIComponent('File:' + file)}`);
+            const pages = meta && meta.query && meta.query.pages;
+            const ext = pages && Object.values(pages)[0].imageinfo && Object.values(pages)[0].imageinfo[0].extmetadata;
+            if(ext) {
+              const strip = html => (html || '').replace(/<[^>]*>/g, '').trim();
+              result.author = strip(ext.Artist && ext.Artist.value);
+              result.license = strip(ext.LicenseShortName && ext.LicenseShortName.value);
+            }
+          }
+          return result;
+        })();
+      }
+      return wikiCache[title];
+    }
+
+    async function resolveGalleryItem(item) {
+      if(!item.wiki) return { image: item.url, title: item.title || '', caption: item.caption || '', credit: null };
+      const wiki = await fetchWikiSummary(item.wiki);
+      if(!wiki) return null;
+      const extract = wiki.extract.length > 110 ? wiki.extract.slice(0, 110) + '…' : wiki.extract;
+      return {
+        image: wiki.image,
+        title: item.title || wiki.title,
+        caption: item.caption || extract,
+        credit: wiki
+      };
+    }
+
+    async function loadGallery(drink) {
+      const requestId = ++galleryRequestId;
+      const section = document.getElementById('story-gallery-section');
+      section.style.display = 'none';
+      currentGalleryData = [];
+      currentGalleryIndex = 0;
+      const items = await Promise.all((drink.gallery || []).map(resolveGalleryItem));
+      if(requestId !== galleryRequestId) return; // 途中で別のお酒が開かれた
+      currentGalleryData = items.filter(Boolean);
+      if(!currentGalleryData.length) return;
+      section.style.display = '';
+      const single = currentGalleryData.length < 2;
+      ['gallery-prev', 'gallery-next', 'gallery-indicators'].forEach(id => document.getElementById(id).style.display = single ? 'none' : '');
+      updateGallerySlide();
+    }
+
     function updateGallerySlide() {
       if (!currentGalleryData || currentGalleryData.length === 0) return;
-      
+
       const slide = currentGalleryData[currentGalleryIndex];
       const imgEl = document.getElementById('gallery-slide-img');
-      const captionEl = document.getElementById('gallery-slide-caption');
-      
+
       imgEl.style.opacity = '0.4';
       setTimeout(() => {
-        imgEl.src = slide.url;
-        imgEl.onerror = () => { imgEl.src = 'https://placehold.co/800x400/e2e8f0/64748b?text=Landscape'; };
+        imgEl.onerror = () => { imgEl.onerror = null; imgEl.src = 'https://placehold.co/800x400/e2e8f0/64748b?text=Landscape'; };
+        imgEl.src = slide.image;
         imgEl.style.opacity = '1';
-        captionEl.innerText = slide.caption;
+        document.getElementById('gallery-slide-title').innerText = slide.title;
+        document.getElementById('gallery-slide-title').style.display = slide.title ? '' : 'none';
+        document.getElementById('gallery-slide-caption').innerText = slide.caption;
+        const credit = document.getElementById('gallery-slide-credit');
+        credit.innerHTML = '';
+        if(slide.credit) {
+          const photo = [slide.credit.author, slide.credit.license].filter(Boolean).join(' / ');
+          const link = document.createElement('a');
+          link.href = slide.credit.page;
+          link.target = '_blank';
+          link.rel = 'noopener';
+          link.className = 'underline';
+          link.textContent = `Wikipedia「${slide.credit.title}」`;
+          credit.append('出典：', link, photo ? `（写真：${photo}）` : '');
+        }
       }, 150);
 
       const indicatorsContainer = document.getElementById('gallery-indicators');
@@ -695,6 +1019,10 @@
       drawDrinkPins();
       renderRecommendations();
     }
+
+    window.addEventListener('resize', fitRecommendationNames);
+    // Webフォントの読み込み後は文字幅が変わるので、もう一度調整する
+    if(document.fonts) document.fonts.ready.then(fitRecommendationNames);
 
     window.onload = () => { 
       applyStoreConfig();
