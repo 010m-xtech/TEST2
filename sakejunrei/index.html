@@ -154,39 +154,26 @@
         </div>
       </div>
 
-      <div id="view-result" class="absolute inset-0 z-0 bg-paper opacity-0 pointer-events-none transition-opacity duration-500 overflow-hidden">
-        <div id="result-scroll-area" class="h-full overflow-y-auto overscroll-contain px-5 pt-6 pb-28">
-          <span class="eyebrow">YOUR TASTE TYPE</span>
-          <p class="text-sm text-muted mt-3">あなたは</p>
-          <h2 id="result-type-name" class="font-mincho font-extrabold text-[34px] text-ink leading-tight"></h2>
-          <p id="result-type-desc" class="text-[15px] text-ink/80 leading-relaxed mt-2"></p>
-
-          <div class="card p-4 mt-5">
-            <p class="text-[13px] font-bold text-ink">あなたの味覚バランス</p>
-            <div id="result-radar" class="flex justify-center"></div>
-          </div>
-
-          <div class="card p-4 mt-4">
-            <p class="text-[13px] font-bold text-ink mb-3">このタイプにおすすめのスタイル</p>
-            <div id="result-examples" class="divide-y divide-line"></div>
-          </div>
-
-          <div class="card p-4 mt-4">
-            <p class="text-[13px] font-bold text-ink mb-3">いちばん相性がいい一杯</p>
-            <div id="result-best"></div>
-          </div>
+      <!-- 分析中の演出（質問が終わってから、おすすめが出るまで） -->
+      <div id="view-analyzing" onclick="finishAnalyzing()" class="absolute inset-0 z-0 bg-paper opacity-0 pointer-events-none transition-opacity duration-500 flex flex-col items-center justify-center px-8 text-center">
+        <span class="eyebrow">ANALYZING YOUR TASTE</span>
+        <div id="analyzing-radar" class="mt-3"></div>
+        <p id="analyzing-step" class="font-mincho font-bold text-base text-ink h-7 whitespace-nowrap"></p>
+        <div id="analyzing-bar-track" class="w-48 h-1 rounded-full bg-line mt-4 overflow-hidden transition-opacity duration-300">
+          <div id="analyzing-bar" class="h-full bg-accent" style="width: 0%"></div>
         </div>
-        <div class="absolute bottom-5 inset-x-4">
-          <button onclick="showMapScreen()" class="btn-primary">
-            <span>あなたへのおすすめを見る</span><i class="fa-solid fa-arrow-right text-sm"></i>
-          </button>
+        <div id="analyzing-reveal" class="mt-6 opacity-0 scale-75 transition-all duration-500">
+          <p class="text-sm text-muted">あなたは</p>
+          <p id="analyzing-type" class="font-mincho font-extrabold text-[34px] text-ink leading-tight"></p>
+          <p class="text-sm text-muted">タイプ</p>
         </div>
       </div>
 
       <div id="view-map" class="absolute inset-0 z-30 flex flex-col opacity-0 pointer-events-none transition-all duration-500 bg-paper">
 
         <!-- 選んだお酒と、あなたの好みを5角形で比べる -->
-        <div class="flex-shrink-0 px-4 pt-4">
+        <div class="flex-shrink-0 px-4 pt-3">
+          <p class="text-xs text-muted mb-2 px-1">あなたは <span id="map-type-name" class="font-mincho font-bold text-sm text-accent"></span> タイプ</p>
           <div class="card px-4 pt-3 pb-2">
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
@@ -375,23 +362,19 @@
     const TASTE_TYPES = {
       aromaticLight: {
         name: '華やか・軽快',
-        desc: '香りの華やかさと、軽やかな飲み口を楽しむタイプ。フルーティーで爽やかな一杯が好相性です。',
-        examples: { 日本酒: '吟醸酒・大吟醸', ビール: 'ヴァイツェン・ホワイトエール', ジン: 'フローラル系', ワイン: 'リースリング・ロゼ' }
+        desc: '香りの華やかさと、軽やかな飲み口を楽しむタイプ。フルーティーで爽やかな一杯が好相性です。'
       },
       aromaticRich: {
         name: '芳醇・リッチ',
-        desc: '豊かな香りと、しっかりしたコクの両方を求めるタイプ。飲みごたえと華やかさを兼ね備えた一杯を。',
-        examples: { 日本酒: '熟成酒・貴醸酒', ビール: 'IPA・ベルジャン', ジン: 'スパイス系', ワイン: '樽熟成シャルドネ・フルボディの赤' }
+        desc: '豊かな香りと、しっかりしたコクの両方を求めるタイプ。飲みごたえと華やかさを兼ね備えた一杯を。'
       },
       crispLight: {
         name: '爽快・キレ',
-        desc: 'すっきりとした飲み口と、後に残らないキレを好むタイプ。食事と一緒に楽しむ一杯にぴったりです。',
-        examples: { 日本酒: '本醸造・辛口', ビール: 'ピルスナー・ラガー', ジン: 'ロンドンドライ', ワイン: '甲州・ソーヴィニヨン・ブラン' }
+        desc: 'すっきりとした飲み口と、後に残らないキレを好むタイプ。食事と一緒に楽しむ一杯にぴったりです。'
       },
       deepRich: {
         name: '重厚・コク',
-        desc: '深いコクと長い余韻をじっくり味わうタイプ。ゆっくり向き合える、飲みごたえのある一杯がおすすめです。',
-        examples: { 日本酒: '生酛・山廃', ビール: 'スタウト・ポーター', ジン: '樽熟成ジン', ワイン: 'カベルネ・シラー' }
+        desc: '深いコクと長い余韻をじっくり味わうタイプ。ゆっくり向き合える、飲みごたえのある一杯がおすすめです。'
       }
     };
 
@@ -533,12 +516,37 @@
         svg += `<line x1="${c}" y1="${c}" x2="${x}" y2="${y}" stroke="#E7E2D9" stroke-width="1"></line>`;
         if(!labels) return;
         const [lx, ly] = point(i, 128);
-        svg += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-size="12" font-weight="700" fill="#6B6560">${a.label}</text>`;
+        const on = options.highlight === a.key;
+        svg += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-size="${on ? 14 : 12}" font-weight="700" style="fill: ${on ? 'rgb(var(--accent))' : '#6B6560'}">${a.label}</text>`;
       });
       series.forEach(s => {
         svg += `<polygon points="${polygon(a => s.values[a.key])}" style="fill: ${s.fill}; stroke: ${s.stroke}" stroke-width="${labels ? 2 : 1.2}" ${s.dashed ? 'stroke-dasharray="4 4"' : ''} stroke-linejoin="round"></polygon>`;
       });
       container.innerHTML = svg + '</svg>';
+    }
+
+    // レーダーチャートを、前の形（最初は中心）から目的の形へ徐々に変化させる
+    function animateRadarChart(container, series, size = 250, options = {}) {
+      if(container._radarAnim) cancelAnimationFrame(container._radarAnim);
+      const zero = { ...NEUTRAL_PROFILE };
+      Object.keys(zero).forEach(k => zero[k] = 0);
+      const from = container._radarValues || [];
+      const duration = options.duration || 900;
+      const start = performance.now();
+      const ease = t => 1 - Math.pow(1 - t, 3);
+      const frame = now => {
+        const t = Math.min(1, (now - start) / duration);
+        const current = series.map((s, i) => {
+          const base = from[i] || zero;
+          const values = {};
+          TASTE_AXES.forEach(a => values[a.key] = base[a.key] + (s.values[a.key] - base[a.key]) * ease(t));
+          return { ...s, values };
+        });
+        renderRadarChart(container, current, size, options);
+        container._radarValues = current.map(s => s.values);
+        if(t < 1) container._radarAnim = requestAnimationFrame(frame);
+      };
+      container._radarAnim = requestAnimationFrame(frame);
     }
 
     const PLACEHOLDER_IMAGE = 'https://placehold.co/300x300/e2e8f0/64748b?text=Drink';
@@ -587,7 +595,7 @@
 
     function renderQuiz() {
       if (!QUESTIONS || currentStep >= QUESTIONS.length) {
-        showResultScreen();
+        showAnalyzingScreen();
         return;
       }
       const qObj = QUESTIONS[currentStep];
@@ -625,7 +633,7 @@
       if (currentStep < QUESTIONS.length) {
         renderQuiz();
       } else {
-        showResultScreen();
+        showAnalyzingScreen();
       }
     }
 
@@ -633,7 +641,8 @@
       currentStep=0; quizAnswers=[]; userProfile={ ...NEUTRAL_PROFILE }; userAnswerCounts={}; selectedDrinkId=null; currentCategoryFilter=RECOMMEND_FILTER;
       cancelTrip();
       if(slideshowInterval) clearInterval(slideshowInterval);
-      ['view-quiz','view-result','view-map','view-trip','view-story'].forEach(id=>{
+      cancelAnalyzing();
+      ['view-quiz','view-analyzing','view-map','view-trip','view-story'].forEach(id=>{
         const el = document.getElementById(id);
         if(el){ el.style.opacity='0'; el.style.pointerEvents='none'; el.style.zIndex='0'; el.style.animation='none'; }
       });
@@ -648,48 +657,78 @@
       renderQuiz();
     }
     
-    // 診断結果の画面
-    function showResultScreen() {
-      const typeKey = getTasteTypeKey(userProfile);
-      const type = TASTE_TYPES[typeKey];
-      document.getElementById('result-type-name').innerText = type.name;
-      document.getElementById('result-type-desc').innerText = type.desc;
-      renderRadarChart(document.getElementById('result-radar'), [
-        { values: userProfile, fill: 'rgb(var(--accent) / 0.2)', stroke: 'rgb(var(--accent))' }
-      ]);
+    // ---- 分析中の演出 ----
+    //   5角形が揺れながら、香り→コク→甘み→酸味→苦味の順に1つずつ決まっていき、最後にタイプを発表
+    let analyzingTimers = [];
+    let analyzingFrame = null;
+    let analyzingActive = false;
 
-      // お店にある種類だけ、おすすめのスタイルを表示
-      const categories = [...new Set(DRINKS_DATABASE.map(d => d.category))];
-      const examples = document.getElementById('result-examples');
-      examples.innerHTML = '';
-      categories.filter(cat => type.examples[cat]).forEach(cat => {
-        const row = document.createElement('div');
-        row.className = 'flex items-center justify-between py-2 text-sm';
-        row.innerHTML = '<span class="chip"></span><span class="font-bold text-ink text-right"></span>';
-        row.children[0].textContent = cat;
-        row.children[1].textContent = type.examples[cat];
-        examples.appendChild(row);
-      });
+    function cancelAnalyzing() {
+      analyzingActive = false;
+      analyzingTimers.forEach(clearTimeout);
+      analyzingTimers = [];
+      if(analyzingFrame) cancelAnimationFrame(analyzingFrame);
+      analyzingFrame = null;
+    }
 
-      const best = getRankedDrinks()[0];
-      const bestBox = document.getElementById('result-best');
-      bestBox.innerHTML = '';
-      if(best) {
-        const row = document.createElement('button');
-        row.className = 'w-full flex items-center gap-3 text-left';
-        row.innerHTML = `<div class="best-image w-14 h-14 rounded-2xl bg-paper overflow-hidden flex-shrink-0"></div>
-          <div class="flex-1 min-w-0"><div class="text-xs text-muted best-cat"></div><div class="font-mincho font-bold text-ink truncate best-name"></div></div>
-          <div class="font-mincho font-extrabold text-accent text-2xl">${best.match}<span class="text-sm">%</span></div>`;
-        row.querySelector('.best-image').appendChild(createProductImage(best.drink, 'w-full h-full object-contain p-1'));
-        row.querySelector('.best-cat').textContent = `${best.drink.category}・${getOriginLabel(best.drink)}`;
-        row.querySelector('.best-name').textContent = best.drink.name;
-        row.onclick = () => { showMapScreen(); selectDrink(best.drink); };
-        bestBox.appendChild(row);
-      }
-
+    function showAnalyzingScreen() {
+      cancelAnalyzing();
+      analyzingActive = true;
       const q = document.getElementById('view-quiz'); q.style.opacity='0'; q.style.pointerEvents='none'; q.style.zIndex='0';
-      const r = document.getElementById('view-result'); r.style.opacity='1'; r.style.pointerEvents='auto'; r.style.zIndex='35';
-      document.getElementById('result-scroll-area').scrollTop = 0;
+      const v = document.getElementById('view-analyzing'); v.style.opacity='1'; v.style.pointerEvents='auto'; v.style.zIndex='35';
+
+      const radar = document.getElementById('analyzing-radar');
+      const step = document.getElementById('analyzing-step');
+      const bar = document.getElementById('analyzing-bar');
+      const reveal = document.getElementById('analyzing-reveal');
+      reveal.classList.add('opacity-0', 'scale-75');
+      document.getElementById('analyzing-bar-track').style.opacity = '1';
+      document.getElementById('analyzing-type').innerText = TASTE_TYPES[getTasteTypeKey(userProfile)].name;
+
+      const STEP_MS = 520;
+      const settled = {};
+      let highlight = null;
+      const start = performance.now();
+      const frame = now => {
+        const t = (now - start) / 1000;
+        const values = {};
+        TASTE_AXES.forEach((a, i) => {
+          // まだ決まっていない要素は、ゆらゆら揺れる
+          values[a.key] = settled[a.key] != null
+            ? settled[a.key]
+            : 50 + 35 * Math.sin(t * 7 + i * 1.7) * Math.cos(t * 3.1 + i);
+        });
+        renderRadarChart(radar, [{ values, fill: 'rgb(var(--accent) / 0.2)', stroke: 'rgb(var(--accent))' }], 230, { highlight });
+        analyzingFrame = requestAnimationFrame(frame);
+      };
+      analyzingFrame = requestAnimationFrame(frame);
+
+      TASTE_AXES.forEach((a, i) => {
+        analyzingTimers.push(setTimeout(() => {
+          highlight = a.key;
+          step.innerText = `${a.label}の好みを読み解いています…`;
+          bar.style.transition = `width ${STEP_MS}ms linear`;
+          bar.style.width = `${(i + 1) / TASTE_AXES.length * 100}%`;
+        }, 300 + i * STEP_MS));
+        analyzingTimers.push(setTimeout(() => { settled[a.key] = userProfile[a.key]; }, 300 + (i + 1) * STEP_MS - 120));
+      });
+      const doneAt = 300 + TASTE_AXES.length * STEP_MS;
+      analyzingTimers.push(setTimeout(() => {
+        highlight = null;
+        step.innerText = 'あなたにぴったりの一杯が見つかりました';
+        document.getElementById('analyzing-bar-track').style.opacity = '0';
+        reveal.classList.remove('opacity-0', 'scale-75');
+      }, doneAt));
+      analyzingTimers.push(setTimeout(finishAnalyzing, doneAt + 1500));
+    }
+
+    // 演出を終えて（またはタップでスキップして）おすすめ画面へ
+    function finishAnalyzing() {
+      if(!analyzingActive) return;
+      cancelAnalyzing();
+      document.getElementById('analyzing-bar').style.width = '0%';
+      document.getElementById('analyzing-radar')._radarValues = null;
+      showMapScreen();
     }
 
     // おすすめ一覧の画面（5角形で比べる）
@@ -699,10 +738,12 @@
     let currentCategoryFilter = RECOMMEND_FILTER;
 
     function showMapScreen() {
-      ['view-quiz', 'view-result'].forEach(id => {
+      ['view-quiz', 'view-analyzing'].forEach(id => {
         const el = document.getElementById(id); el.style.opacity='0'; el.style.pointerEvents='none'; el.style.zIndex='0';
       });
       const m = document.getElementById('view-map'); m.style.opacity='1'; m.style.pointerEvents='auto'; m.style.zIndex='30';
+      document.getElementById('map-type-name').innerText = TASTE_TYPES[getTasteTypeKey(userProfile)].name;
+      document.getElementById('compare-radar')._radarValues = null; // チャートを中心から大きくする
       renderCategoryFilter();
       // 最初は一番相性のいいお酒を選んだ状態にする
       const selected = DRINKS_DATABASE.find(d => d.id === selectedDrinkId) || (getRankedDrinks()[0] || {}).drink;
@@ -738,7 +779,30 @@
         if(currentCategoryFilter === RECOMMEND_FILTER ? index >= RECOMMEND_COUNT : drink.category !== currentCategoryFilter) return;
         const row = document.createElement('button');
         row.id = `rec-card-${drink.id}`;
-        row.className = `card w-full flex items-center gap-3 p-2.5 text-left transition active:scale-[.99] ${drink.id === selectedDrinkId ? 'ring-2 ring-accent' : ''}`;
+        row.onclick = () => selectDrink(drink);
+        const selected = drink.id === selectedDrinkId;
+        if(index === 0) {
+          // 1位はひと回り大きく、BEST MATCH として目立たせる
+          row.className = `card w-full relative overflow-hidden text-left border-2 border-accent bg-accent/5 transition active:scale-[.99] ${selected ? 'ring-2 ring-accent ring-offset-2 ring-offset-paper' : ''}`;
+          row.innerHTML = `
+            <div class="absolute top-0 left-0 bg-accent text-white text-xs font-bold pl-3 pr-4 py-1 rounded-br-2xl"><i class="fa-solid fa-crown mr-1"></i>BEST MATCH</div>
+            <div class="flex items-center gap-3 px-3 pt-8 pb-3">
+              <div class="rec-image w-16 h-16 rounded-2xl bg-surface overflow-hidden flex-shrink-0"></div>
+              <div class="flex-1 min-w-0">
+                <p class="rec-name font-mincho font-extrabold text-lg text-ink leading-snug truncate"></p>
+                <p class="rec-meta text-xs text-muted truncate mt-0.5"></p>
+                <p class="rec-reason text-xs text-accent font-bold mt-1 line-clamp-2"></p>
+              </div>
+              <div class="text-right flex-shrink-0 font-mincho font-extrabold text-accent leading-none"><span class="text-[34px]">${match}</span><span class="text-sm">%</span></div>
+            </div>`;
+          row.querySelector('.rec-image').appendChild(createProductImage(drink, 'w-full h-full object-contain p-1'));
+          row.querySelector('.rec-name').textContent = drink.name;
+          row.querySelector('.rec-meta').textContent = `${drink.category}・${getOriginLabel(drink)}`;
+          row.querySelector('.rec-reason').textContent = getMatchReason(drink);
+          list.appendChild(row);
+          return;
+        }
+        row.className = `card w-full flex items-center gap-3 p-2.5 text-left transition active:scale-[.99] ${selected ? 'ring-2 ring-accent' : ''}`;
         row.innerHTML = `
           <span class="w-5 text-center font-mincho font-bold text-sm ${index < 3 ? 'text-accent' : 'text-muted'}">${index + 1}</span>
           <div class="rec-image w-12 h-12 rounded-xl bg-paper overflow-hidden flex-shrink-0"></div>
@@ -754,7 +818,6 @@
         renderRadarChart(row.querySelector('.rec-radar'), [
           { values: getDrinkTaste(drink), fill: 'rgb(var(--accent) / 0.25)', stroke: 'rgb(var(--accent))' }
         ], 44, { labels: false });
-        row.onclick = () => selectDrink(drink);
         list.appendChild(row);
       });
     }
@@ -764,10 +827,10 @@
       document.getElementById('compare-meta').innerText = `${drink.category}・${getOriginLabel(drink)}`;
       document.getElementById('compare-name').innerText = drink.name;
       document.getElementById('compare-match').innerText = getMatchPercent(drink);
-      renderRadarChart(document.getElementById('compare-radar'), [
+      animateRadarChart(document.getElementById('compare-radar'), [
         { values: getDrinkTaste(drink), fill: 'rgb(var(--accent) / 0.2)', stroke: 'rgb(var(--accent))' },
         { values: userProfile, fill: 'none', stroke: '#6B6560', dashed: true }
-      ], 210);
+      ], 200);
     }
 
     function selectDrink(drink){
@@ -1031,7 +1094,9 @@
     function renderStoryMatch(drink) {
       document.getElementById('story-match').innerText = getMatchPercent(drink);
       document.getElementById('story-match-reason').innerText = getMatchReason(drink);
-      renderRadarChart(document.getElementById('story-taste-gauges'), [
+      const storyRadar = document.getElementById('story-taste-gauges');
+      storyRadar._radarValues = null;
+      animateRadarChart(storyRadar, [
         { values: getDrinkTaste(drink), fill: 'rgb(var(--accent) / 0.2)', stroke: 'rgb(var(--accent))' },
         { values: userProfile, fill: 'none', stroke: '#6B6560', dashed: true }
       ]);
