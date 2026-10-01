@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="ja">
 <head>
@@ -9,451 +8,547 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800;900&family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
-/* Layout: ビアホールの夜 → 飲み干していくジョッキ → 店長の「採点票」。1カラム、スマホ幅基準 */
+/* Layout: 夜のビアホールに置いた1杯のジョッキ。スマホ1画面ずつ切り替え、上=見出し、中=内容、下=親指で押す操作 */
 :root{
-  --bg:#F3B32C;          /* ラガーの琥珀 */
-  --bg-deep:#E09A12;
-  --paper:#FFFCF3;       /* 採点票の紙 */
-  --ink:#2A1809;
-  --ink-soft:#6F5337;
-  --line:#EAD5A2;
-  --shu:#C7331E;         /* 朱肉 */
-  --shu-deep:#8F200E;
-  --gold:#FFD660;
-  --tint:#FFF1C9;
-  /* ヒーローはどちらのテーマでも夜のビアホール */
-  --stout:#1A1008;
-  --stout-2:#3A230C;
-  --plaque:#FFF8E6;
-  --plaque-ink:#2A1809;
-  --on-dark:#FFF6E2;
-  --glass:#FFFFFF;
-  --shadow:#2A18091F;
+  --night:#0F0904;       /* 店の闇 */
+  --stout:#1C1209;
+  --amber:#F2A51A;       /* ラガー */
+  --amber-deep:#B86A0C;
+  --gold:#F7D37A;        /* 金箔 */
+  --gold-hi:#FFF0C2;
+  --foam:#FFF7E8;
+  --shu:#D8452B;         /* 朱肉(判子だけに使う) */
+  --text:#FFF3DE;
+  --text-soft:#CDB894;
+  --text-dim:#9A8566;
+  --glass:#FFF0D20F;     /* すりガラスの板 */
+  --glass-2:#FFF0D21A;
+  --edge:#F7D37A2E;
+  --line:#FFF0D21F;
+  --ink:#1A1008;         /* 金ボタンの文字 */
+  --scrim:#080402CC;
 
   --f-display:"Dela Gothic One","Hiragino Sans","Noto Sans JP",sans-serif;
   --f-body:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
   --f-num:"Big Shoulders Display","Dela Gothic One",Impact,sans-serif;
-}
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --bg:#241709; --bg-deep:#1A1008; --paper:#33230F; --ink:#FBEFD8; --ink-soft:#CDB592;
-    --line:#553D20; --shu:#E8573F; --shu-deep:#A3301E; --tint:#45301A; --shadow:#0000004D;
-    color-scheme:dark;
-  }
-}
-:root[data-theme="dark"]{
-  --bg:#241709; --bg-deep:#1A1008; --paper:#33230F; --ink:#FBEFD8; --ink-soft:#CDB592;
-  --line:#553D20; --shu:#E8573F; --shu-deep:#A3301E; --tint:#45301A; --shadow:#0000004D;
+  --tap:56px;
   color-scheme:dark;
 }
 *,*::before,*::after{box-sizing:border-box}
 [hidden]{display:none!important}
-body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--f-body); line-height:1.75; -webkit-font-smoothing:antialiased}
+html,body{height:100%}
+body{margin:0; background:var(--night); color:var(--text); font-family:var(--f-body); line-height:1.7;
+  -webkit-font-smoothing:antialiased; -webkit-tap-highlight-color:transparent; overscroll-behavior:none}
 h1,h2,h3{text-wrap:balance}
-button{font-family:inherit}
-:focus-visible{outline:3px solid var(--ink); outline-offset:3px}
-.hero :focus-visible{outline-color:var(--gold)}
+button,input{font-family:inherit}
+:focus-visible{outline:2px solid var(--gold); outline-offset:3px}
 
-/* ---------- hero ---------- */
-.hero{position:relative; overflow:hidden; color:var(--on-dark); text-align:center; padding:28px 16px 96px;
+/* ---------- アプリの枠と画面 ---------- */
+.app{position:relative; height:100%; max-width:480px; margin:0 auto; overflow:hidden; isolation:isolate;
   background:
-    radial-gradient(60% 40% at 50% 38%, #FFB8301F, transparent 70%),
-    repeating-linear-gradient(90deg, #FFFFFF05 0 1px, transparent 1px 64px),
-    linear-gradient(180deg, var(--stout) 0%, var(--stout-2) 55%, var(--bg-deep) 88%, var(--bg) 100%);}
-.lanterns{position:absolute; inset:0 0 auto; height:46px; display:flex; justify-content:space-around; pointer-events:none}
-.lanterns i{width:14px; height:22px; margin-top:8px; border-radius:7px; background:var(--shu); box-shadow:0 0 18px 4px #FF6A3A55}
-.hero-in{position:relative; max-width:520px; margin:0 auto; display:grid; justify-items:center}
-.eyebrow{margin:18px 0 0; font-weight:900; font-size:clamp(15px,4.2vw,18px); letter-spacing:.14em; color:var(--gold)}
-.plaque{margin:10px 0 0; padding:12px 22px 10px; background:var(--plaque); color:var(--plaque-ink);
-  border:3px solid var(--shu); outline:2px solid var(--plaque); outline-offset:-8px;
-  border-radius:6px; transform:rotate(-2deg); box-shadow:0 7px 0 var(--shu-deep), 0 18px 30px #0008}
-.plaque .l1{display:block; font-family:var(--f-display); color:var(--shu); font-size:clamp(30px,9.4vw,52px); line-height:1.1; white-space:nowrap; letter-spacing:.02em}
-.plaque .l2{display:block; font-weight:900; font-size:clamp(13px,3.6vw,16px); letter-spacing:.42em; padding-left:.42em; margin-top:4px}
+    radial-gradient(120% 60% at 50% -10%, #6B3A0C 0%, transparent 60%),
+    radial-gradient(90% 50% at 50% 110%, #3A1F07 0%, transparent 70%),
+    var(--night)}
+/* 背景の玉ボケ(店の照明) */
+.app::before{content:""; position:absolute; inset:-10%; z-index:-1; pointer-events:none; filter:blur(18px); opacity:.55;
+  background:
+    radial-gradient(circle at 12% 18%, #FFB34766 0 22px, transparent 40px),
+    radial-gradient(circle at 86% 12%, #FFD27A55 0 30px, transparent 52px),
+    radial-gradient(circle at 74% 34%, #FF8A3A33 0 16px, transparent 30px),
+    radial-gradient(circle at 20% 62%, #FFB34722 0 26px, transparent 46px),
+    radial-gradient(circle at 90% 78%, #FFD27A2E 0 20px, transparent 38px)}
+.screen{position:absolute; inset:0; display:flex; flex-direction:column}
+.screen.enter{animation:enter .34s cubic-bezier(.2,.8,.2,1)}
+.screen.back{animation:back .34s cubic-bezier(.2,.8,.2,1)}
+@keyframes enter{from{transform:translateX(28px) scale(.985); opacity:0}to{transform:none; opacity:1}}
+@keyframes back{from{transform:translateX(-28px) scale(.985); opacity:0}to{transform:none; opacity:1}}
 
-.stage{position:relative; width:min(250px,64vw); margin-top:26px}
-.mug{display:block; width:100%; height:auto; filter:drop-shadow(0 14px 22px #000A)}
-.seal{position:absolute; right:-34px; top:34px; width:88px; height:88px; border-radius:50%;
-  display:grid; place-items:center; text-align:center; color:var(--shu);
-  border:3px solid var(--shu); background:#FFF8E6E6; transform:rotate(12deg);
-  font-weight:900; font-size:10.5px; line-height:1.25; box-shadow:inset 0 0 0 3px #FFF8E6, inset 0 0 0 5px var(--shu)}
-.seal b{display:block; font-family:var(--f-display); font-weight:400; font-size:17px; line-height:1.15}
-@media (max-width:380px){ .seal{right:-18px; width:76px; height:76px} .seal b{font-size:15px} }
+.top{flex:none; display:grid; grid-template-columns:48px 1fr 48px; align-items:center; min-height:56px; padding:4px 8px}
+.top h2{margin:0; text-align:center; font-weight:900; font-size:15px; letter-spacing:.24em; color:var(--text-soft)}
+.icon-btn{appearance:none; border:0; width:44px; height:44px; border-radius:50%; color:var(--text); display:grid; place-items:center; cursor:pointer;
+  background:var(--glass); box-shadow:inset 0 0 0 1px var(--line)}
+.icon-btn svg{width:20px; height:20px}
+.icon-btn:active{background:var(--glass-2)}
+.body{flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:4px 16px 16px}
+.foot{flex:none; display:grid; gap:10px; padding:12px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+  background:linear-gradient(180deg, transparent, #0F0904E6 40%)}
+.row{display:grid; grid-template-columns:1fr 1fr; gap:10px}
 
-/* 飲み干していくアニメーション */
-.liquid{animation:drain 6.2s cubic-bezier(.5,0,.3,1) .6s both}
-@keyframes drain{
-  0%,10%{transform:translateY(0)}
-  16%,26%{transform:translateY(38px)}
-  32%,42%{transform:translateY(76px)}
-  48%,58%{transform:translateY(114px)}
-  64%,74%{transform:translateY(152px)}
-  82%,100%{transform:translateY(184px)}
-}
-.ring{fill:none; stroke:var(--glass); stroke-width:3.4; stroke-linecap:round; opacity:0; animation:ringIn .5s ease-out both}
-.ring.r1{animation-delay:1.8s} .ring.r2{animation-delay:2.8s} .ring.r3{animation-delay:3.8s} .ring.r4{animation-delay:4.8s}
-@keyframes ringIn{from{opacity:0; stroke-dasharray:0 200}to{opacity:.95; stroke-dasharray:200 0}}
-.hook{margin:20px 0 0; font-weight:900; font-size:clamp(18px,5vw,23px); line-height:1.5}
-.hook .big{font-family:var(--f-num); font-weight:900; font-size:2.1em; line-height:1; color:var(--gold); vertical-align:-.12em; padding:0 .06em}
-.cta{display:inline-flex; align-items:center; gap:10px; margin-top:18px; padding:15px 34px; border-radius:999px;
-  background:var(--shu); color:#FFF; font-weight:900; font-size:17px; letter-spacing:.06em; text-decoration:none; box-shadow:0 4px 0 var(--shu-deep)}
-.cta:active{transform:translateY(2px); box-shadow:0 2px 0 var(--shu-deep)}
-.cta svg{width:14px; height:14px}
-.foam{position:absolute; left:0; right:0; bottom:-1px; width:100%; height:70px; display:block}
-
-/* ---------- body ---------- */
-main{max-width:560px; margin:0 auto; padding:0 16px 32px; display:grid; gap:16px}
-.card{background:var(--paper); border-radius:16px; padding:24px 20px; box-shadow:0 4px 0 var(--shadow)}
-.kicker{display:flex; align-items:center; justify-content:center; gap:10px; margin:0 0 14px; font-weight:900; font-size:12px; letter-spacing:.3em; color:var(--shu)}
-.kicker::before,.kicker::after{content:""; width:22px; height:2px; background:currentColor; opacity:.5}
-.card h2{margin:0 0 16px; text-align:center; font-family:var(--f-display); font-weight:400; font-size:clamp(20px,5.6vw,24px); line-height:1.35; color:var(--ink)}
-
-.steps{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:0; padding:0; list-style:none; counter-reset:s}
-.steps li{display:grid; justify-items:center; gap:6px; text-align:center; font-size:12.5px; font-weight:700; color:var(--ink-soft); line-height:1.5}
-.steps .no{font-family:var(--f-num); font-weight:900; font-size:30px; line-height:1; color:var(--shu)}
-.steps b{display:block; color:var(--ink); font-size:15px; font-weight:900}
-.steps li + li{border-left:2px dashed var(--line)}
-
-.rules{list-style:none; margin:0; padding:0; display:grid; gap:14px}
-.rules li{display:grid; grid-template-columns:42px 1fr; gap:14px; align-items:start}
-.rules .n{width:42px; height:42px; border-radius:50%; border:2px solid var(--shu); color:var(--shu); display:grid; place-items:center;
-  font-family:var(--f-display); font-size:15px; box-shadow:inset 0 0 0 3px var(--paper), inset 0 0 0 4px var(--shu)}
-.rules b{display:block; font-size:16px; font-weight:900; line-height:1.5}
-.rules span{display:block; color:var(--ink-soft); font-size:13.5px; margin-top:2px}
-
-/* 理想のハッピーリング */
-.ideal{display:grid; grid-template-columns:1fr 1fr; gap:10px}
-.ideal figure{margin:0; position:relative; border-radius:12px; overflow:hidden; background:var(--tint)}
-.ideal figure.main{grid-column:1/-1}
-.ideal img{display:block; width:100%; max-width:100%; height:auto; aspect-ratio:3/4; object-fit:cover; background:var(--line)}
-.ideal .main img{aspect-ratio:3/2}
-.ideal .pt{position:absolute; top:8px; left:8px; padding:2px 12px 0; border-radius:999px; background:var(--shu); color:#FFF; font-family:var(--f-num); font-weight:900; font-size:22px; line-height:1.3; box-shadow:0 2px 6px #0006}
-.ideal .pt small{font-family:var(--f-body); font-size:.55em; margin-left:2px}
-.ideal figcaption{padding:8px 12px 10px; font-size:12.5px; font-weight:700; color:var(--ink-soft); line-height:1.55}
-.ideal figcaption b{display:block; color:var(--ink); font-size:14px}
-.ideal-note{margin:12px 0 0; font-size:13px; color:var(--ink-soft); text-align:center}
-
-/* 撮り方ガイド */
-.guide{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:0; padding:0; list-style:none}
-.guide li{display:grid; justify-items:center; gap:4px; padding:12px 6px 10px; border-radius:12px; background:var(--tint); text-align:center; font-size:12px; font-weight:700; color:var(--ink-soft); line-height:1.45}
-.guide svg{width:100%; max-width:84px; height:auto}
-.guide .mk{font-weight:900; font-size:14px; color:var(--ink)}
-.guide .ok .mk{color:var(--shu)}
-.guide .g-line{stroke:var(--ink); fill:none; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round}
-.guide .g-ring{stroke:var(--ink-soft); fill:none; stroke-width:2; stroke-linecap:round}
-.guide .g-frame{stroke:var(--shu); fill:none; stroke-width:2; stroke-dasharray:4 3}
-.guide .g-x{stroke:var(--ink-soft); stroke-width:3; stroke-linecap:round}
-.guide-note{margin:12px 0 0; font-size:13px; color:var(--ink-soft); text-align:center}
-
-/* ---------- capture ---------- */
-.shot{position:relative; display:grid; place-items:center; width:100%; max-width:100%; aspect-ratio:3/4; max-height:62vh; margin:0 auto;
-  border-radius:14px; overflow:hidden; cursor:pointer; background:var(--tint);
-  border:3px dashed var(--bg-deep)}
-.shot img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
-.shot.has{border-style:solid; border-color:var(--line)}
-.ph{position:relative; display:grid; justify-items:center; gap:6px; text-align:center; color:var(--ink-soft); font-size:13.5px; padding:18px; line-height:1.8}
-.ph svg{width:96px; height:auto; opacity:.8}
-.ph strong{color:var(--shu); font-size:18px; font-weight:900}
-.retake{position:absolute; right:10px; bottom:10px; padding:6px 14px; border-radius:999px; background:#1A1008CC; color:#FFF6E2; font-size:13px; font-weight:900}
-input[type=file]{position:absolute; width:1px; height:1px; opacity:0; pointer-events:none}
-.best-now{margin:12px 0 0; text-align:center; font-size:13px; font-weight:700; color:var(--ink-soft)}
-.best-now b{font-family:var(--f-num); font-size:20px; color:var(--shu); font-weight:900}
-
-.btn{appearance:none; border:0; width:100%; margin-top:14px; padding:16px 18px; border-radius:999px; cursor:pointer;
-  font:900 17px/1.2 var(--f-body); letter-spacing:.08em; background:var(--shu); color:#FFF; box-shadow:0 4px 0 var(--shu-deep)}
-.btn:active{transform:translateY(2px); box-shadow:0 2px 0 var(--shu-deep)}
-.btn.ghost{background:transparent; color:var(--ink); border:2px solid var(--line); box-shadow:none}
-.btn.dark{background:var(--ink); color:var(--paper); box-shadow:0 4px 0 var(--ink-soft)}
+/* 立体感のある金のボタン */
+.btn{appearance:none; border:0; position:relative; display:flex; align-items:center; justify-content:center; gap:8px; width:100%; min-height:var(--tap);
+  padding:12px 18px; border-radius:18px; cursor:pointer; overflow:hidden;
+  font:900 16.5px/1.2 var(--f-body); letter-spacing:.08em; text-decoration:none; color:var(--ink);
+  background:linear-gradient(180deg, #FFE7A3 0%, #F5C04A 42%, #E39A16 100%);
+  box-shadow:inset 0 1px 0 #FFF8DD, inset 0 -3px 0 #B8700C, 0 10px 24px -8px #F2A51A99, 0 2px 0 #7A4306;
+  transition:transform .08s, box-shadow .08s}
+.btn::after{content:""; position:absolute; inset:0 0 55% 0; border-radius:18px 18px 40% 40%; background:linear-gradient(180deg,#FFFFFF59,transparent); pointer-events:none}
+.btn:active{transform:translateY(2px); box-shadow:inset 0 1px 0 #FFF8DD, inset 0 -1px 0 #B8700C, 0 4px 12px -6px #F2A51A99, 0 0 0 #7A4306}
+.btn.ghost{color:var(--text); background:linear-gradient(180deg, #FFF0D21F, #FFF0D20A);
+  box-shadow:inset 0 1px 0 #FFF0D233, inset 0 0 0 1px var(--line), 0 8px 18px -10px #000}
+.btn.ghost::after{display:none}
+.btn.sm{min-height:48px; font-size:14.5px; border-radius:16px}
 .btn:disabled{opacity:.4; cursor:not-allowed; transform:none}
-.note{font-size:13px; color:var(--ink-soft); margin:10px 0 0; text-align:center}
-.err{color:var(--shu); font-weight:900}
+.btn svg{width:20px; height:20px; flex:none}
 
-/* ---------- judging ---------- */
-.thinking{text-align:center}
-.pour{height:10px; border-radius:5px; background:var(--line); overflow:hidden; margin:4px 0 14px}
-.pour i{display:block; height:100%; width:35%; border-radius:5px; background:linear-gradient(90deg,var(--bg-deep),var(--gold)); animation:pour 1.3s ease-in-out infinite}
-@keyframes pour{0%{transform:translateX(-100%)}100%{transform:translateX(290%)}}
-#tip{margin:0; font-size:14px; color:var(--ink-soft); min-height:3.5em}
+/* すりガラスの板 */
+.card{position:relative; border-radius:22px; padding:20px 18px;
+  background:linear-gradient(160deg, #FFF0D217, #FFF0D208 60%);
+  box-shadow:inset 0 1px 0 #FFF0D22E, inset 0 0 0 1px var(--line), 0 24px 40px -24px #000;
+  -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px)}
+.note{font-size:13px; color:var(--text-soft); margin:0; text-align:center}
+.err{color:#FF8F70; font-weight:900}
+.gold-text{background:linear-gradient(180deg, var(--gold-hi) 0%, var(--gold) 45%, #C98A1E 100%); -webkit-background-clip:text; background-clip:text; color:transparent}
 
-/* ---------- result: 採点票 ---------- */
-.sheet{position:relative; padding:0; overflow:hidden}
-.sheet-head{display:flex; justify-content:space-between; align-items:baseline; gap:10px; padding:14px 20px; border-bottom:2px solid var(--ink); font-weight:900}
-.sheet-head .t{font-family:var(--f-display); font-weight:400; font-size:18px; letter-spacing:.12em}
-.sheet-head .meta{font-size:12px; color:var(--ink-soft); font-variant-numeric:tabular-nums; letter-spacing:.04em}
-.sheet-body{padding:20px}
-.photo{position:relative; width:min(100%, calc(340px * var(--ar,.75))); aspect-ratio:var(--ar,.75); max-width:100%; margin:0 auto; border-radius:10px; overflow:hidden; background:var(--tint)}
+/* ---------- ホーム ---------- */
+.home-in{flex:1; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; padding:24px 16px 0; text-align:center}
+.eyebrow{margin:0; font-weight:900; font-size:clamp(11px,3.2vw,13px); letter-spacing:.32em; color:var(--text-soft)}
+.title{margin:0; display:grid; gap:6px; justify-items:center}
+.title .l1{font-family:var(--f-display); font-weight:400; font-size:clamp(34px,10.5vw,50px); line-height:1.05; letter-spacing:.02em; white-space:nowrap;
+  filter:drop-shadow(0 2px 0 #6B3A0C) drop-shadow(0 10px 18px #000C)}
+.title .l2{display:inline-flex; align-items:center; gap:10px; font-weight:900; font-size:clamp(12px,3.4vw,14px); letter-spacing:.5em; padding-left:.5em; color:var(--gold)}
+.title .l2::before,.title .l2::after{content:""; width:26px; height:1px; background:linear-gradient(90deg, transparent, var(--gold))}
+.title .l2::after{transform:scaleX(-1)}
+.stage{position:relative; width:100%; flex:1; min-height:200px; max-height:400px; display:grid; place-items:center}
+.stage canvas{position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:pan-y}
+.stage .mug2d{height:86%; width:auto; max-width:70%; filter:drop-shadow(0 12px 20px #000A)}
+.stage::after{content:""; position:absolute; left:22%; right:22%; bottom:4%; height:22px; border-radius:50%; background:radial-gradient(closest-side, #000000B3, transparent); z-index:-1}
+.seal{position:absolute; right:10%; top:8%; width:74px; height:74px; margin:0; border-radius:50%; z-index:2;
+  display:grid; place-items:center; text-align:center; color:var(--shu); background:radial-gradient(circle at 35% 30%, #FFFBF0, #F3E4C4);
+  transform:rotate(12deg); font-weight:900; font-size:9.5px; line-height:1.25;
+  box-shadow:inset 0 0 0 3px var(--shu), inset 0 0 0 5px #FFF8E6, inset 0 0 0 6px var(--shu), 0 8px 18px #0009}
+.seal b{display:block; font-family:var(--f-display); font-weight:400; font-size:14px; line-height:1.15}
+.hook{margin:0; font-weight:900; font-size:clamp(15px,4.3vw,18px); line-height:1.45; color:var(--text)}
+.hook .big{font-family:var(--f-num); font-weight:900; font-size:2.2em; line-height:1; vertical-align:-.14em; padding:0 .05em}
+.best{margin:0; font-size:12.5px; font-weight:700; color:var(--text-soft)}
+.best b{font-family:var(--f-num); font-size:19px; color:var(--gold)}
+.legal{margin:0; font-size:10.5px; color:var(--text-dim); text-align:center}
+/* 2Dのジョッキ(3Dが使えないとき) */
+.liquid{animation:drain 6.2s cubic-bezier(.5,0,.3,1) .5s both}
+@keyframes drain{
+  0%,10%{transform:translateY(0)} 16%,26%{transform:translateY(38px)} 32%,42%{transform:translateY(76px)}
+  48%,58%{transform:translateY(114px)} 64%,74%{transform:translateY(152px)} 82%,100%{transform:translateY(184px)}
+}
+.ring{fill:none; stroke:#FFFFFF; stroke-width:3.4; stroke-linecap:round; opacity:0; animation:ringIn .5s ease-out both}
+.ring.r1{animation-delay:1.7s} .ring.r2{animation-delay:2.7s} .ring.r3{animation-delay:3.7s} .ring.r4{animation-delay:4.7s}
+@keyframes ringIn{from{opacity:0; stroke-dasharray:0 200}to{opacity:.95; stroke-dasharray:200 0}}
+
+/* ---------- 遊び方(3ページ) ---------- */
+.dots{display:flex; justify-content:center; gap:8px; margin:2px 0 14px}
+.dots i{width:7px; height:7px; border-radius:4px; background:var(--line); transition:width .25s}
+.dots i.on{width:26px; background:linear-gradient(90deg, var(--gold), var(--amber))}
+.page{display:grid; gap:14px}
+.page h3{margin:0; text-align:center; font-family:var(--f-display); font-weight:400; font-size:clamp(21px,6vw,25px); line-height:1.35}
+.page .lead{margin:0; text-align:center; font-size:13.5px; color:var(--text-soft); font-weight:700}
+.rules{list-style:none; margin:0; display:grid; gap:18px}
+.rules li{display:grid; grid-template-columns:46px 1fr; gap:14px; align-items:start}
+.rules .n{width:46px; height:46px; border-radius:50%; display:grid; place-items:center; font-family:var(--f-display); font-size:17px; color:var(--ink);
+  background:radial-gradient(circle at 35% 28%, var(--gold-hi), var(--gold) 45%, #C98A1E);
+  box-shadow:inset 0 -3px 0 #A86A10, 0 6px 14px -4px #F2A51A80}
+.rules b{display:block; font-size:16px; font-weight:900; line-height:1.5}
+.rules span{display:block; color:var(--text-soft); font-size:13.5px; margin-top:2px}
+.ideal{margin:0; border-radius:22px; overflow:hidden; position:relative;
+  box-shadow:0 0 0 1px var(--edge), 0 30px 50px -24px #000, 0 0 60px -20px #F2A51A55}
+.ideal img{display:block; width:100%; max-width:100%; height:auto; aspect-ratio:4/5; object-fit:cover; background:#000}
+.ideal figcaption{position:absolute; left:0; right:0; bottom:0; padding:40px 18px 16px; background:linear-gradient(180deg, transparent, #0F0904F2 55%)}
+.ideal figcaption b{display:block; font-family:var(--f-display); font-weight:400; font-size:18px; margin-bottom:4px}
+.ideal figcaption span{display:block; font-size:13px; font-weight:700; color:var(--text-soft); line-height:1.6}
+.points{list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
+.points li{padding:12px 6px; border-radius:16px; text-align:center; font-size:12px; font-weight:700; color:var(--text-soft); line-height:1.4;
+  background:var(--glass); box-shadow:inset 0 0 0 1px var(--line)}
+.points b{display:block; font-size:15px; color:var(--gold); margin-bottom:2px}
+.guide{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:0; padding:0; list-style:none}
+.guide li{display:grid; justify-items:center; gap:4px; padding:12px 4px 10px; border-radius:16px; text-align:center; font-size:12px; font-weight:700; color:var(--text-soft); line-height:1.45;
+  background:var(--glass); box-shadow:inset 0 0 0 1px var(--line)}
+.guide svg{width:100%; max-width:78px; height:auto}
+.guide .mk{font-weight:900; font-size:14px; color:var(--text)}
+.guide .ok{box-shadow:inset 0 0 0 1.5px var(--gold), 0 0 24px -8px #F7D37A80}
+.guide .ok .mk{color:var(--gold)}
+.g-line{stroke:var(--text); fill:none; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round}
+.g-ring{stroke:var(--text-soft); fill:none; stroke-width:2; stroke-linecap:round}
+.g-frame{stroke:var(--gold); fill:none; stroke-width:2; stroke-dasharray:4 3}
+.g-x{stroke:#FF8F70; stroke-width:3; stroke-linecap:round}
+.tipbox{margin:0; padding:14px 16px; border-radius:16px; background:linear-gradient(160deg,#F2A51A26,#F2A51A0D); box-shadow:inset 0 0 0 1px #F2A51A40; font-size:13.5px; font-weight:700; line-height:1.65}
+
+/* ---------- 撮影 ---------- */
+.shoot-body{display:flex; flex-direction:column; gap:10px}
+.shot{position:relative; flex:1; min-height:240px; display:grid; place-items:center; width:100%; border-radius:24px; overflow:hidden; cursor:pointer;
+  background:radial-gradient(80% 60% at 50% 40%, #FFF0D214, transparent), #00000040;
+  box-shadow:inset 0 0 0 1px var(--line), 0 24px 40px -24px #000}
+.shot img{position:absolute; inset:0; width:100%; height:100%; object-fit:contain; background:#000}
+.corner{position:absolute; width:28px; height:28px; border:3px solid var(--gold); pointer-events:none; opacity:.85}
+.corner.tl{top:16px; left:16px; border-right:0; border-bottom:0; border-radius:10px 0 0 0}
+.corner.tr{top:16px; right:16px; border-left:0; border-bottom:0; border-radius:0 10px 0 0}
+.corner.bl{bottom:16px; left:16px; border-right:0; border-top:0; border-radius:0 0 0 10px}
+.corner.br{bottom:16px; right:16px; border-left:0; border-top:0; border-radius:0 0 10px 0}
+.ph{position:relative; display:grid; justify-items:center; gap:8px; text-align:center; color:var(--text-soft); font-size:13.5px; padding:18px; line-height:1.7}
+.ph svg{width:min(110px,28vw); height:auto; opacity:.9}
+.ph strong{color:var(--text); font-size:18px; font-weight:900}
+input[type=file]{position:absolute; width:1px; height:1px; opacity:0; pointer-events:none}
+.linkish{appearance:none; border:0; background:none; padding:6px; color:var(--text-soft); font-weight:700; font-size:13px; text-decoration:underline; text-underline-offset:3px; cursor:pointer; justify-self:center}
+
+/* ---------- 審査中 ---------- */
+.judge-in{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px; padding:24px; text-align:center; perspective:900px}
+.judge-in h2{margin:0; font-family:var(--f-display); font-weight:400; font-size:24px}
+.scan{position:relative; width:min(220px,56vw); aspect-ratio:3/4; border-radius:18px; overflow:hidden; background:#000;
+  transform:rotateY(-14deg) rotateX(6deg); animation:float 3.2s ease-in-out infinite;
+  box-shadow:0 0 0 1px var(--edge), 30px 40px 60px -20px #000, 0 0 80px -20px #F2A51A66}
+@keyframes float{50%{transform:rotateY(12deg) rotateX(4deg) translateY(-6px)}}
+.scan img{width:100%; height:100%; object-fit:cover; opacity:.9}
+.scan::after{content:""; position:absolute; left:0; right:0; height:24%; top:-24%; background:linear-gradient(180deg, transparent, #F7D37A80 50%, transparent); mix-blend-mode:screen; animation:scan 1.8s ease-in-out infinite}
+@keyframes scan{to{top:100%}}
+#tip{margin:0; max-width:22em; font-size:14px; color:var(--text-soft); min-height:3.4em}
+
+/* ---------- 結果 ---------- */
+.sheet{padding:0; overflow:hidden}
+.sheet-head{display:flex; justify-content:space-between; align-items:baseline; gap:10px; padding:14px 18px; border-bottom:1px solid var(--line)}
+.sheet-head .t{font-weight:900; font-size:12px; letter-spacing:.32em; color:var(--gold)}
+.sheet-head .meta{font-size:12px; color:var(--text-dim); font-variant-numeric:tabular-nums}
+.sheet-body{display:grid; gap:14px; padding:16px 18px 20px}
+.verdict{display:grid; grid-template-columns:1fr auto; align-items:center; gap:8px}
+.score{margin:0; font-family:var(--f-num); font-weight:900; font-size:clamp(100px,32vw,142px); line-height:.86; font-variant-numeric:tabular-nums;
+  filter:drop-shadow(0 3px 0 #6B3A0C) drop-shadow(0 14px 24px #000)}
+.score small{font-family:var(--f-display); font-weight:400; font-size:.22em; margin-left:.1em; color:var(--text); -webkit-text-fill-color:var(--text)}
+.hanko{width:104px; height:104px; border-radius:50%; display:grid; place-content:center; text-align:center; color:var(--shu); transform:rotate(-12deg); padding:8px;
+  font-family:var(--f-display); font-size:16px; line-height:1.2;
+  background:radial-gradient(circle at 35% 30%, #FFFBF0, #F0DFBC);
+  box-shadow:inset 0 0 0 4px var(--shu), inset 0 0 0 7px #FFF8E6, inset 0 0 0 8.5px var(--shu), 0 12px 24px #000A}
+.hanko.stamp{animation:stamp .45s cubic-bezier(.3,1.6,.5,1) 1.1s both}
+@keyframes stamp{from{transform:rotate(-12deg) scale(1.8); opacity:0}to{transform:rotate(-12deg) scale(1); opacity:1}}
+.rankline{margin:0; font-weight:900; font-size:14.5px; min-height:1.6em}
+.rankline .hot{color:var(--gold)}
+.comment{margin:0; padding:14px 16px; border-radius:16px; background:var(--glass); box-shadow:inset 0 0 0 1px var(--line); font-size:15px; font-weight:700; line-height:1.65}
+.comment::before{content:"店長のひとこと"; display:block; font-size:11px; letter-spacing:.24em; color:var(--gold); font-weight:900; margin-bottom:2px}
+.photo{position:relative; width:min(100%, calc(320px * var(--ar,.75))); aspect-ratio:var(--ar,.75); max-width:100%; margin:0 auto; border-radius:16px; overflow:hidden; background:#000;
+  box-shadow:0 0 0 1px var(--edge), 0 20px 40px -20px #000}
 .photo img{position:absolute; inset:0; width:100%; height:100%; object-fit:fill}
 .photo svg{position:absolute; inset:0; width:100%; height:100%}
-.photo .rl{fill:none; stroke:var(--gold); stroke-width:3; stroke-linecap:round; vector-effect:non-scaling-stroke; filter:drop-shadow(0 0 3px #000C)}
-.photo .rl{stroke-dasharray:400; stroke-dashoffset:400; animation:rl .7s ease-out forwards}
+.photo .rl{fill:none; stroke:var(--gold); stroke-width:3; stroke-linecap:round; vector-effect:non-scaling-stroke; filter:drop-shadow(0 0 4px #F2A51A)
+  ; stroke-dasharray:400; stroke-dashoffset:400; animation:rl .7s ease-out forwards}
 @keyframes rl{to{stroke-dashoffset:0}}
-.photo .tag{position:absolute; transform:translate(-50%,-50%); width:22px; height:22px; border-radius:50%; background:var(--gold); color:#2A1809; font:900 12px/22px var(--f-body); text-align:center; box-shadow:0 1px 4px #000A}
-.photo-cap{margin:8px 0 0; font-size:12px; color:var(--ink-soft); text-align:center}
+.photo .tag{position:absolute; transform:translate(-50%,-50%); width:22px; height:22px; border-radius:50%; background:var(--gold); color:var(--ink); font:900 12px/22px var(--f-body); text-align:center; box-shadow:0 1px 6px #000A}
+.photo-cap{margin:-6px 0 0; font-size:12px; color:var(--text-dim); text-align:center}
+.bars{display:grid; gap:12px; padding-top:14px; border-top:1px solid var(--line)}
+.bar-row{display:grid; grid-template-columns:7.2em 1fr 3.6em; align-items:center; gap:10px; font-size:13.5px; font-weight:700; color:var(--text-soft)}
+.bar-row.weak span:first-child{color:#FF8F70}
+.track{height:8px; border-radius:4px; background:#FFF0D214; overflow:hidden; box-shadow:inset 0 1px 2px #0008}
+.fill{height:100%; width:0; border-radius:4px; background:linear-gradient(90deg, var(--amber-deep), var(--amber), var(--gold-hi)); box-shadow:0 0 10px #F2A51A99; transition:width 1s cubic-bezier(.3,.7,.2,1)}
+.bar-row b{text-align:right; color:var(--text); font-variant-numeric:tabular-nums; font-family:var(--f-num); font-size:18px; font-weight:800}
+.bar-row b small{font-size:.7em; color:var(--text-dim)}
+.advice{display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:start; padding:14px 16px; border-radius:16px; background:linear-gradient(160deg,#F2A51A26,#F2A51A0D); box-shadow:inset 0 0 0 1px #F2A51A40}
+.advice .lb{font-weight:900; font-size:11.5px; letter-spacing:.1em; color:var(--ink); background:var(--gold); padding:4px 8px; border-radius:8px; white-space:nowrap}
+.advice p{margin:0; font-size:14.5px; font-weight:700; line-height:1.6}
+.pb{margin:0; text-align:center; font-size:13.5px; font-weight:700; color:var(--text-soft)}
+.pb b{color:var(--gold)}
 
-.verdict{display:grid; grid-template-columns:1fr auto; align-items:center; gap:8px; margin-top:16px}
-.score{margin:0; font-family:var(--f-num); font-weight:900; font-size:clamp(104px,32vw,150px); line-height:.9; color:var(--shu); font-variant-numeric:tabular-nums; letter-spacing:-.01em}
-.score small{font-family:var(--f-display); font-weight:400; font-size:.24em; margin-left:.1em; color:var(--ink); letter-spacing:0}
-.hanko{width:112px; height:112px; border-radius:50%; display:grid; place-content:center; text-align:center; color:var(--shu);
-  border:4px solid var(--shu); transform:rotate(-12deg); padding:10px;
-  font-family:var(--f-display); font-size:17px; line-height:1.2; box-shadow:inset 0 0 0 3px var(--paper), inset 0 0 0 5px var(--shu)}
-.hanko.stamp{animation:stamp .45s cubic-bezier(.3,1.6,.5,1) 1.2s both}
-@keyframes stamp{from{transform:rotate(-12deg) scale(1.8); opacity:0}to{transform:rotate(-12deg) scale(1); opacity:1}}
-.rankline{margin:10px 0 0; font-weight:900; font-size:14.5px; min-height:1.6em}
-.rankline .hot{color:var(--shu)}
-.comment{margin:12px 0 0; padding:14px 16px; border-radius:12px; background:var(--tint); font-size:15px; font-weight:700; line-height:1.7}
-.comment::before{content:"店長のひとこと"; display:block; font-size:11.5px; letter-spacing:.2em; color:var(--shu); font-weight:900; margin-bottom:2px}
-
-.bars{display:grid; gap:12px; margin-top:18px; padding-top:16px; border-top:2px dashed var(--line)}
-.bar-row{display:grid; grid-template-columns:7.2em 1fr 3.6em; align-items:center; gap:10px; font-size:13.5px; font-weight:700; color:var(--ink-soft)}
-.bar-row.weak span:first-child{color:var(--shu)}
-.track{height:10px; border-radius:5px; background:var(--line); overflow:hidden}
-.fill{height:100%; width:0; border-radius:5px; background:linear-gradient(90deg,var(--bg-deep),var(--gold)); transition:width 1s cubic-bezier(.3,.7,.2,1)}
-.bar-row b{text-align:right; color:var(--ink); font-variant-numeric:tabular-nums; font-family:var(--f-num); font-size:18px; font-weight:800}
-.bar-row b small{font-size:.7em; color:var(--ink-soft)}
-
-.advice{display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:start; margin-top:16px; padding:14px 16px; border-radius:12px; border:2px solid var(--shu)}
-.advice .lb{font-weight:900; font-size:12px; letter-spacing:.1em; color:#FFF; background:var(--shu); padding:4px 8px; border-radius:6px; white-space:nowrap}
-.advice p{margin:0; font-size:14.5px; font-weight:700; line-height:1.65}
-.pb{margin:14px 0 0; text-align:center; font-size:13.5px; font-weight:700; color:var(--ink-soft)}
-.pb b{color:var(--shu)}
-
-.save{display:flex; gap:8px; margin-top:18px}
-.save input{flex:1; min-width:0; padding:13px 16px; border-radius:999px; border:2px solid var(--line); background:var(--paper); color:var(--ink); font:700 16px var(--f-body)}
-.save .btn{width:auto; margin:0; padding:13px 20px; font-size:15px}
-.actions{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:4px}
-.actions .btn{margin-top:14px; font-size:15px; padding:14px 10px}
-
-.share{margin-top:16px; padding:16px; border-radius:12px; background:var(--tint); text-align:center}
-.share img{display:block; width:min(100%,280px); margin:0 auto; border-radius:8px; box-shadow:0 6px 18px var(--shadow)}
-.share .btn{margin-top:12px}
-
-/* ---------- ranking ---------- */
-.tabs{display:grid; grid-template-columns:repeat(3,1fr); gap:4px; padding:4px; margin:0 0 12px; border-radius:999px; background:var(--tint)}
-.tabs button{appearance:none; border:0; padding:9px 4px; border-radius:999px; background:transparent; color:var(--ink-soft); font-weight:900; font-size:14px; cursor:pointer}
-.tabs button[aria-selected="true"]{background:var(--ink); color:var(--paper)}
-ol.board{list-style:none; margin:0; padding:0}
-ol.board li{display:grid; grid-template-columns:36px 44px 1fr auto; align-items:center; gap:12px; padding:12px 6px; border-bottom:2px dashed var(--line)}
+/* ---------- ランキング ---------- */
+.tabs{display:grid; grid-template-columns:repeat(3,1fr); gap:4px; padding:4px; margin:0 0 14px; border-radius:16px; background:var(--glass); box-shadow:inset 0 0 0 1px var(--line)}
+.tabs button{appearance:none; border:0; min-height:44px; border-radius:12px; background:transparent; color:var(--text-soft); font-weight:900; font-size:15px; cursor:pointer}
+.tabs button[aria-selected="true"]{color:var(--ink); background:linear-gradient(180deg, #FFE7A3, #F5C04A 50%, #E39A16); box-shadow:inset 0 1px 0 #FFF8DD, 0 6px 14px -6px #F2A51A99}
+ol.board{list-style:none; margin:0; padding:4px 14px}
+ol.board li{display:grid; grid-template-columns:34px 44px 1fr auto; align-items:center; gap:12px; padding:12px 2px; border-bottom:1px solid var(--line)}
 ol.board li:last-child{border-bottom:0}
-.pos{width:34px; height:34px; border-radius:50%; background:var(--line); color:var(--ink); display:grid; place-items:center; font-family:var(--f-num); font-weight:900; font-size:19px}
-.pos.p1{background:var(--gold); color:#7A3A06; box-shadow:0 0 0 2px var(--bg-deep)}
-.thumb{width:44px; height:58px; border-radius:6px; background:var(--tint); object-fit:cover; display:block}
+.pos{width:34px; height:34px; border-radius:50%; display:grid; place-items:center; font-family:var(--f-num); font-weight:900; font-size:19px; color:var(--text); background:var(--glass-2)}
+.pos.p1{color:var(--ink); background:radial-gradient(circle at 35% 28%, var(--gold-hi), var(--gold) 45%, #C98A1E); box-shadow:0 0 18px -2px #F7D37A99}
+.thumb{width:44px; height:58px; border-radius:8px; background:var(--glass-2); object-fit:cover; display:block}
 .who{min-width:0; font-weight:900; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-.who span{display:block; font-weight:500; font-size:12.5px; color:var(--ink-soft)}
-.pts{font-family:var(--f-num); font-weight:900; font-size:30px; line-height:1; color:var(--shu); font-variant-numeric:tabular-nums; text-align:right}
-.pts small{font-family:var(--f-body); font-size:.42em; color:var(--ink); margin-left:2px}
-li.mine{background:color-mix(in srgb, var(--gold) 28%, transparent); border-radius:10px}
-.empty{grid-column:1/-1; color:var(--ink-soft); font-size:14px; margin:0; text-align:center; padding:10px 0}
+.who span{display:block; font-weight:500; font-size:12.5px; color:var(--text-dim)}
+.pts{font-family:var(--f-num); font-weight:900; font-size:30px; line-height:1; color:var(--gold); font-variant-numeric:tabular-nums; text-align:right}
+.pts small{font-family:var(--f-body); font-size:.42em; color:var(--text-soft); margin-left:2px}
+li.mine{background:#F7D37A1F; border-radius:12px}
+.empty{grid-column:1/-1; color:var(--text-soft); font-size:14px; margin:0; text-align:center; padding:16px 0}
 .del{grid-column:1/-1; display:flex; justify-content:flex-end; gap:8px}
-.del button{appearance:none; border:2px solid var(--line); background:transparent; color:var(--ink-soft); border-radius:999px; padding:4px 12px; font-weight:900; font-size:12.5px; cursor:pointer}
-.del button.yes{border-color:var(--shu); color:var(--shu)}
-.staff{display:flex; justify-content:center; margin-top:10px}
-.staff button{appearance:none; border:0; background:transparent; color:var(--ink-soft); font-weight:700; font-size:12.5px; text-decoration:underline; cursor:pointer}
+.del button{appearance:none; border:0; background:var(--glass); box-shadow:inset 0 0 0 1px var(--line); color:var(--text-soft); border-radius:999px; min-height:40px; padding:4px 14px; font-weight:900; font-size:13px; cursor:pointer}
+.del button.yes{color:#FF8F70; box-shadow:inset 0 0 0 1px #FF8F70}
+.staff{display:flex; justify-content:center; margin-top:8px}
 
-footer{text-align:center; font-size:12px; font-weight:700; color:var(--ink); padding:4px 16px 28px}
+/* ---------- 下から出るシート ---------- */
+.scrim{position:absolute; inset:0; z-index:10; background:var(--scrim); display:flex; align-items:flex-end; animation:fade .2s}
+@keyframes fade{from{opacity:0}}
+.panel{width:100%; max-height:92%; overflow-y:auto; border-radius:26px 26px 0 0; padding:10px 16px calc(16px + env(safe-area-inset-bottom, 0px)); display:grid; gap:12px;
+  background:linear-gradient(180deg, #2A1B0E, #1C1209); box-shadow:inset 0 1px 0 #FFF0D233, 0 -20px 40px #000A; animation:up .3s cubic-bezier(.2,.8,.2,1)}
+@keyframes up{from{transform:translateY(40px)}}
+.panel .grab{justify-self:center; width:40px; height:5px; border-radius:3px; background:var(--line)}
+.panel h3{margin:0; text-align:center; font-family:var(--f-display); font-weight:400; font-size:20px}
+.panel input{width:100%; min-height:var(--tap); padding:12px 18px; border-radius:16px; border:0; background:#00000059; color:var(--text); font:700 17px var(--f-body); box-shadow:inset 0 0 0 1px var(--line)}
+.panel input:focus{outline:none; box-shadow:inset 0 0 0 1.5px var(--gold)}
+.share-img{display:block; width:min(100%,300px); margin:0 auto; border-radius:14px; box-shadow:0 0 0 1px var(--edge), 0 20px 40px -16px #000}
 
 @media (prefers-reduced-motion:reduce){
   .liquid{animation:none; transform:translateY(184px)}
   .ring{animation:none; opacity:.95}
-  .fill{transition:none} .pour i{animation:none; width:100%}
+  .fill{transition:none} .scan::after{animation:none; top:40%} .scan{animation:none}
   .photo .rl{animation:none; stroke-dashoffset:0}
-  .hanko.stamp{animation:none}
+  .hanko.stamp,.screen.enter,.screen.back,.panel,.scrim{animation:none}
 }
 </style>
 </head>
 <body>
-<header class="hero">
-  <div class="lanterns" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-  <div class="hero-in">
-    <p class="eyebrow">飲み干したジョッキで、一杯の美しさを競え</p>
-    <h1 class="plaque"><span class="l1">ハッピーリング</span><span class="l2">採点チャレンジ</span></h1>
-    <div class="stage">
-      <svg class="mug" viewBox="0 0 200 240" role="img" aria-label="ビールを飲むたびに泡の輪が1本ずつ残っていくジョッキ">
-        <defs>
-          <clipPath id="inner"><rect x="33" y="23" width="114" height="200" rx="10"/></clipPath>
-          <linearGradient id="beer" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#FFC93C"/><stop offset="1" stop-color="#E28A0B"/>
-          </linearGradient>
-          <linearGradient id="gl" x1="0" x2="1">
-            <stop offset="0" stop-color="#fff" stop-opacity=".34"/>
-            <stop offset=".45" stop-color="#fff" stop-opacity=".06"/>
-            <stop offset="1" stop-color="#fff" stop-opacity=".22"/>
-          </linearGradient>
-        </defs>
-        <path d="M150 70h14a24 24 0 0 1 24 24v52a24 24 0 0 1-24 24h-14" fill="none" stroke="#FFFFFF" stroke-width="9" opacity=".75"/>
-        <g clip-path="url(#inner)">
-          <g class="liquid">
-            <rect x="30" y="34" width="120" height="200" fill="url(#beer)"/>
-            <path d="M30 40 q10 -14 22 -4 q10 -12 22 -2 q12 -12 24 -1 q12 -11 24 0 q10 -10 20 2 V52 H30 Z" fill="#FFF8E6"/>
-            <rect x="30" y="44" width="120" height="10" fill="#FFF8E6"/>
-            <circle cx="62" cy="120" r="2" fill="#FFF3" /><circle cx="96" cy="160" r="1.6" fill="#FFF3"/><circle cx="120" cy="100" r="2.2" fill="#FFF3"/>
+<div class="app" id="app">
+
+  <!-- ホーム -->
+  <section class="screen" id="s-home" aria-label="ホーム">
+    <div class="home-in">
+      <p class="eyebrow">飲み干したジョッキで、一杯の美しさを競え</p>
+      <h1 class="title"><span class="l1 gold-text">ハッピーリング</span><span class="l2">採点チャレンジ</span></h1>
+      <div class="stage">
+        <canvas id="mug3d" role="img" aria-label="ビールを飲むたびに泡の輪が1本ずつ残っていくジョッキ" hidden></canvas>
+        <svg class="mug2d" id="mug2d" viewBox="0 0 200 240" role="img" aria-label="ビールを飲むたびに泡の輪が1本ずつ残っていくジョッキ">
+          <defs>
+            <clipPath id="inner"><rect x="33" y="23" width="114" height="200" rx="10"/></clipPath>
+            <linearGradient id="beer" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFC93C"/><stop offset="1" stop-color="#E28A0B"/></linearGradient>
+            <linearGradient id="gl" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".34"/><stop offset=".45" stop-color="#fff" stop-opacity=".06"/><stop offset="1" stop-color="#fff" stop-opacity=".22"/></linearGradient>
+          </defs>
+          <path d="M150 70h14a24 24 0 0 1 24 24v52a24 24 0 0 1-24 24h-14" fill="none" stroke="#FFFFFF" stroke-width="9" opacity=".75"/>
+          <g clip-path="url(#inner)">
+            <g class="liquid">
+              <rect x="30" y="34" width="120" height="200" fill="url(#beer)"/>
+              <path d="M30 40 q10 -14 22 -4 q10 -12 22 -2 q12 -12 24 -1 q12 -11 24 0 q10 -10 20 2 V52 H30 Z" fill="#FFF8E6"/>
+              <rect x="30" y="44" width="120" height="10" fill="#FFF8E6"/>
+            </g>
           </g>
-        </g>
-        <path class="ring r1" d="M36 80 Q90 87 144 80"/>
-        <path class="ring r2" d="M36 118 Q90 125 144 118"/>
-        <path class="ring r3" d="M36 156 Q90 163 144 156"/>
-        <path class="ring r4" d="M36 194 Q90 201 144 194"/>
-        <rect x="30" y="20" width="120" height="206" rx="12" fill="url(#gl)" stroke="#FFFFFF" stroke-width="3" opacity=".95"/>
-      </svg>
-      <p class="seal" aria-hidden="true"><span>店長の<b>物差し</b>で採点</span></p>
+          <path class="ring r1" d="M36 80 Q90 87 144 80"/>
+          <path class="ring r2" d="M36 118 Q90 125 144 118"/>
+          <path class="ring r3" d="M36 156 Q90 163 144 156"/>
+          <path class="ring r4" d="M36 194 Q90 201 144 194"/>
+          <rect x="30" y="20" width="120" height="206" rx="12" fill="url(#gl)" stroke="#FFFFFF" stroke-width="3" opacity=".95"/>
+        </svg>
+        <p class="seal" aria-hidden="true"><span>店長の<b>物差し</b>で採点</span></p>
+      </div>
+      <p class="hook">泡の輪を撮るだけで <span class="big gold-text">100</span>点満点で採点</p>
+      <p class="best" id="bestHome" hidden></p>
     </div>
-    <p class="hook">泡の輪を撮るだけで<br><span class="big">100</span>点満点で採点</p>
-    <a class="cta" href="#take">さっそく挑戦する<svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 5l4 4 4-4" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <div class="foot">
+      <button class="btn" type="button" data-go="shoot">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.6" fill="none" stroke="currentColor" stroke-width="2.2"/></svg>
+        さっそく挑戦する
+      </button>
+      <div class="row">
+        <button class="btn ghost sm" type="button" data-go="howto">遊び方</button>
+        <button class="btn ghost sm" type="button" data-go="rank">ランキング</button>
+      </div>
+      <p class="legal">お酒は20歳になってから。飲酒運転は法律で禁止されています。</p>
+    </div>
+  </section>
+
+  <!-- 遊び方 -->
+  <section class="screen" id="s-howto" aria-label="遊び方" hidden>
+    <div class="top">
+      <button class="icon-btn" type="button" id="howBack" aria-label="戻る"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <h2>遊び方</h2><span></span>
+    </div>
+    <div class="body" id="howBody">
+      <div class="dots" id="dots" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
+
+      <div class="page" data-page="0">
+        <h3>高得点をねらう三か条</h3>
+        <ol class="rules card">
+          <li><span class="n">一</span><div><b>一口飲んだら、ジョッキを置く</b><span>泡が落ち着いて、水平な輪が残ります。</span></div></li>
+          <li><span class="n">二</span><div><b>いつも同じ飲み口から</b><span>違う場所から飲むと、せっかくの輪が流れてしまいます。</span></div></li>
+          <li><span class="n">三</span><div><b>4〜5口で、テンポよく飲み干す</b><span>5口で飲み切ると輪は4本。これが理想の一杯です。</span></div></li>
+        </ol>
+      </div>
+
+      <div class="page" data-page="1" hidden>
+        <h3>理想のハッピーリング</h3>
+        <p class="lead">目指すのは、こんな一杯です。</p>
+        <figure class="ideal">
+          <img src="05.webp" alt="4本の泡の輪が水平・等間隔に残ったビアグラスの見本" loading="lazy">
+          <figcaption><b>見本の一杯</b><span>4本の泡の輪が、白くくっきり、水平に、同じ間隔で一周しています。</span></figcaption>
+        </figure>
+        <ul class="points">
+          <li><b>4本</b>5口で飲み切る</li>
+          <li><b>水平</b>だれずに一周</li>
+          <li><b>等間隔</b>同じ量ずつ</li>
+        </ul>
+      </div>
+
+      <div class="page" data-page="2" hidden>
+        <h3>撮り方で点数が変わります</h3>
+        <ul class="guide">
+          <li class="ok">
+            <svg viewBox="0 0 80 90" aria-hidden="true"><rect class="g-frame" x="6" y="4" width="68" height="82" rx="6"/><rect class="g-line" x="20" y="12" width="36" height="66" rx="4"/><path class="g-line" d="M56 30h6a7 7 0 0 1 7 7v16a7 7 0 0 1-7 7h-6"/><path class="g-ring" d="M23 28q15 3 30 0M23 42q15 3 30 0M23 56q15 3 30 0M23 68q15 3 30 0"/></svg>
+            <span class="mk">○ 真横から</span>画面いっぱいに
+          </li>
+          <li>
+            <svg viewBox="0 0 80 90" aria-hidden="true"><ellipse class="g-line" cx="38" cy="24" rx="20" ry="9"/><path class="g-line" d="M18 24L22 72Q38 80 54 72L58 24"/><path class="g-ring" d="M21 40q17 8 34 0M22 56q16 7 32 0"/><path class="g-x" d="M58 60l14 14M72 60l-14 14"/></svg>
+            <span class="mk">× 上から</span>輪がゆがむ
+          </li>
+          <li>
+            <svg viewBox="0 0 80 90" aria-hidden="true"><rect class="g-line" x="2" y="-6" width="76" height="102" rx="4"/><path class="g-ring" d="M6 30q34 6 68 0M6 58q34 6 68 0"/><path class="g-x" d="M52 64l14 14M66 64l-14 14"/></svg>
+            <span class="mk">× 近すぎ</span>数えられない
+          </li>
+        </ul>
+        <p class="tipbox">外側の水滴はおしぼりで拭いてから撮ると、輪がくっきり写ります。底まで全部入るように撮ってください。</p>
+      </div>
+    </div>
+    <div class="foot">
+      <div class="row">
+        <button class="btn ghost" type="button" id="howPrev">戻る</button>
+        <button class="btn" type="button" id="howNext">次へ</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 撮影 -->
+  <section class="screen" id="s-shoot" aria-label="撮影" hidden>
+    <div class="top">
+      <button class="icon-btn" type="button" data-go="home" data-dir="back" aria-label="ホームへ戻る"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <h2>ジョッキを撮る</h2><span></span>
+    </div>
+    <div class="body shoot-body">
+      <label class="shot" id="shot" for="file">
+        <img id="preview" alt="撮影したジョッキ" hidden>
+        <span class="corner tl" aria-hidden="true"></span><span class="corner tr" aria-hidden="true"></span><span class="corner bl" aria-hidden="true"></span><span class="corner br" aria-hidden="true"></span>
+        <span class="ph" id="ph">
+          <svg viewBox="0 0 80 90" aria-hidden="true"><rect x="20" y="10" width="36" height="70" rx="4" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M56 30h6a7 7 0 0 1 7 7v16a7 7 0 0 1-7 7h-6" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M23 28q15 3 30 0M23 42q15 3 30 0M23 56q15 3 30 0M23 68q15 3 30 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <strong>飲み干したジョッキを撮影</strong>
+          真横から、底まで画面いっぱいに。
+        </span>
+      </label>
+      <input type="file" id="file" accept="image/*" capture="environment">
+      <p class="note" id="status"></p>
+      <button class="linkish" type="button" id="toGuide">上手な撮り方を見る</button>
+    </div>
+    <div class="foot">
+      <label class="btn" for="file" id="takeBtn">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.6" fill="none" stroke="currentColor" stroke-width="2.2"/></svg>
+        カメラで撮る
+      </label>
+      <div class="row" id="afterShot" hidden>
+        <label class="btn ghost" for="file">撮り直す</label>
+        <button class="btn" type="button" id="go" disabled>採点する</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 審査中 -->
+  <section class="screen" id="s-judge" aria-label="審査中" aria-live="polite" hidden>
+    <div class="judge-in">
+      <div class="scan"><img id="scanImg" alt=""></div>
+      <h2>ただいま審査中…</h2>
+      <p id="tip">泡の輪を一本ずつ見ています</p>
+    </div>
+    <div class="foot"><button class="btn ghost" type="button" id="stop">やめる</button></div>
+  </section>
+
+  <!-- 結果 -->
+  <section class="screen" id="s-result" aria-label="採点結果" hidden>
+    <div class="top">
+      <button class="icon-btn" type="button" data-go="home" data-dir="back" aria-label="ホームへ"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg></button>
+      <h2>採点結果</h2>
+      <button class="icon-btn" type="button" data-go="rank" aria-label="ランキングを見る"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v4a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 13v4M8 20h8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </div>
+    <div class="body" id="resultBody">
+      <div class="card sheet">
+        <div class="sheet-head"><span class="t">採点票</span><span class="meta" id="meta"></span></div>
+        <div class="sheet-body">
+          <div class="verdict">
+            <p class="score gold-text"><span id="num">0</span><small>点</small></p>
+            <div class="hanko" id="hanko"></div>
+          </div>
+          <p class="rankline" id="rankline"></p>
+          <p class="comment" id="comment"></p>
+          <div class="photo" id="photo"><img id="rimg" alt="採点したジョッキ"><svg id="rsvg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg></div>
+          <p class="photo-cap" id="rcap"></p>
+          <div class="bars" id="bars"></div>
+          <div class="advice"><span class="lb">次のコツ</span><p id="advice"></p></div>
+          <p class="pb" id="pb"></p>
+          <p class="note" id="saveNote"></p>
+        </div>
+      </div>
+    </div>
+    <div class="foot">
+      <button class="btn" type="button" id="openSave">ランキングに記録する</button>
+      <div class="row">
+        <button class="btn ghost sm" type="button" id="mkShare">結果画像</button>
+        <button class="btn ghost sm" type="button" id="again">もう一杯</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ランキング -->
+  <section class="screen" id="s-rank" aria-label="ランキング" hidden>
+    <div class="top">
+      <button class="icon-btn" type="button" id="rankBack" aria-label="戻る"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <h2>ランキング TOP5</h2><span></span>
+    </div>
+    <div class="body">
+      <div class="tabs" role="tablist" aria-label="ランキングの期間">
+        <button role="tab" type="button" aria-selected="true" data-k="today">今日</button>
+        <button role="tab" type="button" aria-selected="false" data-k="month">今月</button>
+        <button role="tab" type="button" aria-selected="false" data-k="all">歴代</button>
+      </div>
+      <ol class="board" id="board"><li><p class="empty">読み込み中…</p></li></ol>
+      <div class="staff" id="staff" hidden><button class="linkish" id="staffBtn" type="button">店長メニュー：記録を削除する</button></div>
+    </div>
+    <div class="foot"><button class="btn" type="button" data-go="shoot">挑戦する</button></div>
+  </section>
+
+  <!-- 記録シート -->
+  <div class="scrim" id="saveSheet" hidden>
+    <form class="panel" id="saveForm" autocomplete="off">
+      <span class="grab" aria-hidden="true"></span>
+      <h3>ランキングに記録する</h3>
+      <input id="name" maxlength="12" placeholder="ニックネーム(12文字まで)" aria-label="ニックネーム" enterkeyhint="done">
+      <p class="note" id="sheetNote"></p>
+      <button class="btn" id="save" type="submit">この名前で記録する</button>
+      <button class="btn ghost" type="button" data-close="saveSheet">やめる</button>
+    </form>
   </div>
-  <svg class="foam" viewBox="0 0 400 70" preserveAspectRatio="none" aria-hidden="true">
-    <path d="M0 34 C28 8 58 8 84 30 C106 6 140 4 162 28 C186 2 226 4 246 30 C270 6 306 8 324 32 C346 6 382 10 400 28 L400 70 L0 70 Z" style="fill:var(--bg)"/>
-  </svg>
-</header>
 
-<main>
-  <section class="card" aria-labelledby="flowh">
-    <p class="kicker">HOW TO</p>
-    <h2 id="flowh">チャレンジの流れ</h2>
-    <ol class="steps">
-      <li><span class="no">1</span><b>飲み干す</b>4〜5口で<br>テンポよく</li>
-      <li><span class="no">2</span><b>撮る</b>ジョッキを<br>真横から</li>
-      <li><span class="no">3</span><b>採点</b>ランキングに<br>挑戦</li>
-    </ol>
-  </section>
-
-  <section class="card" aria-labelledby="rules">
-    <p class="kicker">三か条</p>
-    <h2 id="rules">高得点をねらう飲み方</h2>
-    <ol class="rules">
-      <li><span class="n">一</span><div><b>一口飲んだら、ジョッキを置く</b><span>泡が落ち着いて、水平な輪が残ります。</span></div></li>
-      <li><span class="n">二</span><div><b>いつも同じ飲み口から</b><span>違う場所から飲むと、せっかくの輪が流れてしまいます。</span></div></li>
-      <li><span class="n">三</span><div><b>4〜5口で、テンポよく飲み干す</b><span>5口で飲み切ると輪は4本。これが理想の一杯です。</span></div></li>
-    </ol>
-  </section>
-
-  <section class="card" aria-labelledby="idealh">
-    <p class="kicker">お手本</p>
-    <h2 id="idealh">理想のハッピーリング</h2>
-    <div class="ideal">
-      <figure class="main">
-        <img src="refs/05.webp" alt="4本の泡の輪が水平・等間隔に残ったビアグラス" loading="lazy">
-        <span class="pt">100<small>点</small></span>
-        <figcaption><b>満点の一杯</b>4本すべてが白く太くくっきり。完全に水平で、間隔もそろっています。</figcaption>
-      </figure>
-      <figure>
-        <img src="refs/13.webp" alt="4本の泡の輪が残ったジョッキ" loading="lazy">
-        <span class="pt">95<small>点</small></span>
-        <figcaption><b>4本・水平・等間隔</b>縁が少し波打つ分だけ減点。</figcaption>
-      </figure>
-      <figure>
-        <img src="refs/03.webp" alt="4本の泡の輪が残ったジョッキ" loading="lazy">
-        <span class="pt">93<small>点</small></span>
-        <figcaption><b>4本・だれなし</b>縁のギザギザがやや強め。</figcaption>
-      </figure>
+  <!-- 結果画像シート -->
+  <div class="scrim" id="shareSheet" hidden>
+    <div class="panel">
+      <span class="grab" aria-hidden="true"></span>
+      <h3>結果画像</h3>
+      <img class="share-img" id="shareImg" alt="採点結果の画像">
+      <p class="note" id="shareNote">画像を長押しすると保存できます。</p>
+      <button class="btn" id="dl" type="button" hidden>画像を保存する</button>
+      <button class="btn ghost" type="button" data-close="shareSheet">閉じる</button>
     </div>
-    <p class="ideal-note">この3杯が、店長の物差しで90点を超えたジョッキです。</p>
-  </section>
+  </div>
+</div>
 
-  <section class="card" aria-labelledby="guideh">
-    <p class="kicker">撮り方</p>
-    <h2 id="guideh">撮り方で点数が変わります</h2>
-    <ul class="guide">
-      <li class="ok">
-        <svg viewBox="0 0 80 90" aria-hidden="true">
-          <rect class="g-frame" x="6" y="4" width="68" height="82" rx="6"/>
-          <rect class="g-line" x="20" y="12" width="36" height="66" rx="4"/>
-          <path class="g-line" d="M56 30h6a7 7 0 0 1 7 7v16a7 7 0 0 1-7 7h-6"/>
-          <path class="g-ring" d="M23 28q15 3 30 0M23 42q15 3 30 0M23 56q15 3 30 0M23 68q15 3 30 0"/>
-        </svg>
-        <span class="mk">○ 真横から</span>画面いっぱいに
-      </li>
-      <li>
-        <svg viewBox="0 0 80 90" aria-hidden="true">
-          <ellipse class="g-line" cx="38" cy="24" rx="20" ry="9"/>
-          <path class="g-line" d="M18 24L22 72Q38 80 54 72L58 24"/>
-          <path class="g-ring" d="M21 40q17 8 34 0M22 56q16 7 32 0"/>
-          <path class="g-x" d="M58 60l14 14M72 60l-14 14"/>
-        </svg>
-        <span class="mk">× 上から</span>輪がゆがんで見える
-      </li>
-      <li>
-        <svg viewBox="0 0 80 90" aria-hidden="true">
-          <rect class="g-line" x="2" y="-6" width="76" height="102" rx="4"/>
-          <path class="g-ring" d="M6 30q34 6 68 0M6 58q34 6 68 0"/>
-          <path class="g-x" d="M52 64l14 14M66 64l-14 14"/>
-        </svg>
-        <span class="mk">× 近すぎ</span>輪が数えられない
-      </li>
-    </ul>
-    <p class="guide-note">外側の水滴はおしぼりで拭いてから撮ると、輪がくっきり写ります。</p>
-  </section>
-
-  <section class="card" id="take" aria-labelledby="takeh">
-    <p class="kicker">CHALLENGE</p>
-    <h2 id="takeh">あなたの一杯を採点</h2>
-    <label class="shot" id="shot" tabindex="0" for="file">
-      <img id="preview" alt="撮影したジョッキ" hidden>
-      <span class="ph" id="ph">
-        <svg viewBox="0 0 80 90" aria-hidden="true"><rect x="20" y="10" width="36" height="70" rx="4" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M56 30h6a7 7 0 0 1 7 7v16a7 7 0 0 1-7 7h-6" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M23 28q15 3 30 0M23 42q15 3 30 0M23 56q15 3 30 0M23 68q15 3 30 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        <strong>タップしてジョッキを撮る</strong>
-        飲み干したジョッキを真横から、画面いっぱいに。
-      </span>
-      <span class="retake" id="retake" hidden>撮り直す</span>
-    </label>
-    <input type="file" id="file" accept="image/*" capture="environment">
-    <button class="btn" id="go" disabled>採点する</button>
-    <p class="note" id="status"></p>
-    <p class="best-now" id="bestNow" hidden></p>
-  </section>
-
-  <section class="card thinking" id="thinking" aria-live="polite" hidden>
-    <h2>ただいま審査中…</h2>
-    <div class="pour"><i></i></div>
-    <p id="tip">泡の輪を一本ずつ見ています</p>
-    <button class="btn ghost" id="stop">やめる</button>
-  </section>
-
-  <section class="card sheet" id="result" aria-live="polite" hidden>
-    <div class="sheet-head"><span class="t">採点票</span><span class="meta" id="meta"></span></div>
-    <div class="sheet-body">
-      <div class="photo" id="photo"><img id="rimg" alt="採点したジョッキ"><svg id="rsvg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg></div>
-      <p class="photo-cap" id="rcap"></p>
-      <div class="verdict">
-        <p class="score"><span id="num">0</span><small>点</small></p>
-        <div class="hanko" id="hanko"></div>
-      </div>
-      <p class="rankline" id="rankline"></p>
-      <p class="comment" id="comment"></p>
-      <div class="bars" id="bars"></div>
-      <div class="advice"><span class="lb">次のコツ</span><p id="advice"></p></div>
-      <p class="pb" id="pb"></p>
-      <form class="save" id="saveForm" autocomplete="off">
-        <input id="name" maxlength="12" placeholder="ニックネーム" aria-label="ニックネーム">
-        <button class="btn" id="save" type="submit">記録を残す</button>
-      </form>
-      <p class="note" id="saveNote"></p>
-      <div class="actions">
-        <button class="btn dark" id="mkShare" type="button">結果画像をつくる</button>
-        <button class="btn ghost" id="again" type="button">もう一杯で挑む</button>
-      </div>
-      <div class="share" id="share" hidden>
-        <img id="shareImg" alt="採点結果の画像">
-        <button class="btn" id="dl" type="button" hidden>画像を保存する</button>
-        <p class="note" id="shareNote">画像を長押しすると保存できます。</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="card" aria-labelledby="rankh">
-    <p class="kicker">RANKING</p>
-    <h2 id="rankh">ランキング TOP5</h2>
-    <div class="tabs" role="tablist" aria-label="ランキングの期間">
-      <button role="tab" id="tab-today" aria-selected="true" data-k="today">今日</button>
-      <button role="tab" id="tab-month" aria-selected="false" data-k="month">今月</button>
-      <button role="tab" id="tab-all" aria-selected="false" data-k="all">歴代</button>
-    </div>
-    <ol class="board" id="board"><li><p class="empty">読み込み中…</p></li></ol>
-    <div class="staff" id="staff" hidden><button id="staffBtn" type="button">店長メニュー：記録を削除する</button></div>
-  </section>
-</main>
-<footer>お酒は20歳になってから。飲酒運転は法律で禁止されています。</footer>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// ---------- 画面の切り替え ----------
+let current = "home", prevScreen = "home";
+function show(name, dir){
+  if (name === current) return;
+  const from = $("s-" + current), to = $("s-" + name);
+  prevScreen = current; current = name;
+  from.hidden = true; to.hidden = false;
+  to.classList.remove("enter", "back"); void to.offsetWidth;
+  to.classList.add(dir === "back" ? "back" : "enter");
+  const b = to.querySelector(".body"); if (b) b.scrollTop = 0;
+}
+document.addEventListener("click", e => {
+  const g = e.target.closest("[data-go]");
+  if (g) { const to = g.dataset.go; if (to === "howto") openHowto(0); else show(to, g.dataset.dir); }
+  const c = e.target.closest("[data-close]");
+  if (c) $(c.dataset.close).hidden = true;
+});
+document.querySelectorAll(".scrim").forEach(s => s.addEventListener("click", e => { if (e.target === s) s.hidden = true; }));
+$("rankBack").addEventListener("click", () => show(prevScreen === "rank" ? "home" : prevScreen, "back"));
+
+// 遊び方(3ページ)
+let howPage = 0, howFrom = "home";
+function setHowPage(i){
+  howPage = i;
+  document.querySelectorAll("#howBody .page").forEach(p => p.hidden = Number(p.dataset.page) !== i);
+  document.querySelectorAll("#dots i").forEach((d, k) => d.classList.toggle("on", k === i));
+  $("howNext").textContent = i === 2 ? "撮影へ進む" : "次へ";
+  $("howPrev").textContent = i === 0 ? "閉じる" : "戻る";
+  $("howBody").scrollTop = 0;
+}
+function openHowto(i){ howFrom = current; setHowPage(i); show("howto"); }
+$("howNext").addEventListener("click", () => howPage < 2 ? setHowPage(howPage + 1) : show("shoot"));
+$("howPrev").addEventListener("click", () => howPage > 0 ? setHowPage(howPage - 1) : show(howFrom, "back"));
+$("howBack").addEventListener("click", () => show(howFrom, "back"));
+$("toGuide").addEventListener("click", () => openHowto(2));
 
 // ---------- 採点の物差し ----------
 const CRITERIA = [
@@ -521,22 +616,21 @@ const PROMPT = `あなたは飲食店の「ハッピーリング採点」の審�
 次の形のJSONだけを返してください:
 {"glass":true,"finished":true,"ring_count":4,"rings":[{"y":24,"x1":14,"x2":80},{"y":40,"x1":14,"x2":80},{"y":56,"x1":14,"x2":80},{"y":72,"x1":14,"x2":80}],"perfect":false,"scores":{"shape":34,"clarity":17,"spacing":17,"count":20},"comment":"4本の輪がきれい!次は同じ飲み口で揃えよう"}`;
 
-// ---------- 店長のお手本写真(お店で撮った写真だけ) ----------
-// 写真の上に「お手本○ ○点」と書き込んでから、採点する写真と一緒に見せる
+// ---------- 店長のお手本写真(お店で撮った写真だけ。お客様の画面には出さない) ----------
 const REFS = [
-  {no:5,  file:"refs/05.webp", score:100, note:"4本すべてが白く太くくっきり、完全に水平・等間隔。満点の見本"},
-  {no:13, file:"refs/13.webp", score:95,  note:"4本、くっきり・水平・等間隔。縁の波打ちと右上の斜めの筋の分だけ減点"},
-  {no:3,  file:"refs/03.webp", score:93,  note:"4本、くっきり・だれなし・等間隔。縁のギザギザがやや強い。底のたまりは数えない"},
-  {no:1,  file:"refs/01.webp", score:90,  note:"5本できれい。ただ上の輪が斜めで少し崩れている"},
-  {no:17, file:"refs/17.webp", score:78,  note:"3本、線は薄いが水平で間隔がよく揃っている(ビールが残っているが形の見本)"},
-  {no:10, file:"refs/10.webp", score:70,  note:"4本。泡はしっかり付いているが、だれてまだらになり輪になっていない"},
-  {no:4,  file:"refs/04.webp", score:65,  note:"3本、水平だが線が細く薄く、だれている。上半分には輪がない"},
-  {no:2,  file:"refs/02.webp", score:60,  note:"3本ほど。斜めに傾き波打っていて、輪になっていない"},
-  {no:14, file:"refs/14.webp", score:55,  note:"3本、間隔は均一だが線が細く、右側が垂れて弧を描く"},
-  {no:6,  file:"refs/06.webp", score:45,  note:"3本ほど。だれ・崩れ・間隔バラバラが重なる(ビールが残っているが形の見本)"},
-  {no:15, file:"refs/15.webp", score:38,  note:"縁の近くに輪が1本あるだけで、下は切れ端が散らばり輪と認識できない"},
-  {no:16, file:"refs/16.webp", score:25,  note:"薄いリングが2〜3本うっすら見えるが、だれだれで均一でない"},
-  {no:7,  file:"refs/07.webp", score:10,  note:"リングが認識できず、全体がだれている"},
+  {no:5,  file:"05.webp", score:100, note:"4本すべてが白く太くくっきり、完全に水平・等間隔。満点の見本"},
+  {no:13, file:"13.webp", score:95,  note:"4本、くっきり・水平・等間隔。縁の波打ちと右上の斜めの筋の分だけ減点"},
+  {no:3,  file:"03.webp", score:93,  note:"4本、くっきり・だれなし・等間隔。縁のギザギザがやや強い。底のたまりは数えない"},
+  {no:1,  file:"01.webp", score:90,  note:"5本できれい。ただ上の輪が斜めで少し崩れている"},
+  {no:17, file:"17.webp", score:78,  note:"3本、線は薄いが水平で間隔がよく揃っている(ビールが残っているが形の見本)"},
+  {no:10, file:"10.webp", score:70,  note:"4本。泡はしっかり付いているが、だれてまだらになり輪になっていない"},
+  {no:4,  file:"04.webp", score:65,  note:"3本、水平だが線が細く薄く、だれている。上半分には輪がない"},
+  {no:2,  file:"02.webp", score:60,  note:"3本ほど。斜めに傾き波打っていて、輪になっていない"},
+  {no:14, file:"14.webp", score:55,  note:"3本、間隔は均一だが線が細く、右側が垂れて弧を描く"},
+  {no:6,  file:"06.webp", score:45,  note:"3本ほど。だれ・崩れ・間隔バラバラが重なる(ビールが残っているが形の見本)"},
+  {no:15, file:"15.webp", score:38,  note:"縁の近くに輪が1本あるだけで、下は切れ端が散らばり輪と認識できない"},
+  {no:16, file:"16.webp", score:25,  note:"薄いリングが2〜3本うっすら見えるが、だれだれで均一でない"},
+  {no:7,  file:"07.webp", score:10,  note:"リングが認識できず、全体がだれている"},
 ];
 
 function loadImg(src){
@@ -629,16 +723,16 @@ const store = {
   get(k, d){ try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch(_) { return d; } },
   set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(_) {} },
 };
-function showBestNow(){
+function showBest(){
   const b = store.get("happyring.best", null);
-  $("bestNow").hidden = b == null;
-  if (b != null) $("bestNow").innerHTML = `あなたの自己ベスト <b>${Number(b) || 0}</b> 点`;
+  $("bestHome").hidden = b == null;
+  if (b != null) $("bestHome").innerHTML = `あなたの自己ベスト <b>${Number(b) || 0}</b> 点`;
 }
-showBestNow();
+showBest();
 
 // ---------- 状態 ----------
 let sample = null, db = null, isStaff = false, maxImages = 1;
-let img = null, photoHash = null, thumb = null, ctl = null, last = null, savedId = null, tipTimer = null;
+let img = null, photoHash = null, thumb = null, ctl = null, last = null, savedId = null, savedName = "", tipTimer = null;
 
 // ---------- 写真の準備 ----------
 async function prepImage(f){
@@ -676,21 +770,27 @@ function setStatus(msg, isErr){
   if (!msg) return;
   const s = document.createElement("span"); if (isErr) s.className = "err"; s.textContent = msg; el.append(s);
 }
+function setShotState(has){
+  $("preview").hidden = !has; $("ph").hidden = has;
+  $("shot").classList.toggle("has", has);
+  $("takeBtn").hidden = has; $("afterShot").hidden = !has;
+}
 
-$("shot").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("file").click(); } });
 $("file").addEventListener("change", async e => {
   const f = e.target.files && e.target.files[0];
   if (!f) return;
+  if (current !== "shoot") show("shoot");
   if (img) URL.revokeObjectURL(img.url);
   setStatus("写真を準備しています…");
   $("go").disabled = true;
   img = await prepImage(f);
   photoHash = await hashFile(f);
   thumb = makeThumb(img.canvas);
-  $("preview").src = img.url; $("preview").hidden = false; $("ph").hidden = true; $("retake").hidden = false;
-  $("shot").classList.add("has");
-  setStatus(sample ? "" : "この画面では採点できません。claude.ai で開いてください。", !sample);
+  $("preview").src = img.url;
+  setShotState(true);
+  setStatus(sample ? "輪がはっきり写っていたら「採点する」を押してください。" : "この画面では採点できません。claude.ai で開いてください。", !sample);
   $("go").disabled = !sample;
+  e.target.value = "";
 });
 
 const ERR = {
@@ -709,12 +809,14 @@ const pct = v => Math.max(0, Math.min(100, Number(v) || 0));
 // ---------- 採点 ----------
 $("go").addEventListener("click", async () => {
   if (!sample || !img) return;
-  $("go").disabled = true; $("result").hidden = true; $("thinking").hidden = false; setStatus("");
+  $("go").disabled = true; setStatus("");
+  $("scanImg").src = img.url;
   let i = Math.floor(Math.random() * TIPS.length);
   const tip = () => { $("tip").textContent = "豆知識：" + TIPS[i++ % TIPS.length]; };
   tip(); tipTimer = setInterval(tip, 4500);
-  $("thinking").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
+  show("judge");
   ctl = new AbortController();
+  let ok = false;
   try {
     const refs = await getRefs(maxImages);
     const r = await sample.json(promptWithRefs(refs.used), { images: [...refs.blobs, img.blob], signal: ctl.signal });
@@ -738,13 +840,15 @@ $("go").addEventListener("click", async () => {
     const prevBest = store.get("happyring.best", null);
     last.prevBest = prevBest == null ? null : Number(prevBest);
     if (prevBest == null || total > prevBest) store.set("happyring.best", total);
-    showBestNow();
+    showBest();
+    ok = true;
     showResult();
   } catch (e) {
     if (!e || e.code !== "cancelled") setStatus(ERR[e && e.code] || "採点に失敗しました。もう一度お試しください。", true);
   } finally {
     clearInterval(tipTimer);
-    $("thinking").hidden = true; $("go").disabled = !img;
+    if (!ok) show("shoot", "back");
+    $("go").disabled = !img || !sample;
   }
 });
 $("stop").addEventListener("click", () => ctl && ctl.abort());
@@ -765,20 +869,26 @@ function drawRings(){
     photo.append(tag);
   });
   $("rcap").textContent = last.pos.length ? "金色の線が、審査員が見つけた泡の輪です。" : "";
+  $("rcap").hidden = !last.pos.length;
+}
+
+function updateSaveButton(){
+  const b = $("openSave");
+  if (savedId) { b.textContent = "ランキングを見る"; b.disabled = false; }
+  else { b.textContent = "ランキングに記録する"; b.disabled = !db; }
 }
 
 function showResult(){
-  savedId = null;
-  $("result").hidden = false; $("share").hidden = true;
+  savedId = null; savedName = "";
+  show("result");
   $("meta").textContent = fmtDate(last.at);
   $("photo").style.setProperty("--ar", img.w / img.h);
   $("rimg").src = img.url;
   drawRings();
   $("comment").textContent = last.comment;
   $("comment").hidden = !last.comment;
-  $("saveNote").textContent = "";
-  $("saveForm").hidden = !db;
-  $("save").disabled = false;
+  $("saveNote").textContent = db ? "" : "ランキングは claude.ai で開くと使えます。";
+  updateSaveButton();
 
   const bars = $("bars"); bars.innerHTML = "";
   const ratios = CRITERIA.map(c => last.scores[c.key] / c.max);
@@ -806,7 +916,6 @@ function showResult(){
 
   $("rankline").textContent = `リング ${last.rings} 本`;
   predictRank();
-  $("result").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
 }
 
 function countUp(target){
@@ -920,39 +1029,46 @@ $("staffBtn").addEventListener("click", () => {
 });
 
 // ---------- 記録を残す ----------
+$("openSave").addEventListener("click", () => {
+  if (savedId) { tab = "today"; document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-selected", String(x.dataset.k === "today"))); renderBoard(); show("rank"); return; }
+  if (!db) return;
+  $("sheetNote").textContent = ""; $("save").disabled = false;
+  $("saveSheet").hidden = false;
+  setTimeout(() => $("name").focus(), 250);
+});
 $("saveForm").addEventListener("submit", async e => {
   e.preventDefault();
   if (!db || !last || savedId) return;
   const name = $("name").value.trim() || "名もなき呑み人";
-  if (isNgName(name)) { $("saveNote").textContent = "そのニックネームは登録できません。別の名前にしてください。"; return; }
-  $("save").disabled = true; $("saveNote").textContent = "登録しています…";
+  if (isNgName(name)) { $("sheetNote").textContent = "そのニックネームは登録できません。別の名前にしてください。"; return; }
+  $("save").disabled = true; $("sheetNote").textContent = "記録しています…";
   try {
     if (photoHash) {
       const dup = await db.collection("scores").where("hash", "==", photoHash).limit(1).get();
-      if (!dup.empty) { $("saveNote").textContent = "この写真はすでに登録されています。新しい一杯で挑戦してください。"; return; }
+      if (!dup.empty) { $("sheetNote").textContent = "この写真はすでに記録されています。新しい一杯で挑戦してください。"; return; }
     }
     const ref = await db.collection("scores").add({
       name: name.slice(0, 12), score: last.total, rings: last.rings, scores: last.scores,
       comment: last.comment, createdAt: last.at, hash: photoHash || "",
     });
-    savedId = ref.id;
+    savedId = ref.id; savedName = name.slice(0, 12);
     if (thumb) { await db.doc("thumbs/" + ref.id).set({ img: thumb }).catch(() => {}); thumbs.delete(ref.id); }
-    $("saveNote").textContent = "記録を残しました。";
-    $("saveForm").hidden = true;
+    $("saveSheet").hidden = true;
+    $("saveNote").textContent = `「${savedName}」で記録しました。`;
+    updateSaveButton();
     renderBoard();
   } catch (err) {
-    $("saveNote").textContent = err && err.code === "not_granted" ? "この画面からはランキングに登録できません。" : "登録できませんでした。もう一度お試しください。";
+    $("sheetNote").textContent = err && err.code === "not_granted" ? "この画面からはランキングに記録できません。" : "記録できませんでした。もう一度お試しください。";
   } finally {
     if (!savedId) $("save").disabled = false;
   }
 });
 
 $("again").addEventListener("click", () => {
-  last = null; $("file").value = "";
-  $("preview").hidden = true; $("ph").hidden = false; $("retake").hidden = true; $("shot").classList.remove("has");
+  last = null;
   if (img) URL.revokeObjectURL(img.url); img = null; photoHash = null; thumb = null;
-  $("result").hidden = true; $("go").disabled = true; setStatus("");
-  $("take").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+  setShotState(false); $("go").disabled = true; setStatus("");
+  show("shoot", "back");
 });
 
 // ---------- 結果画像 ----------
@@ -978,11 +1094,11 @@ $("mkShare").addEventListener("click", async () => {
     g.font = '900 34px "Zen Kaku Gothic New", sans-serif';
     g.fillText("ハッピーリング採点チャレンジ", W / 2, 84);
 
-    // 写真
     const bx = 150, by = 120, bw = 780, bh = 760;
     const s = Math.min(bw / img.w, bh / img.h), pw = img.w * s, ph = img.h * s;
     const px = bx + (bw - pw) / 2, py = by + (bh - ph) / 2;
-    const bmp = await new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = img.url; });
+    const bmp = await loadImg(img.url);
+    if (!bmp) throw new Error("image");
     g.save(); roundRect(g, px, py, pw, ph, 24); g.clip(); g.drawImage(bmp, px, py, pw, ph); g.restore();
     g.strokeStyle = "#FFD660"; g.lineWidth = 7; g.lineCap = "round"; g.shadowColor = "#000C"; g.shadowBlur = 8;
     last.pos.forEach(p => {
@@ -991,7 +1107,6 @@ $("mkShare").addEventListener("click", async () => {
     });
     g.shadowBlur = 0;
 
-    // 点数と判子
     g.fillStyle = "#FFF6E2"; g.textAlign = "left";
     g.font = '900 300px "Big Shoulders Display", Impact, sans-serif';
     const numW = g.measureText(String(last.total)).width;
@@ -1010,17 +1125,16 @@ $("mkShare").addEventListener("click", async () => {
 
     g.textAlign = "left"; g.fillStyle = "#FFF6E2";
     g.font = '900 40px "Zen Kaku Gothic New", sans-serif';
-    const nm = savedId ? ($("name").value.trim() || "名もなき呑み人") : "";
-    g.fillText(`リング ${last.rings} 本` + (nm ? `  ・  ${nm}` : ""), nx + 8, 1260);
+    g.fillText(`リング ${last.rings} 本` + (savedName ? `  ・  ${savedName}` : ""), nx + 8, 1260);
     g.font = '700 30px "Zen Kaku Gothic New", sans-serif'; g.fillStyle = "#2A1809";
     g.fillText(fmtDate(last.at), nx + 8, 1370);
     g.textAlign = "right"; g.fillText("お酒は20歳になってから", W - 70, 1370);
 
     shareBlob = await new Promise(r => c.toBlob(r, "image/png"));
     $("shareImg").src = URL.createObjectURL(shareBlob);
-    $("share").hidden = false;
+    $("shareNote").textContent = "画像を長押しすると保存できます。";
     $("dl").hidden = !downloads;
-    $("share").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
+    $("shareSheet").hidden = false;
   } catch (_) {
     $("saveNote").textContent = "結果画像をつくれませんでした。もう一度お試しください。";
   } finally { $("mkShare").disabled = false; }
@@ -1033,7 +1147,145 @@ $("dl").addEventListener("click", async () => {
   } catch (_) { $("shareNote").textContent = "保存できませんでした。画像を長押しして保存してください。"; }
 });
 
+// ---------- ホームの3Dジョッキ(使えない端末では2Dの絵を出す) ----------
+function startMug3D(){
+  const T = window.THREE, canvas = $("mug3d");
+  if (!T || !canvas) return false;
+  let renderer;
+  try { renderer = new T.WebGLRenderer({ canvas, antialias: true, alpha: true }); } catch (_) { return false; }
+  if (!renderer.getContext()) return false;
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+  renderer.outputEncoding = T.sRGBEncoding;
+  renderer.toneMapping = T.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.1;
+
+  const scene = new T.Scene();
+  const camera = new T.PerspectiveCamera(28, 1, .1, 100);
+  camera.position.set(0, 1.4, 11); camera.lookAt(0, -.1, 0);
+
+  // 店の照明を映り込ませるための環境
+  const pmrem = new T.PMREMGenerator(renderer);
+  const env = new T.Scene();
+  env.add(new T.Mesh(new T.BoxGeometry(30, 30, 30), new T.MeshBasicMaterial({ color: 0x1a0f06, side: T.BackSide })));
+  [[0xfff1d0, -7, 5, 6, 5, 9], [0xffb347, 7, 2, 3, 3, 7], [0xffffff, 0, 10, 2, 8, 2], [0xff8a3a, -4, -2, -8, 6, 4]].forEach(([c, x, y, z, w, h]) => {
+    const m = new T.Mesh(new T.PlaneGeometry(w, h), new T.MeshBasicMaterial({ color: c, side: T.DoubleSide }));
+    m.position.set(x, y, z); m.lookAt(0, 0, 0); env.add(m);
+  });
+  scene.environment = pmrem.fromScene(env, .04).texture;
+
+  scene.add(new T.AmbientLight(0xffe2b0, .25));
+  const key = new T.PointLight(0xffd59a, 2.2, 40); key.position.set(-5, 6, 7); scene.add(key);
+  const rim = new T.PointLight(0xff9a3a, 2.4, 30); rim.position.set(5, 2, -5); scene.add(rim);
+
+  const mug = new T.Group(); scene.add(mug);
+  const H = 3.4, R = 1.05, IN = .95, BOTTOM = -H / 2, FLOOR = BOTTOM + .38, TOP = H / 2;
+
+  // ガラス(厚みのある寸胴ジョッキ)
+  const glassMat = new T.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0, roughness: .05, clearcoat: 1, clearcoatRoughness: .05,
+    transparent: true, opacity: .22, envMapIntensity: 2.2, side: T.DoubleSide, depthWrite: false });
+  const prof = [[0, BOTTOM], [R - .06, BOTTOM], [R, BOTTOM + .06], [R, TOP - .03], [R - .03, TOP], [IN + .02, TOP], [IN, TOP - .03], [IN, FLOOR + .05], [IN - .05, FLOOR], [0, FLOOR]]
+    .map(([x, y]) => new T.Vector2(x, y));
+  const glass = new T.Mesh(new T.LatheGeometry(prof, 72), glassMat);
+  glass.renderOrder = 3; mug.add(glass);
+  const handle = new T.Mesh(new T.TorusGeometry(.78, .16, 20, 48, Math.PI), glassMat);
+  handle.rotation.z = -Math.PI / 2; handle.position.set(R + .02, .15, 0); handle.renderOrder = 3; mug.add(handle);
+
+  // ビール
+  const beerMat = new T.MeshPhysicalMaterial({ color: 0xe08a0c, emissive: 0x8a4200, emissiveIntensity: .55, roughness: .12, transparent: true, opacity: .96, envMapIntensity: 1.2 });
+  const beer = new T.Mesh(new T.CylinderGeometry(IN - .01, IN - .01, 1, 64, 1, true), beerMat);
+  const beerTop = new T.Mesh(new T.CircleGeometry(IN - .01, 64), beerMat); beerTop.rotation.x = -Math.PI / 2;
+  const foamMat = new T.MeshStandardMaterial({ color: 0xfff6e2, roughness: .85, envMapIntensity: .6 });
+  const foam = new T.Mesh(new T.CylinderGeometry(IN - .005, IN - .005, .34, 64), foamMat);
+  beer.renderOrder = foam.renderOrder = 1; mug.add(beer, beerTop, foam);
+
+  // 泡の輪(飲むたびに1本ずつ残る)
+  const ringMat = new T.MeshStandardMaterial({ color: 0xffffff, roughness: .7, transparent: true, opacity: .95, envMapIntensity: .8 });
+  const FULL = TOP - .32, levels = [FULL, FULL - .62, FULL - 1.24, FULL - 1.86, FULL - 2.48, FLOOR + .06];
+  const rings = levels.slice(1, 5).map((y, i) => {
+    const g = new T.TorusGeometry(IN - .01, .045, 8, 96);
+    const pos = g.attributes.position; // 縁を少し波打たせて本物らしく
+    for (let k = 0; k < pos.count; k++) { const a = Math.atan2(pos.getY(k), pos.getX(k)); pos.setZ(k, pos.getZ(k) + Math.sin(a * 9 + i) * .012); }
+    const m = new T.Mesh(g, ringMat.clone()); m.rotation.x = Math.PI / 2; m.position.y = y; m.renderOrder = 2; mug.add(m); return m;
+  });
+
+  // ビールの中の泡粒
+  const bubbles = [];
+  const bubGeo = new T.SphereGeometry(.028, 8, 8), bubMat = new T.MeshBasicMaterial({ color: 0xfff3c8, transparent: true, opacity: .7 });
+  for (let i = 0; i < 26; i++) {
+    const b = new T.Mesh(bubGeo, bubMat); const a = Math.random() * Math.PI * 2, r = Math.random() * (IN - .2);
+    b.position.set(Math.cos(a) * r, FLOOR + Math.random() * 2.6, Math.sin(a) * r); b.userData.v = .25 + Math.random() * .5; b.renderOrder = 1;
+    mug.add(b); bubbles.push(b);
+  }
+
+  // 影
+  const shadow = new T.Mesh(new T.CircleGeometry(1.7, 48), new T.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: .45 }));
+  shadow.rotation.x = -Math.PI / 2; shadow.position.y = BOTTOM - .01; shadow.scale.set(1.15, .8, 1); mug.add(shadow);
+
+  // 飲んでいく流れ: 満杯 → 5口で飲み切る(輪が4本残る) → しばらく見せる → 注ぎ直す
+  const seq = [];
+  let t0 = 0;
+  const push = (dur, from, to, ringsShown) => { seq.push({ t0, dur, from, to, ringsShown }); t0 += dur; };
+  push(1.4, 0, 0, 0);
+  for (let s = 1; s <= 5; s++) { push(.7, s - 1, s, s - 1); push(.75, s, s, Math.min(4, s)); }
+  push(3.2, 5, 5, 4);
+  push(1.6, 5, 0, -1);
+  const LOOP = t0;
+  const ease = x => x < .5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+  const levelAt = idx => { const i = Math.floor(idx), f = idx - i; return i >= 5 ? levels[5] : levels[i] + (levels[i + 1] - levels[i]) * f; };
+
+  function setLevel(y, ringsShown, refill){
+    const h = Math.max(.001, y - FLOOR);
+    beer.scale.y = h; beer.position.y = FLOOR + h / 2; beerTop.position.y = y;
+    const empty = y <= FLOOR + .08;
+    foam.visible = !empty; foam.position.y = y + .17; beer.visible = beerTop.visible = !empty;
+    rings.forEach((r, i) => {
+      const on = refill ? r.position.y > y : i < ringsShown;
+      r.material.opacity += ((on ? .95 : 0) - r.material.opacity) * .2; r.visible = r.material.opacity > .02;
+    });
+    bubbles.forEach(b => { b.visible = !empty && b.position.y < y - .05; });
+  }
+
+  let drag = 0, dragV = 0, lastX = null;
+  canvas.addEventListener("pointerdown", e => { lastX = e.clientX; });
+  window.addEventListener("pointerup", () => { lastX = null; });
+  canvas.addEventListener("pointermove", e => { if (lastX == null) return; dragV = (e.clientX - lastX) * .01; drag += dragV; lastX = e.clientX; });
+
+  function resize(){
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (!w || !h) return;
+    renderer.setSize(w, h, false); camera.aspect = w / h;
+    camera.fov = w / h < .7 ? 34 : 28; camera.updateProjectionMatrix();
+  }
+  window.addEventListener("resize", resize);
+
+  const clock = new T.Clock(); let el = 0;
+  function frame(still){
+    const dt = Math.min(.05, clock.getDelta()); el += dt;
+    let t = still ? LOOP - 1.7 : el % LOOP, step = seq[seq.length - 1];
+    for (const s of seq) if (t >= s.t0 && t < s.t0 + s.dur) { step = s; break; }
+    const p = ease(Math.min(1, (t - step.t0) / step.dur));
+    const idx = step.from + (step.to - step.from) * p;
+    setLevel(levelAt(idx), step.ringsShown, step.ringsShown < 0);
+    bubbles.forEach(b => { b.position.y += b.userData.v * dt; if (b.position.y > TOP) b.position.y = FLOOR + .05; });
+    if (lastX == null) { dragV *= .92; drag += dragV; drag *= .985; }
+    mug.rotation.y = Math.sin(el * .45) * .45 + drag - .35;
+    mug.position.y = Math.sin(el * 1.1) * .05;
+    renderer.render(scene, camera);
+  }
+  resize();
+  if (reduceMotion) { rings.forEach(r => { r.material.opacity = .95; }); frame(true); return true; }
+  (function loop(){
+    requestAnimationFrame(loop);
+    if (current !== "home" || document.hidden) { clock.getDelta(); return; }
+    if (!canvas.width || canvas.clientWidth !== canvas.width / renderer.getPixelRatio()) resize();
+    frame(false);
+  })();
+  return true;
+}
+
 // ---------- 起動 ----------
+$("mug3d").hidden = false; $("mug2d").hidden = true;
+try { if (!startMug3D()) throw 0; } catch (_) { $("mug3d").hidden = true; $("mug2d").hidden = false; }
 renderBoard();
 (async () => {
   if (!window.claude || !window.claude.use) {
@@ -1058,6 +1310,7 @@ renderBoard();
     sub("month", col.where("createdAt", ">=", startOf("month")));
     sub("all", col);
     renderBoard();
+    if (last) updateSaveButton();
   });
   sample = await claude.use("sample");
   if (!sample) { setStatus("この画面では採点機能を使えません。", true); return; }
