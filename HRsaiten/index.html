@@ -1,1 +1,1073 @@
 
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ハッピーリング採点チャレンジ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800;900&family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+/* Layout: ビアホールの夜 → 飲み干していくジョッキ → 店長の「採点票」。1カラム、スマホ幅基準 */
+:root{
+  --bg:#F3B32C;          /* ラガーの琥珀 */
+  --bg-deep:#E09A12;
+  --paper:#FFFCF3;       /* 採点票の紙 */
+  --ink:#2A1809;
+  --ink-soft:#6F5337;
+  --line:#EAD5A2;
+  --shu:#C7331E;         /* 朱肉 */
+  --shu-deep:#8F200E;
+  --gold:#FFD660;
+  --tint:#FFF1C9;
+  /* ヒーローはどちらのテーマでも夜のビアホール */
+  --stout:#1A1008;
+  --stout-2:#3A230C;
+  --plaque:#FFF8E6;
+  --plaque-ink:#2A1809;
+  --on-dark:#FFF6E2;
+  --glass:#FFFFFF;
+  --shadow:#2A18091F;
+
+  --f-display:"Dela Gothic One","Hiragino Sans","Noto Sans JP",sans-serif;
+  --f-body:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
+  --f-num:"Big Shoulders Display","Dela Gothic One",Impact,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#241709; --bg-deep:#1A1008; --paper:#33230F; --ink:#FBEFD8; --ink-soft:#CDB592;
+    --line:#553D20; --shu:#E8573F; --shu-deep:#A3301E; --tint:#45301A; --shadow:#0000004D;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#241709; --bg-deep:#1A1008; --paper:#33230F; --ink:#FBEFD8; --ink-soft:#CDB592;
+  --line:#553D20; --shu:#E8573F; --shu-deep:#A3301E; --tint:#45301A; --shadow:#0000004D;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--f-body); line-height:1.75; -webkit-font-smoothing:antialiased}
+h1,h2,h3{text-wrap:balance}
+button{font-family:inherit}
+:focus-visible{outline:3px solid var(--ink); outline-offset:3px}
+.hero :focus-visible{outline-color:var(--gold)}
+
+/* ---------- hero ---------- */
+.hero{position:relative; overflow:hidden; color:var(--on-dark); text-align:center; padding:28px 16px 96px;
+  background:
+    radial-gradient(60% 40% at 50% 38%, #FFB8301F, transparent 70%),
+    repeating-linear-gradient(90deg, #FFFFFF05 0 1px, transparent 1px 64px),
+    linear-gradient(180deg, var(--stout) 0%, var(--stout-2) 55%, var(--bg-deep) 88%, var(--bg) 100%);}
+.lanterns{position:absolute; inset:0 0 auto; height:46px; display:flex; justify-content:space-around; pointer-events:none}
+.lanterns i{width:14px; height:22px; margin-top:8px; border-radius:7px; background:var(--shu); box-shadow:0 0 18px 4px #FF6A3A55}
+.hero-in{position:relative; max-width:520px; margin:0 auto; display:grid; justify-items:center}
+.eyebrow{margin:18px 0 0; font-weight:900; font-size:clamp(15px,4.2vw,18px); letter-spacing:.14em; color:var(--gold)}
+.plaque{margin:10px 0 0; padding:12px 22px 10px; background:var(--plaque); color:var(--plaque-ink);
+  border:3px solid var(--shu); outline:2px solid var(--plaque); outline-offset:-8px;
+  border-radius:6px; transform:rotate(-2deg); box-shadow:0 7px 0 var(--shu-deep), 0 18px 30px #0008}
+.plaque .l1{display:block; font-family:var(--f-display); color:var(--shu); font-size:clamp(30px,9.4vw,52px); line-height:1.1; white-space:nowrap; letter-spacing:.02em}
+.plaque .l2{display:block; font-weight:900; font-size:clamp(13px,3.6vw,16px); letter-spacing:.42em; padding-left:.42em; margin-top:4px}
+
+.stage{position:relative; width:min(250px,64vw); margin-top:26px}
+.mug{display:block; width:100%; height:auto; filter:drop-shadow(0 14px 22px #000A)}
+.seal{position:absolute; right:-34px; top:34px; width:88px; height:88px; border-radius:50%;
+  display:grid; place-items:center; text-align:center; color:var(--shu);
+  border:3px solid var(--shu); background:#FFF8E6E6; transform:rotate(12deg);
+  font-weight:900; font-size:10.5px; line-height:1.25; box-shadow:inset 0 0 0 3px #FFF8E6, inset 0 0 0 5px var(--shu)}
+.seal b{display:block; font-family:var(--f-display); font-weight:400; font-size:17px; line-height:1.15}
+@media (max-width:380px){ .seal{right:-18px; width:76px; height:76px} .seal b{font-size:15px} }
+
+/* 飲み干していくアニメーション */
+.liquid{animation:drain 6.2s cubic-bezier(.5,0,.3,1) .6s both}
+@keyframes drain{
+  0%,10%{transform:translateY(0)}
+  16%,26%{transform:translateY(38px)}
+  32%,42%{transform:translateY(76px)}
+  48%,58%{transform:translateY(114px)}
+  64%,74%{transform:translateY(152px)}
+  82%,100%{transform:translateY(184px)}
+}
+.ring{fill:none; stroke:var(--glass); stroke-width:3.4; stroke-linecap:round; opacity:0; animation:ringIn .5s ease-out both}
+.ring.r1{animation-delay:1.8s} .ring.r2{animation-delay:2.8s} .ring.r3{animation-delay:3.8s} .ring.r4{animation-delay:4.8s}
+@keyframes ringIn{from{opacity:0; stroke-dasharray:0 200}to{opacity:.95; stroke-dasharray:200 0}}
+.hook{margin:20px 0 0; font-weight:900; font-size:clamp(18px,5vw,23px); line-height:1.5}
+.hook .big{font-family:var(--f-num); font-weight:900; font-size:2.1em; line-height:1; color:var(--gold); vertical-align:-.12em; padding:0 .06em}
+.cta{display:inline-flex; align-items:center; gap:10px; margin-top:18px; padding:15px 34px; border-radius:999px;
+  background:var(--shu); color:#FFF; font-weight:900; font-size:17px; letter-spacing:.06em; text-decoration:none; box-shadow:0 4px 0 var(--shu-deep)}
+.cta:active{transform:translateY(2px); box-shadow:0 2px 0 var(--shu-deep)}
+.cta svg{width:14px; height:14px}
+.foam{position:absolute; left:0; right:0; bottom:-1px; width:100%; height:70px; display:block}
+
+/* ---------- body ---------- */
+main{max-width:560px; margin:0 auto; padding:0 16px 32px; display:grid; gap:16px}
+.card{background:var(--paper); border-radius:16px; padding:24px 20px; box-shadow:0 4px 0 var(--shadow)}
+.kicker{display:flex; align-items:center; justify-content:center; gap:10px; margin:0 0 14px; font-weight:900; font-size:12px; letter-spacing:.3em; color:var(--shu)}
+.kicker::before,.kicker::after{content:""; width:22px; height:2px; background:currentColor; opacity:.5}
+.card h2{margin:0 0 16px; text-align:center; font-family:var(--f-display); font-weight:400; font-size:clamp(20px,5.6vw,24px); line-height:1.35; color:var(--ink)}
+
+.steps{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:0; padding:0; list-style:none; counter-reset:s}
+.steps li{display:grid; justify-items:center; gap:6px; text-align:center; font-size:12.5px; font-weight:700; color:var(--ink-soft); line-height:1.5}
+.steps .no{font-family:var(--f-num); font-weight:900; font-size:30px; line-height:1; color:var(--shu)}
+.steps b{display:block; color:var(--ink); font-size:15px; font-weight:900}
+.steps li + li{border-left:2px dashed var(--line)}
+
+.rules{list-style:none; margin:0; padding:0; display:grid; gap:14px}
+.rules li{display:grid; grid-template-columns:42px 1fr; gap:14px; align-items:start}
+.rules .n{width:42px; height:42px; border-radius:50%; border:2px solid var(--shu); color:var(--shu); display:grid; place-items:center;
+  font-family:var(--f-display); font-size:15px; box-shadow:inset 0 0 0 3px var(--paper), inset 0 0 0 4px var(--shu)}
+.rules b{display:block; font-size:16px; font-weight:900; line-height:1.5}
+.rules span{display:block; color:var(--ink-soft); font-size:13.5px; margin-top:2px}
+
+/* 理想のハッピーリング */
+.ideal{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.ideal figure{margin:0; position:relative; border-radius:12px; overflow:hidden; background:var(--tint)}
+.ideal figure.main{grid-column:1/-1}
+.ideal img{display:block; width:100%; max-width:100%; height:auto; aspect-ratio:3/4; object-fit:cover; background:var(--line)}
+.ideal .main img{aspect-ratio:3/2}
+.ideal .pt{position:absolute; top:8px; left:8px; padding:2px 12px 0; border-radius:999px; background:var(--shu); color:#FFF; font-family:var(--f-num); font-weight:900; font-size:22px; line-height:1.3; box-shadow:0 2px 6px #0006}
+.ideal .pt small{font-family:var(--f-body); font-size:.55em; margin-left:2px}
+.ideal figcaption{padding:8px 12px 10px; font-size:12.5px; font-weight:700; color:var(--ink-soft); line-height:1.55}
+.ideal figcaption b{display:block; color:var(--ink); font-size:14px}
+.ideal-note{margin:12px 0 0; font-size:13px; color:var(--ink-soft); text-align:center}
+
+/* 撮り方ガイド */
+.guide{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:0; padding:0; list-style:none}
+.guide li{display:grid; justify-items:center; gap:4px; padding:12px 6px 10px; border-radius:12px; background:var(--tint); text-align:center; font-size:12px; font-weight:700; color:var(--ink-soft); line-height:1.45}
+.guide svg{width:100%; max-width:84px; height:auto}
+.guide .mk{font-weight:900; font-size:14px; color:var(--ink)}
+.guide .ok .mk{color:var(--shu)}
+.guide .g-line{stroke:var(--ink); fill:none; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round}
+.guide .g-ring{stroke:var(--ink-soft); fill:none; stroke-width:2; stroke-linecap:round}
+.guide .g-frame{stroke:var(--shu); fill:none; stroke-width:2; stroke-dasharray:4 3}
+.guide .g-x{stroke:var(--ink-soft); stroke-width:3; stroke-linecap:round}
+.guide-note{margin:12px 0 0; font-size:13px; color:var(--ink-soft); text-align:center}
+
+/* ---------- capture ---------- */
+.shot{position:relative; display:grid; place-items:center; width:100%; max-width:100%; aspect-ratio:3/4; max-height:62vh; margin:0 auto;
+  border-radius:14px; overflow:hidden; cursor:pointer; background:var(--tint);
+  border:3px dashed var(--bg-deep)}
+.shot img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+.shot.has{border-style:solid; border-color:var(--line)}
+.ph{position:relative; display:grid; justify-items:center; gap:6px; text-align:center; color:var(--ink-soft); font-size:13.5px; padding:18px; line-height:1.8}
+.ph svg{width:96px; height:auto; opacity:.8}
+.ph strong{color:var(--shu); font-size:18px; font-weight:900}
+.retake{position:absolute; right:10px; bottom:10px; padding:6px 14px; border-radius:999px; background:#1A1008CC; color:#FFF6E2; font-size:13px; font-weight:900}
+input[type=file]{position:absolute; width:1px; height:1px; opacity:0; pointer-events:none}
+.best-now{margin:12px 0 0; text-align:center; font-size:13px; font-weight:700; color:var(--ink-soft)}
+.best-now b{font-family:var(--f-num); font-size:20px; color:var(--shu); font-weight:900}
+
+.btn{appearance:none; border:0; width:100%; margin-top:14px; padding:16px 18px; border-radius:999px; cursor:pointer;
+  font:900 17px/1.2 var(--f-body); letter-spacing:.08em; background:var(--shu); color:#FFF; box-shadow:0 4px 0 var(--shu-deep)}
+.btn:active{transform:translateY(2px); box-shadow:0 2px 0 var(--shu-deep)}
+.btn.ghost{background:transparent; color:var(--ink); border:2px solid var(--line); box-shadow:none}
+.btn.dark{background:var(--ink); color:var(--paper); box-shadow:0 4px 0 var(--ink-soft)}
+.btn:disabled{opacity:.4; cursor:not-allowed; transform:none}
+.note{font-size:13px; color:var(--ink-soft); margin:10px 0 0; text-align:center}
+.err{color:var(--shu); font-weight:900}
+
+/* ---------- judging ---------- */
+.thinking{text-align:center}
+.pour{height:10px; border-radius:5px; background:var(--line); overflow:hidden; margin:4px 0 14px}
+.pour i{display:block; height:100%; width:35%; border-radius:5px; background:linear-gradient(90deg,var(--bg-deep),var(--gold)); animation:pour 1.3s ease-in-out infinite}
+@keyframes pour{0%{transform:translateX(-100%)}100%{transform:translateX(290%)}}
+#tip{margin:0; font-size:14px; color:var(--ink-soft); min-height:3.5em}
+
+/* ---------- result: 採点票 ---------- */
+.sheet{position:relative; padding:0; overflow:hidden}
+.sheet-head{display:flex; justify-content:space-between; align-items:baseline; gap:10px; padding:14px 20px; border-bottom:2px solid var(--ink); font-weight:900}
+.sheet-head .t{font-family:var(--f-display); font-weight:400; font-size:18px; letter-spacing:.12em}
+.sheet-head .meta{font-size:12px; color:var(--ink-soft); font-variant-numeric:tabular-nums; letter-spacing:.04em}
+.sheet-body{padding:20px}
+.photo{position:relative; width:min(100%, calc(340px * var(--ar,.75))); aspect-ratio:var(--ar,.75); max-width:100%; margin:0 auto; border-radius:10px; overflow:hidden; background:var(--tint)}
+.photo img{position:absolute; inset:0; width:100%; height:100%; object-fit:fill}
+.photo svg{position:absolute; inset:0; width:100%; height:100%}
+.photo .rl{fill:none; stroke:var(--gold); stroke-width:3; stroke-linecap:round; vector-effect:non-scaling-stroke; filter:drop-shadow(0 0 3px #000C)}
+.photo .rl{stroke-dasharray:400; stroke-dashoffset:400; animation:rl .7s ease-out forwards}
+@keyframes rl{to{stroke-dashoffset:0}}
+.photo .tag{position:absolute; transform:translate(-50%,-50%); width:22px; height:22px; border-radius:50%; background:var(--gold); color:#2A1809; font:900 12px/22px var(--f-body); text-align:center; box-shadow:0 1px 4px #000A}
+.photo-cap{margin:8px 0 0; font-size:12px; color:var(--ink-soft); text-align:center}
+
+.verdict{display:grid; grid-template-columns:1fr auto; align-items:center; gap:8px; margin-top:16px}
+.score{margin:0; font-family:var(--f-num); font-weight:900; font-size:clamp(104px,32vw,150px); line-height:.9; color:var(--shu); font-variant-numeric:tabular-nums; letter-spacing:-.01em}
+.score small{font-family:var(--f-display); font-weight:400; font-size:.24em; margin-left:.1em; color:var(--ink); letter-spacing:0}
+.hanko{width:112px; height:112px; border-radius:50%; display:grid; place-content:center; text-align:center; color:var(--shu);
+  border:4px solid var(--shu); transform:rotate(-12deg); padding:10px;
+  font-family:var(--f-display); font-size:17px; line-height:1.2; box-shadow:inset 0 0 0 3px var(--paper), inset 0 0 0 5px var(--shu)}
+.hanko.stamp{animation:stamp .45s cubic-bezier(.3,1.6,.5,1) 1.2s both}
+@keyframes stamp{from{transform:rotate(-12deg) scale(1.8); opacity:0}to{transform:rotate(-12deg) scale(1); opacity:1}}
+.rankline{margin:10px 0 0; font-weight:900; font-size:14.5px; min-height:1.6em}
+.rankline .hot{color:var(--shu)}
+.comment{margin:12px 0 0; padding:14px 16px; border-radius:12px; background:var(--tint); font-size:15px; font-weight:700; line-height:1.7}
+.comment::before{content:"店長のひとこと"; display:block; font-size:11.5px; letter-spacing:.2em; color:var(--shu); font-weight:900; margin-bottom:2px}
+
+.bars{display:grid; gap:12px; margin-top:18px; padding-top:16px; border-top:2px dashed var(--line)}
+.bar-row{display:grid; grid-template-columns:7.2em 1fr 3.6em; align-items:center; gap:10px; font-size:13.5px; font-weight:700; color:var(--ink-soft)}
+.bar-row.weak span:first-child{color:var(--shu)}
+.track{height:10px; border-radius:5px; background:var(--line); overflow:hidden}
+.fill{height:100%; width:0; border-radius:5px; background:linear-gradient(90deg,var(--bg-deep),var(--gold)); transition:width 1s cubic-bezier(.3,.7,.2,1)}
+.bar-row b{text-align:right; color:var(--ink); font-variant-numeric:tabular-nums; font-family:var(--f-num); font-size:18px; font-weight:800}
+.bar-row b small{font-size:.7em; color:var(--ink-soft)}
+
+.advice{display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:start; margin-top:16px; padding:14px 16px; border-radius:12px; border:2px solid var(--shu)}
+.advice .lb{font-weight:900; font-size:12px; letter-spacing:.1em; color:#FFF; background:var(--shu); padding:4px 8px; border-radius:6px; white-space:nowrap}
+.advice p{margin:0; font-size:14.5px; font-weight:700; line-height:1.65}
+.pb{margin:14px 0 0; text-align:center; font-size:13.5px; font-weight:700; color:var(--ink-soft)}
+.pb b{color:var(--shu)}
+
+.save{display:flex; gap:8px; margin-top:18px}
+.save input{flex:1; min-width:0; padding:13px 16px; border-radius:999px; border:2px solid var(--line); background:var(--paper); color:var(--ink); font:700 16px var(--f-body)}
+.save .btn{width:auto; margin:0; padding:13px 20px; font-size:15px}
+.actions{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:4px}
+.actions .btn{margin-top:14px; font-size:15px; padding:14px 10px}
+
+.share{margin-top:16px; padding:16px; border-radius:12px; background:var(--tint); text-align:center}
+.share img{display:block; width:min(100%,280px); margin:0 auto; border-radius:8px; box-shadow:0 6px 18px var(--shadow)}
+.share .btn{margin-top:12px}
+
+/* ---------- ranking ---------- */
+.tabs{display:grid; grid-template-columns:repeat(3,1fr); gap:4px; padding:4px; margin:0 0 12px; border-radius:999px; background:var(--tint)}
+.tabs button{appearance:none; border:0; padding:9px 4px; border-radius:999px; background:transparent; color:var(--ink-soft); font-weight:900; font-size:14px; cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--ink); color:var(--paper)}
+ol.board{list-style:none; margin:0; padding:0}
+ol.board li{display:grid; grid-template-columns:36px 44px 1fr auto; align-items:center; gap:12px; padding:12px 6px; border-bottom:2px dashed var(--line)}
+ol.board li:last-child{border-bottom:0}
+.pos{width:34px; height:34px; border-radius:50%; background:var(--line); color:var(--ink); display:grid; place-items:center; font-family:var(--f-num); font-weight:900; font-size:19px}
+.pos.p1{background:var(--gold); color:#7A3A06; box-shadow:0 0 0 2px var(--bg-deep)}
+.thumb{width:44px; height:58px; border-radius:6px; background:var(--tint); object-fit:cover; display:block}
+.who{min-width:0; font-weight:900; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.who span{display:block; font-weight:500; font-size:12.5px; color:var(--ink-soft)}
+.pts{font-family:var(--f-num); font-weight:900; font-size:30px; line-height:1; color:var(--shu); font-variant-numeric:tabular-nums; text-align:right}
+.pts small{font-family:var(--f-body); font-size:.42em; color:var(--ink); margin-left:2px}
+li.mine{background:color-mix(in srgb, var(--gold) 28%, transparent); border-radius:10px}
+.empty{grid-column:1/-1; color:var(--ink-soft); font-size:14px; margin:0; text-align:center; padding:10px 0}
+.del{grid-column:1/-1; display:flex; justify-content:flex-end; gap:8px}
+.del button{appearance:none; border:2px solid var(--line); background:transparent; color:var(--ink-soft); border-radius:999px; padding:4px 12px; font-weight:900; font-size:12.5px; cursor:pointer}
+.del button.yes{border-color:var(--shu); color:var(--shu)}
+.staff{display:flex; justify-content:center; margin-top:10px}
+.staff button{appearance:none; border:0; background:transparent; color:var(--ink-soft); font-weight:700; font-size:12.5px; text-decoration:underline; cursor:pointer}
+
+footer{text-align:center; font-size:12px; font-weight:700; color:var(--ink); padding:4px 16px 28px}
+
+@media (prefers-reduced-motion:reduce){
+  .liquid{animation:none; transform:translateY(184px)}
+  .ring{animation:none; opacity:.95}
+  .fill{transition:none} .pour i{animation:none; width:100%}
+  .photo .rl{animation:none; stroke-dashoffset:0}
+  .hanko.stamp{animation:none}
+}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="lanterns" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="hero-in">
+    <p class="eyebrow">飲み干したジョッキで、一杯の美しさを競え</p>
+    <h1 class="plaque"><span class="l1">ハッピーリング</span><span class="l2">採点チャレンジ</span></h1>
+    <div class="stage">
+      <svg class="mug" viewBox="0 0 200 240" role="img" aria-label="ビールを飲むたびに泡の輪が1本ずつ残っていくジョッキ">
+        <defs>
+          <clipPath id="inner"><rect x="33" y="23" width="114" height="200" rx="10"/></clipPath>
+          <linearGradient id="beer" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#FFC93C"/><stop offset="1" stop-color="#E28A0B"/>
+          </linearGradient>
+          <linearGradient id="gl" x1="0" x2="1">
+            <stop offset="0" stop-color="#fff" stop-opacity=".34"/>
+            <stop offset=".45" stop-color="#fff" stop-opacity=".06"/>
+            <stop offset="1" stop-color="#fff" stop-opacity=".22"/>
+          </linearGradient>
+        </defs>
+        <path d="M150 70h14a24 24 0 0 1 24 24v52a24 24 0 0 1-24 24h-14" fill="none" stroke="#FFFFFF" stroke-width="9" opacity=".75"/>
+        <g clip-path="url(#inner)">
+          <g class="liquid">
+            <rect x="30" y="34" width="120" height="200" fill="url(#beer)"/>
+            <path d="M30 40 q10 -14 22 -4 q10 -12 22 -2 q12 -12 24 -1 q12 -11 24 0 q10 -10 20 2 V52 H30 Z" fill="#FFF8E6"/>
+            <rect x="30" y="44" width="120" height="10" fill="#FFF8E6"/>
+            <circle cx="62" cy="120" r="2" fill="#FFF3" /><circle cx="96" cy="160" r="1.6" fill="#FFF3"/><circle cx="120" cy="100" r="2.2" fill="#FFF3"/>
+          </g>
+        </g>
+        <path class="ring r1" d="M36 80 Q90 87 144 80"/>
+        <path class="ring r2" d="M36 118 Q90 125 144 118"/>
+        <path class="ring r3" d="M36 156 Q90 163 144 156"/>
+        <path class="ring r4" d="M36 194 Q90 201 144 194"/>
+        <rect x="30" y="20" width="120" height="206" rx="12" fill="url(#gl)" stroke="#FFFFFF" stroke-width="3" opacity=".95"/>
+      </svg>
+      <p class="seal" aria-hidden="true"><span>店長の<b>物差し</b>で採点</span></p>
+    </div>
+    <p class="hook">泡の輪を撮るだけで<br><span class="big">100</span>点満点で採点</p>
+    <a class="cta" href="#take">さっそく挑戦する<svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 5l4 4 4-4" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+  </div>
+  <svg class="foam" viewBox="0 0 400 70" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 34 C28 8 58 8 84 30 C106 6 140 4 162 28 C186 2 226 4 246 30 C270 6 306 8 324 32 C346 6 382 10 400 28 L400 70 L0 70 Z" style="fill:var(--bg)"/>
+  </svg>
+</header>
+
+<main>
+  <section class="card" aria-labelledby="flowh">
+    <p class="kicker">HOW TO</p>
+    <h2 id="flowh">チャレンジの流れ</h2>
+    <ol class="steps">
+      <li><span class="no">1</span><b>飲み干す</b>4〜5口で<br>テンポよく</li>
+      <li><span class="no">2</span><b>撮る</b>ジョッキを<br>真横から</li>
+      <li><span class="no">3</span><b>採点</b>ランキングに<br>挑戦</li>
+    </ol>
+  </section>
+
+  <section class="card" aria-labelledby="rules">
+    <p class="kicker">三か条</p>
+    <h2 id="rules">高得点をねらう飲み方</h2>
+    <ol class="rules">
+      <li><span class="n">一</span><div><b>一口飲んだら、ジョッキを置く</b><span>泡が落ち着いて、水平な輪が残ります。</span></div></li>
+      <li><span class="n">二</span><div><b>いつも同じ飲み口から</b><span>違う場所から飲むと、せっかくの輪が流れてしまいます。</span></div></li>
+      <li><span class="n">三</span><div><b>4〜5口で、テンポよく飲み干す</b><span>5口で飲み切ると輪は4本。これが理想の一杯です。</span></div></li>
+    </ol>
+  </section>
+
+  <section class="card" aria-labelledby="idealh">
+    <p class="kicker">お手本</p>
+    <h2 id="idealh">理想のハッピーリング</h2>
+    <div class="ideal">
+      <figure class="main">
+        <img src="refs/05.webp" alt="4本の泡の輪が水平・等間隔に残ったビアグラス" loading="lazy">
+        <span class="pt">100<small>点</small></span>
+        <figcaption><b>満点の一杯</b>4本すべてが白く太くくっきり。完全に水平で、間隔もそろっています。</figcaption>
+      </figure>
+      <figure>
+        <img src="refs/13.webp" alt="4本の泡の輪が残ったジョッキ" loading="lazy">
+        <span class="pt">95<small>点</small></span>
+        <figcaption><b>4本・水平・等間隔</b>縁が少し波打つ分だけ減点。</figcaption>
+      </figure>
+      <figure>
+        <img src="refs/03.webp" alt="4本の泡の輪が残ったジョッキ" loading="lazy">
+        <span class="pt">93<small>点</small></span>
+        <figcaption><b>4本・だれなし</b>縁のギザギザがやや強め。</figcaption>
+      </figure>
+    </div>
+    <p class="ideal-note">この3杯が、店長の物差しで90点を超えたジョッキです。</p>
+  </section>
+
+  <section class="card" aria-labelledby="guideh">
+    <p class="kicker">撮り方</p>
+    <h2 id="guideh">撮り方で点数が変わります</h2>
+    <ul class="guide">
+      <li class="ok">
+        <svg viewBox="0 0 80 90" aria-hidden="true">
+          <rect class="g-frame" x="6" y="4" width="68" height="82" rx="6"/>
+          <rect class="g-line" x="20" y="12" width="36" height="66" rx="4"/>
+          <path class="g-line" d="M56 30h6a7 7 0 0 1 7 7v16a7 7 0 0 1-7 7h-6"/>
+          <path class="g-ring" d="M23 28q15 3 30 0M23 42q15 3 30 0M23 56q15 3 30 0M23 68q15 3 30 0"/>
+        </svg>
+        <span class="mk">○ 真横から</span>画面いっぱいに
+      </li>
+      <li>
+        <svg viewBox="0 0 80 90" aria-hidden="true">
+          <ellipse class="g-line" cx="38" cy="24" rx="20" ry="9"/>
+          <path class="g-line" d="M18 24L22 72Q38 80 54 72L58 24"/>
+          <path class="g-ring" d="M21 40q17 8 34 0M22 56q16 7 32 0"/>
+          <path class="g-x" d="M58 60l14 14M72 60l-14 14"/>
+        </svg>
+        <span class="mk">× 上から</span>輪がゆがんで見える
+      </li>
+      <li>
+        <svg viewBox="0 0 80 90" aria-hidden="true">
+          <rect class="g-line" x="2" y="-6" width="76" height="102" rx="4"/>
+          <path class="g-ring" d="M6 30q34 6 68 0M6 58q34 6 68 0"/>
+          <path class="g-x" d="M52 64l14 14M66 64l-14 14"/>
+        </svg>
+        <span class="mk">× 近すぎ</span>輪が数えられない
+      </li>
+    </ul>
+    <p class="guide-note">外側の水滴はおしぼりで拭いてから撮ると、輪がくっきり写ります。</p>
+  </section>
+
+  <section class="card" id="take" aria-labelledby="takeh">
+    <p class="kicker">CHALLENGE</p>
+    <h2 id="takeh">あなたの一杯を採点</h2>
+    <label class="shot" id="shot" tabindex="0" for="file">
+      <img id="preview" alt="撮影したジョッキ" hidden>
+      <span class="ph" id="ph">
+        <svg viewBox="0 0 80 90" aria-hidden="true"><rect x="20" y="10" width="36" height="70" rx="4" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M56 30h6a7 7 0 0 1 7 7v16a7 7 0 0 1-7 7h-6" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M23 28q15 3 30 0M23 42q15 3 30 0M23 56q15 3 30 0M23 68q15 3 30 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <strong>タップしてジョッキを撮る</strong>
+        飲み干したジョッキを真横から、画面いっぱいに。
+      </span>
+      <span class="retake" id="retake" hidden>撮り直す</span>
+    </label>
+    <input type="file" id="file" accept="image/*" capture="environment">
+    <button class="btn" id="go" disabled>採点する</button>
+    <p class="note" id="status"></p>
+    <p class="best-now" id="bestNow" hidden></p>
+  </section>
+
+  <section class="card thinking" id="thinking" aria-live="polite" hidden>
+    <h2>ただいま審査中…</h2>
+    <div class="pour"><i></i></div>
+    <p id="tip">泡の輪を一本ずつ見ています</p>
+    <button class="btn ghost" id="stop">やめる</button>
+  </section>
+
+  <section class="card sheet" id="result" aria-live="polite" hidden>
+    <div class="sheet-head"><span class="t">採点票</span><span class="meta" id="meta"></span></div>
+    <div class="sheet-body">
+      <div class="photo" id="photo"><img id="rimg" alt="採点したジョッキ"><svg id="rsvg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg></div>
+      <p class="photo-cap" id="rcap"></p>
+      <div class="verdict">
+        <p class="score"><span id="num">0</span><small>点</small></p>
+        <div class="hanko" id="hanko"></div>
+      </div>
+      <p class="rankline" id="rankline"></p>
+      <p class="comment" id="comment"></p>
+      <div class="bars" id="bars"></div>
+      <div class="advice"><span class="lb">次のコツ</span><p id="advice"></p></div>
+      <p class="pb" id="pb"></p>
+      <form class="save" id="saveForm" autocomplete="off">
+        <input id="name" maxlength="12" placeholder="ニックネーム" aria-label="ニックネーム">
+        <button class="btn" id="save" type="submit">記録を残す</button>
+      </form>
+      <p class="note" id="saveNote"></p>
+      <div class="actions">
+        <button class="btn dark" id="mkShare" type="button">結果画像をつくる</button>
+        <button class="btn ghost" id="again" type="button">もう一杯で挑む</button>
+      </div>
+      <div class="share" id="share" hidden>
+        <img id="shareImg" alt="採点結果の画像">
+        <button class="btn" id="dl" type="button" hidden>画像を保存する</button>
+        <p class="note" id="shareNote">画像を長押しすると保存できます。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="rankh">
+    <p class="kicker">RANKING</p>
+    <h2 id="rankh">ランキング TOP5</h2>
+    <div class="tabs" role="tablist" aria-label="ランキングの期間">
+      <button role="tab" id="tab-today" aria-selected="true" data-k="today">今日</button>
+      <button role="tab" id="tab-month" aria-selected="false" data-k="month">今月</button>
+      <button role="tab" id="tab-all" aria-selected="false" data-k="all">歴代</button>
+    </div>
+    <ol class="board" id="board"><li><p class="empty">読み込み中…</p></li></ol>
+    <div class="staff" id="staff" hidden><button id="staffBtn" type="button">店長メニュー：記録を削除する</button></div>
+  </section>
+</main>
+<footer>お酒は20歳になってから。飲酒運転は法律で禁止されています。</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// ---------- 採点の物差し ----------
+const CRITERIA = [
+  {key:"shape",   label:"輪のきれいさ", max:40},
+  {key:"clarity", label:"くっきり度",   max:20},
+  {key:"spacing", label:"間隔の均一さ", max:20},
+  {key:"count",   label:"リングの本数", max:20},
+];
+// 本数点は店長の表どおりにページ側で決める(AIのブレをなくす)
+const COUNT_TABLE = [0, 3, 7, 13, 20, 17, 12, 9]; // 0〜7本。8本以上は6点
+const countPoints = n => n >= 8 ? 6 : COUNT_TABLE[n];
+
+const PROMPT = `あなたは飲食店の「ハッピーリング採点」の審査員です。
+添付画像は、お客様がビールを飲んだ後のジョッキ(またはビアグラス)の写真です。
+ビールを一口飲んでグラスを置くたびに、その時の液面の高さに泡の輪(リング)が残ります。この泡の輪を、お店の店長の物差しで採点してください。
+
+■ 最初に判定すること
+- glass: 画像にビールを飲んだ後のグラスが写っていなければ false。
+- finished: ビールがまだ残っていれば false(底に1〜2cm程度の残りやたまった泡は「飲み切り」とみなして true)。
+- glass か finished が false なら、各点数は0にしてください。
+
+■ リングの数え方
+- 水平方向に並ぶ泡の輪を上から数える。底にたまった泡の境目は本数に数えない。
+- 縁から斜めに流れた泡の筋や、縦に垂れた泡の跡はリングに数えない。
+- 途切れ途切れでも、輪として目で追えるものは数える。
+- 数えた輪それぞれの位置を rings に上から順に入れる。y は輪の中央の高さ(画像の上端=0、下端=100)、x1 と x2 は輪の左端と右端(画像の左端=0、右端=100)。ring_count と rings の数は必ず一致させる。
+
+■ 店長の物差し(いちばん大事なのは「輪のきれいさ」)
+理想は「5口で飲み切る=リング4本」。4本の輪がすべて水平・くっきり・等間隔・一周つながっている状態が満点です。
+- shape 輪のきれいさ(0-40): 水平か、だれて(垂れて)いないか、波打っていないか、一周つながっているか。斜めに傾く・波打つは大きな減点。だれ・形の崩れは、時間をあけて飲んだサインとして減点。
+- clarity くっきり度(0-20): 泡の白さと付着のしっかり度。泡がしっかり付いているのはグラスがきれいな証拠なので、形が崩れていても付着が良ければ一定の点を与える。薄い・細い線は減点。
+- spacing 間隔の均一さ(0-20): 輪と輪の間隔が揃っているか。リングが1本以下なら0。
+- count リングの本数(0-20): 本数だけで決まる固定の点。4本=20、5本=17、3本=13、6本=12、7本=9、8本以上=6、2本=7、1本=3、0本=0。多すぎるのは「ちびちび飲み」、少なすぎるのは「大きく飲みすぎ」。
+
+■ お手本(店長がつけた点数。これと見比べて合計点を合わせること)
+100点: 4本すべてが白く太くくっきり、完全に水平、等間隔、一周つながる。欠点が一つもない。
+95点: 4本、くっきり・水平・等間隔。ただし縁が少し波打ち、縁近くに斜めの泡の筋が1本ある。
+93点: 4本、くっきり・だれなし・等間隔。縁のギザギザがやや強い。
+90点: 5本、きれいだが上の1本が斜めで少し崩れている。
+88点: 6〜7本、均一でくっきりだが本数が多すぎる。
+85点: 3本、水平でくっきり、一周しているが縁が少し波打つ。
+78点: 3本、線は薄いが水平で間隔がよく揃っている。
+75点: 7〜8本、きれいな輪だが多すぎる(ちびちび飲み)。
+70点: 4本、泡はしっかり付いているが、だれてまだらになり輪になっていない。
+65点: 3本、水平だが線が細く薄く、だれている。
+60点: 3本ほど、斜めに傾き波打って輪になっていない。
+55点: 3本、間隔は均一だが線が細く、片側が垂れて弧を描く。
+49点: 3本ほど輪になっているが、縁が崩れ、間隔がかなり空いている。
+45点: 3本ほど、だれ・崩れ・間隔バラバラが重なる。
+38点: 縁近くに輪が1本あるだけで、下は切れ端が散らばり輪と認識できない。
+31点: まだらに崩れているが、段になった跡が3本ほど目で追える。
+25点: 薄いリングが2〜3本うっすら見えるが、だれだれで不均一。
+10点: 輪の形跡がほぼなく、泡の跡が縦に流れ落ちている。
+5点: 輪にならず、泡がしずくのように垂れて散らばる(洗浄不十分なグラスの典型)。
+3点: 泡がまだらにべたっと付いているだけ。いいところなし。
+
+■ 採点の厳しさ
+- 100点は1000杯に1杯しか出ない特別な点数。shape 40点満点は、波打ち・だれ・斜めの筋などの欠点が一つもない場合だけ。少しでも欠点があれば shape は37以下。
+- perfect は、4本すべてが完全で欠点が一つもない場合のみ true。迷ったら false。
+- count は本数で自動的に決まるので、shape・clarity・spacing の配分で、お手本と見比べて妥当な合計点になるようにすること。
+
+■ comment
+お客様向けの明るい日本語の一言(40文字以内)。良かった点と、次に点数を上げるコツ(例:一口飲んだらジョッキを置く、毎回同じ飲み口から、4〜5口でテンポよく)を入れる。点数が低くても責める言い方はしない。
+
+次の形のJSONだけを返してください:
+{"glass":true,"finished":true,"ring_count":4,"rings":[{"y":24,"x1":14,"x2":80},{"y":40,"x1":14,"x2":80},{"y":56,"x1":14,"x2":80},{"y":72,"x1":14,"x2":80}],"perfect":false,"scores":{"shape":34,"clarity":17,"spacing":17,"count":20},"comment":"4本の輪がきれい!次は同じ飲み口で揃えよう"}`;
+
+// ---------- 店長のお手本写真(お店で撮った写真だけ) ----------
+// 写真の上に「お手本○ ○点」と書き込んでから、採点する写真と一緒に見せる
+const REFS = [
+  {no:5,  file:"refs/05.webp", score:100, note:"4本すべてが白く太くくっきり、完全に水平・等間隔。満点の見本"},
+  {no:13, file:"refs/13.webp", score:95,  note:"4本、くっきり・水平・等間隔。縁の波打ちと右上の斜めの筋の分だけ減点"},
+  {no:3,  file:"refs/03.webp", score:93,  note:"4本、くっきり・だれなし・等間隔。縁のギザギザがやや強い。底のたまりは数えない"},
+  {no:1,  file:"refs/01.webp", score:90,  note:"5本できれい。ただ上の輪が斜めで少し崩れている"},
+  {no:17, file:"refs/17.webp", score:78,  note:"3本、線は薄いが水平で間隔がよく揃っている(ビールが残っているが形の見本)"},
+  {no:10, file:"refs/10.webp", score:70,  note:"4本。泡はしっかり付いているが、だれてまだらになり輪になっていない"},
+  {no:4,  file:"refs/04.webp", score:65,  note:"3本、水平だが線が細く薄く、だれている。上半分には輪がない"},
+  {no:2,  file:"refs/02.webp", score:60,  note:"3本ほど。斜めに傾き波打っていて、輪になっていない"},
+  {no:14, file:"refs/14.webp", score:55,  note:"3本、間隔は均一だが線が細く、右側が垂れて弧を描く"},
+  {no:6,  file:"refs/06.webp", score:45,  note:"3本ほど。だれ・崩れ・間隔バラバラが重なる(ビールが残っているが形の見本)"},
+  {no:15, file:"refs/15.webp", score:38,  note:"縁の近くに輪が1本あるだけで、下は切れ端が散らばり輪と認識できない"},
+  {no:16, file:"refs/16.webp", score:25,  note:"薄いリングが2〜3本うっすら見えるが、だれだれで均一でない"},
+  {no:7,  file:"refs/07.webp", score:10,  note:"リングが認識できず、全体がだれている"},
+];
+
+function loadImg(src){
+  return new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
+}
+// 1枚の画像に、お手本を並べて番号と点数を書き込む
+function drawRefSheet(group){
+  const cols = group.length === 1 ? 1 : group.length <= 4 ? 2 : 3;
+  const rows = Math.ceil(group.length / cols);
+  const cw = group.length === 1 ? 760 : 400, ch = Math.round(cw * 4 / 3), bar = 64;
+  const c = document.createElement("canvas"); c.width = cols * cw; c.height = rows * (ch + bar);
+  const g = c.getContext("2d");
+  g.fillStyle = "#FFFFFF"; g.fillRect(0, 0, c.width, c.height);
+  group.forEach((r, i) => {
+    const x = (i % cols) * cw, y = Math.floor(i / cols) * (ch + bar);
+    g.fillStyle = "#1A1008"; g.fillRect(x, y, cw, bar);
+    g.fillStyle = "#FFD660"; g.font = "900 38px sans-serif"; g.textBaseline = "middle";
+    g.fillText(`お手本${r.no}  ${r.score}点`, x + 16, y + bar / 2);
+    const s = Math.min((cw - 8) / r.im.width, (ch - 8) / r.im.height);
+    const w = r.im.width * s, h = r.im.height * s;
+    g.drawImage(r.im, x + (cw - w) / 2, y + bar + (ch - h) / 2, w, h);
+  });
+  return new Promise(res => c.toBlob(res, "image/jpeg", .85));
+}
+let refsPromise = null;
+function getRefs(maxCount){
+  if (!refsPromise) refsPromise = (async () => {
+    const ims = await Promise.all(REFS.map(r => loadImg(r.file)));
+    const ok = REFS.map((r, i) => ({ ...r, im: ims[i] })).filter(r => r.im);
+    if (!ok.length || maxCount < 2) return { blobs: [], used: [] };
+    const slots = maxCount - 1;                 // 最後の1枚はお客様の写真
+    const per = Math.ceil(ok.length / slots);
+    const groups = [];
+    for (let i = 0; i < ok.length; i += per) groups.push(ok.slice(i, i + per));
+    const blobs = (await Promise.all(groups.map(drawRefSheet))).filter(Boolean);
+    return { blobs, used: blobs.length === groups.length ? ok : [] };
+  })().catch(() => ({ blobs: [], used: [] }));
+  return refsPromise;
+}
+function promptWithRefs(used){
+  if (!used.length) return PROMPT;
+  const list = used.map(r => `お手本${r.no}(${r.score}点): ${r.note}`).join("\n");
+  return `■ 店長のお手本写真
+最後の1枚より前の画像は、店長が実際に採点したお手本写真です。写真の上の帯に「お手本番号と点数」が書いてあります。
+${list}
+最後の1枚が、今回採点するお客様のジョッキです。お手本写真と見比べ、いちばん近いお手本の点数を基準にして採点してください。お手本写真そのものは採点しないでください。グラスの形や背景の違いは点数に関係ありません。泡の輪だけを比べてください。
+
+` + PROMPT;
+}
+
+const TIPS = [
+  "泡の輪は「エンジェルリング」とも呼ばれます。",
+  "輪が残るのは、グラスがきれいに洗えている証拠です。",
+  "一口飲んだらジョッキを置くと、泡が落ち着いて輪になります。",
+  "毎回同じ飲み口から飲むと、輪が流されずに残ります。",
+  "泡はビールの蓋。香りや炭酸が逃げるのを防いでくれます。",
+  "泡が消えないうちに飲み切るのも、きれいな輪のコツです。",
+  "5口で飲み切ると、輪は4本。それが理想の一杯です。",
+];
+
+// 一番低かった項目から「次のコツ」を選ぶ
+function adviceFor(r){
+  if (r.rings === 0) return "一口飲んだらジョッキを置いて、泡を落ち着かせましょう。それだけで輪が残り始めます。";
+  const ratio = k => r.scores[k] / CRITERIA.find(c => c.key === k).max;
+  const weakest = CRITERIA.map(c => c.key).sort((a, b) => ratio(a) - ratio(b))[0];
+  if (ratio(weakest) >= .95) return "文句なしの一杯です。次も同じリズムで飲んで、100点を狙いましょう。";
+  if (weakest === "count") return r.rings < 4
+    ? `今回は${r.rings}本。一口を少し小さくして、5口で飲み切ると理想の4本になります。`
+    : `今回は${r.rings}本。一口を少し大きくして、5口で飲み切ると理想の4本になります。`;
+  if (weakest === "shape") return "一口ごとにジョッキをまっすぐ置いて、泡が落ち着くのを待つと輪が水平に残ります。";
+  if (weakest === "clarity") return "泡が消えないうちに、テンポよく次の一口へ。間をあけすぎると輪が薄くなります。";
+  return "毎回同じくらいの量を飲むと、輪の間隔がそろいます。同じ飲み口から飲むのも効きます。";
+}
+
+function titleFor(t){
+  if (t >= 100) return "伝説の一杯";
+  if (t >= 95) return "神の一杯";
+  if (t >= 90) return "見事な一杯";
+  if (t >= 75) return "いい飲みっぷり";
+  if (t >= 50) return "あと一歩";
+  return "次で巻き返し";
+}
+
+// ---------- ニックネームの確認 ----------
+const NG = ["死ね","しね","殺す","ころす","ちんこ","ちんぽ","まんこ","うんこ","セックス","せっくす","fuck","shit","bitch","sex"];
+const isNgName = s => { const n = s.toLowerCase().replace(/[\s　・._-]/g, ""); return NG.some(w => n.includes(w)); };
+
+// ---------- 自己ベスト(この端末だけに保存) ----------
+const store = {
+  get(k, d){ try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch(_) { return d; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(_) {} },
+};
+function showBestNow(){
+  const b = store.get("happyring.best", null);
+  $("bestNow").hidden = b == null;
+  if (b != null) $("bestNow").innerHTML = `あなたの自己ベスト <b>${Number(b) || 0}</b> 点`;
+}
+showBestNow();
+
+// ---------- 状態 ----------
+let sample = null, db = null, isStaff = false, maxImages = 1;
+let img = null, photoHash = null, thumb = null, ctl = null, last = null, savedId = null, tipTimer = null;
+
+// ---------- 写真の準備 ----------
+async function prepImage(f){
+  try {
+    const bmp = await createImageBitmap(f);
+    const s = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
+    const w = Math.round(bmp.width * s), h = Math.round(bmp.height * s);
+    const c = document.createElement("canvas"); c.width = w; c.height = h;
+    c.getContext("2d").drawImage(bmp, 0, 0, w, h);
+    if (bmp.close) bmp.close();
+    const blob = await new Promise(r => c.toBlob(r, "image/jpeg", .88));
+    if (!blob) throw new Error("toBlob");
+    return { blob, url: URL.createObjectURL(blob), canvas: c, w, h };
+  } catch (_) {
+    return { blob: f, url: URL.createObjectURL(f), canvas: null, w: 3, h: 4 };
+  }
+}
+function makeThumb(c){
+  if (!c) return null;
+  const w = 120, h = 160, t = document.createElement("canvas"); t.width = w; t.height = h;
+  const s = Math.max(w / c.width, h / c.height);
+  const dw = c.width * s, dh = c.height * s;
+  t.getContext("2d").drawImage(c, (w - dw) / 2, (h - dh) / 2, dw, dh);
+  return t.toDataURL("image/jpeg", .72);
+}
+async function hashFile(f){
+  try {
+    const d = await crypto.subtle.digest("SHA-256", await f.arrayBuffer());
+    return [...new Uint8Array(d)].slice(0, 16).map(x => x.toString(16).padStart(2, "0")).join("");
+  } catch (_) { return null; }
+}
+
+function setStatus(msg, isErr){
+  const el = $("status"); el.textContent = "";
+  if (!msg) return;
+  const s = document.createElement("span"); if (isErr) s.className = "err"; s.textContent = msg; el.append(s);
+}
+
+$("shot").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("file").click(); } });
+$("file").addEventListener("change", async e => {
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  if (img) URL.revokeObjectURL(img.url);
+  setStatus("写真を準備しています…");
+  $("go").disabled = true;
+  img = await prepImage(f);
+  photoHash = await hashFile(f);
+  thumb = makeThumb(img.canvas);
+  $("preview").src = img.url; $("preview").hidden = false; $("ph").hidden = true; $("retake").hidden = false;
+  $("shot").classList.add("has");
+  setStatus(sample ? "" : "この画面では採点できません。claude.ai で開いてください。", !sample);
+  $("go").disabled = !sample;
+});
+
+const ERR = {
+  not_granted:"採点機能の利用が許可されていません。",
+  sampling_disabled:"このアカウントでは採点機能を使えません。",
+  images_unavailable:"この画面では写真を送れません。",
+  image_rejected:"この写真は読み込めませんでした。別の写真で試してください。",
+  rate_limited:"混み合っています。少し待ってからもう一度お試しください。",
+  session_expired:"ログインし直してから、もう一度お試しください。",
+  refused:"この写真は採点できませんでした。ジョッキを撮り直してください。",
+  invalid_json:"採点結果をうまく受け取れませんでした。もう一度お試しください。",
+};
+const clamp = (v, max) => Math.max(0, Math.min(max, Math.round(Number(v) || 0)));
+const pct = v => Math.max(0, Math.min(100, Number(v) || 0));
+
+// ---------- 採点 ----------
+$("go").addEventListener("click", async () => {
+  if (!sample || !img) return;
+  $("go").disabled = true; $("result").hidden = true; $("thinking").hidden = false; setStatus("");
+  let i = Math.floor(Math.random() * TIPS.length);
+  const tip = () => { $("tip").textContent = "豆知識：" + TIPS[i++ % TIPS.length]; };
+  tip(); tipTimer = setInterval(tip, 4500);
+  $("thinking").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
+  ctl = new AbortController();
+  try {
+    const refs = await getRefs(maxImages);
+    const r = await sample.json(promptWithRefs(refs.used), { images: [...refs.blobs, img.blob], signal: ctl.signal });
+    if (!r || r.glass === false) { setStatus("ジョッキが見つかりませんでした。飲み終えたジョッキを真横から撮ってください。", true); return; }
+    if (r.finished === false) { setStatus("まだビールが残っているようです。飲み切ってから撮ってください。", true); return; }
+    const s = r.scores || {};
+    const rings = clamp(r.ring_count, 30);
+    const scores = {
+      shape: clamp(s.shape, 40),
+      clarity: clamp(s.clarity, 20),
+      spacing: rings <= 1 ? 0 : clamp(s.spacing, 20),
+      count: countPoints(rings),
+    };
+    // 100点は「欠点なし」と判定された場合だけ。それ以外は99点で止める
+    if (scores.shape + scores.clarity + scores.spacing + scores.count >= 100 && r.perfect !== true) scores.shape = 39;
+    const total = scores.shape + scores.clarity + scores.spacing + scores.count;
+    const pos = (Array.isArray(r.rings) ? r.rings : []).slice(0, 12)
+      .map(p => ({ y: pct(p && p.y), x1: pct(p && p.x1), x2: pct(p && p.x2) }))
+      .filter(p => p.y > 0 && p.x2 > p.x1);
+    last = { total, scores, rings, pos, comment: String(r.comment || "").slice(0, 60), at: Date.now() };
+    const prevBest = store.get("happyring.best", null);
+    last.prevBest = prevBest == null ? null : Number(prevBest);
+    if (prevBest == null || total > prevBest) store.set("happyring.best", total);
+    showBestNow();
+    showResult();
+  } catch (e) {
+    if (!e || e.code !== "cancelled") setStatus(ERR[e && e.code] || "採点に失敗しました。もう一度お試しください。", true);
+  } finally {
+    clearInterval(tipTimer);
+    $("thinking").hidden = true; $("go").disabled = !img;
+  }
+});
+$("stop").addEventListener("click", () => ctl && ctl.abort());
+
+const fmtDate = t => { const d = new Date(t); return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`; };
+
+function drawRings(){
+  const svg = $("rsvg"), photo = $("photo");
+  svg.innerHTML = ""; photo.querySelectorAll(".tag").forEach(n => n.remove());
+  last.pos.forEach((p, i) => {
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("class", "rl");
+    path.setAttribute("d", `M${p.x1} ${p.y} Q${(p.x1 + p.x2) / 2} ${p.y + 1.2} ${p.x2} ${p.y}`);
+    path.style.animationDelay = (0.3 + i * 0.25) + "s";
+    svg.append(path);
+    const tag = document.createElement("span"); tag.className = "tag"; tag.textContent = i + 1;
+    tag.style.left = Math.min(94, p.x2 + 4) + "%"; tag.style.top = p.y + "%";
+    photo.append(tag);
+  });
+  $("rcap").textContent = last.pos.length ? "金色の線が、審査員が見つけた泡の輪です。" : "";
+}
+
+function showResult(){
+  savedId = null;
+  $("result").hidden = false; $("share").hidden = true;
+  $("meta").textContent = fmtDate(last.at);
+  $("photo").style.setProperty("--ar", img.w / img.h);
+  $("rimg").src = img.url;
+  drawRings();
+  $("comment").textContent = last.comment;
+  $("comment").hidden = !last.comment;
+  $("saveNote").textContent = "";
+  $("saveForm").hidden = !db;
+  $("save").disabled = false;
+
+  const bars = $("bars"); bars.innerHTML = "";
+  const ratios = CRITERIA.map(c => last.scores[c.key] / c.max);
+  const minR = Math.min(...ratios);
+  CRITERIA.forEach((c, idx) => {
+    const row = document.createElement("div");
+    row.className = "bar-row" + (ratios[idx] === minR && minR < .95 ? " weak" : "");
+    row.innerHTML = `<span></span><div class="track"><div class="fill"></div></div><b></b>`;
+    row.children[0].textContent = c.label;
+    row.children[2].innerHTML = `${last.scores[c.key]}<small>/${c.max}</small>`;
+    bars.append(row);
+    requestAnimationFrame(() => requestAnimationFrame(() => { row.querySelector(".fill").style.width = (ratios[idx] * 100) + "%"; }));
+  });
+  $("advice").textContent = adviceFor(last);
+
+  const h = $("hanko"), tt = titleFor(last.total), half = Math.ceil(tt.length / 2);
+  h.textContent = ""; [tt.slice(0, half), tt.slice(half)].forEach(t => { const sp = document.createElement("span"); sp.textContent = t; sp.style.display = "block"; h.append(sp); });
+  h.classList.remove("stamp"); void h.offsetWidth; h.classList.add("stamp");
+  countUp(last.total);
+
+  const pb = $("pb");
+  if (last.prevBest == null) pb.innerHTML = "初めての記録です。これがあなたの自己ベスト。";
+  else if (last.total > last.prevBest) pb.innerHTML = `自己ベスト更新！ <b>${last.prevBest}点 → ${last.total}点</b>`;
+  else pb.innerHTML = `自己ベストは <b>${last.prevBest}点</b>。あと ${last.prevBest - last.total + 1} 点で更新です。`;
+
+  $("rankline").textContent = `リング ${last.rings} 本`;
+  predictRank();
+  $("result").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+}
+
+function countUp(target){
+  const el = $("num");
+  if (reduceMotion) { el.textContent = target; return; }
+  const t0 = performance.now(), dur = 1300;
+  const step = t => { const p = Math.min(1, (t - t0) / dur); el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+
+// ---------- ランキング ----------
+function startOf(kind){
+  const d = new Date(); d.setHours(0, 0, 0, 0);
+  if (kind === "month") d.setDate(1);
+  return d.getTime();
+}
+
+async function predictRank(){
+  if (!db || !last) return;
+  try {
+    const col = db.collection("scores");
+    const [all, today] = await Promise.all([
+      col.where("score", ">", last.total).get(),
+      col.where("score", ">", last.total).where("createdAt", ">=", startOf("today")).get(),
+    ]);
+    const ra = all.size + 1, rt = today.size + 1;
+    const el = $("rankline"); el.textContent = `リング ${last.rings} 本 ・ `;
+    const s = document.createElement("span");
+    if (rt <= 5) { s.className = "hot"; s.textContent = `今日の${rt}位` + (ra <= 5 ? `・歴代${ra}位` : "") + "に入れます"; }
+    else s.textContent = `今日の${rt}位・歴代${ra}位の記録`;
+    el.append(s);
+  } catch (_) {}
+}
+
+let tab = "today";
+const boards = { today: null, month: null, all: null };
+const thumbs = new Map();
+let deleting = null, staffMode = false;
+
+document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => {
+  tab = b.dataset.k;
+  document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-selected", String(x === b)));
+  renderBoard();
+}));
+
+async function loadThumb(id, imgEl){
+  if (!thumbs.has(id)) {
+    thumbs.set(id, db.doc("thumbs/" + id).get().then(s => {
+      const v = s.exists ? String((s.data() || {}).img || "") : "";
+      return /^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(v) ? v : null;
+    }).catch(() => null));
+  }
+  const src = await thumbs.get(id);
+  if (src) imgEl.src = src;
+}
+
+function renderBoard(){
+  const docs = boards[tab];
+  const ol = $("board"); ol.innerHTML = "";
+  const emptyRow = msg => { const li = document.createElement("li"); const p = document.createElement("p"); p.className = "empty"; p.textContent = msg; li.append(p); ol.append(li); };
+  if (!db) { emptyRow("ランキングは claude.ai で開くと表示されます。"); return; }
+  if (!docs) { emptyRow("読み込み中…"); return; }
+  if (!docs.length) { emptyRow(tab === "today" ? "今日はまだ記録がありません。一番乗りを狙いましょう。" : "まだ記録がありません。最初の一杯を刻みましょう。"); return; }
+  let rank = 0, prev = null;
+  docs.forEach((d, i) => {
+    const v = d.data() || {};
+    const score = Number(v.score) || 0;
+    if (score !== prev) { rank = i + 1; prev = score; } // 同点は同順位
+    const li = document.createElement("li"); if (d.id === savedId) li.className = "mine";
+    li.innerHTML = `<span class="pos${rank === 1 ? " p1" : ""}"></span><img class="thumb" alt=""><span class="who"></span><span class="pts"></span>`;
+    li.children[0].textContent = rank;
+    loadThumb(d.id, li.children[1]);
+    const who = li.children[2]; who.textContent = String(v.name || "名もなき呑み人");
+    const sub = document.createElement("span");
+    const dt = v.createdAt ? new Date(Number(v.createdAt)) : null;
+    sub.textContent = `リング ${Number(v.rings) || 0} 本` + (dt ? ` ・ ${dt.getMonth() + 1}/${dt.getDate()}` : "");
+    who.append(sub);
+    li.children[3].innerHTML = `${score}<small>点</small>`;
+    if (isStaff && staffMode) {
+      const del = document.createElement("div"); del.className = "del";
+      if (deleting === d.id) {
+        const yes = document.createElement("button"); yes.className = "yes"; yes.type = "button"; yes.textContent = "削除する";
+        const no = document.createElement("button"); no.type = "button"; no.textContent = "やめる";
+        yes.onclick = () => removeRecord(d.id);
+        no.onclick = () => { deleting = null; renderBoard(); };
+        del.append(no, yes);
+      } else {
+        const b = document.createElement("button"); b.type = "button"; b.textContent = "この記録を削除";
+        b.onclick = () => { deleting = d.id; renderBoard(); };
+        del.append(b);
+      }
+      li.append(del);
+    }
+    ol.append(li);
+  });
+}
+
+async function removeRecord(id){
+  try {
+    await db.doc("scores/" + id).delete();
+    await db.doc("thumbs/" + id).delete().catch(() => {});
+    thumbs.delete(id);
+  } catch (_) {}
+  deleting = null; renderBoard();
+}
+
+$("staffBtn").addEventListener("click", () => {
+  staffMode = !staffMode; deleting = null;
+  $("staffBtn").textContent = staffMode ? "店長メニューを閉じる" : "店長メニュー：記録を削除する";
+  renderBoard();
+});
+
+// ---------- 記録を残す ----------
+$("saveForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  if (!db || !last || savedId) return;
+  const name = $("name").value.trim() || "名もなき呑み人";
+  if (isNgName(name)) { $("saveNote").textContent = "そのニックネームは登録できません。別の名前にしてください。"; return; }
+  $("save").disabled = true; $("saveNote").textContent = "登録しています…";
+  try {
+    if (photoHash) {
+      const dup = await db.collection("scores").where("hash", "==", photoHash).limit(1).get();
+      if (!dup.empty) { $("saveNote").textContent = "この写真はすでに登録されています。新しい一杯で挑戦してください。"; return; }
+    }
+    const ref = await db.collection("scores").add({
+      name: name.slice(0, 12), score: last.total, rings: last.rings, scores: last.scores,
+      comment: last.comment, createdAt: last.at, hash: photoHash || "",
+    });
+    savedId = ref.id;
+    if (thumb) { await db.doc("thumbs/" + ref.id).set({ img: thumb }).catch(() => {}); thumbs.delete(ref.id); }
+    $("saveNote").textContent = "記録を残しました。";
+    $("saveForm").hidden = true;
+    renderBoard();
+  } catch (err) {
+    $("saveNote").textContent = err && err.code === "not_granted" ? "この画面からはランキングに登録できません。" : "登録できませんでした。もう一度お試しください。";
+  } finally {
+    if (!savedId) $("save").disabled = false;
+  }
+});
+
+$("again").addEventListener("click", () => {
+  last = null; $("file").value = "";
+  $("preview").hidden = true; $("ph").hidden = false; $("retake").hidden = true; $("shot").classList.remove("has");
+  if (img) URL.revokeObjectURL(img.url); img = null; photoHash = null; thumb = null;
+  $("result").hidden = true; $("go").disabled = true; setStatus("");
+  $("take").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+});
+
+// ---------- 結果画像 ----------
+let shareBlob = null, downloads = null;
+function roundRect(g, x, y, w, h, r){ g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+
+$("mkShare").addEventListener("click", async () => {
+  if (!last || !img) return;
+  $("mkShare").disabled = true;
+  try {
+    await Promise.all([
+      document.fonts.load('80px "Dela Gothic One"'),
+      document.fonts.load('900 200px "Big Shoulders Display"'),
+      document.fonts.load('900 40px "Zen Kaku Gothic New"'),
+    ]).catch(() => {});
+    const W = 1080, H = 1440, c = document.createElement("canvas"); c.width = W; c.height = H;
+    const g = c.getContext("2d");
+    const bg = g.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, "#1A1008"); bg.addColorStop(.55, "#3A230C"); bg.addColorStop(1, "#E09A12");
+    g.fillStyle = bg; g.fillRect(0, 0, W, H);
+
+    g.textAlign = "center"; g.fillStyle = "#FFD660";
+    g.font = '900 34px "Zen Kaku Gothic New", sans-serif';
+    g.fillText("ハッピーリング採点チャレンジ", W / 2, 84);
+
+    // 写真
+    const bx = 150, by = 120, bw = 780, bh = 760;
+    const s = Math.min(bw / img.w, bh / img.h), pw = img.w * s, ph = img.h * s;
+    const px = bx + (bw - pw) / 2, py = by + (bh - ph) / 2;
+    const bmp = await new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = img.url; });
+    g.save(); roundRect(g, px, py, pw, ph, 24); g.clip(); g.drawImage(bmp, px, py, pw, ph); g.restore();
+    g.strokeStyle = "#FFD660"; g.lineWidth = 7; g.lineCap = "round"; g.shadowColor = "#000C"; g.shadowBlur = 8;
+    last.pos.forEach(p => {
+      const y = py + ph * p.y / 100, x1 = px + pw * p.x1 / 100, x2 = px + pw * p.x2 / 100;
+      g.beginPath(); g.moveTo(x1, y); g.quadraticCurveTo((x1 + x2) / 2, y + ph * .012, x2, y); g.stroke();
+    });
+    g.shadowBlur = 0;
+
+    // 点数と判子
+    g.fillStyle = "#FFF6E2"; g.textAlign = "left";
+    g.font = '900 300px "Big Shoulders Display", Impact, sans-serif';
+    const numW = g.measureText(String(last.total)).width;
+    const nx = 110; g.fillText(String(last.total), nx, 1180);
+    g.font = '60px "Dela Gothic One", sans-serif'; g.fillText("点", nx + numW + 14, 1180);
+
+    const hx = 820, hy = 1060, hr = 118;
+    g.save(); g.translate(hx, hy); g.rotate(-0.2);
+    g.fillStyle = "#FFF8E6"; g.beginPath(); g.arc(0, 0, hr, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = "#C7331E"; g.lineWidth = 8; g.beginPath(); g.arc(0, 0, hr - 10, 0, Math.PI * 2); g.stroke();
+    g.lineWidth = 3; g.beginPath(); g.arc(0, 0, hr - 22, 0, Math.PI * 2); g.stroke();
+    g.fillStyle = "#C7331E"; g.textAlign = "center"; g.font = '40px "Dela Gothic One", sans-serif';
+    const t = titleFor(last.total), half = Math.ceil(t.length / 2);
+    g.fillText(t.slice(0, half), 0, -4); g.fillText(t.slice(half), 0, 46);
+    g.restore();
+
+    g.textAlign = "left"; g.fillStyle = "#FFF6E2";
+    g.font = '900 40px "Zen Kaku Gothic New", sans-serif';
+    const nm = savedId ? ($("name").value.trim() || "名もなき呑み人") : "";
+    g.fillText(`リング ${last.rings} 本` + (nm ? `  ・  ${nm}` : ""), nx + 8, 1260);
+    g.font = '700 30px "Zen Kaku Gothic New", sans-serif'; g.fillStyle = "#2A1809";
+    g.fillText(fmtDate(last.at), nx + 8, 1370);
+    g.textAlign = "right"; g.fillText("お酒は20歳になってから", W - 70, 1370);
+
+    shareBlob = await new Promise(r => c.toBlob(r, "image/png"));
+    $("shareImg").src = URL.createObjectURL(shareBlob);
+    $("share").hidden = false;
+    $("dl").hidden = !downloads;
+    $("share").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
+  } catch (_) {
+    $("saveNote").textContent = "結果画像をつくれませんでした。もう一度お試しください。";
+  } finally { $("mkShare").disabled = false; }
+});
+$("dl").addEventListener("click", async () => {
+  if (!downloads || !shareBlob) return;
+  try {
+    const r = await downloads.save({ filename: `happyring-${last ? last.total : ""}.png`, data: shareBlob });
+    $("shareNote").textContent = r && (r.status === "saved" || r.status === "delivered") ? "画像を保存しました。" : "保存をやめました。";
+  } catch (_) { $("shareNote").textContent = "保存できませんでした。画像を長押しして保存してください。"; }
+});
+
+// ---------- 起動 ----------
+renderBoard();
+(async () => {
+  if (!window.claude || !window.claude.use) {
+    setStatus("この画面では採点機能を使えません。claude.ai で開いてください。", true);
+    return;
+  }
+  claude.use("downloads").then(d => { downloads = d; }).catch(() => {});
+  claude.use("user").then(async u => {
+    isStaff = u ? await u.canEdit().catch(() => false) : false;
+    $("staff").hidden = !isStaff;
+    if (isStaff) renderBoard();
+  }).catch(() => {});
+  claude.use("db").then(d => {
+    db = d;
+    if (!db) { renderBoard(); return; }
+    const col = db.collection("scores");
+    const sub = (k, q) => q.orderBy("score", "desc").limit(5).onSnapshot(
+      snap => { boards[k] = snap.docs; if (tab === k) renderBoard(); },
+      () => { boards[k] = []; if (tab === k) renderBoard(); }
+    );
+    sub("today", col.where("createdAt", ">=", startOf("today")));
+    sub("month", col.where("createdAt", ">=", startOf("month")));
+    sub("all", col);
+    renderBoard();
+  });
+  sample = await claude.use("sample");
+  if (!sample) { setStatus("この画面では採点機能を使えません。", true); return; }
+  const lim = await sample.limits().catch(() => null);
+  if (!lim || !lim.images) { sample = null; setStatus("この画面では写真を送れないため、採点できません。", true); return; }
+  maxImages = Math.max(1, Number(lim.images.maxCount) || 1);
+  getRefs(maxImages); // お手本写真を先に準備しておく
+  if (img) { $("go").disabled = false; setStatus(""); }
+})();
+</script>
+
+</body>
+</html>
