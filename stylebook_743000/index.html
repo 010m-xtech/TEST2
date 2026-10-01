@@ -124,8 +124,8 @@
       </div>
     </header>
 
-    <!-- メインコンテンツ -->
-    <main class="flex-1 p-4 space-y-5">
+    <!-- トップ画面 -->
+    <main id="viewTop" class="flex-1 p-4 space-y-5">
 
       <!-- 動的バブルステージ（gaikan.png背景・丸がエアホッケーのようにすーっと滑るエリア） -->
       <section class="relative rounded-2xl bg-[#f5f3ef] p-4 overflow-hidden border border-white/80 shadow-lg">
@@ -199,33 +199,61 @@
         </a>
       </section>
 
-      <!-- メニューカード一覧セクション -->
-      <section class="space-y-3.5">
-        <!-- 注釈エリア（中央揃え・視認性の高い大きめフォント） -->
-        <div class="text-center flex flex-col items-center justify-center pt-1 space-y-2">
-          <!-- おすすめ一覧 見出し -->
-          <div class="flex items-center justify-center gap-2.5">
-            <span class="w-6 h-[1.5px] bg-white/50 rounded-full"></span>
-            <h3 class="font-serif text-lg sm:text-xl font-extrabold text-white tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
-              おすすめ一覧
-            </h3>
-            <span class="w-6 h-[1.5px] bg-white/50 rounded-full"></span>
+      <!-- メニュー画面への遷移ボタン -->
+      <section class="pt-2 pb-4 px-1">
+        <button 
+          onclick="switchPage('menu')"
+          class="group relative w-full flex items-center justify-between bg-washi text-sumi px-5 py-3.5 rounded-2xl shadow-[0_6px_15px_-3px_rgba(0,0,0,0.3),0_5px_0_#8c2d1f] active:translate-y-1.5 active:shadow-[0_0px_0_#8c2d1f] transition-all border border-stone-200 cursor-pointer overflow-hidden select-none"
+        >
+          <!-- 光沢エフェクト -->
+          <div class="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/80 to-transparent pointer-events-none"></div>
+          
+          <div class="flex items-center gap-3.5 relative z-10">
+            <!-- 本のアイコン -->
+            <div class="w-11 h-11 rounded-full bg-gradient-to-br from-[#c9513f] to-[#9e3626] flex items-center justify-center shadow-inner text-white border border-[#b84433]/50">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+            </div>
+            <div class="text-left">
+              <span class="block text-[10px] font-bold text-[#b84433] tracking-widest mb-0.5 font-sans">MENU</span>
+              <h3 class="font-serif text-[17px] sm:text-lg font-extrabold tracking-widest text-stone-800">
+                おすすめ一覧を見る
+              </h3>
+            </div>
           </div>
-
-          <div class="inline-flex items-center justify-center gap-2 bg-black/25 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-xl text-white shadow-sm mx-auto max-w-full">
-            <span class="text-amber-300 font-extrabold text-sm shrink-0 leading-none">※</span>
-            <p class="text-xs sm:text-[13px] font-bold leading-tight font-serif text-white tracking-wide text-center auto-phrase text-balance">
-              こちらからは注文できませんのでご注意ください。
-            </p>
+          
+          <!-- 右矢印 -->
+          <div class="w-9 h-9 rounded-full bg-stone-100 flex items-center justify-center text-[#b84433] shadow-sm border border-stone-200 group-hover:bg-[#b84433] group-hover:text-white transition-colors relative z-10 shrink-0">
+            <svg class="w-5 h-5 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
           </div>
-        </div>
-
-        <!-- 2列に並ぶボタンメニューグリッド -->
-        <div id="menuCardsList" class="grid grid-cols-2 gap-2.5">
-          <!-- JSでメニューカードを動的生成 -->
-        </div>
+        </button>
       </section>
 
+    </main>
+
+    <!-- メニュー一覧画面 (初期状態は非表示) -->
+    <main id="viewMenu" class="flex-1 p-4 space-y-4 hidden">
+      
+      <!-- 戻るボタンとタイトル -->
+      <div class="flex items-center justify-between pb-2 border-b border-white/10">
+        <button onclick="switchPage('top')" class="flex items-center gap-1 text-white/90 hover:text-white bg-black/20 px-3 py-1.5 rounded-xl text-sm font-bold active:scale-95 transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+          もどる
+        </button>
+        <span class="text-white font-serif font-bold text-sm tracking-widest mr-2">メニュー一覧</span>
+      </div>
+
+      <!-- 注意書きバッジ -->
+      <div class="inline-flex items-center justify-center gap-2 bg-black/25 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-xl text-white shadow-sm w-full mb-2">
+        <span class="text-amber-300 font-extrabold text-sm shrink-0 leading-none">※</span>
+        <p class="text-[11px] sm:text-xs font-bold leading-tight font-serif text-white tracking-wide text-center auto-phrase text-balance">
+          こちらからは注文できませんのでご注意ください。
+        </p>
+      </div>
+
+      <!-- 2列に並ぶボタンメニューグリッド -->
+      <div id="menuCardsList" class="grid grid-cols-2 gap-2.5 pb-4">
+        <!-- JSでメニューカードを動的生成 -->
+      </div>
     </main>
 
     <!-- 雑誌風こだわり解説モーダル -->
@@ -285,6 +313,45 @@
         event.preventDefault();
       }
     });
+
+    // ==========================================
+    // ログ記録用設定
+    // ==========================================
+    // ★ここに先ほどコピーしたGASのウェブアプリURLを貼り付けます★
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzEYxfkiZ91fANnkb7I6wizqULB8QmhtPbrwpAdBgjCh0Guv_iQkkZeHWl7iiFpNyrh/exec";
+
+    // ログを送信する関数
+    function sendLog(eventType, target) {
+      if (!GAS_URL || GAS_URL.includes("あなたの取得したURL")) return; // URLが未設定の場合は何もしない
+
+      // 簡易的なユーザー情報（ブラウザの種類など）
+      const userInfo = navigator.userAgent;
+
+      const data = {
+        eventType: eventType,
+        target: target,
+        userInfo: userInfo
+      };
+
+      try {
+        fetch(GAS_URL, {
+          method: "POST",
+          mode: "no-cors", // 追加: CORSエラーを回避する設定
+          headers: {
+            "Content-Type": "text/plain", // GASのdoPostでパースさせるためのハック
+          },
+          body: JSON.stringify(data)
+        }).catch(error => console.warn("ログ送信エラー(ネットワーク依存):", error));
+      } catch (e) {
+        console.warn("ログ送信処理エラー:", e);
+      }
+    }
+
+    // ① ログイン（ページ読み込み）の履歴
+    window.addEventListener("DOMContentLoaded", () => {
+      sendLog("login", "index_page"); // ページ読み込み時にログ送信
+    });
+    // ==========================================
 
     // 画像読み込みフォールバック用マップ
     const fallbackImages = {
@@ -477,6 +544,8 @@
           if (this.isDragging) {
             this.isDragging = false;
             if (!this.hasMoved) {
+              // 動く〇（バブル）をタップした履歴を送信
+              sendLog("bubble_click", this.data.id);
               openModal(this.data.id);
             }
           }
@@ -651,6 +720,8 @@
         `;
 
         card.addEventListener("click", () => {
+          // ② メニューのボタン（カード）を押した履歴
+          sendLog("menu_click", item.id); // クリックされたメニューのIDを送信
           openModal(item.id);
         });
 
@@ -740,6 +811,9 @@
     function handleGameLinkClick(event) {
       const targetUrl = "https://010m-xtech.github.io/TEST2/kaohame_743000";
       
+      // ③ まちじかんにあそべる！のボタンを押した履歴
+      sendLog("game_click", targetUrl);
+
       // 通常のリンク動作を一度防止して確実に指定URLを開く
       if (event) {
         event.preventDefault();
@@ -756,6 +830,25 @@
         } catch (e) {
           window.location.href = targetUrl;
         }
+      }
+    }
+
+    // 画面切り替え処理 (SPA風)
+    function switchPage(page) {
+      const topView = document.getElementById("viewTop");
+      const menuView = document.getElementById("viewMenu");
+
+      // 画面上部にスクロールを戻す
+      window.scrollTo({ top: 0, behavior: 'instant' });
+
+      if (page === 'menu') {
+        topView.classList.add("hidden");
+        menuView.classList.remove("hidden");
+        sendLog("page_view", "menu_list_page"); // メニュー画面を開いたログ
+      } else {
+        menuView.classList.add("hidden");
+        topView.classList.remove("hidden");
+        sendLog("page_view", "top_page"); // トップ画面に戻ったログ
       }
     }
   </script>
