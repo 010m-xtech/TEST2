@@ -4,21 +4,155 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Night Sommelier</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Vue.js -->
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- Google Fonts (筆記体用に追加) -->
+    <!-- Tailwind CSS（ビルド済み。クラスを変えたら tailwind.config.js の手順で再生成） -->
+    <link rel="stylesheet" href="tailwind.css">
+    <!-- Vue.js（本番用ビルド・バージョン固定） -->
+    <script src="https://unpkg.com/vue@3.5.13/dist/vue.global.prod.js"></script>
+    <!-- Chart.js（バージョン固定） -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <!-- Google Fonts（筆記体 ＋ 和文明朝） -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Shippori+Mincho:wght@400;600;800&display=swap" rel="stylesheet">
+
     <style>
         /* 筆記体クラス */
         .font-cursive { font-family: 'Dancing Script', cursive; }
+        /* 和文明朝 */
+        .font-wa { font-family: 'Shippori Mincho', 'Hiragino Mincho ProN', 'Yu Mincho', serif; }
+
+        /* ▼ 商品紹介（和）画面 ▼ */
+        .wa-paper {
+            --kinari: #f4eee2;
+            --sumi: #2b2622;
+            --shu: #b33a2c;
+            --kin: #a8864f;
+            background-color: var(--kinari);
+            /* 和紙の繊維感（SVGノイズ）＋ふんわりした陰影 */
+            background-image:
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .38 0 0 0 0 .28 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+                radial-gradient(120% 80% at 50% 0%, rgba(255,255,255,.55), rgba(255,255,255,0) 60%),
+                radial-gradient(120% 90% at 50% 120%, rgba(120,90,50,.12), rgba(120,90,50,0) 60%);
+            color: var(--sumi);
+        }
+        /* 青海波の帯 */
+        .seigaiha {
+            height: 22px;
+            background-color: #f4eee2;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='20' viewBox='0 0 40 20'%3E%3Cg fill='%23f4eee2' stroke='%23a8864f' stroke-width='.8'%3E%3Cg id='w'%3E%3Ccircle r='19'/%3E%3Ccircle r='14'/%3E%3Ccircle r='9'/%3E%3Ccircle r='4'/%3E%3C/g%3E%3C/g%3E%3Cg fill='%23f4eee2' stroke='%23a8864f' stroke-width='.8'%3E%3Cuse href='%23w' x='40' y='0'/%3E%3Cuse href='%23w' x='20' y='10'/%3E%3Cuse href='%23w' x='0' y='20'/%3E%3Cuse href='%23w' x='40' y='20'/%3E%3Cuse href='%23w' x='20' y='30'/%3E%3C/g%3E%3C/svg%3E");
+            background-size: 28px 14px;
+            opacity: .55;
+            -webkit-mask-image: linear-gradient(to bottom, #000 30%, transparent);
+                    mask-image: linear-gradient(to bottom, #000 30%, transparent);
+        }
+        .tategaki { writing-mode: vertical-rl; text-orientation: mixed; }
+        /* 落款（はんこ） */
+        .hanko {
+            writing-mode: vertical-rl;
+            color: #fff8f0;
+            background: var(--shu);
+            border-radius: 4px;
+            box-shadow: inset 0 0 0 2px var(--shu), inset 0 0 0 3px rgba(255,248,240,.85);
+            transform: rotate(-4deg);
+            opacity: .92;
+        }
+        /* 見出しの両脇の細い罫線 */
+        .wa-rule { display: flex; align-items: center; gap: .75rem; }
+        .wa-rule::before, .wa-rule::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to right, transparent, var(--kin), transparent); }
+
+        /* 結果 → 商品 遷移ボタンの光沢 */
+        @keyframes shimmer { 0% { transform: translateX(-120%); } 60%, 100% { transform: translateX(220%); } }
+        .btn-shimmer { position: relative; overflow: hidden; }
+        .btn-shimmer::after {
+            content: ''; position: absolute; inset: 0; width: 40%;
+            background: linear-gradient(100deg, transparent, rgba(255,255,255,.55), transparent);
+            animation: shimmer 2.8s ease-in-out 1.6s infinite;
+        }
+        @keyframes nudge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
+        .animate-nudge { animation: nudge 1.6s ease-in-out infinite; }
+
+        /* ▼ 質問の切り替え（進む＝左へ / 戻る＝右へ） ▼ */
+        .slide-next-enter-active, .slide-next-leave-active,
+        .slide-prev-enter-active, .slide-prev-leave-active { transition: opacity .28s ease, transform .28s cubic-bezier(.22,1,.36,1); }
+        .slide-next-enter-from { opacity: 0; transform: translateX(40px); }
+        .slide-next-leave-to   { opacity: 0; transform: translateX(-40px); }
+        .slide-prev-enter-from { opacity: 0; transform: translateX(-40px); }
+        .slide-prev-leave-to   { opacity: 0; transform: translateX(40px); }
+
+        /* ▼ 注ぐ演出 ▼ */
+        @keyframes pourStream { 0% { transform: scaleY(0); opacity: 1; } 12% { transform: scaleY(1); opacity: 1; } 85% { transform: scaleY(1); opacity: 1; } 100% { transform: scaleY(1); opacity: 0; } }
+        @keyframes pourFill { 0%, 15% { transform: translateY(var(--fill-from)); } 100% { transform: translateY(6px); } }
+        @keyframes pourWave { from { transform: translateX(0); } to { transform: translateX(-40px); } }
+        @keyframes pourBubble { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: .9; } 100% { transform: translateY(-38px); opacity: 0; } }
+        @keyframes stepFade { 0% { opacity: 0; transform: translateY(4px); } 100% { opacity: 1; transform: translateY(0); } }
+        .pour-stream { transform-origin: top; animation: pourStream 3.3s ease-out forwards; }
+        .pour-liquid { animation: pourFill 3.3s cubic-bezier(.3,.1,.3,1) forwards; }
+        .pour-wave { animation: pourWave 1.1s linear infinite; }
+        .pour-bubble { animation: pourBubble 1.6s ease-in infinite; }
+        .step-fade { animation: stepFade .5s ease forwards; }
+
+        /* ▼ 結果発表のタメ ▼ */
+        @keyframes brushIn {
+            0%   { clip-path: inset(-20% 100% -20% 0); filter: blur(6px); opacity: .2; }
+            60%  { filter: blur(1px); opacity: 1; }
+            100% { clip-path: inset(-20% 0 -20% 0); filter: blur(0); opacity: 1; }
+        }
+        .reveal-brush { opacity: 0; animation: brushIn 1.3s cubic-bezier(.65,0,.35,1) forwards; }
+        .rv-1 { animation-delay: .2s; }
+        .rv-2 { animation-delay: 1.0s; }
+        .rv-3 { animation-delay: 2.0s; }
+        .rv-4 { animation-delay: 2.4s; }
+        .rv-5 { animation-delay: 2.9s; }
+        .rv-6 { animation-delay: 3.4s; }
+        /* 商品紹介から戻ったときはタメなしで表示 */
+        .is-replay .rv-1, .is-replay .rv-2, .is-replay .rv-3,
+        .is-replay .rv-4, .is-replay .rv-5, .is-replay .rv-6 { animation-delay: 0s; animation-duration: .6s; }
+
+        /* タイプ別カラー（--accent-rgb は結果カードに設定） */
+        .accent-text { color: rgb(var(--accent-rgb)); }
+        .accent-text-soft { color: rgba(var(--accent-rgb), .85); }
+        .accent-card {
+            background-image: radial-gradient(120% 60% at 50% 0%, rgba(var(--accent-rgb), .16), transparent 70%);
+            border-color: rgba(var(--accent-rgb), .35);
+            box-shadow: 0 0 40px rgba(var(--accent-rgb), .12), 0 25px 50px -12px rgba(0,0,0,.6);
+        }
+
+        /* ▼ 暖簾（のれん） ▼ */
+        .noren { perspective: 800px; }
+        .noren-rod {
+            position: absolute; top: 0; left: -2%; right: -2%; height: 14px;
+            background: linear-gradient(#6b4a2e, #3e2a19);
+            box-shadow: 0 3px 8px rgba(0,0,0,.5);
+            transform: translateY(-120%); transition: transform .45s cubic-bezier(.22,1,.36,1);
+        }
+        .noren-half {
+            position: relative; width: 50%; height: 100%;
+            background-color: #1e2b4d;
+            background-image:
+                linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px),
+                linear-gradient(rgba(0,0,0,.25), transparent 30%, transparent 80%, rgba(0,0,0,.35));
+            background-size: 3px 100%, 100% 100%;
+            display: flex; align-items: center; justify-content: center;
+            transform-origin: top center;
+            transform: translateY(-105%);
+            transition: transform .55s cubic-bezier(.22,1,.36,1);
+            box-shadow: inset 0 -10px 20px rgba(0,0,0,.25);
+        }
+        .noren-half.left  { border-right: 2px solid #121a30; }
+        .noren-half.right { border-left: 2px solid #121a30; }
+        .noren-half span { color: #f4eee2; font-size: clamp(40px, 13vw, 72px); font-weight: 800; letter-spacing: .15em; text-shadow: 0 2px 6px rgba(0,0,0,.35); }
+        .noren-drop .noren-rod, .noren-open .noren-rod { transform: translateY(0); }
+        .noren-drop .noren-half { transform: translateY(0); }
+        .noren-open .noren-rod { transform: translateY(-120%); transition-delay: .5s; }
+        .noren-open .noren-half { transition: transform .85s cubic-bezier(.65,0,.35,1); }
+        .noren-open .noren-half.left  { transform: translateX(-102%) skewY(-4deg) rotate(-2deg); }
+        .noren-open .noren-half.right { transform: translateX(102%) skewY(4deg) rotate(2deg); }
+
+        @media (prefers-reduced-motion: reduce) {
+            .btn-shimmer::after, .animate-nudge { animation: none; }
+            .reveal-brush { animation-duration: .01s; animation-delay: 0s; }
+        }
         
         .fade-enter-active { transition: opacity 1.5s ease; }
         .fade-leave-active { transition: opacity 0.8s ease; }
@@ -162,14 +296,20 @@
                     </div>
                 </div>
 
+                <transition :name="slideDirection" mode="out-in">
+                <div :key="currentQuestionIndex">
                 <h2 class="text-lg sm:text-xl font-bold mb-4 text-center leading-snug tracking-wide text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] px-1">
                     <span class="text-amber-300">Q{{ currentQuestionIndex + 1 }}.</span> {{ currentQuestion.text }}
                 </h2>
 
                 <div class="space-y-4">
+                    <!-- タップした選択肢は金色に光って沈み、もう一方は薄くなる -->
                     <div v-for="(option, idx) in currentQuestion.options" :key="idx"
-                         @click="answerQuestion(option.type)"
-                         class="bg-slate-900/80 backdrop-blur-md rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 border border-slate-600/50">
+                         @click="answerQuestion(option.type, idx)"
+                         class="bg-slate-900/80 backdrop-blur-md rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 border"
+                         :class="pickedIndex === null ? 'border-slate-600/50 active:scale-[0.98]'
+                               : pickedIndex === idx ? 'border-amber-300 scale-[0.97] shadow-[0_0_28px_rgba(252,211,77,0.55)]'
+                               : 'border-slate-600/50 opacity-40'">
                         
                         <div v-if="currentQuestionIndex === 1" class="w-full h-44 sm:h-52 flex items-center justify-center bg-white overflow-hidden relative p-1.5">
                             <span class="text-amber-400 font-extrabold text-3xl tracking-widest drop-shadow-sm">{{ option.imgText }}</span>
@@ -179,110 +319,179 @@
                             <img :src="option.img" class="w-full h-full object-contain relative z-10 scale-150" alt="Option Image" @error="handleImageError">
                         </div>
                         
-                        <div class="p-3 bg-slate-900/90 border-t border-slate-700/50 flex items-center justify-center text-center min-h-[3rem]">
-                            <div class="font-bold text-sm sm:text-base text-slate-100 tracking-wide leading-snug">
-                                <span class="text-amber-300 font-extrabold mr-1.5 text-base sm:text-lg">{{ idx === 0 ? 'A.' : 'B.' }}</span>{{ option.text }}
+                        <div class="p-3 border-t flex items-center justify-center text-center min-h-[3rem] transition-colors duration-300"
+                             :class="pickedIndex === idx ? 'bg-amber-300 border-amber-300' : 'bg-slate-900/90 border-slate-700/50'">
+                            <div class="font-bold text-sm sm:text-base tracking-wide leading-snug"
+                                 :class="pickedIndex === idx ? 'text-slate-900' : 'text-slate-100'">
+                                <span class="font-extrabold mr-1.5 text-base sm:text-lg"
+                                      :class="pickedIndex === idx ? 'text-slate-900' : 'text-amber-300'">{{ idx === 0 ? 'A.' : 'B.' }}</span>{{ option.text }}
                             </div>
                         </div>
                     </div>
                 </div>
+                </div>
+                </transition>
             </div>
 
-            <!-- ▼ 2.5 注がれる演出画面 ▼ -->
-            <div v-else-if="step === 'pouring'" key="pouring" class="w-full max-w-lg mt-6 p-6 flex flex-col items-center text-center min-h-[60vh] justify-center">
-                <h2 class="text-2xl md:text-3xl font-bold text-white mb-2 tracking-wider drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">Please wait...</h2>
-                <p class="text-sm text-amber-300 font-bold mb-10 animate-pulse tracking-wide drop-shadow-md">今日のあなたの一杯を注いでいます...</p>
-                
-                <div class="w-20 h-20 rounded-full border-4 border-slate-700 border-t-amber-300 animate-spin shadow-[0_0_20px_rgba(252,211,77,0.3)]"></div>
+            <!-- ▼ 2.5 注がれる演出画面（選んだお酒に合わせて、お猪口 or グラスに注がれていく） ▼ -->
+            <div v-else-if="step === 'pouring'" key="pouring" class="w-full max-w-lg p-6 flex flex-col items-center text-center min-h-[60vh] justify-center my-auto">
+                <svg viewBox="0 0 120 140" class="w-40 h-44 sm:w-48 sm:h-52 drop-shadow-[0_0_25px_rgba(252,211,77,0.25)] mb-8" aria-hidden="true">
+                    <defs>
+                        <clipPath id="cupClip">
+                            <path v-if="selectedDrink === 'sake'" d="M28 72 L92 72 Q90 114 60 118 Q30 114 28 72 Z" />
+                            <path v-else d="M34 44 L86 44 L82 120 Q82 124 78 124 L42 124 Q38 124 38 120 Z" />
+                        </clipPath>
+                    </defs>
+                    <!-- 注ぎ口から落ちる一筋 -->
+                    <rect class="pour-stream" x="58.5" y="0" width="3" :height="selectedDrink === 'sake' ? 112 : 118" rx="1.5"
+                          :fill="selectedDrink === 'sake' ? 'rgba(253,230,170,0.9)' : 'rgba(210,235,255,0.75)'" />
+                    <!-- 器の中身 -->
+                    <g clip-path="url(#cupClip)">
+                        <!-- 器の深さに合わせて、空の状態（--fill-from）から注ぎ始める -->
+                        <g class="pour-liquid" :style="{ '--fill-from': selectedDrink === 'sake' ? '46px' : '80px' }">
+                            <g class="pour-wave">
+                                <path :d="selectedDrink === 'sake' ? 'M0 72 q10 -4 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 V140 H0 Z' : 'M0 44 q10 -4 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 V140 H0 Z'"
+                                      :fill="selectedDrink === 'sake' ? 'rgba(253,230,170,0.85)' : 'rgba(210,235,255,0.55)'" />
+                            </g>
+                            <template v-if="selectedDrink !== 'sake'">
+                                <circle class="pour-bubble" cx="50" cy="118" r="1.6" fill="rgba(255,255,255,.8)" />
+                                <circle class="pour-bubble" cx="66" cy="120" r="1.2" fill="rgba(255,255,255,.8)" style="animation-delay:.5s" />
+                                <circle class="pour-bubble" cx="58" cy="116" r="1" fill="rgba(255,255,255,.8)" style="animation-delay:1s" />
+                            </template>
+                        </g>
+                    </g>
+                    <!-- 器の輪郭 -->
+                    <path v-if="selectedDrink === 'sake'" d="M28 72 L92 72 Q90 114 60 118 Q30 114 28 72 Z M50 118 L48 124 L72 124 L70 118" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2" stroke-linejoin="round" />
+                    <path v-else d="M34 44 L86 44 L82 120 Q82 124 78 124 L42 124 Q38 124 38 120 Z" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.85)" stroke-width="2" stroke-linejoin="round" />
+                </svg>
+
+                <p :key="pourStage" class="step-fade text-sm sm:text-base text-amber-200 font-bold tracking-widest drop-shadow-md h-6">
+                    {{ pourMessages[pourStage] }}
+                </p>
             </div>
 
-            <!-- ▼ 3. 動的診断結果画面 ▼ -->
-            <div v-else-if="step === 'result' && finalResult" key="result" class="w-full h-full max-w-[98%] sm:max-w-lg my-1 p-3 sm:p-5 bg-slate-900/80 backdrop-blur-md border border-white/20 rounded-2xl flex flex-col items-center text-center shadow-2xl justify-between">
-                <!-- 上部: タイトルと説明（ふわっとフェード 1） -->
-                <div class="w-full flex flex-col items-center justify-center shrink-0 fade-in-section delay-1">
-                    <div class="flex items-end justify-center mb-1 flex-wrap w-full mt-1">
-                        <span class="text-[11px] sm:text-base text-slate-200 tracking-widest font-serif font-bold pb-0.5 sm:pb-1.5 mr-1 sm:mr-2">あなたは</span>
-                        <ruby class="font-cursive text-3xl sm:text-4xl text-amber-300 font-bold tracking-widest drop-shadow-md mr-1 sm:mr-2">
+            <!-- ▼ 3. 診断結果画面（タイプ＋レーダーチャート） ▼ -->
+            <!-- 「あなたは…」→ 一拍おいてタイプ名が筆で書くように現れる。色はタイプごとに変わる -->
+            <div v-else-if="step === 'result' && finalResult" key="result"
+                 class="accent-card w-full max-w-[98%] sm:max-w-lg my-auto p-4 sm:p-6 bg-slate-900/80 backdrop-blur-md border rounded-2xl flex flex-col items-center text-center"
+                 :class="{ 'is-replay': isResultReplay }"
+                 :style="{ '--accent-rgb': typeTheme.rgb }">
+                <!-- タイトル -->
+                <div class="w-full flex flex-col items-center">
+                    <p class="text-[10px] sm:text-xs tracking-[0.4em] text-slate-400 mb-2 fade-in-section rv-1">DIAGNOSIS RESULT</p>
+                    <div class="flex items-end justify-center mb-2 flex-wrap w-full">
+                        <span class="text-xs sm:text-base text-slate-200 tracking-widest font-bold pb-1 sm:pb-1.5 mr-1.5 sm:mr-2 fade-in-section rv-1">あなたは</span>
+                        <ruby class="reveal-brush rv-2 font-cursive text-4xl sm:text-5xl accent-text font-bold tracking-widest drop-shadow-md mr-1.5 sm:mr-2">
                             {{ finalResult.titleRomaji }}
-                            <rt class="text-[9px] sm:text-xs font-sans tracking-widest text-amber-200 opacity-90">{{ finalResult.titleRuby }}</rt>
+                            <rt class="text-[10px] sm:text-xs font-sans tracking-widest accent-text-soft">{{ finalResult.titleRuby }}</rt>
                         </ruby>
-                        <span class="text-[11px] sm:text-base text-slate-200 tracking-widest font-serif font-bold pb-0.5 sm:pb-1.5">タイプ</span>
+                        <span class="text-xs sm:text-base text-slate-200 tracking-widest font-bold pb-1 sm:pb-1.5 fade-in-section rv-3">タイプ</span>
                     </div>
-                    
-                    <p class="text-[10px] sm:text-sm text-amber-200/90 mb-2 sm:mb-4 font-bold tracking-wide text-center px-2">
+                    <p class="text-xs sm:text-sm accent-text-soft font-bold tracking-wide px-2 text-balance fade-in-section rv-4">
                         {{ finalResult.shortDescription }}
                     </p>
                 </div>
 
-                <!-- ▼ 【上部】レーダーチャート三角形エリア（ふわっとフェード 2） ▼ -->
-                <div class="w-full flex-grow flex items-center justify-center relative min-h-[150px] mb-2 fade-in-section delay-2">
-                    <div class="w-full h-full max-w-[240px] max-h-[240px] relative">
-                        <canvas id="radarChart" class="w-full h-full max-w-full max-h-full"></canvas>
+                <!-- レーダーチャート -->
+                <div class="w-full flex items-center justify-center my-3 sm:my-4 fade-in-section rv-5">
+                    <div class="w-full max-w-[330px] h-[250px] sm:h-[280px] relative">
+                        <canvas id="radarChart"></canvas>
                     </div>
                 </div>
 
-                <!-- ▼ 【中段エリア】左: 写真（アンバー額縁） / 右: 説明文（ふわっとフェード 3） ▼ -->
-                <div class="w-full flex gap-2.5 sm:gap-3.5 flex-grow min-h-[170px] mb-2 sm:mb-3 fade-in-section delay-3 items-stretch">
-                    <!-- 左: 写真エリア（アンバー色の外枠 ＆ 白背景台座で画像に完全フィット） -->
-                    <div class="w-1/2 bg-slate-900/90 rounded-2xl border-2 border-amber-300/70 shadow-[0_0_18px_rgba(252,211,77,0.25)] flex items-center justify-center relative overflow-hidden p-1.5 sm:p-2">
-                        <div class="w-full h-full flex items-center justify-center bg-white rounded-xl overflow-hidden shadow-inner p-1">
-                            <img v-if="finalProduct && finalProduct.img" :src="finalProduct.img" alt="Drink Photo" class="w-full h-full object-contain transition-opacity duration-700" @error="handleImageError">
-                            <div v-else class="flex flex-col items-center justify-center text-center p-2 opacity-70">
-                                <span class="text-2xl mb-1">📸</span>
-                                <span class="text-slate-500 text-[10px] sm:text-xs font-bold font-sans tracking-wider">DRINK<br>PHOTO</span>
-                            </div>
-                        </div>
-                    </div>
+                <!-- タイプ説明 -->
+                <p class="text-[13px] sm:text-sm text-slate-200 leading-relaxed sm:leading-loose text-left sm:text-center px-1 sm:px-3 mb-5 fade-in-section rv-6">
+                    {{ finalResult.description }}
+                </p>
 
-                    <!-- 右: 説明文エリア -->
-                    <div class="w-1/2 flex flex-col justify-between text-left bg-slate-800/80 rounded-2xl border border-slate-700 p-2.5 sm:p-3.5 overflow-y-auto shadow-md">
-                        <!-- 準備中の結果タイプの場合 -->
-                        <div v-if="isPreparation" class="flex flex-col items-center justify-center h-full text-center p-2 my-auto">
-                            <span class="text-2xl sm:text-3xl mb-1.5 opacity-80">🍶</span>
-                            <h3 class="text-amber-300 font-bold text-xs sm:text-sm tracking-widest mb-1">COMING SOON</h3>
-                            <p class="text-slate-300 text-[10px] sm:text-xs leading-relaxed">
-                                現在ソムリエが<br>ぴったりのお酒を厳選中。<br>どうぞお楽しみに！
-                            </p>
-                        </div>
-
-                        <!-- 商品情報がある場合：文字数に応じた動的レイアウト -->
-                        <template v-else>
-                            <!-- 上部：商品名 ＆ 特徴説明 -->
-                            <div :class="descStyle.gap">
-                                <h3 class="text-amber-300 font-bold mb-1 sm:mb-1.5 whitespace-nowrap overflow-hidden text-ellipsis block"
-                                    :style="productTitleStyle">
-                                    {{ finalProduct.name }}
-                                </h3>
-                                <p class="text-slate-200" :class="descStyle.body">
-                                    {{ finalProduct.description }}
-                                </p>
-                            </div>
-
-                            <!-- 下部：合うメニュー -->
-                            <div v-if="finalProduct.matching" class="pt-2 border-t border-slate-700/60 mt-auto">
-                                <h3 class="text-amber-300 tracking-wide font-bold mb-0.5 sm:mb-1" :class="descStyle.matchTitle">
-                                    合うメニュー
-                                </h3>
-                                <p class="text-slate-200 whitespace-pre-line" :class="descStyle.matchBody">
-                                    {{ formattedMatching }}
-                                </p>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-
-                <!-- ▼ 【下段】横幅いっぱいに広がる立体的な「One more」ボタン（ふわっとフェード 4） ▼ -->
-                <div class="w-full shrink-0 fade-in-section delay-4 mt-auto">
-                    <button @click="resetQuiz" 
-                            class="w-full py-3 sm:py-3.5 px-4 bg-gradient-to-b from-amber-300 via-amber-400 to-amber-500 hover:from-amber-200 hover:to-amber-400 text-slate-950 font-extrabold rounded-xl text-base sm:text-lg tracking-widest transition-all duration-100 border-b-4 border-amber-600 shadow-[0_6px_20px_rgba(252,211,77,0.35)] active:translate-y-1 active:border-b-0 active:shadow-[0_2px_10px_rgba(252,211,77,0.2)] flex items-center justify-center gap-2">
-                        <span>One more</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                <!-- 商品紹介への導線 -->
+                <div class="w-full fade-in-section rv-6">
+                    <p class="text-[11px] sm:text-xs text-slate-400 tracking-widest mb-2">そんなあなたに、今宵の一献を</p>
+                    <button @click="goToProduct"
+                            class="btn-shimmer w-full py-3.5 sm:py-4 px-4 bg-gradient-to-b from-amber-300 via-amber-400 to-amber-500 hover:from-amber-200 hover:to-amber-400 text-slate-950 font-extrabold rounded-xl text-base sm:text-lg tracking-widest transition-all duration-100 border-b-4 border-amber-600 shadow-[0_6px_20px_rgba(252,211,77,0.35)] active:translate-y-1 active:border-b-0 flex items-center justify-center gap-2">
+                        <span>あなたへの一杯を見る</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 animate-nudge" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
                         </svg>
                     </button>
                 </div>
             </div>
+
+            <!-- ▼ 4. 商品紹介画面（和） ▼ -->
+            <div v-else-if="step === 'product' && finalResult" key="product" class="wa-paper font-wa w-full max-w-[98%] sm:max-w-lg my-auto rounded-sm shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden relative">
+                <div class="seigaiha"></div>
+
+                <div class="px-5 sm:px-8 pb-6 sm:pb-8 -mt-1">
+                    <!-- 見出し -->
+                    <div class="wa-rule text-[11px] sm:text-xs tracking-[0.5em] text-[color:var(--kin)] mb-5 fade-in-section delay-1">
+                        <span class="pl-[0.5em]">今宵の一献</span>
+                    </div>
+
+                    <!-- 写真 ＋ 縦書きの銘柄名 -->
+                    <div class="flex items-stretch justify-center gap-4 sm:gap-6 mb-6 fade-in-section delay-2">
+                        <div class="w-[58%] max-w-[240px] aspect-[4/5] bg-white p-2 shadow-[0_6px_18px_rgba(60,40,20,0.18)] border border-[#e3d8c3]">
+                            <img v-if="finalProduct && finalProduct.img" :src="finalProduct.img" :alt="productDisplayName" class="w-full h-full object-contain" @error="handleImageError">
+                            <div v-else class="w-full h-full flex flex-col items-center justify-center border border-dashed border-[#cdbd9f] text-[color:var(--kin)]">
+                                <span class="tategaki text-sm tracking-[0.4em]">ただいま厳選中</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-center py-1 min-h-0">
+                            <!-- 長い銘柄名は縦書きのまま自然に2行目へ折り返す -->
+                            <h2 class="tategaki flex-1 min-h-0 font-extrabold" :class="productNameClass">
+                                <span v-for="line in productNameLines" :key="line" class="block">{{ line }}</span>
+                            </h2>
+                            <span class="hanko shrink-0 text-[11px] font-semibold tracking-[0.15em] px-1 py-1.5 mt-3">{{ finalResult.titleRuby }}</span>
+                        </div>
+                    </div>
+
+                    <!-- 商品説明 -->
+                    <div class="fade-in-section delay-3">
+                        <template v-if="!isPreparation">
+                            <p class="text-[13.5px] sm:text-[15px] leading-[2] tracking-wide mb-6">
+                                {{ finalProduct.description }}
+                            </p>
+
+                            <div v-if="matchingList.length" class="mb-6">
+                                <h3 class="wa-rule text-xs tracking-[0.4em] text-[color:var(--kin)] mb-3"><span class="pl-[0.4em]">合わせたい肴</span></h3>
+                                <ul class="flex flex-wrap justify-center gap-2">
+                                    <li v-for="item in matchingList" :key="item"
+                                        class="text-[13px] sm:text-sm px-3 py-1 border border-[#cdbd9f] rounded-full bg-white/50">{{ item }}</li>
+                                </ul>
+                            </div>
+                        </template>
+                        <p v-else class="text-[13.5px] sm:text-[15px] leading-[2] tracking-wide mb-6 text-center">
+                            {{ finalResult.titleRuby }}タイプのあなたにぴったりの一献を、<br>ただいまソムリエが厳選しております。<br>どうぞお楽しみに。
+                        </p>
+
+                        <!-- 同タイプのおすすめジャンル -->
+                        <div v-if="typeRecommendation" class="mb-7">
+                            <h3 class="wa-rule text-xs tracking-[0.4em] text-[color:var(--kin)] mb-3"><span class="pl-[0.4em]">こんなお酒もおすすめ</span></h3>
+                            <p class="text-xs sm:text-[13px] leading-loose whitespace-pre-line text-center text-[#5a5048]">{{ typeRecommendation }}</p>
+                        </div>
+                    </div>
+
+                    <!-- ボタン -->
+                    <div class="flex gap-3 fade-in-section delay-4">
+                        <button @click="backToResult"
+                                class="flex-1 py-3 text-sm tracking-widest border border-[color:var(--sumi)] text-[color:var(--sumi)] rounded-sm hover:bg-black/5 active:scale-[0.98] transition">
+                            結果に戻る
+                        </button>
+                        <button @click="resetQuiz"
+                                class="flex-1 py-3 text-sm tracking-widest bg-[color:var(--sumi)] text-[color:var(--kinari)] rounded-sm hover:opacity-90 active:scale-[0.98] transition">
+                            もう一度診断
+                        </button>
+                    </div>
+                </div>
+            </div>
         </transition>
+
+        <!-- ▼ 暖簾（結果 → 商品紹介 の切り替え演出） ▼ -->
+        <div v-if="norenStage" class="noren font-wa fixed inset-0 z-50 flex overflow-hidden pointer-events-none" :class="'noren-' + norenStage" aria-hidden="true">
+            <div class="noren-rod"></div>
+            <!-- 縦書きは右から読むので、右側が「今宵」 -->
+            <div class="noren-half left"><span class="tategaki">一献</span></div>
+            <div class="noren-half right"><span class="tategaki">今宵</span></div>
+        </div>
     </div>
 
     <!-- Vue.js スクリプト -->
@@ -291,20 +500,25 @@
         const randomVideoIndex = Math.floor(Math.random() * videoFiles.length);
         const videoSrc = videoFiles[randomVideoIndex];
 
+        // 動画の読み込み完了までは軽量なポスター画像（1フレーム目）を表示
+        const posterSrc = videoSrc.replace('.mp4', '_poster.webp');
+
         const bgVideoElement = document.getElementById('bgVideo');
         if (bgVideoElement) {
+            bgVideoElement.poster = posterSrc;
             bgVideoElement.src = videoSrc;
         }
 
         const bgVideoBlurElement = document.getElementById('bgVideoBlur');
         if (bgVideoBlurElement) {
+            bgVideoBlurElement.poster = posterSrc;
             bgVideoBlurElement.src = videoSrc;
         }
 
         // ▼ GASのURL ▼
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxOHrvgUYlPKeemzFOfhxggXXssC3L9Od0RbuhtxIPM-mLXVvpVKJJsFf8FlmOOA4Zj7Q/exec';
 
-        const { createApp, ref, computed, onMounted, watch } = Vue;
+        const { createApp, ref, computed, onMounted, watch, nextTick } = Vue;
 
         createApp({
             setup() {
@@ -315,6 +529,16 @@
                 
                 // 二重送信防止用フラグ
                 const isSubmitted = ref(false);
+
+                // ▼ 演出用の状態 ▼
+                const pickedIndex = ref(null);            // タップした選択肢（光らせる用）
+                const slideDirection = ref('slide-next'); // 質問の切り替え方向
+                const pourStage = ref(0);                 // 注ぐ演出のメッセージ段階
+                const pourMessages = ['香りを確かめています…', '味わいを選んでいます…', 'あなたの一杯を注いでいます…'];
+                const isResultReplay = ref(false);        // 商品紹介から戻ったとき（タメなし）
+                const norenStage = ref(null);             // 暖簾: 'ready' → 'drop' → 'open'
+                const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                const wait = (ms) => new Promise(r => setTimeout(r, ms));
                 let chartInstance = null;
 
                 const scrollToTop = (smooth = false) => {
@@ -323,22 +547,30 @@
                 };
 
                 onMounted(() => {
+                    // 質問・商品画像をあらかじめ読み込み、画面切り替え時のチラつきを防ぐ
+                    const preload = [
+                        ...drinks.map(d => d.img),
+                        ...questions.flatMap(q => q.options.map(o => o.img)),
+                        ...Object.values(resultTypes).flatMap(t => Object.values(t.products).map(p => p.img))
+                    ].filter(Boolean);
+                    new Set(preload).forEach(src => { const img = new Image(); img.src = src; });
+
                     setTimeout(() => {
                         if (step.value === 'opening') step.value = 'start';
                     }, 2000); // 3000msからさらに1秒短縮して2000ms（2秒）に変更
                 });
                 
                 const drinks = [
-                    { id: 'sake', name: '日本酒', img: 'nihonsyu.jpg' },
-                    { id: 'craft', name: 'クラフトジン', img: 'craft.jpg' }
+                    { id: 'sake', name: '日本酒', img: 'nihonsyu.webp' },
+                    { id: 'craft', name: 'クラフトジン', img: 'craft.webp' }
                 ];
 
                 const questions = [
                     {
                         text: 'あなたの性別をお聞かせください',
                         options: [
-                            { text: '男性', img: 'seibetuotoko.jpg', type: 'A' },
-                            { text: '女性', img: 'seibetuonna.jpg', type: 'B' }
+                            { text: '男性', img: 'seibetuotoko.webp', type: 'A' },
+                            { text: '女性', img: 'seibetuonna.webp', type: 'B' }
                         ]
                     },
                     {
@@ -351,43 +583,43 @@
                     {
                         text: '今日の気分は？',
                         options: [
-                            { text: 'スカッと弾けて今日をリセットしたい！', img: 'okiru.jpg', type: 'A' },
-                            { text: '静かにほっこり今日を癒やしたい…', img: 'yasumu.jpg', type: 'B' }
+                            { text: 'スカッと弾けて今日をリセットしたい！', img: 'okiru.webp', type: 'A' },
+                            { text: '静かにほっこり今日を癒やしたい…', img: 'yasumu.webp', type: 'B' }
                         ]
                     },
                     {
                         text: 'お酒に合わせたい食事は？',
                         options: [
-                            { text: 'ガッツリなお肉や揚げ物', img: '2-2.jpg', type: 'A' },
-                            { text: 'ヘルシーなお刺身や野菜', img: '2-1.jpg', type: 'B' }
+                            { text: 'ガッツリなお肉や揚げ物', img: '2-2.webp', type: 'A' },
+                            { text: 'ヘルシーなお刺身や野菜', img: '2-1.webp', type: 'B' }
                         ]
                     },
                     {
                         text: 'ふと嗅ぎたい惹かれる香りは？',
                         options: [
-                            { text: 'みずみずしい柑橘やフルーティーな香り', img: '3-1.jpg', type: 'A' },
-                            { text: 'スパイシーな香辛料やハーブ・木の香り', img: '3-2.jpg', type: 'B' }
+                            { text: 'みずみずしい柑橘やフルーティーな香り', img: '3-1.webp', type: 'A' },
+                            { text: 'スパイシーな香辛料やハーブ・木の香り', img: '3-2.webp', type: 'B' }
                         ]
                     },
                     {
                         text: '今の口が一番求めているのは？',
                         options: [
-                            { text: 'やさしい甘みフルーティーな甘酸っぱさ', img: '4-1.jpg', type: 'A' },
-                            { text: 'キリッとした苦みドライで控えめな甘さ', img: '4-2.jpg', type: 'B' }
+                            { text: 'やさしい甘みフルーティーな甘酸っぱさ', img: '4-1.webp', type: 'A' },
+                            { text: 'キリッとした苦みドライで控えめな甘さ', img: '4-2.webp', type: 'B' }
                         ]
                     },
                     {
                         text: '喉を通るときの好みは？',
                         options: [
-                            { text: 'キリッと締まる爽快なキレ', img: 'awa.jpg', type: 'A' },
-                            { text: 'すーっと通るなめらかな口当たり', img: 'nameraka.jpg', type: 'B' }
+                            { text: 'キリッと締まる爽快なキレ', img: 'awa.webp', type: 'A' },
+                            { text: 'すーっと通るなめらかな口当たり', img: 'nameraka.webp', type: 'B' }
                         ]
                     },
                     {
                         text: '今日のお酒選びのテーマは？',
                         options: [
-                            { text: '失敗したくない！王道定番派', img: 'ousama.jpg', type: 'A' },
-                            { text: '新しい発見がほしい！個性的派', img: 'bouken.jpg', type: 'B' }
+                            { text: '失敗したくない！王道定番派', img: 'ousama.webp', type: 'A' },
+                            { text: '新しい発見がほしい！個性的派', img: 'bouken.webp', type: 'B' }
                         ]
                     }
                 ];
@@ -408,13 +640,13 @@
                         products: {
                             sake: {
                                 name: '【貴の特別純米・夏タイプ】',
-                                img: 'sarasaranihonsyu.jpg',
+                                img: 'sarasaranihonsyu.webp',
                                 description: 'さっぱりとしたクエン酸の酸味が魅力の限定酒です。軽やかな飲み口に優しい甘みと米の味わいが溶け合い、夏の和食とすいすい楽しめます。',
                                 matching: 'お刺身\nあさりの酒蒸し'
                             },
                             craft: {
                                 name: '【yasogin オレンジ】',
-                                img: 'sarasarajin.jpg',
+                                img: 'sarasarajin.webp',
                                 description: 'オレンジピールをたっぷりと使用したジューシーでビターなジンです。甘味が強く香り高いネーブルオレンジを使用してバランス良く仕上がった一品。定番はトニックとソーダ、寒い日はお湯割りでほっとひと息つくのもおすすめ',
                                 matching: '焼売やチーズケーキ\nショコラテリーヌ'
                             }
@@ -435,42 +667,15 @@
                         products: {
                             sake: {
                                 name: '【産土】',
-                                img: 'ururunihonsyu.jpg',
+                                img: 'ururunihonsyu.webp',
                                 description: '炭酸ガスを含んだ、メロン・洋梨・マスカットなどのもぎたてフルーツを想わせる香りと味わい。アルコール13%と軽快ながらも、旨味かつとろみのある味わいです。',
                                 matching: 'ちーずそぼろ\n秋刀魚の炭焼き'
                             },
                             craft: {
                                 name: '【虎ノ門　いちごジン】',
-                                img: 'uruurujin.jpg',
+                                img: 'uruurujin.webp',
                                 description: '栃木産「とちおとめ・とちあいか」の甘酸っぱい香り。この香りと風味を堪能できる飲み方はトニック割・ソーダ割がおすすめ。',
                                 matching: 'カモロース炭焼き\nラムの黒焼き'
-                            }
-                        }
-                    },
-                    type2: {
-                        id: 'type2',
-                        titleRuby: 'ウルウル',
-                        titleRomaji: 'Uru Uru',
-                        icon: '🍊',
-                        shortDescription: 'ひと口でうるっと心潤う、華やかな一杯。',
-                        recommendations: {
-                            wine: '樽熟成のリッチな白ワイン（シャルドネなど）\n香り高い白（ゲヴュルツトラミネール）\n華やかなロゼワイン',
-                            sake: '大吟醸、吟醸酒\n（メロンやリンゴのようなフルーティーな薫酒）',
-                            craft: '【ビール】フルーツエール、ヘイジーIPA\n【ジン】フローラル系、ベリー系ジン'
-                        },
-                        description: '果実やボタニカルの豊かな香りが、心と体をたっぷりと潤すリッチな味わい。ひと口飲むと気分がパッと明るくなるような一杯です。',
-                        products: {
-                            sake: {
-                                name: '【産土】',
-                                img: 'ururunihonsyu.jpg',
-                                description: '炭酸ガスを含んだ、メロン・洋梨・マスカットなどのもぎたてフルーツを想わせる香りと味わい。アルコール13%と軽快ながらも、旨味かつとろみのある味わいです。',
-                                matching: 'ちーずそぼろ・秋刀魚の炭焼き'
-                            },
-                            craft: {
-                                name: '【虎ノ門　いちごジン】',
-                                img: 'uruurujin.jpg',
-                                description: '栃木産「とちおとめ・とちあいか」の甘酸っぱい香り。この香りと風味を堪能できる飲み方はトニック割・ソーダ割がおすすめ。',
-                                matching: 'カモロース炭焼き・ラムの黒焼き'
                             }
                         }
                     },
@@ -513,48 +718,50 @@
                 const currentQuestion = computed(() => questions[currentQuestionIndex.value]);
 
                 // ▼ 診断ロジック（ポイント制） ▼
+                // 各質問のA/Bごとに、どのタイプへ何点入るかの配点表（Q1・Q2は集計用なので配点なし）
+                const SCORE_RULES = [
+                    null, null,
+                    { A: { type1: 1, type2: 1 }, B: { type3: 1, type4: 2 } }, // Q3 気分
+                    { A: { type4: 2, type3: 1 }, B: { type1: 2, type2: 1 } }, // Q4 食事
+                    { A: { type2: 2, type1: 1 }, B: { type4: 2, type3: 1 } }, // Q5 香り
+                    { A: { type2: 2, type3: 2 }, B: { type1: 2, type4: 1 } }, // Q6 味
+                    { A: { type1: 2, type2: 1 }, B: { type3: 2, type4: 1 } }, // Q7 喉越し
+                    { A: { type3: 2, type1: 1 }, B: { type2: 2, type4: 1 } }  // Q8 テーマ
+                ];
+                // 合計点 → 同点なら「味の好み（Q5〜Q7）」→「気分（Q3）」→「テーマ（Q8）」→「食事（Q4）」の順で決着
+                // （以前は同点時に必ず type1 が選ばれ、サラサラに偏っていた）
+                const SCORE_STAGES = [[2, 3, 4, 5, 6, 7], [4, 5, 6], [2], [7], [3]];
+
+                const sumScores = (questionIdxs) => {
+                    const scores = { type1: 0, type2: 0, type3: 0, type4: 0 };
+                    questionIdxs.forEach(i => {
+                        const rule = SCORE_RULES[i][answersHistory.value[i]] || {};
+                        Object.entries(rule).forEach(([typeId, point]) => { scores[typeId] += point; });
+                    });
+                    return scores;
+                };
+
                 const finalResult = computed(() => {
                     if (answersHistory.value.length < 8) return null;
-                    
-                    const scores = { type1: 0, type2: 0, type3: 0, type4: 0 };
-                    
-                    const q3 = answersHistory.value[2]; // 気分
-                    const q4 = answersHistory.value[3]; // 食事
-                    const q5 = answersHistory.value[4]; // 香り
-                    const q6 = answersHistory.value[5]; // 味
-                    const q7 = answersHistory.value[6]; // 喉越し
-                    const q8 = answersHistory.value[7]; // テーマ
 
-                    if (q3 === 'A') { scores.type1 += 1; scores.type2 += 1; }
-                    else { scores.type3 += 1; scores.type4 += 2; }
-
-                    if (q4 === 'A') { scores.type4 += 2; scores.type3 += 1; }
-                    else { scores.type1 += 2; scores.type2 += 1; }
-
-                    if (q5 === 'A') { scores.type2 += 2; scores.type1 += 1; }
-                    else { scores.type4 += 2; scores.type3 += 1; }
-
-                    if (q6 === 'A') { scores.type2 += 2; scores.type3 += 2; }
-                    else { scores.type1 += 2; scores.type4 += 1; }
-
-                    if (q7 === 'A') { scores.type1 += 2; scores.type2 += 1; }
-                    else { scores.type3 += 2; scores.type4 += 1; }
-
-                    if (q8 === 'A') { scores.type3 += 2; scores.type1 += 1; }
-                    else { scores.type2 += 2; scores.type4 += 1; }
-
-                    let maxScore = -1;
-                    let resultTypeId = 'type1';
-                    
-                    for (const [typeId, score] of Object.entries(scores)) {
-                        if (score > maxScore) {
-                            maxScore = score;
-                            resultTypeId = typeId;
-                        }
+                    let candidates = Object.keys(resultTypes);
+                    for (const stage of SCORE_STAGES) {
+                        const scores = sumScores(stage);
+                        const max = Math.max(...candidates.map(t => scores[t]));
+                        candidates = candidates.filter(t => scores[t] === max);
+                        if (candidates.length === 1) break;
                     }
-
-                    return resultTypes[resultTypeId]; 
+                    return resultTypes[candidates[0]];
                 });
+
+                // ▼ タイプ別カラー（結果画面の文字・枠・チャートに使用） ▼
+                const TYPE_THEMES = {
+                    type1: { rgb: '125, 211, 252' }, // サラサラ: 水色
+                    type2: { rgb: '249, 168, 212' }, // ウルウル: 桃色
+                    type3: { rgb: '252, 196, 92' },  // トロトロ: 琥珀
+                    type4: { rgb: '196, 181, 253' }  // ウトウト: 藤色
+                };
+                const typeTheme = computed(() => TYPE_THEMES[finalResult.value ? finalResult.value.id : 'type1']);
 
                 // ▼ 選ばれたお酒の種類に応じた最終的な商品を計算 ▼
                 const finalProduct = computed(() => {
@@ -568,105 +775,64 @@
                     return !finalProduct.value.description || finalProduct.value.description === '準備中';
                 });
 
-                // ▼ 合うメニューの「・」を改行に変換する処理 ▼
-                const formattedMatching = computed(() => {
-                    if (!finalProduct.value || !finalProduct.value.matching) return '';
-                    return finalProduct.value.matching.replace(/・/g, '\n');
+                // ▼ 合うメニューを配列化（改行・「・」どちらの区切りにも対応） ▼
+                const matchingList = computed(() => {
+                    if (!finalProduct.value || !finalProduct.value.matching) return [];
+                    return finalProduct.value.matching.split(/[\n・]/).map(s => s.trim()).filter(Boolean);
                 });
 
-                // ▼ 商品名を1行に収めるための動的スタイル計算 ▼
-                const productTitleStyle = computed(() => {
-                    if (!finalProduct.value || !finalProduct.value.name) return {};
-                    const name = finalProduct.value.name;
-                    const len = name.length;
-
-                    // 文字数に応じてフォントサイズと文字間隔を調整し、スマホ幅でも1行に収める
-                    if (len <= 8) {
-                        return {
-                            fontSize: 'clamp(13px, 3.4vw, 16px)',
-                            letterSpacing: '0.03em'
-                        };
-                    } else if (len <= 11) {
-                        // 「【虎ノ門　いちごジン】」など（11文字前後）
-                        return {
-                            fontSize: 'clamp(11px, 2.7vw, 14px)',
-                            letterSpacing: '-0.02em'
-                        };
-                    } else if (len <= 14) {
-                        // 「【貴の特別純米・夏タイプ】」など
-                        return {
-                            fontSize: 'clamp(10px, 2.4vw, 13px)',
-                            letterSpacing: '-0.04em'
-                        };
-                    } else {
-                        return {
-                            fontSize: 'clamp(9.5px, 2.1vw, 12px)',
-                            letterSpacing: '-0.05em'
-                        };
-                    }
+                // ▼ 縦書き表示用の銘柄名（【】を外す） ▼
+                const productDisplayName = computed(() => {
+                    if (!finalProduct.value || !finalProduct.value.name) return '';
+                    return finalProduct.value.name.replace(/[【】]/g, '').trim();
                 });
 
-                // ▼ 説明文の文字数に応じた文字サイズ＆余白の動的自動調整（全結果対応） ▼
-                const descStyle = computed(() => {
-                    if (!finalProduct.value || isPreparation.value) {
-                        return {
-                            title: 'text-sm sm:text-base',
-                            body: 'text-xs sm:text-sm leading-relaxed',
-                            gap: 'mb-2',
-                            matchTitle: 'text-xs sm:text-sm',
-                            matchBody: 'text-xs sm:text-sm leading-relaxed'
-                        };
-                    }
-                    
-                    const desc = finalProduct.value.description || '';
-                    const match = finalProduct.value.matching || '';
-                    const totalLength = desc.length + match.length;
+                // ▼ 縦書きの銘柄名は空白の位置で改行（「虎ノ門｜いちごジン」「yasogin｜オレンジ」） ▼
+                const productNameLines = computed(() => {
+                    if (isPreparation.value) return ['準備中'];
+                    return productDisplayName.value.split(/[\s　]+/).filter(Boolean);
+                });
 
-                    // 短めのテキスト（80文字未満）: 文字を大きめにして行間をゆったり
-                    if (totalLength < 80) {
-                        return {
-                            title: 'text-sm sm:text-base font-bold',
-                            body: 'text-xs sm:text-sm leading-relaxed sm:leading-loose',
-                            gap: 'mb-2.5 sm:mb-3',
-                            matchTitle: 'text-xs sm:text-sm font-bold',
-                            matchBody: 'text-xs sm:text-sm leading-relaxed sm:leading-loose'
-                        };
-                    } else if (totalLength < 125) {
-                        // 標準テキスト（80〜125文字）
-                        return {
-                            title: 'text-xs sm:text-base font-bold',
-                            body: 'text-[11px] sm:text-xs md:text-sm leading-relaxed',
-                            gap: 'mb-2',
-                            matchTitle: 'text-[11px] sm:text-xs md:text-sm font-bold',
-                            matchBody: 'text-[11px] sm:text-xs md:text-sm leading-relaxed'
-                        };
-                    } else {
-                        // 長文テキスト（125文字以上）
-                        return {
-                            title: 'text-[11px] sm:text-sm font-bold',
-                            body: 'text-[10px] sm:text-[11px] md:text-xs leading-snug',
-                            gap: 'mb-1.5',
-                            matchTitle: 'text-[10px] sm:text-[11px] md:text-xs font-bold',
-                            matchBody: 'text-[10px] sm:text-[11px] md:text-xs leading-snug'
-                        };
-                    }
+                // ▼ 銘柄名（1行あたり）の文字数に応じて縦書きの文字サイズを調整 ▼
+                const productNameClass = computed(() => {
+                    const len = Math.max(...productNameLines.value.map(l => l.length));
+                    if (len <= 5) return 'text-3xl sm:text-4xl tracking-[0.25em] leading-tight';
+                    if (len <= 9) return 'text-2xl sm:text-3xl tracking-[0.15em] leading-snug';
+                    return 'text-xl sm:text-2xl tracking-[0.1em] leading-snug';
+                });
+
+                // ▼ 同タイプのおすすめジャンル（選んだお酒の種類に合わせて表示） ▼
+                const typeRecommendation = computed(() => {
+                    if (!finalResult.value || !selectedDrink.value) return '';
+                    return finalResult.value.recommendations[selectedDrink.value] || '';
                 });
 
                 // ▼ チャート用のデータ計算 ▼
+                // タイプごとの基本形（半分）＋ 実際の回答（半分）をブレンドし、同じタイプでも人によって形が変わるように
+                const TYPE_BASE = {
+                    type1: [5, 2.5, 1.5],
+                    type2: [3, 5, 2],
+                    type3: [2.5, 2.5, 3.5],
+                    type4: [1.5, 2, 5]
+                };
+                // [すっきり, フルーティー, しっかり] に効く回答と重み（各軸の合計は5）
+                const AXIS_RULES = [
+                    [[3, 'B', 1], [5, 'B', 2], [6, 'A', 2]], // すっきり: ヘルシー / ドライ / キレ
+                    [[4, 'A', 2], [5, 'A', 2], [7, 'B', 1]], // フルーティー: 柑橘・果実 / 甘酸っぱさ / 個性派
+                    [[3, 'A', 2], [4, 'B', 2], [2, 'B', 1]]  // しっかり: 肉・揚げ物 / スパイス・木 / ほっこり
+                ];
+
                 const getChartData = () => {
-                    if (answersHistory.value.length < 8) return [0, 0, 0];
-                    
-                    const result = finalResult.value;
-                    let sukkiri = 2, fruity = 2, shikkari = 2;
+                    if (answersHistory.value.length < 8 || !finalResult.value) return [0, 0, 0];
 
-                    if (result.id === 'type1') { sukkiri = 5; fruity = 2.5; shikkari = 1.5; }
-                    else if (result.id === 'type2') { sukkiri = 3; fruity = 5; shikkari = 2; }
-                    else if (result.id === 'type3') { sukkiri = 2.5; fruity = 2.5; shikkari = 3.5; }
-                    else { sukkiri = 1.5; fruity = 2; shikkari = 5; }
-
-                    const clamp = (val) => Math.min(Math.max(val, 1.5), 5);
-
-                    return [ clamp(sukkiri), clamp(fruity), clamp(shikkari) ];
+                    const base = TYPE_BASE[finalResult.value.id];
+                    return AXIS_RULES.map((rules, axis) => {
+                        const total = rules.reduce((sum, [, , w]) => sum + w, 0);
+                        const hit = rules.reduce((sum, [q, ans, w]) => sum + (answersHistory.value[q] === ans ? w : 0), 0);
+                        const fromAnswers = 1.5 + 3.5 * (hit / total);
+                        const value = base[axis] * 0.5 + fromAnswers * 0.5;
+                        return Math.round(Math.min(Math.max(value, 1.5), 5) * 10) / 10;
+                    });
                 };
 
                 // チャートを描画する関数
@@ -682,9 +848,20 @@
                         chartInstance.destroy();
                     }
 
-                    const whiteLineColor = 'rgba(255, 255, 255, 0.8)';
-                    const whiteBgColor = 'rgba(255, 255, 255, 0.3)';
-                    const gridColor = 'rgba(255, 255, 255, 0.15)';
+                    const rgb = typeTheme.value.rgb;
+                    const lineColor = `rgba(${rgb}, 0.95)`;
+                    const gridColor = 'rgba(255, 255, 255, 0.18)';
+                    // 中心から外側へ広がる金色のグラデーション（描画領域が決まってから生成）
+                    const fill = (context) => {
+                        const { chart } = context;
+                        const area = chart.chartArea;
+                        if (!area) return `rgba(${rgb}, 0.3)`;
+                        const cx = (area.left + area.right) / 2, cy = (area.top + area.bottom) / 2;
+                        const g = chart.ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.min(area.width, area.height) / 2);
+                        g.addColorStop(0, `rgba(${rgb}, 0.10)`);
+                        g.addColorStop(1, `rgba(${rgb}, 0.45)`);
+                        return g;
+                    };
 
                     chartInstance = new Chart(ctx, {
                         type: 'radar',
@@ -693,13 +870,13 @@
                             datasets: [{
                                 label: 'Tasting Profile',
                                 data: getChartData(),
-                                backgroundColor: whiteBgColor,
-                                borderColor: whiteLineColor,
+                                backgroundColor: fill,
+                                borderColor: lineColor,
                                 borderWidth: 2,
                                 pointBackgroundColor: '#fff',
-                                pointBorderColor: whiteLineColor,
+                                pointBorderColor: lineColor,
                                 pointHoverBackgroundColor: '#fff',
-                                pointHoverBorderColor: whiteLineColor,
+                                pointHoverBorderColor: lineColor,
                                 pointRadius: 4, 
                                 pointHoverRadius: 5
                             }]
@@ -707,8 +884,9 @@
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
+                            animation: { duration: 1400, easing: 'easeOutQuart' },
                             layout: {
-                                padding: { top: 15, bottom: 15, left: 25, right: 25 }
+                                padding: { top: 4, bottom: 4, left: 8, right: 8 }
                             },
                             plugins: {
                                 legend: { display: false },
@@ -725,7 +903,7 @@
                                     },
                                     pointLabels: {
                                         color: '#fff',
-                                        font: { size: 11, family: 'serif', weight: 'bold' },
+                                        font: { size: 13, family: "'Shippori Mincho', serif", weight: '600' },
                                         padding: 6
                                     },
                                     ticks: {
@@ -741,7 +919,8 @@
                 };
 
                 watch(step, (newStep) => {
-                    if (newStep === 'result') setTimeout(renderChart, 800);
+                    // 画面切り替え(0.8s) ＋ チャートの登場タイミング(rv-5: 2.9s) に合わせて描画
+                    if (newStep === 'result') setTimeout(renderChart, isResultReplay.value ? 900 : 3700);
                 });
 
                 const startQuiz = () => {
@@ -754,26 +933,19 @@
                     scrollToTop();
                 };
 
-                const sendToGoogleSheet = (q1, q2, type, drink) => {
+                // ▼ GASへの送信 ▼
+                // event: 'result'（診断完了） / 'productView'（商品紹介画面を表示）
+                // diagnosisId で同じ診断の2つの記録をひも付けられる
+                const diagnosisId = ref('');
+                const isProductViewSent = ref(false);
+
+                const postToGas = (payload) => {
                     if (!GAS_URL) return;
                     try {
-                        const ua = navigator.userAgent;
-                        const payload = {
-                            userAgent: ua,
-                            q1Gender: q1,
-                            q2Age: q2,
-                            selectedDrink: drink,
-                            resultType: type
-                        };
-                        
-                        console.log('Sending payload:', payload);
-
-                        fetch(GAS_URL, { 
+                        fetch(GAS_URL, {
                             method: 'POST',
                             mode: 'no-cors',
-                            headers: {
-                                'Content-Type': 'text/plain'
-                            },
+                            headers: { 'Content-Type': 'text/plain' },
                             body: JSON.stringify(payload)
                         });
                     } catch (error) {
@@ -781,49 +953,114 @@
                     }
                 };
 
+                const buildPayload = (event) => {
+                    const drinkTypeObj = drinks.find(d => d.id === selectedDrink.value);
+                    return {
+                        event,
+                        diagnosisId: diagnosisId.value,
+                        userAgent: navigator.userAgent,
+                        q1Gender: answersHistory.value[0] === 'A' ? '男性' : '女性',
+                        q2Age: answersHistory.value[1] === 'A' ? '35歳未満' : '35歳以上',
+                        selectedDrink: drinkTypeObj ? drinkTypeObj.name : '不明',
+                        resultType: finalResult.value ? finalResult.value.id : 'unknown'
+                    };
+                };
+
                 const prevQuestion = () => {
-                    if (currentQuestionIndex.value > 0) {
+                    if (currentQuestionIndex.value > 0 && pickedIndex.value === null) {
+                        slideDirection.value = 'slide-prev';
                         currentQuestionIndex.value--;
                         answersHistory.value.pop();
                         scrollToTop(true);
                     }
                 };
 
-                const answerQuestion = (type) => {
-                    if (step.value !== 'quiz') return;
+                const answerQuestion = async (type, idx) => {
+                    // 演出中の連打は無視
+                    if (step.value !== 'quiz' || pickedIndex.value !== null) return;
+
+                    // 選んだ手応え: 光って沈む ＋（対応端末は）軽く振動
+                    pickedIndex.value = idx;
+                    if (navigator.vibrate) navigator.vibrate(12);
+                    await wait(prefersReducedMotion ? 0 : 380);
 
                     answersHistory.value.push(type);
                     if (currentQuestionIndex.value < questions.length - 1) {
+                        slideDirection.value = 'slide-next';
                         currentQuestionIndex.value++;
+                        pickedIndex.value = null;
                         scrollToTop(true);
                     } else {
+                        pickedIndex.value = null;
+                        pourStage.value = 0;
+                        isResultReplay.value = false;
                         step.value = 'pouring';
                         scrollToTop();
-                        
-                        const duration = 3500;
+
+                        // 注ぐ演出（約3.5秒）の間にメッセージを切り替える
+                        setTimeout(() => { pourStage.value = 1; }, 1600);
+                        setTimeout(() => { pourStage.value = 2; }, 2800);
 
                         setTimeout(() => {
                             step.value = 'result';
                             scrollToTop();
                             
                             if (!isSubmitted.value) {
-                                const q1Ans = answersHistory.value[0] === 'A' ? '男性' : '女性';
-                                const q2Ans = answersHistory.value[1] === 'A' ? '35歳未満' : '35歳以上';
-                                const typeId = finalResult.value ? finalResult.value.id : 'unknown';
-                                
-                                const drinkTypeObj = drinks.find(d => d.id === selectedDrink.value);
-                                const drinkTypeName = drinkTypeObj ? drinkTypeObj.name : '不明';
-
-                                sendToGoogleSheet(q1Ans, q2Ans, typeId, drinkTypeName);
+                                diagnosisId.value = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+                                isProductViewSent.value = false;
+                                postToGas(buildPayload('result'));
                                 isSubmitted.value = true;
                             }
-                        }, duration);
+                        }, 4300);
                     }
+                };
+
+                const goToProduct = async () => {
+                    if (norenStage.value) return;
+                    const destroyChart = () => {
+                        if (chartInstance) {
+                            chartInstance.destroy();
+                            chartInstance = null;
+                        }
+                    };
+                    // 1回の診断につき1度だけ「商品紹介を見た」を記録
+                    if (!isProductViewSent.value) {
+                        postToGas(buildPayload('productView'));
+                        isProductViewSent.value = true;
+                    }
+
+                    if (prefersReducedMotion) {
+                        destroyChart();
+                        step.value = 'product';
+                        scrollToTop();
+                        return;
+                    }
+
+                    // 暖簾が下りてくる → 裏で商品画面に切り替え → 暖簾が左右に分かれて商品が現れる
+                    norenStage.value = 'ready';
+                    await nextTick();
+                    requestAnimationFrame(() => requestAnimationFrame(() => { norenStage.value = 'drop'; }));
+                    await wait(450);
+                    destroyChart();
+                    step.value = 'product';
+                    scrollToTop();
+                    await wait(800);
+                    norenStage.value = 'open';
+                    await wait(1000);
+                    norenStage.value = null;
+                };
+
+                const backToResult = () => {
+                    isResultReplay.value = true;
+                    step.value = 'result';
+                    scrollToTop();
                 };
 
                 const resetQuiz = () => {
                     step.value = 'start';
                     selectedDrink.value = '';
+                    pickedIndex.value = null;
+                    slideDirection.value = 'slide-next';
                     currentQuestionIndex.value = 0;
                     answersHistory.value = [];
                     isSubmitted.value = false;
@@ -840,9 +1077,10 @@
 
                 return {
                     step, selectedDrink, drinks, questions,
+                    pickedIndex, slideDirection, pourStage, pourMessages, isResultReplay, norenStage, typeTheme,
                     currentQuestionIndex, currentQuestion, answersHistory, finalResult, finalProduct,
-                    isPreparation, formattedMatching, productTitleStyle, descStyle,
-                    startQuiz, answerQuestion, prevQuestion, resetQuiz, handleImageError
+                    isPreparation, matchingList, productDisplayName, productNameLines, productNameClass, typeRecommendation,
+                    startQuiz, answerQuestion, prevQuestion, goToProduct, backToResult, resetQuiz, handleImageError
                 };
             }
         }).mount('#app');
