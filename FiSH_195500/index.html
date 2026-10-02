@@ -459,7 +459,7 @@
     display:flex; align-items:center; justify-content:center; padding:0 22px 6vh;
   }
   .stage-head[hidden]{ display:none; }
-  .stage-inner{ width:100%; max-width:520px; display:flex; flex-direction:column; align-items:center; gap:8px; will-change:transform, opacity; }
+  .stage-inner{ width:100%; max-width:520px; display:flex; flex-direction:column; align-items:center; gap:28px; will-change:transform, opacity; }
   .stage-head .talk-fish-wrap{ width:min(62vw, 250px); }
   .stage-head .talk-bubble{
     flex:none; width:100%; cursor:pointer;
@@ -493,6 +493,9 @@
   }
   .note-input::placeholder{ color: var(--ai-light); }
   .note-input:focus-visible{ outline:2px solid var(--shu-pale); outline-offset:3px; }
+  /* しっぽは魚の「うしろ」から出す: 魚を手前に、吹き出し(しっぽ)を奥に重ねるので、しっぽが魚に被らない */
+  .talk-fish-wrap{ position:relative; z-index:2; }
+  .talk-bubble{ z-index:1; }
   .talk-bubble.thanks{ font-size:clamp(13px, 3.9vw, 15.5px); }
   .talk-bubble.play{ animation: bubblePop .45s cubic-bezier(.22,.9,.3,1) .1s both; }   /* 文字が出はじめる(0.6秒)より前に、ふくらみきる */
   @keyframes bubblePop{ 0%{ transform:scale(.15); opacity:0; } 55%{ opacity:1; } 100%{ transform:scale(1); opacity:1; } }
@@ -1963,7 +1966,7 @@ function createFishTalk(root){
     const mx = r.left + (1 - m[0]) * r.width, my = r.top + m[1] * r.height;     // scaleX(-1) で反転するため、口は右側
     if (vertical) {                                                              // 魚が上、吹き出しが下: しっぽは上向き
       bubble.style.setProperty('--tail-x', Math.max(28, Math.min(b.width - 28, mx - b.left)) + 'px');
-      bubble.style.setProperty('--tail-len', Math.max(14, Math.min(90, b.top - my)) + 'px');
+      bubble.style.setProperty('--tail-len', Math.max(12, Math.min(90, b.top - (r.bottom + 2))) + 'px');   // しっぽの先は、魚の下端で止める(魚の体に入り込まない)
       root.querySelectorAll('.air').forEach((a, i) => { a.style.left = (mx - h.left + 4 + i * 6) + 'px'; a.style.top = (my - h.top - 4) + 'px'; });
       return;
     }
