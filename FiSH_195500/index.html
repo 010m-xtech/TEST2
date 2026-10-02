@@ -1,0 +1,2367 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>居酒屋 乞食 のお魚たち</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --kinari: #F2EEE3;
+    --kinari-deep: #E9E2CF;
+    --ai: #22385C;
+    --ai-light: #4C6A94;
+    --ai-pale: #DCE3EC;
+    --umi: #185070;          /* ロゴの青緑 */
+    --shu: #BD4630;
+    --shu-pale: #F1DCD5;
+    --sumi: #2A2620;
+    --line: #D6CCB4;
+    --muted: #a89d87;
+    --font-mincho: 'Shippori Mincho', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
+    --font-gothic: 'Zen Kaku Gothic New', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+    --radius: 14px;
+  }
+
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+  html,body{
+    margin:0; padding:0;
+    background: #0d1b2a;
+    color: var(--sumi);
+    font-family: var(--font-gothic);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body{ min-height:100vh; min-height:100dvh; display:flex; justify-content:center; }
+
+  /* ============ 背景動画(全画面共通・ループ再生) ============ */
+  .bg-video-wrap{
+    position: fixed; inset: 0; z-index: 0;
+    overflow: hidden; background: #0d1b2a;
+  }
+  .bg-video-wrap video{
+    position:absolute; top:50%; left:50%;
+    min-width:100%; min-height:100%;
+    width:auto; height:auto;
+    transform: translate(-50%, -50%);
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 1.5s ease-in-out;
+  }
+  .bg-video-wrap video.show-bg {
+    opacity: 1;
+  }
+  #bg-video-op {
+    filter: brightness(2.5);
+  }
+  .bg-video-overlay{
+    position:absolute; inset:0;
+    background: linear-gradient(180deg, rgba(13,27,42,0.72), rgba(13,27,42,0.85));
+  }
+
+  .app{
+    width:100%; min-height:100vh; min-height:100dvh;
+    position:relative; z-index:1;
+    display:flex; flex-direction:column;
+  }
+
+  header{
+    position:sticky; top:0; z-index:20;
+    background: rgba(13, 27, 42, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom:1px solid rgba(242,238,227,0.15);
+    padding: 12px 20px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; cursor: pointer; }
+  /* ロゴの細い線が潰れないよう、32px→44pxに拡大 */
+  .seal{ width:44px; height:44px; flex:0 0 auto; object-fit: contain; }
+  .brand h1{
+    font-family: var(--font-mincho); font-weight:700; font-size:18.5px;
+    letter-spacing:0.04em; margin:0; color:var(--kinari);
+    line-height: 1.4;
+  }
+
+  .header-back-btn {
+    background: transparent;
+    border: none;
+    color: var(--kinari);
+    font-family: var(--font-gothic);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 8px;
+    margin-right: -8px;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+  }
+  .header-back-btn:active { opacity: 0.5; }
+
+  button:focus-visible, [role="button"]:focus-visible{ outline:2px solid var(--shu-pale); outline-offset:3px; }
+
+  main{ flex:1; padding:26px 20px 48px; position:relative; }
+
+  .screen{ display:none; animation: fadeUp .5s ease both; }
+  .screen.active{ display:block; }
+  .screen[data-screen="op"]{ animation: none; }
+  @keyframes fadeUp{ from{opacity:0; transform:translateY(12px);} to{opacity:1; transform:translateY(0);} }
+  @media (prefers-reduced-motion: reduce){ .screen{ animation:none; } }
+
+  .eyebrow{ font-size:12px; letter-spacing:.14em; color:var(--shu-pale); font-weight:700; margin:0 0 8px; }
+  h2.title{ font-family:var(--font-mincho); font-size:24px; line-height:1.6; margin:0 0 16px; color:var(--kinari); }
+  .lead{ font-size:15px; color:#ffffff; line-height:1.9; margin:0 0 22px; }
+
+  /* ============ OP ============ */
+  .op-wrapper {
+    position: fixed; inset: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+  .op-logo-img {
+    opacity: 0; transition: opacity 1s ease-in-out;
+    max-width: 250px; width: 60%; height: auto;
+  }
+  .skip-telop {
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    color: rgba(242, 238, 227, 0.85);
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    pointer-events: none;
+    white-space: nowrap;
+    animation: floatBlink 3s ease-in-out infinite;
+  }
+  @keyframes floatBlink {
+    0%, 100% { transform: translate(-50%, 0); opacity: 0.3; }
+    50% { transform: translate(-50%, -10px); opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .skip-telop{ animation:none; transform:translateX(-50%); opacity:.8; }
+  }
+
+  /* ============ 魚選択(水族館) ============ */
+  .screen[data-screen="select"] {
+    position: relative;
+    min-height: 100vh; min-height: 100dvh;
+    overflow: hidden;
+    /* 水槽を画面幅いっぱいに広げ、魚が見えない線で切れないようにする(文字の位置は従来どおり) */
+    padding: 0px 20px 0;                       /* 文字の左右の余白を、ほかの画面(20px)と同じに。魚の吹き出しを広く使うため */
+    margin: -12px -20px 0;
+  }
+  .screen[data-screen="select"] > .eyebrow,
+  .screen[data-screen="select"] > .title,
+  .screen[data-screen="select"] > .lead {
+    position: relative;
+    z-index: 20;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    pointer-events: none;   /* 文字の下を泳ぐ魚もタップできるように */
+  }
+  .collect-counter{
+    position: relative; z-index: 30; pointer-events: auto;
+    display:inline-flex; align-items:center; gap:8px;
+    margin: 0; padding: 8px 14px; border-radius: 999px;
+    border:1px solid rgba(242,238,227,.35);
+    background: rgba(13,27,42,.55);
+    color: var(--kinari); font-family: inherit; font-size: 13px; font-weight: 700;
+    cursor: pointer;
+  }
+  .collect-counter b{ font-size: 16px; color:#fff; }
+  .aqua-wrap {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    overflow: visible;
+    pointer-events: none;
+    z-index: 10;
+  }
+  .aqua-item{
+    position: absolute; top: 0; left: 0;
+    width: 140px;
+    cursor: pointer;
+    pointer-events: auto;
+    will-change: transform;
+  }
+  /* 未捕獲は淡いシルエット、捕まえると色が付く(filterの関数の並びを揃えて滑らかに遷移) */
+  .aqua-fish{
+    display:block; width:100%; height:auto;
+    filter: brightness(1) invert(0) opacity(1) drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+    transition: filter .8s ease;
+  }
+  .aqua-fish.unknown{
+    filter: brightness(0) invert(1) opacity(.28) drop-shadow(0 0 0 rgba(0,0,0,0));
+  }
+  .aqua-fish.pop{ animation: pop .7s ease; }
+  @keyframes pop{ 0%{ scale:1; } 35%{ scale:1.28; } 100%{ scale:1; } }
+
+  /* ============ 魚詳細 ============ */
+  .fish-hero{ text-align:center; margin: 0 0 18px; }
+  .fish-hero img{
+    display:block; margin:0 auto 10px;
+    max-width:72%; max-height:150px; width:auto; height:auto;
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,.5));
+  }
+  .fish-hero.no-img img{ display:none; }
+  .fish-header{ display:flex; align-items:baseline; justify-content:center; gap:10px; }
+  .fish-header .name{ font-family: var(--font-mincho); font-size:26px; font-weight:700; color: var(--kinari); }
+
+  .fish-story {
+    background: rgba(242,238,227,0.04);
+    border: 1px solid rgba(242,238,227,0.15);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 24px;
+    color: #ffffff;
+    overflow: hidden;
+  }
+
+  .story-highlight {
+    margin: -20px -20px 20px;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, rgba(189,70,48,0.15), transparent);
+    border-left: 4px solid var(--shu);
+  }
+  .highlight-title {
+    font-family: var(--font-mincho);
+    font-size: 16.5px;
+    color: var(--shu-pale);
+    margin: 0 0 12px;
+    font-weight: 700;
+  }
+
+  .story-taste { margin: 0 0 8px; }
+  .story-basic { font-size: 14px; line-height: 1.8; margin: 0 0 18px; color: #ffffff; }
+  .taste-title {
+    font-family: var(--font-mincho);
+    font-size: 15.5px;
+    color: var(--kinari);
+    margin: 0 0 8px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .taste-title::before {
+    content: ''; display: inline-block; width: 6px; height: 6px;
+    background: var(--shu); transform: rotate(45deg);
+  }
+  .story-taste p.eating { font-size: 14px; line-height: 1.8; margin: 0; color: #ffffff; }
+
+  /* --- クイズ --- */
+  .quiz-question { font-size: 14.5px; font-weight: 700; margin-bottom: 12px; color: var(--kinari); line-height: 1.5; }
+  .quiz-options { display: flex; gap: 10px; margin-bottom: 8px; }
+  .quiz-btn {
+    flex: 1; padding: 12px 8px; border-radius: 8px;
+    border: 1px solid rgba(242,238,227,0.3);
+    background: rgba(242,238,227,0.05);
+    color: #fff; font-family: inherit; font-weight: 700; font-size: 14px;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .quiz-btn:active { transform: scale(0.95); }
+  .quiz-btn.selected { border-color: var(--shu); background: var(--shu); }
+  .quiz-btn:disabled { opacity: 0.7; pointer-events: none; }
+
+  .quiz-result-box {
+    display: none; padding: 14px; border-radius: 8px; font-size: 14px; line-height: 1.6;
+    animation: fadeUp 0.4s ease; margin-top: 12px;
+  }
+  .quiz-result-box.show { display: block; }
+  .quiz-result-title { font-weight: 700; font-size: 16px; margin-bottom: 6px; }
+  .quiz-result-box.correct { background: rgba(46, 204, 113, 0.15); border: 1px solid rgba(46, 204, 113, 0.5); }
+  .quiz-result-box.correct .quiz-result-title { color: #4ade80; }
+  .quiz-result-box.incorrect { background: rgba(231, 76, 60, 0.15); border: 1px solid rgba(231, 76, 60, 0.5); }
+  .quiz-result-box.incorrect .quiz-result-title { color: #f87171; }
+
+  /* サーモンの切り身: 答えを選ぶと色が変わる */
+  .slice-wrap{ margin-top: 12px; text-align:center; }
+  .slice{ width: 240px; max-width: 100%; height:auto; }
+  .slice-body{ fill:#E9E2CF; transition: fill 1.4s ease .3s; }
+  .slice-line{ fill:none; stroke:rgba(255,255,255,.8); stroke-width:3; stroke-linecap:round; opacity:0; transition: opacity 1.4s ease .3s; }
+  .slice.revealed .slice-body{ fill:#EE7A3C; }
+  .slice.revealed .slice-line{ opacity:.8; }
+  .slice-caption{ font-size:12px; color:rgba(255,255,255,.85); margin-top:4px; }
+
+  /* 豆知識ブロックの表示制御(クイズ連動) */
+  .story-trivia.hidden { display: none; }
+  .story-trivia.show-animated { display: block; animation: fadeUp 0.6s ease both; }
+
+  /* --- フリップカード --- */
+  .flip-card { perspective: 1000px; cursor: pointer; margin-top: 8px; }
+  .flip-card-inner { display: grid; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; }
+  .flip-card.is-flipped .flip-card-inner { transform: rotateY(180deg); }
+  .flip-card-front, .flip-card-back {
+    grid-area: 1 / 1;
+    -webkit-backface-visibility: hidden; backface-visibility: hidden;
+    border-radius: 12px; padding: 24px 20px;
+    display: flex; flex-direction: column; justify-content: center;
+    box-sizing: border-box; min-height: 130px;
+  }
+  .flip-card-front {
+    background: rgba(189,70,48,0.2); border: 1px solid rgba(189,70,48,0.5);
+    align-items: center; text-align: center;
+  }
+  .flip-card-front p { margin: 0; font-size: 15px; font-weight: 700; color: var(--kinari); line-height: 1.5; }
+  .flip-card-front .hint { font-size: 11px; color: rgba(242,238,227,0.7); margin-top: 14px; font-weight: normal; }
+  .flip-card-back {
+    background: rgba(34,56,92,0.9); border: 1px solid rgba(76,106,148,0.6);
+    transform: rotateY(180deg); align-items: flex-start; text-align: left;
+  }
+  .flip-card-back p { margin: 0; font-size: 14px; color: #fff; line-height: 1.6; }
+
+  .story-trivia {
+    background: rgba(34,56,92,0.4);
+    border-radius: 8px;
+    padding: 14px 16px;
+    border: 1px solid rgba(76,106,148,0.3);
+    margin-bottom: 24px;
+  }
+  .trivia-label {
+    font-size: 11px; color: var(--ai-pale); font-weight: 700; letter-spacing: 0.1em;
+    margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+  }
+  .story-trivia p { font-size: 13px; line-height: 1.7; margin: 0; color: #ffffff; }
+
+  .trivia-illustration-wrap { margin-top: 16px; text-align: center; display: none; }
+  .trivia-illustration-wrap img {
+    width: 100%; max-width: 260px; height: auto;
+    border-radius: 6px; background: transparent;
+    border: 1px solid rgba(220,227,236,0.15);
+    margin: 0 auto; display: block; cursor: zoom-in;
+  }
+  .trivia-illustration-caption { font-size: 11px; color: #ffffff; margin-top: 8px; opacity: 0.9; }
+  .ill-legend { list-style:none; margin:12px 0 0; padding:0; text-align:left; }
+  .ill-legend li { display:flex; align-items:center; gap:10px; font-size:13px; line-height:1.5; color:#fff; padding:4px 0; }
+  .ill-legend .dot { flex:0 0 auto; width:14px; height:14px; border-radius:50%; border:2px solid rgba(255,255,255,.85); }
+
+  /* --- 見分けカード --- */
+  .story-compare { margin: 0 0 24px; }
+  .compare-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .compare-card { background: rgba(0,0,0,.18); border-radius: 10px; padding: 10px 8px 12px; text-align:center; }
+  .compare-card img { width:100%; height:auto; display:block; }
+  .compare-card .label { font-family: var(--font-mincho); font-weight:700; color: var(--kinari); font-size:15px; margin-top:6px; }
+  .compare-card .note { font-size:12px; color:#fff; line-height:1.5; margin-top:4px; }
+  .compare-foot { font-size:13px; line-height:1.7; margin:10px 0 0; color:#fff; }
+
+  /* --- マグロの部位図 --- */
+  .parts { margin-top: 20px; }
+  .parts-title { font-family: var(--font-mincho); font-size: 14.5px; color: var(--kinari); margin: 0 0 10px; }
+  .parts-stage { position: relative; background: rgba(0,0,0,.18); border-radius: 10px; padding: 8px; }
+  .parts-stage img { display:block; width:100%; height:auto; }
+  .parts-stage svg { position:absolute; left:8px; top:8px; width:calc(100% - 16px); height:calc(100% - 16px); }
+  .part { cursor:pointer; fill-opacity:.55; stroke:#fff; stroke-opacity:.85; stroke-width:3; transition: fill-opacity .2s, stroke-width .2s; }
+  .part.active { fill-opacity:.9; stroke-width:6; }
+  .parts-btns { display:flex; gap:8px; margin-top:10px; }
+  .parts-btn {
+    flex:1; padding:10px 0; border-radius:8px; border:1px solid rgba(242,238,227,.3);
+    background: rgba(242,238,227,.05); color:#fff; font-family:inherit; font-weight:700; font-size:14px; cursor:pointer;
+  }
+  .parts-btn.active { background: var(--shu); border-color: var(--shu); }
+  .parts-info { font-size:13.5px; line-height:1.7; margin:10px 0 0; min-height: 3.4em; color:#fff; }
+  .parts-note { font-size:11px; color:rgba(242,238,227,.6); margin:4px 0 0; }
+
+  /* --- 店主のひとこと --- */
+  .story-owner { border-left: 3px solid var(--ai-light); padding: 2px 0 2px 12px; margin-top: 20px; }
+  .story-owner .owner-label { font-size:11px; font-weight:700; color: var(--ai-pale); letter-spacing:.08em; margin-bottom:4px; }
+  .story-owner p { margin:0; font-size:14px; line-height:1.8; color:#fff; }
+
+  /* ============ メニュー・お酒 ============ */
+  .menu-item{
+    background: rgba(242,238,227,0.06);
+    border:1px solid rgba(242,238,227,0.18);
+    border-radius: 10px; padding: 16px; margin-bottom:12px; cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  .menu-item:hover{ background: rgba(242,238,227,0.1); }
+  .menu-item .name{ font-family: var(--font-mincho); font-weight:700; font-size:16px; color: var(--kinari); display: flex; justify-content: space-between; align-items: center; }
+  .menu-item .chevron { transition: transform 0.3s ease; opacity: 0.6; }
+  .menu-item.open .chevron { transform: rotate(180deg); }
+  .menu-item .desc{ font-size:13px; color: #ffffff; margin-top:6px; line-height:1.6; }
+  .menu-item .tap-hint{ font-size:11.5px; color: var(--shu-pale); margin-top:8px; }
+  .menu-item.open .tap-hint{ display:none; }
+  .menu-empty{ font-size:14px; line-height:1.8; color:#fff; margin:0 0 20px; }
+
+  .pairing-sake { display: none; margin-top: 14px; padding-top: 14px; border-top: 1px dashed rgba(242,238,227,0.2); }
+  .menu-item.open .pairing-sake { display: block; animation: fadeInSake 0.3s ease both; }
+  @keyframes fadeInSake { from{opacity:0; transform:translateY(-4px);} to{opacity:1; transform:translateY(0);} }
+
+  .sake-group-label{
+    font-size:11.5px; font-weight:700; color: var(--shu-pale);
+    letter-spacing:.06em; margin: 18px 0 10px; display:flex; align-items:center; gap:6px;
+  }
+  .sake-legend { font-size:12px; color:rgba(255,255,255,.85); line-height:1.7; margin:0 0 12px; }
+  .sake-card{
+    background: rgba(242,238,227,0.08);
+    border:1px solid rgba(242,238,227,0.2);
+    border-radius: var(--radius); padding: 14px 16px; margin-bottom:12px;
+  }
+  .sake-card .tags{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
+  .sake-card .tag{
+    display:inline-block; font-size:10.5px; font-weight:700;
+    background: var(--shu); color:#fff; padding:2px 9px; border-radius:20px;
+  }
+  .sake-card .tag.pair{ background: transparent; border:1px solid var(--shu-pale); color: var(--shu-pale); }
+  .sake-card .name-row{ display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; margin-bottom:6px; }
+  .sake-card .name{ font-family: var(--font-mincho); font-weight:700; font-size:16px; color: var(--kinari); }
+  .sake-card .region{ font-size:11px; color: #ffffff; }
+  .sake-card .pair-line{ font-size:13.5px; font-weight:700; color: var(--kinari); margin:0 0 6px; line-height:1.6; }
+  .sake-card .taste{ font-size:12.5px; color: #ffffff; line-height:1.75; margin:0; }
+
+  .btn-row{ display:flex; gap:10px; margin-top:30px; }
+  button.btn{
+    font-family:var(--font-gothic); font-weight:700; font-size:14px;
+    padding:14px 18px; border-radius:10px; border:none; cursor:pointer;
+    letter-spacing:.03em; transition:opacity .15s ease, transform .1s ease;
+  }
+  button.btn:active{ transform:scale(0.98); }
+  .btn-primary{ flex:1; background:var(--shu); color:#fff; }
+  .btn-primary:hover{ opacity:.92; }
+  .btn-ghost{ background: rgba(242,238,227,0.08); color:var(--kinari); border:1px solid rgba(242,238,227,0.3); }
+  button.btn:disabled{ opacity:.4; cursor:not-allowed; }
+
+  /* ============ アンケート(やわらかい見た目) ============ */
+  .talk-head{ position:relative; display:flex; align-items:center; gap:20px; margin:4px 0 30px; }
+  /* 魚は、吹き出しの側(右)を向く。口の位置は JS で測って、吹き出しのしっぽの先をそこに合わせる */
+  .talk-fish-wrap{ flex:0 0 auto; width:clamp(84px, 26vw, 104px); transform:scaleX(-1); }
+  .talk-fish{
+    display:block; width:100%; height:auto; transform-origin:50% 60%;
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,.5));
+    animation: fishBob 3.2s ease-in-out infinite;
+  }
+  @keyframes fishBob{ 0%,100%{ transform:translateY(0) rotate(-3deg); } 50%{ transform:translateY(-5px) rotate(3deg); } }
+  .talk-fish.done{ animation: fishHop .8s ease 2; }
+  @keyframes fishHop{ 0%,100%{ transform:translateY(0) rotate(0); } 40%{ transform:translateY(-22px) rotate(-8deg); } 70%{ transform:translateY(-4px) rotate(4deg); } }
+
+  .talk-bubble{
+    --tail-len:16px; --tail-y:40px;
+    position:relative; flex:1; opacity:0;
+    background: var(--kinari); color: var(--ai);
+    border-radius: 18px; padding: 14px 16px;
+    font-family: var(--font-mincho); font-weight:700; font-size:17px; line-height:1.6;
+    box-shadow: 0 4px 0 rgba(0,0,0,.22);
+    transform-origin: calc(-1 * var(--tail-len)) var(--tail-y);
+  }
+  /* 口から出るしっぽ */
+  .talk-bubble::before{
+    content:''; position:absolute; width:0; height:0;
+    left: calc(-1 * var(--tail-len)); top: calc(var(--tail-y) - 9px);
+    border-style:solid; border-width:9px var(--tail-len) 9px 0;
+    border-color: transparent var(--kinari) transparent transparent;
+  }
+  /* 冒頭の質問: 話している間は、画面いっぱいに大きく(ステージ) */
+  .stage-head{
+    position:fixed; left:0; right:0; bottom:0; top:var(--stage-top, 66px); z-index:15;
+    display:flex; align-items:center; justify-content:center; padding:0 22px 6vh;
+  }
+  .stage-head[hidden]{ display:none; }
+  .stage-inner{ width:100%; max-width:520px; display:flex; flex-direction:column; align-items:center; gap:8px; will-change:transform, opacity; }
+  .stage-head .talk-fish-wrap{ width:min(62vw, 250px); }
+  .stage-head .talk-bubble{
+    flex:none; width:100%; cursor:pointer;
+    font-size:clamp(19px, 6.4vw, 29px); line-height:1.7; padding:24px 24px; border-radius:26px;
+    --tail-len:30px; --tail-x:70%;
+    transform-origin: var(--tail-x) calc(-1 * var(--tail-len));
+  }
+  /* しっぽは、上向き(魚の口へ) */
+  .stage-head .talk-bubble::before{
+    left:calc(var(--tail-x) - 12px); top:calc(-1 * var(--tail-len));
+    border-width:0 12px var(--tail-len) 12px; border-color:transparent transparent var(--kinari) transparent;
+  }
+  .stage-head .talk-sub{ font-size:15px; margin-top:10px; }
+  .stage-head .talk-bubble:focus-visible{ outline:2px solid var(--shu-pale); outline-offset:3px; }
+  .talk-head.await{ visibility:hidden; }
+  .talk-bubble.static{ opacity:1 !important; animation:none !important; }
+  /* 最初の画面の案内役 */
+  .select-talk{ position:relative; z-index:30; margin:6px 0 12px; min-height:146px; }   /* 吹き出しの行数が変わっても、下のボタンが動かないように */
+  .select-talk .talk-fish-wrap{ width:clamp(70px, 21vw, 88px); }
+  .talk-bubble.compact{ font-size:16px; padding:12px 14px; cursor:pointer; }
+  .talk-bubble.compact:focus-visible{ outline:2px solid var(--shu-pale); outline-offset:3px; }
+  @media (max-width:340px){ .talk-bubble.compact{ font-size:13.5px; padding:12px 12px; } }          /* 画面が特に狭い機種では、吹き出しの文字を少し小さく(行の途中で折り返さないように) */
+  .talk-bubble.skip .ch, .talk-bubble.skip .ch.wave, .talk-bubble.skip .talk-sub{ animation:none !important; opacity:1; transform:none; }
+  #surveyFoot.pop-in, #farewellForm.pop-in, #farewellDone.pop-in{ animation: fadeUp .45s ease both; }
+  .note-input{
+    display:block; width:100%; resize:vertical; min-height:112px;
+    background: var(--kinari); color: var(--ai);
+    border:0; border-radius:18px; padding:14px 16px;
+    font-family: var(--font-gothic); font-size:15px; line-height:1.7;
+    box-shadow: 0 4px 0 rgba(0,0,0,.28);
+  }
+  .note-input::placeholder{ color: var(--ai-light); }
+  .note-input:focus-visible{ outline:2px solid var(--shu-pale); outline-offset:3px; }
+  .talk-bubble.thanks{ font-size:clamp(13px, 3.9vw, 15.5px); }
+  .talk-bubble.play{ animation: bubblePop .45s cubic-bezier(.22,.9,.3,1) .1s both; }   /* 文字が出はじめる(0.6秒)より前に、ふくらみきる */
+  @keyframes bubblePop{ 0%{ transform:scale(.15); opacity:0; } 55%{ opacity:1; } 100%{ transform:scale(1); opacity:1; } }
+
+  /* 吹き出しの文字: 1文字ずつ、ふわっと現れる(大きさや位置は動かさないので、行がずれて見えない)。
+     強調したい言葉は、揺らさずに、お店の差し色(朱)で示す */
+  .ch{
+    display:inline-block; white-space:pre; opacity:0;
+    animation: chIn .16s ease-out forwards;
+    animation-delay: calc(var(--t0, .6s) + var(--i) * var(--ts, .04s));
+  }
+  @keyframes chIn{ to{ opacity:1; } }
+  .ch.wave{ color: var(--shu); }
+  .talk-sub{
+    display:block; margin-top:4px;
+    font-family: var(--font-gothic); font-weight:500; font-size:12.5px; color: var(--ai-light);
+    opacity:0; animation: subIn .5s ease 1.6s forwards;
+  }
+  @keyframes subIn{ to{ opacity:1; } }
+  .sr-only{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+
+  /* 口から出る小さな泡 */
+  .air{
+    position:absolute; border:1.5px solid rgba(242,238,227,.85); border-radius:50%;
+    opacity:0; pointer-events:none;
+  }
+  .air.a1{ width:7px; height:7px; animation: airRise 2.6s ease-out 1.0s infinite; }
+  .air.a2{ width:10px; height:10px; animation: airRise 2.6s ease-out 1.5s infinite; }
+  .air.a3{ width:5px; height:5px; animation: airRise 2.6s ease-out 2.0s infinite; }
+  @keyframes airRise{ 0%{ transform:translate(0,0) scale(.6); opacity:0; } 15%{ opacity:.9; } 100%{ transform:translate(8px,-38px) scale(1.1); opacity:0; } }
+
+  .survey-q{ margin-bottom:26px; }
+  .survey-q.pop-in{ animation: fadeUp .45s ease both; }
+  .q-label{
+    display:flex; align-items:center; gap:8px;
+    font-family: var(--font-mincho); font-weight:700; font-size:17px; color: var(--kinari);
+    margin:0 0 12px;
+  }
+  .q-label::before{
+    content:''; display:inline-block; width:7px; height:7px; background: var(--shu); transform: rotate(45deg);
+  }
+  .chip-row{ display:flex; gap:10px; flex-wrap:wrap; }
+  .chip{ flex:1; min-width:96px; cursor:pointer; position:relative; display:block; }
+  .chip input{ position:absolute; opacity:0; pointer-events:none; }
+  .chip-box{
+    display:flex; align-items:center; justify-content:center; min-height:58px; padding:0 10px;
+    border-radius:999px; background: var(--kinari); color: var(--ai);
+    font-weight:700; font-size:16px;
+    box-shadow: 0 4px 0 rgba(0,0,0,.28);
+    transition: transform .12s ease, box-shadow .12s ease, background .2s ease, color .2s ease;
+  }
+  .chip:active .chip-box{ transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,.28); }
+  .chip input:checked + .chip-box{
+    background: var(--shu); color:#fff; transform: translateY(3px) scale(1.03);
+    box-shadow: 0 1px 0 rgba(0,0,0,.28);
+  }
+  .chip input:checked + .chip-box::before{ content:'✓'; margin-right:6px; font-size:15px; }
+  .chip input:focus-visible + .chip-box{ outline:2px solid var(--shu-pale); outline-offset:3px; }
+  .chip input:disabled + .chip-box{ cursor:default; }
+  @media (prefers-reduced-motion: reduce){
+    .talk-fish, .talk-fish.done{ animation:none; }
+    .talk-bubble{ opacity:1; }
+    .talk-bubble.play{ animation:none; }
+    .ch, .ch.wave, .talk-sub{ animation:none; opacity:1; transform:none; }
+    .air{ display:none; }
+    .chip-box{ transition:none; }
+  }
+
+  .note{ font-size:12px; color: rgba(242,238,227,0.6); margin-top:6px; line-height:1.6; text-align:center; }
+
+  /* ============ 結果 ============ */
+  .result-card{
+    background: rgba(242,238,227,0.06); border:1px solid rgba(242,238,227,0.18);
+    border-radius: var(--radius); padding: 22px 20px; margin-bottom: 18px; text-align:center;
+  }
+  .result-label{ font-size:12.5px; color: var(--shu-pale); font-weight:700; margin:0 0 6px; }
+  .result-num{ font-family: var(--font-mincho); font-size:46px; font-weight:700; color:#fff; line-height:1.2; margin:0; }
+  .result-num small{ font-size:20px; color:rgba(255,255,255,.7); margin-left:4px; }
+  .result-sub{ font-size:14px; color:#fff; margin:14px 0 0; line-height:1.7; }
+  .result-closing{
+    font-family: var(--font-mincho); text-align:center; color: var(--kinari);
+    font-size:20px; letter-spacing:.06em; margin: 28px 0 6px;
+  }
+  .result-actions{ display:flex; flex-direction:column; gap:10px; margin-top:22px; }
+  .result-actions .btn{ width:100%; }
+
+  /* ============ 画像の拡大表示 ============ */
+  .lightbox{ position:fixed; inset:0; z-index:200; background: #08101c; display:none; flex-direction:column; }
+  .lightbox.open{ display:flex; }
+  .lb-bar{ display:flex; justify-content:space-between; align-items:center; padding:12px 16px; color: var(--kinari); font-size:12px; }
+  .lb-close{
+    background:none; border:1px solid rgba(242,238,227,.4); color: var(--kinari);
+    border-radius:999px; padding:8px 18px; font-family:inherit; font-weight:700; font-size:13px; cursor:pointer;
+  }
+  .lb-scroll{ flex:1; overflow:auto; display:flex; align-items:center; -webkit-overflow-scrolling:touch; }
+  .lb-scroll img{ flex:0 0 auto; width:min(180vw, 1000px); height:auto; margin:0 auto; }
+
+  /* ===== 読みやすさ(文字の大きさ・行間・折り返し) =====
+     ・小さすぎた文字(10〜13px)を13〜15.5pxに。長い文章は、行間と字間を少し広げ、太さも一段上げています
+     ・折り返しは「禁則処理(行頭に。、ぁっー が来ない)」＋「文節の切れ目(JSが<wbr>を入れた所)」で行います */
+  body{ font-weight:500; }
+  main{ line-break:strict; overflow-wrap:anywhere; }
+  .phrase{ word-break:keep-all; }
+  .story-basic, .story-taste p.eating, .story-trivia p, .menu-item .desc, .sake-card .taste, .parts-info,
+  .compare-foot, .story-owner p, .menu-empty, .result-sub, .quiz-result-text, .flip-card-back p, .ill-legend li{ text-wrap:pretty; letter-spacing:.02em; }
+  h2.title, .fish-header .name, .q-label, .taste-title, .highlight-title, .parts-title, .compare-card .label{ text-wrap:balance; }
+
+  .story-basic{ font-size:15.5px; line-height:1.9; }
+  .story-taste p.eating{ font-size:15.5px; line-height:1.9; }
+  .taste-title{ font-size:16.5px; }
+  .highlight-title{ font-size:17.5px; }
+  .quiz-question{ font-size:16px; line-height:1.65; }
+  .quiz-btn{ font-size:15px; }
+  .quiz-result-box{ font-size:15px; line-height:1.75; }
+  .quiz-result-title{ font-size:16.5px; }
+  .flip-card-front p{ font-size:16px; }
+  .flip-card-front .hint{ font-size:13px; }
+  .flip-card-back p{ font-size:15px; line-height:1.75; }
+  .flip-sub{ margin-top:10px; font-size:14px; line-height:1.7; }
+  .flip-cap{ display:flex; justify-content:space-around; margin-top:8px; font-size:13px; font-weight:700; color:#fff; }
+  .story-trivia p{ font-size:14.5px; line-height:1.85; }
+  .trivia-label{ font-size:13px; }
+  .trivia-illustration-caption{ font-size:13px; line-height:1.65; }
+  .ill-legend li{ font-size:14.5px; }
+  .compare-card .label{ font-size:15.5px; }
+  .compare-card .note{ font-size:13.5px; line-height:1.6; }
+  .compare-foot{ font-size:14.5px; line-height:1.8; }
+  .parts-title{ font-size:15.5px; }
+  .parts-btn{ font-size:15px; }
+  .parts-info{ font-size:14.5px; line-height:1.8; }
+  .parts-note{ font-size:12.5px; color:rgba(242,238,227,.78); }
+  .slice-caption{ font-size:13.5px; }
+  .story-owner .owner-label{ font-size:13px; }
+  .story-owner p{ font-size:15.5px; line-height:1.9; }
+
+  .menu-notice{ color:#ff8787; font-size:14px; margin-bottom:24px; line-height:1.75; font-weight:700; }
+  .menu-item .name{ font-size:17px; }
+  .menu-item .desc{ font-size:14.5px; line-height:1.75; }
+  .menu-item .tap-hint{ font-size:13px; }
+  .menu-empty{ font-size:15px; line-height:1.85; }
+  .sake-legend{ font-size:13.5px; line-height:1.85; }
+  .sake-group-label{ font-size:13px; }
+  .sake-card .tag{ font-size:12.5px; padding:3px 11px; }
+  .sake-card .region{ font-size:13px; }
+  .sake-card .name{ font-size:17px; }
+  .sake-card .pair-line{ font-size:14.5px; line-height:1.7; }
+  .sake-card .taste{ font-size:14.5px; line-height:1.85; }
+
+  .btn, button.btn{ font-size:15px; }
+  .note{ font-size:13.5px; color:rgba(242,238,227,.8); line-height:1.7; }
+  .talk-sub{ font-size:13.5px; color:#3A5686; }
+  .collect-counter{ font-size:14px; }
+  .result-label{ font-size:14px; }
+  .result-sub{ font-size:15px; line-height:1.85; }
+  .skip-telop{ font-size:14px; text-shadow:0 1px 6px rgba(0,0,0,.6); }
+  button.btn:disabled{ opacity:.55; }
+  .quiz-btn:disabled{ opacity:.92; }          /* 答えを選んだあとも、選択肢の文字をはっきり読めるように */
+  .note-input{ font-size:16px; }          /* 16px未満だと、iPhoneで入力時に画面が拡大されてしまう */
+
+  /* ===== 本編: 文字を減らし、ひとめで分かる見せ方に ===== */
+  .story-lead{
+    font-family: var(--font-mincho); font-weight:700; font-size:18px; line-height:1.75;
+    color: var(--kinari); text-align:center; margin:12px 4px 0; text-wrap:balance;
+  }
+  .points{ list-style:none; margin:0; padding:0; display:grid; gap:10px; }
+  .points li{
+    display:flex; align-items:center; gap:12px;
+    background: rgba(242,238,227,.07); border:1px solid rgba(242,238,227,.18); border-radius:14px;
+    padding:12px 14px; font-size:16px; font-weight:700; line-height:1.5; color:#fff;
+  }
+  .pt-mark{
+    flex:0 0 26px; height:26px; border-radius:50%; background: var(--shu); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700;
+  }
+  /* 大事なことばを、蛍光ペンのように */
+  b.em, .em{
+    font-weight:700; color: var(--kinari);
+    background: linear-gradient(transparent 58%, rgba(189,70,48,.55) 58%);
+    padding:0 .08em;
+  }
+  .story-trivia p{ font-size:15px; line-height:1.85; }
+  .quiz-result-text{ font-size:15.5px; line-height:1.85; }
+  .quiz-result-text .em, .flip-card-back .em{ color:#fff; }
+  /* 解説図: 「拡大」の印 */
+  .ill-box{ position:relative; display:block; max-width:260px; margin:0 auto; }
+  .ill-box img{ display:block; width:100%; height:auto; cursor:zoom-in; }
+  .zoom-badge{
+    position:absolute; right:6px; bottom:6px; pointer-events:none;
+    font-size:12px; font-weight:700; color:#fff; background:rgba(13,27,42,.78);
+    border:1px solid rgba(242,238,227,.5); border-radius:999px; padding:2px 10px;
+  }
+  .trivia-illustration-wrap img{ max-width:none; }
+  /* お酒の画面 */
+  .sake-legend{ display:flex; flex-wrap:wrap; gap:8px; margin:0 0 16px; }
+  .sake-legend .lg{ font-size:13.5px; color:#fff; background:rgba(242,238,227,.08); border:1px solid rgba(242,238,227,.2); border-radius:999px; padding:5px 12px; }
+  .sake-legend .lg b{ color:var(--shu-pale); margin-right:6px; }
+  .sake-card .taste{ margin:0 0 10px; }
+  .match{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
+  .match-label{ font-size:13px; font-weight:700; color:var(--shu-pale); margin-right:2px; }
+  .chip-m{ font-size:13.5px; color:#fff; background:rgba(242,238,227,.12); border-radius:999px; padding:3px 11px; }
+
+  /* ===== お魚のこと: 特徴・味わい・食べ方(ラベル + 2文ほどの説明) ===== */
+  .about{ display:grid; gap:0; }
+  .about-row{ padding:14px 2px; border-top:1px solid rgba(242,238,227,.16); }
+  .about-row:first-child{ border-top:0; padding-top:4px; }
+  .about-k{
+    display:inline-block; margin:0 0 8px; padding:1px 11px;
+    font-size:13.5px; font-weight:700; letter-spacing:.08em; color: var(--shu-pale);
+    border:1px solid rgba(241,220,213,.55); border-radius:999px;
+  }
+  .about-v{ margin:0; font-size:15.5px; line-height:1.9; color:#fff; text-wrap:pretty; letter-spacing:.02em; }
+  .about-v .em{ color:#fff; }
+  .story-lead{ font-size:17.5px; }
+</style>
+</head>
+<body>
+
+<div class="bg-video-wrap">
+  <!-- OP動画: 初回のみ読み込む(preload=none。JSが再生を開始) -->
+  <video id="bg-video-op" muted playsinline preload="none">
+    <source src="title3.mp4" type="video/mp4">
+  </video>
+  <video id="bg-video-main-1" muted playsinline preload="auto">
+    <source src="back.mp4" type="video/mp4">
+  </video>
+  <video id="bg-video-main-2" muted playsinline preload="auto">
+    <source src="back.mp4" type="video/mp4">
+  </video>
+  <div class="bg-video-overlay"></div>
+</div>
+
+<div class="app">
+  <header id="main-header" style="display: none;">
+    <div class="brand" onclick="goScreen('select')">
+      <img src="koziki_logo.webp" class="seal" alt="居酒屋 乞食ロゴ">
+      <div><h1>居酒屋 乞食 のお魚たち</h1></div>
+    </div>
+    <button id="header-back-btn" class="header-back-btn" onclick="goBack()" style="display: none;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      戻る
+    </button>
+  </header>
+  <main>
+
+    <!-- Screen: オープニング -->
+    <section class="screen active" data-screen="op" onclick="finishOp()">
+      <div class="op-wrapper">
+        <img src="koziki_title.webp" id="op-logo" class="op-logo-img" alt="居酒屋 乞食">
+        <p class="skip-telop">画面をタップしてスキップ</p>
+      </div>
+    </section>
+
+    <!-- Screen: サカナ選択 -->
+    <section class="screen" data-screen="select">
+      <div class="talk-head select-talk" id="selectHead">
+        <div class="talk-fish-wrap"><img class="talk-fish" src="maaji.webp" alt=""></div>
+        <div class="talk-bubble compact" role="button" tabindex="0" aria-label="お魚の案内(タップで次へ)">
+          <span class="talk-main" aria-live="polite"></span>
+        </div>
+        <span class="air a1"></span><span class="air a2"></span><span class="air a3"></span>
+      </div>
+      <button class="collect-counter" id="collectCounter" type="button" onclick="goScreen('result')">
+        捕まえた魚 <b id="caughtCount">0</b> / <span id="totalCount">0</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+      <div class="aqua-wrap" id="aquaWrap"></div>
+    </section>
+
+    <!-- Screen: 魚詳細: 問い → 答え → 味わい -->
+    <section class="screen" data-screen="detail">
+      <div class="fish-hero" id="detailHero">
+        <img id="detailImg" src="" alt="">
+        <div class="fish-header">
+          <span class="name" id="detailName"></span>
+        </div>
+        <p class="story-lead" id="detailLead"></p>
+      </div>
+
+      <article class="fish-story">
+        <!-- 1. 問い(クイズ/めくりカード) -->
+        <div class="story-highlight" id="detailHighlightBlock"></div>
+
+        <!-- 2. 答え・豆知識 -->
+        <div class="story-trivia" id="detailTriviaBlock">
+          <div class="trivia-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            豆知識
+          </div>
+          <p id="detailTrivia"></p>
+          <div class="trivia-illustration-wrap" id="detailIllWrap">
+            <div class="ill-box"><img id="detailIllImg" src="" alt=""><span class="zoom-badge" aria-hidden="true">拡大</span></div>
+            <div class="trivia-illustration-caption" id="detailIllCaption"></div>
+            <ul class="ill-legend" id="detailIllLegend" hidden></ul>
+          </div>
+        </div>
+
+        <!-- 見分けカード(該当する魚のみ) -->
+        <div class="story-compare" id="detailCompareBlock" hidden></div>
+
+        <!-- 3. 味わい -->
+        <div class="story-taste">
+          <h4 class="taste-title">お魚のこと</h4>
+          <div class="about" id="detailAbout"></div>
+          <div class="parts" id="detailParts" hidden></div>
+        </div>
+
+        <!-- 店主のひとこと(入力がある魚のみ) -->
+        <div class="story-owner" id="detailOwnerBlock" hidden>
+          <div class="owner-label">店主のひとこと</div>
+          <p id="detailOwner"></p>
+        </div>
+      </article>
+
+      <button class="btn btn-primary" style="width: 100%; margin-top: 12px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;" onclick="goToMenu()">
+        <span id="toMenuLabel">この魚に合うお酒を見る</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </section>
+
+    <!-- Screen: メニュー・お酒 -->
+    <section class="screen" data-screen="menu">
+      <h2 class="title" style="line-height: 1.6; word-break: keep-all;" id="menuTitle"></h2>
+
+      <div class="menu-notice">
+        ※ご注文は、注文用QRまたは口頭で承ります。<br>
+        ※仕入れの都合で、品切れの場合があります。
+      </div>
+
+      <div class="sake-legend"><span class="lg"><b>流す</b>脂をスッと切る</span><span class="lg"><b>重ねる</b>旨みを深める</span></div>
+      <div id="menuScreenList"></div>
+
+      <div class="btn-row" style="margin-top: 32px; flex-direction: column;">
+        <button class="btn btn-primary" style="width:100%" id="finishButton" onclick="handleFinishClick()"></button>
+      </div>
+    </section>
+
+    <!-- Screen: アンケート(初回のみ) -->
+    <section class="screen" data-screen="survey">
+      <div class="talk-head" id="surveyHead">
+        <div class="talk-fish-wrap"><img class="talk-fish" id="surveyFish" src="maaji.webp" alt=""></div>
+        <div class="talk-bubble" id="surveyBubble" aria-live="polite">
+          <span class="talk-main" id="bubbleMain"></span>
+          <span class="talk-sub">タップするだけです</span>
+        </div>
+        <span class="air a1"></span><span class="air a2"></span><span class="air a3"></span>
+      </div>
+
+      <div class="survey-q" id="group-gender" hidden>
+        <p class="q-label">まずは、どちらの方でしょう？</p>
+        <div class="chip-row">
+          <label class="chip"><input type="radio" name="s-gender" value="男性" onchange="onSurveyChange()"><span class="chip-box">男性</span></label>
+          <label class="chip"><input type="radio" name="s-gender" value="女性" onchange="onSurveyChange()"><span class="chip-box">女性</span></label>
+          <label class="chip"><input type="radio" name="s-gender" value="無回答" onchange="onSurveyChange()"><span class="chip-box">内緒</span></label>
+        </div>
+      </div>
+
+      <div class="survey-q" id="group-age" hidden>
+        <p class="q-label">年齢は、どのあたりでしょう？</p>
+        <div class="chip-row">
+          <label class="chip"><input type="radio" name="s-age" value="34歳以下" onchange="onSurveyChange()"><span class="chip-box">34歳以下</span></label>
+          <label class="chip"><input type="radio" name="s-age" value="35歳以上" onchange="onSurveyChange()"><span class="chip-box">35歳以上</span></label>
+        </div>
+      </div>
+
+      <div id="surveyFoot" hidden>
+        <p class="note">お店づくりの参考にさせていただきます</p>
+
+        <div class="btn-row" style="flex-direction: column;">
+          <button class="btn btn-ghost" id="surveyBackBtn" style="width:100%" disabled onclick="goScreen('select')">水槽をのぞく</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen: 最後のひとこと(任意・1問だけ) -->
+    <section class="screen" data-screen="farewell">
+      <div class="talk-head" id="farewellHead">
+        <div class="talk-fish-wrap"><img class="talk-fish" src="maaji.webp" alt=""></div>
+        <div class="talk-bubble" role="status" aria-live="polite">
+          <span class="talk-main"></span>
+        </div>
+        <span class="air a1"></span><span class="air a2"></span><span class="air a3"></span>
+      </div>
+
+      <div id="farewellForm" hidden>
+        <textarea id="farewellText" class="note-input" rows="4" maxlength="200" placeholder="どんなことでも、お気軽にどうぞ" aria-label="お店へのひとこと"></textarea>
+        <p class="note">お名前や連絡先は、書かなくて大丈夫です</p>
+        <div class="btn-row" style="flex-direction: column;">
+          <button class="btn btn-primary" id="farewellSend" type="button" style="width:100%" disabled>送る</button>
+          <button class="btn btn-ghost" id="farewellSkip" type="button" style="width:100%">このまま終わる</button>
+        </div>
+      </div>
+
+      <div id="farewellDone" hidden>
+        <div class="btn-row" style="flex-direction: column;">
+          <button class="btn btn-primary" type="button" style="width:100%" onclick="goScreen('select')">最初の画面に戻る</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen: 結果 -->
+    <section class="screen" data-screen="result">
+      <h2 class="title">ここまでの結果</h2>
+      <div class="result-card">
+        <p class="result-label">捕まえた魚</p>
+        <p class="result-num"><span id="resCaught">0</span><small>/ <span id="resTotal">0</span></small></p>
+        <p class="result-sub" id="resMsg"></p>
+      </div>
+      <p class="result-closing">NO FISH, NO LIFE.</p>
+      <div class="result-actions">
+        <button class="btn btn-primary" id="orderBtn" type="button" hidden onclick="goOrder()">注文する</button>
+        <button class="btn btn-ghost" type="button" onclick="goScreen('select')">もっと魚を見る</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- 冒頭の質問: 話している間は、魚と吹き出しを画面いっぱいに大きく表示し、話しおわると上に小さく移る -->
+<div class="stage-head" id="surveyStage" data-orient="v" hidden>
+  <div class="stage-inner">
+    <div class="talk-fish-wrap"><img class="talk-fish" src="maaji.webp" alt=""></div>
+    <div class="talk-bubble" role="button" tabindex="0" aria-live="polite" aria-label="お魚の案内(タップで次へ)">
+      <span class="talk-main"></span>
+      <span class="talk-sub"></span>
+    </div>
+  </div>
+  <span class="air a1"></span><span class="air a2"></span><span class="air a3"></span>
+</div>
+
+<!-- 最後のひとこと: 話している間は、画面いっぱいに大きく -->
+<div class="stage-head" id="farewellStage" data-orient="v" hidden>
+  <div class="stage-inner">
+    <div class="talk-fish-wrap"><img class="talk-fish" src="maaji.webp" alt=""></div>
+    <div class="talk-bubble" role="button" tabindex="0" aria-live="polite" aria-label="お魚の言葉(タップで次へ)">
+      <span class="talk-main"></span>
+      <span class="talk-sub"></span>
+    </div>
+  </div>
+  <span class="air a1"></span><span class="air a2"></span><span class="air a3"></span>
+</div>
+
+<!-- 画像の拡大表示 -->
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="画像の拡大表示">
+  <div class="lb-bar">
+    <span>横にスクロールできます</span>
+    <button class="lb-close" type="button" id="lbClose">閉じる</button>
+  </div>
+  <div class="lb-scroll" id="lbScroll"><img id="lbImg" src="" alt=""></div>
+</div>
+
+<script>
+/* ============ 設定 ============ */
+const GAS_URL    = 'YOUR_GAS_WEBHOOK_URL_HERE';   // ログ送信先(未設定なら送信しません)
+const ORDER_URL  = '';                            // 注文ページのURL(空なら「注文する」ボタンは出ません)
+const OP_FIRST_VISIT_ONLY = false;                // true: OPは端末ごとに初回だけ表示 / false: 毎回表示
+
+const GAS_ENABLED = /^https:\/\//.test(GAS_URL);
+const REDUCED_MOTION = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ============ 保存(失敗しても動くようにする) ============ */
+const store = {
+  get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} },
+  remove(k){ try{ localStorage.removeItem(k); }catch(e){} }
+};
+function loadJSON(k, fallback){
+  try{ const v = JSON.parse(store.get(k)); return v == null ? fallback : v; }catch(e){ return fallback; }
+}
+
+// 動作確認用: URLに ?reset を付けると、捕まえた魚やOP表示済みの記録を消します
+if (/[?&]reset\b/.test(location.search)) {
+  ['fish_survey','fish_caught','fish_op_seen','fish_farewell_done'].forEach(k => store.remove(k));
+}
+
+let fishDeviceId = store.get('fish_device_id');
+if (!fishDeviceId) {
+  fishDeviceId = 'fdev_' + Math.random().toString(36).slice(2, 11);
+  store.set('fish_device_id', fishDeviceId);
+}
+
+function sendLog(action, extra) {
+  if (!GAS_ENABLED) return;
+  const payload = Object.assign({ deviceId: fishDeviceId, action: action }, extra || {});
+  fetch(GAS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify(payload)
+  }).catch(err => console.log('送信エラー:', err));
+}
+
+/* ============ 魚データ ============
+   ownerNote : 「店主のひとこと」。空なら表示されません。
+   menuItems : 実際のメニュー。 { name, description, recommendedSake } を入れてください。
+               空のときは、お酒の提案だけを表示します(ダミーのメニューは出しません)。 */
+const fishList = [
+  {
+    id: "aji", name: "真鯵", kana: "まあじ", img: "maaji.webp",
+    lead: "旨みが豊富で、料理を選ばない万能の青魚。",
+    about: [
+      { k: "特徴", v: "通年出回りますが、**旬は初夏から夏**。旨みが豊富な青魚です。" },
+      { k: "味わい", v: "皮目の香ばしさと、脂の甘みのバランスが絶妙です。" },
+      { k: "食べ方", v: "刺身・塩焼き・フライで。**生姜やネギ**を添えると旨みが引き立ちます。" }
+    ],
+    interaction: {
+      type: "quiz",
+      question: "「アジ」という名前の由来は？",
+      options: [
+        { text: "味が良いから", isCorrect: true },
+        { text: "アジアから伝わったから", isCorrect: false }
+      ],
+      explanation: "「**味が良い**」から「アジ」と名付けられたという説が有力です。昔から日本人に愛されてきた魚です。"
+    },
+    trivia: "尾の近くの硬いウロコ**「ゼイゴ」**は、アジの仲間だけの特徴。調理前に、これを取り除きます。",
+    illustration: "maaji_kaisetsu2.webp", illAlt: "アジのゼイゴ",
+    illCaption: "尾の近くにある「ゼイゴ」",
+    ownerNote: "",
+    menuItems: [], recommendedSake: "hakkaisan"
+  },
+  {
+    id: "katsuo", name: "カツオ", kana: "かつお", img: "katsuo.webp",
+    lead: "春と秋、年に2回の旬を迎える赤身魚の代表格。",
+    about: [
+      { k: "特徴", v: "春の「初鰹」と秋の「戻り鰹」で**年に2回が旬**。鉄分も豊富です。" },
+      { k: "味わい", v: "藁焼きの香ばしさと、赤身ならではの濃い旨みが特徴です。" },
+      { k: "食べ方", v: "**ニンニクやポン酢**で。さっぱりしつつ、力強い味わいに。" }
+    ],
+    interaction: {
+      type: "quiz",
+      question: "カツオは泳ぐのをやめるとどうなる？",
+      options: [
+        { text: "ゆっくり休める", isCorrect: false },
+        { text: "呼吸ができなくなる", isCorrect: true }
+      ],
+      explanation: "**泳ぎ続けて**海水をエラに送らないと、酸素を取り込めません。止まると沈むとも言われます。"
+    },
+    trivia: "鰹節は、燻す工程を**1か月以上**かけて10〜15回くり返して作ります。**世界一硬い食べ物**とも言われます。",
+    compare: {
+      title: "カツオとマグロの見分け方",
+      items: [
+        { img: "katsuo.webp", label: "カツオ", note: "腹に縞がある" },
+        { img: "maguro.webp", label: "マグロ", note: "縞模様はない（成魚）" }
+      ],
+      foot: "形はそっくり。腹の縞が目印です。"
+    },
+    ownerNote: "",
+    menuItems: [], recommendedSake: "tateyama"
+  },
+  {
+    id: "maguro", name: "まぐろ", kana: "まぐろ", img: "maguro.webp",
+    lead: "赤身・中トロ・大トロ。部位で味わいが変わる刺身の主役。",
+    about: [
+      { k: "特徴", v: "寿司や刺身の主役。**部位**によって、脂ののり方が大きく違います。" },
+      { k: "味わい", v: "赤身は**さっぱりとした酸味と旨み**、トロは**濃厚な脂の甘み**です。" },
+      { k: "食べ方", v: "ぜひ**部位ごとに食べ比べ**を。違いがよく分かります。" }
+    ],
+    interaction: {
+      type: "quiz",
+      question: "江戸時代、「トロ」はどう扱われていた？",
+      options: [
+        { text: "殿様しか食べられない高級品", isCorrect: false },
+        { text: "人気がなく、捨てられていた", isCorrect: true }
+      ],
+      explanation: "傷みやすかったため、**「ねこまたぎ」**と呼ばれるほど人気がなく、捨てられることも多かったそうです。"
+    },
+    trivia: "**泳ぎ続けないと息ができない**ため、寝ている間も、ゆっくり泳ぎ続けています。",
+    parts: {
+      img: "maguro.webp",
+      title: "部位をタップして、味を見る",
+      note: "※位置は目安です。",
+      regions: [
+        { id: "akami",  label: "赤身",   color: "#AA2828", cx: 470, cy: 232, rx: 170, ry: 34,
+          desc: "背中側の部位。脂は控えめで、さっぱりとした酸味と旨みです。" },
+        { id: "chutoro", label: "中トロ", color: "#E66E64", cx: 555, cy: 350, rx: 140, ry: 29,
+          desc: "赤身と大トロの中間。ほどよい脂と、赤身の旨みを楽しめます。" },
+        { id: "otoro",  label: "大トロ", color: "#FFC8BE", cx: 395, cy: 402, rx: 118, ry: 26,
+          desc: "お腹側の部位。口の中でとろける、濃厚な脂の甘みです。" }
+      ]
+    },
+    compare: {
+      title: "カツオとマグロの見分け方",
+      items: [
+        { img: "katsuo.webp", label: "カツオ", note: "腹に縞がある" },
+        { img: "maguro.webp", label: "マグロ", note: "縞模様はない（成魚）" }
+      ],
+      foot: "形はそっくり。腹の縞が目印です。"
+    },
+    ownerNote: "",
+    menuItems: [], recommendedSake: "zaku"
+  },
+  {
+    id: "salmon", name: "サーモン", kana: "さーもん", img: "sa-mon.webp",
+    lead: "子どもから大人まで人気。とろける脂の甘みが魅力。",
+    about: [
+      { k: "特徴", v: "脂がたっぷり乗った、とろけるような食感の魚です。" },
+      { k: "味わい", v: "豊かな脂の甘みと、なめらかな舌触りが魅力です。" },
+      { k: "食べ方", v: "**炙る**と香ばしさが加わり、生とは違うとろける食感に。" }
+    ],
+    interaction: {
+      type: "quiz",
+      question: "身はオレンジ色。実は何魚に分類される？",
+      options: [
+        { text: "白身魚", isCorrect: true },
+        { text: "赤身魚", isCorrect: false }
+      ],
+      explanation: "実は**白身魚**。エビやオキアミなどのエサに含まれる赤い色素（アスタキサンチン）が体にたまって、この色になります。",
+      extra: "salmonSlice"
+    },
+    trivia: "生で食べるサーモンは、寄生虫対策がされた**養殖**が基本。天然の鮭は、加熱が基本です。",
+    ownerNote: "",
+    menuItems: [], recommendedSake: "oze"
+  },
+  {
+    id: "hirame", name: "ヒラメ", kana: "ひらめ", img: "hirame.webp",
+    lead: "上品な旨みとコリコリの食感。冬は脂ののる「寒ビラメ」。",
+    about: [
+      { k: "特徴", v: "高級白身魚。**冬**に脂がのり、「寒ビラメ」と呼ばれます。" },
+      { k: "味わい", v: "淡白で上品な旨みと、コリコリとした弾力が楽しめます。" },
+      { k: "食べ方", v: "**えんがわ**は脂がのって、特有の甘みが口に広がります。" }
+    ],
+    interaction: {
+      type: "flip",
+      front: "ヒラメとカレイの見分け方は？",
+      back: `目を上にして、顔が<b class="em">左向き</b>ならヒラメ、<b class="em">右向き</b>ならカレイ。口の大きさも手がかりで、ヒラメは大きな口に鋭い歯があります。
+      <div style="margin-top: 12px; background: rgba(0,0,0,0.15); padding: 10px; border-radius: 8px;">
+        <img src="hirame_kaisetsu2.webp" alt="左ヒラメに右カレイ" style="width: 100%; height: auto; border-radius: 4px; display: block; margin: 0 auto;">
+        <div class="flip-cap">
+          <span>左ヒラメ</span>
+          <span>右カレイ</span>
+        </div>
+      </div>`
+    },
+    trivia: "生まれたては目が両側にあり、成長すると**右目が左側へ**移ります。海底の砂に潜るため、背中の色を周りに合わせて変えることもできます。",
+    ownerNote: "",
+    menuItems: [], recommendedSake: "hakkaisan"
+  },
+  {
+    id: "shimaaji", name: "シマアジ", kana: "しまあじ", img: "shimaaji.webp",
+    lead: "アジの仲間でも特に味がよいとされる高級魚。",
+    about: [
+      { k: "特徴", v: "身が締まり、**上品な脂の甘み**がある高級魚です。" },
+      { k: "味わい", v: "青魚特有のクセがなく、白身魚のような上品な甘さです。" },
+      { k: "食べ方", v: "しっかりとした**歯ごたえ**と脂の甘みを、同時に味わえます。" }
+    ],
+    interaction: {
+      type: "quiz",
+      question: "「シマアジ」の名前の由来は？",
+      options: [
+        { text: "体に縞（シマ）模様があるから", isCorrect: true },
+        { text: "身が引き締まっているから", isCorrect: false }
+      ],
+      explanation: "体の中央を走る**黄色いライン**が由来と言われます。このラインは、成長すると薄れていきます。"
+    },
+    trivia: "天然は漁獲量が少なく**「幻の魚」**とも呼ばれます。お店で食べられるものは、養殖が多いです。",
+    illustration: "shimaaji_kaisetsu2.webp", illAlt: "シマアジの黄色いライン",
+    illCaption: "頭の後ろから尾へ走る黄色いライン",
+    ownerNote: "",
+    menuItems: [], recommendedSake: "manozuru"
+  },
+  {
+    id: "maiwashi", name: "真いわし", kana: "まいわし", img: "iwashi.webp",
+    lead: "栄養が豊富で、香りと脂の旨みが魅力の青魚。",
+    about: [
+      { k: "特徴", v: "青魚の代表で、**EPAやDHA**が豊富です。新鮮なら刺身でも絶品。" },
+      { k: "味わい", v: "青魚ならではの豊かな香りと、とろけるような脂の旨みです。" },
+      { k: "食べ方", v: "**生姜醤油**でさっぱりいただくのがおすすめです。" }
+    ],
+    interaction: {
+      type: "flip",
+      front: "イワシは魚へんに「弱い」と書きます。なぜ？",
+      back: "水揚げ後すぐ弱ってしまうほど鮮度落ちが早く、「弱し（よわし）」から名前と漢字がついたと<b class='em'>言われています</b>。"
+    },
+    trivia: "敵から身を守るため、何万匹もの大きな群れ**「トルネード」**を作って泳ぎます。",
+    illustration: "iwashi_kaisetsu.webp", illAlt: "イワシの群れ（トルネード）",
+    illCaption: "群れで泳ぐイワシ（トルネード）",
+    ownerNote: "",
+    menuItems: [], recommendedSake: "tateyama"
+  },
+  {
+    id: "madako", name: "真だこ", kana: "まだこ", img: "tako.webp",
+    lead: "噛むほどに旨みが広がる、日本で一番身近なタコ。",
+    about: [
+      { k: "特徴", v: "日本で最も一般的に食べられるタコ。**弾力**がしっかりしています。" },
+      { k: "味わい", v: "噛めば噛むほど、**濃厚な旨み**が広がります。" },
+      { k: "食べ方", v: "**吸盤**のコリコリとした食感も、よいアクセントです。" }
+    ],
+    interaction: {
+      type: "quiz",
+      question: "タコの脳はいくつ？",
+      options: [
+        { text: "6つ", isCorrect: false },
+        { text: "9つ", isCorrect: true }
+      ],
+      explanation: "心臓は**3つ**。脳は、中枢の脳と、8本の腕の「小さな脳」を合わせて**9つ**と言われます。"
+    },
+    trivia: "茹でると赤くなりますが、生きている間は、環境に合わせて**一瞬で体の色や模様を変えられます**。",
+    illustration: "tako_kaisetsu2.webp", illAlt: "タコの脳と心臓のイラスト",
+    illCaption: "",
+    illLegend: [
+      { color: "#F0A9B0", text: "中枢の脳（目の奥に1つ）" },
+      { color: "#1E7F9E", text: "腕の付け根の脳 × 8" },
+      { color: "#B3261E", text: "心臓（全身用）× 1" },
+      { color: "#F08A6B", text: "鰓心臓（えら用）× 2" }
+    ],
+    ownerNote: "",
+    menuItems: [], recommendedSake: "manozuru"
+  },
+  {
+    id: "unagi", name: "うなぎ", kana: "うなぎ", img: "unagi.webp",
+    lead: "土用の丑の日でおなじみ。ふっくら香ばしい味わい。",
+    about: [
+      { k: "特徴", v: "ふっくらとした身と、香ばしいタレの相性が抜群です。" },
+      { k: "味わい", v: "皮目は**パリッと香ばしく**、身はふっくら柔らかな食感です。" },
+      { k: "食べ方", v: "甘辛いタレと脂の旨みで、**ご飯もお酒も進みます**。" }
+    ],
+    interaction: {
+      type: "flip",
+      front: "ウナギを刺身で見かけないのはなぜ？",
+      back: "血に<b class='em'>毒</b>（イクチオトキシン）があるためです。熱に弱く、60℃で5分ほど加熱すると毒性がなくなるので、蒲焼きなどで加熱して食べます。"
+    },
+    trivia: "長年謎でしたが、近年ようやく、産卵場所が**「マリアナ諸島付近」**と分かりました。",
+    ownerNote: "",
+    menuItems: [], recommendedSake: "zaku"
+  },
+  {
+    id: "yariika", name: "ヤリイカ", kana: "やりいか", img: "ika.webp",
+    lead: "上品な甘みと歯切れのよさが魅力。冬から春が旬。",
+    about: [
+      { k: "特徴", v: "**冬から春**が旬。透き通るような身が特徴です。" },
+      { k: "味わい", v: "上品な甘みと、柔らかくも歯切れのよい食感です。" },
+      { k: "食べ方", v: "噛むほどに、イカ本来の**優しい旨み**が広がります。" }
+    ],
+    interaction: {
+      type: "quiz",
+      question: "ヤリイカの寿命はどれくらい？",
+      options: [
+        { text: "約1年", isCorrect: true },
+        { text: "約10年", isCorrect: false }
+      ],
+      explanation: "実は寿命は**1年**。春〜夏に生まれて成長し、翌年の春に産卵を終えると一生を終える、短い命です。"
+    },
+    trivia: "名前は、細長く先が尖った胴体が**「槍の穂先」**に似ていることに由来します。",
+    illustration: "ika_kaisetsu.webp", illAlt: "槍の穂先とヤリイカ",
+    illCaption: "槍の穂先（左）に似たヤリイカ",
+    ownerNote: "",
+    menuItems: [], recommendedSake: "oze"
+  },
+  {
+    id: "amaebi", name: "甘エビ", kana: "あまえび", img: "ebi.webp",
+    lead: "名前のとおり、とろける強い甘みが特徴。",
+    about: [
+      { k: "特徴", v: "正式名称は**「ホッコクアカエビ」**。強い甘みが特徴です。" },
+      { k: "味わい", v: "口に入れるととろける甘みと、ねっとり滑らかな口当たり。" },
+      { k: "食べ方", v: "**頭の味噌**も濃厚。余すところなく楽しめます。" }
+    ],
+    interaction: {
+      type: "flip",
+      front: "アマエビは、大きくなると<br>性別が変わるって本当？",
+      back: "本当です！<br>生まれた時はすべてオスで、数年（4〜6歳ごろ）たつとメスに性転換します。"
+    },
+    trivia: "水揚げ後、少し時間がたつと、**自己消化でアミノ酸が増え**、より甘くなります。",
+    ownerNote: "",
+    menuItems: [], recommendedSake: "oze"
+  }
+];
+
+/* pair: 「流す」=脂や香りを切る / 「重ねる」=旨味に寄り添い深める */
+const sakeList = [
+  {
+    id: "oze", group: "冷や・常温で", tag: "辛口", pair: "流す",
+    name: "尾瀬のゆきどけ", region: "群馬",
+    line: "脂をスッと洗い流して、次の一口を新鮮に。",
+    taste: "キレのある喉ごしと、澄んだ後味。ほのかにフルーティーな香りがあり、魚の脂や旨みをきれいに洗い流します。",
+    match: ["サーモン", "ヤリイカ", "お造り"]
+  },
+  {
+    id: "hakkaisan", group: "冷や・常温で", tag: "スッキリ", pair: "流す",
+    name: "八海山", region: "新潟",
+    line: "軽やかに流して、魚の繊細な風味を引き立てる。",
+    taste: "雑味のないクリアな味わいと、淡麗で軽やかな飲み口。魚の繊細な風味を邪魔せず、引き立てます。",
+    match: ["ヒラメなどの白身魚", "アジの塩焼き"]
+  },
+  {
+    id: "zaku", group: "冷や・常温で", tag: "旨甘口", pair: "重ねる",
+    name: "作", region: "三重",
+    line: "お酒の甘みと魚の脂が、口の中で溶け合う。",
+    taste: "やわらかな甘みと、ふくよかな米の旨み。脂の乗った魚と合わせると、お酒の甘みと魚の脂が口の中で溶け合います。",
+    match: ["マグロのトロ", "ウナギ", "濃いめのタレ・味噌"]
+  },
+  {
+    id: "manozuru", group: "熱燗で", tag: "辛口", pair: "重ねる",
+    name: "真野鶴", region: "新潟",
+    line: "燗の温かさが、素材の甘みを深めてくれる。",
+    taste: "温めると、米のまろやかな旨みと辛口の輪郭が引き立ちます。旨みのある魚や、噛むほど味が出る魚介と好相性です。",
+    match: ["シマアジ", "タコ"]
+  },
+  {
+    id: "tateyama", group: "熱燗で", tag: "超辛口", pair: "流す",
+    name: "立山", region: "富山",
+    line: "キレで口の中をさっぱりリセット。",
+    taste: "熱燗でキレと辛さが際立つ、食中酒の王道。口の中をさっぱりリセットし、香りの強い魚にも負けません。",
+    match: ["カツオのタタキ", "イワシ", "炭火焼き"]
+  }
+];
+
+/* ============ 状態 ============ */
+let currentFishId = null;
+let surveyProfile = loadJSON('fish_survey', null);
+let caught = new Set(loadJSON('fish_caught', []));
+let screenHistory = [];
+
+const fishById = id => fishList.find(x => x.id === id);
+function saveCaught(){ store.set('fish_caught', JSON.stringify([...caught])); }
+
+/* ============ 背景動画(本編) ============ */
+let isMainVideoPlaying = false;
+function startSeamlessLoop() {
+  if (isMainVideoPlaying) return;
+  isMainVideoPlaying = true;
+
+  const vid1 = document.getElementById('bg-video-main-1');
+  const vid2 = document.getElementById('bg-video-main-2');
+  const fadeTime = 1.5;
+  if (!vid1 || !vid2) return;
+
+  vid1.currentTime = 0;
+  vid1.play().catch(e => console.log('Video play error:', e));
+  vid1.classList.add('show-bg');
+
+  const checkTime = (currentVid, nextVid) => {
+    if (currentVid.duration > 0 && currentVid.currentTime >= currentVid.duration - fadeTime) {
+      if (nextVid.paused) {
+        nextVid.currentTime = 0;
+        nextVid.play().catch(e => console.log('Video play error:', e));
+        nextVid.classList.add('show-bg');
+        currentVid.classList.remove('show-bg');
+      }
+    }
+    if (currentVid.currentTime >= currentVid.duration - 0.2) currentVid.pause();
+  };
+  vid1.addEventListener('timeupdate', () => checkTime(vid1, vid2));
+  vid2.addEventListener('timeupdate', () => checkTime(vid2, vid1));
+}
+
+/* ============ 画面遷移 ============ */
+function goScreen(name, isBack = false){
+  // 冒頭の質問(必須)に答えるまでは、魚の画面へ進ませず、質問の画面に戻す
+  if (name === 'select' && !surveyProfile && !surveyReview) { setSurveyFish(currentFishId || 'aji'); name = 'survey'; }
+  const currentScreen = document.querySelector('.screen.active')?.dataset.screen;
+
+  if (!isBack && currentScreen && currentScreen !== name && currentScreen !== 'op') {
+    screenHistory.push(currentScreen);
+  }
+
+  const backBtn = document.getElementById('header-back-btn');
+  if (backBtn) {
+    if (name === 'select' || name === 'op' || (name === 'survey' && !surveyReview)) {
+      backBtn.style.display = 'none';
+      screenHistory = [];
+    } else {
+      backBtn.style.display = 'flex';
+    }
+  }
+
+  document.querySelectorAll('.screen').forEach(el => {
+    el.classList.toggle('active', el.dataset.screen === name);
+  });
+  window.scrollTo({ top: 0, behavior: REDUCED_MOTION ? 'auto' : 'smooth' });
+
+  const opVideo = document.getElementById('bg-video-op');
+  const header = document.getElementById('main-header');
+
+  if (name === 'op') {
+    if (opVideo) opVideo.classList.add('show-bg');
+    if (header) header.style.display = 'none';
+  } else {
+    if (opVideo) { opVideo.classList.remove('show-bg'); try{ opVideo.pause(); }catch(e){} }
+    startSeamlessLoop();
+    if (header) header.style.display = 'flex';
+  }
+
+  if (name === 'select') { refreshSelect(); startAquarium(); } else { stopAquarium(); }
+  if (name === 'result') renderResult();
+  if (name === 'survey') playSurveyIntro();
+  if (name === 'select') startSelectTalk(); else selectTalk.stop();
+  if (name === 'farewell') playFarewellIntro(); else { farewellTalk.stop(); farewellStageCtl.hide(); }
+  if (name !== 'survey') { surveyTalk.stop(); surveyStageCtl.hide(); }
+}
+
+function goBack() {
+  if (screenHistory.length > 0) {
+    goScreen(screenHistory.pop(), true);
+  } else {
+    goScreen('select', true);
+  }
+}
+
+/* ============ OP ============
+   当初と同じ流れ: 動画を最後まで再生 → ロゴを表示(1秒かけて) → 3秒後に水槽へ。タップでスキップ。
+   ※動画が再生できない・終わらない場合に備えて、ロゴを出して進む保険を入れています。 */
+let opTimer = null, opGuard = null, opLogoShown = false;
+
+function showOpLogo(){
+  if (opLogoShown) return;
+  opLogoShown = true;
+  document.getElementById('op-logo').style.opacity = '1';
+  opTimer = setTimeout(finishOp, 3000);
+}
+
+function startOp(){
+  goScreen('op');
+  const v = document.getElementById('bg-video-op');
+  v.addEventListener('ended', showOpLogo);
+  v.addEventListener('error', showOpLogo);
+  const sources = v.querySelectorAll('source');
+  if (!sources.length) showOpLogo();                // 動画ファイルが指定されていない
+  sources.forEach(sr => sr.addEventListener('error', showOpLogo));   // 動画が読み込めない
+  try {
+    v.load();
+    const p = v.play();
+    if (p && p.catch) p.catch(showOpLogo);          // 自動再生が止められた場合
+  } catch(e) { showOpLogo(); }
+  opGuard = setTimeout(showOpLogo, 10000);          // 動画が終わらない場合の保険
+}
+
+function finishOp(){
+  clearTimeout(opTimer); clearTimeout(opGuard);
+  if (document.querySelector('.screen.active')?.dataset.screen === 'op') {
+    store.set('fish_op_seen', '1');
+    goScreen('select');
+  }
+}
+
+/* ============ 水族館(シルエット → 色が付く) ============ */
+let aquaFishes = [];
+let aquaAnimId = null;
+
+function refreshSelect(){
+  document.getElementById('caughtCount').textContent = caught.size;
+  document.getElementById('totalCount').textContent = fishList.length;
+
+  aquaFishes.forEach(item => {
+    item.img.classList.toggle('unknown', !caught.has(item.id));
+  });
+
+}
+
+function onFishTap(item){
+  if (item.busy) return;
+  if (caught.has(item.id)) { selectFish(item.id); return; }
+
+  // 初めて捕まえた: 色が付く演出のあと、詳細画面へ
+  item.busy = true;
+  item.frozen = true;
+  caught.add(item.id);
+  saveCaught();
+  item.img.classList.remove('unknown');
+  item.img.classList.add('pop');
+  if (navigator.vibrate) { try{ navigator.vibrate(30); }catch(e){} }
+  document.getElementById('caughtCount').textContent = caught.size;
+
+  setTimeout(() => {
+    item.img.classList.remove('pop');
+    item.frozen = false;
+    item.busy = false;
+    selectFish(item.id);
+  }, REDUCED_MOTION ? 250 : 850);
+}
+
+function startAquarium() {
+  if (aquaAnimId) return;
+  const wrap = document.getElementById('aquaWrap');
+  if (!wrap) return;
+
+  if (aquaFishes.length === 0) {
+    wrap.innerHTML = '';
+    fishList.forEach((f) => {
+      const box = document.createElement('div');
+      box.className = 'aqua-item';
+      box.setAttribute('role', 'button');
+      box.setAttribute('tabindex', '0');
+      box.setAttribute('aria-label', f.name + 'を捕まえる');
+
+      const img = document.createElement('img');
+      img.src = f.img;
+      img.alt = '';
+      img.draggable = false;
+      img.className = 'aqua-fish' + (caught.has(f.id) ? '' : ' unknown');
+      box.appendChild(img);
+
+      wrap.appendChild(box);
+
+      const item = {
+        id: f.id, el: box, img: img,
+        x: Math.random() * ((window.innerWidth || 400) - 120),
+        y: Math.random() * ((window.innerHeight || 800) - 250) + 120,
+        vx: (Math.random() - 0.5) * 2,
+        vy: (Math.random() - 0.5) * 1,
+        targetVx: 0, targetVy: 0,
+        time: Math.random() * 100,
+        isDashing: false, frozen: false, busy: false
+      };
+      aquaFishes.push(item);
+
+      box.addEventListener('click', () => onFishTap(item));
+      box.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onFishTap(item); }
+      });
+    });
+  }
+
+  let lastTime = performance.now();
+  const speedK = REDUCED_MOTION ? 0.25 : 1;
+
+  function animate(now) {
+    const dt = Math.min((now - lastTime) / 16.6, 2) * speedK;
+    lastTime = now;
+
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const fishW = 120, fishH = 80;
+    const minX = -30, maxX = w - fishW + 30;
+    const counter = document.getElementById('collectCounter');
+    const minY = counter ? counter.offsetTop + counter.offsetHeight + 12 : 60;
+    const maxY = h - fishH - 20;
+
+    aquaFishes.forEach(f => {
+      if (f.frozen) return;
+      f.time += dt;
+
+      if (f.id === 'katsuo') {
+        if (!f.isDashing && Math.random() < 0.0002 * dt) {
+          f.isDashing = true;
+          f.targetVx = (Math.random() > 0.5 ? 1 : -1) * (40 + Math.random() * 30);
+          f.targetVy = (Math.random() - 0.5) * 15;
+        } else if (f.isDashing && Math.random() < 0.015 * dt) {
+          f.isDashing = false;
+        }
+      }
+
+      if (!f.isDashing && f.time > 100) {
+        f.targetVx = (Math.random() - 0.5) * 2;
+        f.targetVy = (Math.random() - 0.5) * 1;
+        f.time = 0;
+      }
+
+      f.vx += (f.targetVx - f.vx) * (f.isDashing ? 0.4 : 0.02) * dt;
+      f.vy += (f.targetVy - f.vy) * (f.isDashing ? 0.4 : 0.02) * dt;
+      f.x += f.vx * dt;
+      f.y += f.vy * dt;
+
+      if (f.x < minX) { f.x = minX; f.vx *= -1; f.targetVx *= -1; }
+      if (f.x > maxX) { f.x = maxX; f.vx *= -1; f.targetVx *= -1; }
+      if (f.y < minY) { f.y = minY; f.vy *= -1; f.targetVy *= -1; }
+      if (f.y > maxY) { f.y = maxY; f.vy *= -1; f.targetVy *= -1; }
+
+      f.el.style.transform = `translate(${f.x}px, ${f.y}px)`;
+      f.img.style.transform = `scaleX(${f.vx > 0 ? -1 : 1})`;
+    });
+
+    aquaAnimId = requestAnimationFrame(animate);
+  }
+  aquaAnimId = requestAnimationFrame(animate);
+}
+
+function stopAquarium() {
+  if (aquaAnimId) { cancelAnimationFrame(aquaAnimId); aquaAnimId = null; }
+}
+
+/* ============ 魚詳細 ============ */
+// 文章の中の **ことば** を、蛍光ペンのような強調にして表示する(HTMLは使わず、安全に組み立てる)
+function setRich(node, text){
+  node.textContent = '';
+  String(text).split('**').forEach((seg, i) => {
+    if (!seg) return;
+    if (i % 2) { const b = document.createElement('b'); b.className = 'em'; b.textContent = seg; node.appendChild(b); }
+    else node.appendChild(document.createTextNode(seg));
+  });
+}
+function el(tag, cls, text){
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+
+function salmonSliceHtml(){
+  return `
+    <div class="slice-wrap">
+      <svg class="slice" viewBox="0 0 300 130" role="img" aria-label="サーモンの切り身">
+        <path class="slice-body" d="M18 66 C18 30 80 14 150 16 C222 14 284 30 284 66 C284 100 222 116 150 114 C80 116 18 100 18 66Z" stroke="#22385C" stroke-width="3"/>
+        <path class="slice-line" d="M52 50 C100 38 200 38 248 50"/>
+        <path class="slice-line" d="M44 66 C100 56 200 56 256 66"/>
+        <path class="slice-line" d="M52 82 C100 74 200 74 248 82"/>
+      </svg>
+      <div class="slice-caption">切り身にすると、この色。</div>
+    </div>`;
+}
+
+function renderQuiz(f){
+  const q = f.interaction;
+  const box = document.getElementById('detailHighlightBlock');
+  box.innerHTML = '';
+  box.appendChild(el('h4', 'highlight-title', '✨ クイズで学ぶ！'));
+  box.appendChild(el('div', 'quiz-question', q.question));
+
+  const opts = el('div', 'quiz-options');
+  const result = el('div', 'quiz-result-box');
+  result.setAttribute('aria-live', 'polite');
+  const rTitle = el('div', 'quiz-result-title');
+  const rText = el('div', 'quiz-result-text');
+  const rExtra = el('div', 'quiz-extra');
+  result.append(rTitle, rText, rExtra);
+
+  const buttons = q.options.map((o, i) => {
+    const b = el('button', 'quiz-btn', o.text);
+    b.type = 'button';
+    b.addEventListener('click', () => answerQuiz(f, i, buttons, result, rTitle, rText, rExtra));
+    opts.appendChild(b);
+    return b;
+  });
+  box.append(opts, result);
+}
+
+function answerQuiz(f, idx, buttons, result, rTitle, rText, rExtra){
+  const q = f.interaction;
+  const correct = !!q.options[idx].isCorrect;
+  buttons.forEach(b => b.disabled = true);
+  buttons[idx].classList.add('selected');
+
+  result.className = 'quiz-result-box show ' + (correct ? 'correct' : 'incorrect');
+  rTitle.textContent = correct ? '⭕ 正解！' : '❌ ざんねん...';
+  setRich(rText, q.explanation);
+
+  if (q.extra === 'salmonSlice') {
+    rExtra.innerHTML = salmonSliceHtml();
+    const svg = rExtra.querySelector('.slice');
+    requestAnimationFrame(() => requestAnimationFrame(() => svg.classList.add('revealed')));
+  }
+
+  // 答えのあとに、豆知識を見せる
+  document.getElementById('detailTriviaBlock').className = 'story-trivia show-animated';
+}
+
+function renderFlip(f){
+  const box = document.getElementById('detailHighlightBlock');
+  box.innerHTML = '<h4 class="highlight-title">✨ めくって発見！</h4>';
+  const card = el('div', 'flip-card');
+  card.innerHTML = `
+    <div class="flip-card-inner">
+      <div class="flip-card-front">
+        <p>${f.interaction.front}</p>
+        <span class="hint">👉 タップして裏返す</span>
+      </div>
+      <div class="flip-card-back"><p>${f.interaction.back}</p></div>
+    </div>`;
+  card.addEventListener('click', () => card.classList.toggle('is-flipped'));
+  box.appendChild(card);
+}
+
+function renderCompare(f){
+  const box = document.getElementById('detailCompareBlock');
+  if (!f.compare) { box.hidden = true; box.innerHTML = ''; return; }
+  const c = f.compare;
+  box.innerHTML = '';
+  box.appendChild(el('h4', 'taste-title', c.title));
+  const grid = el('div', 'compare-grid');
+  c.items.forEach(it => {
+    const card = el('div', 'compare-card');
+    const img = el('img'); img.src = it.img; img.alt = it.label;
+    card.append(img, el('div', 'label', it.label), el('div', 'note', it.note));
+    grid.appendChild(card);
+  });
+  box.appendChild(grid);
+  if (c.foot) box.appendChild(el('p', 'compare-foot', c.foot));
+  box.hidden = false;
+}
+
+function renderParts(f){
+  const box = document.getElementById('detailParts');
+  if (!f.parts) { box.hidden = true; box.innerHTML = ''; return; }
+  const p = f.parts;
+  box.innerHTML = '';
+  box.appendChild(el('h4', 'parts-title', p.title));
+
+  const stage = el('div', 'parts-stage');
+  const img = el('img'); img.src = p.img; img.alt = f.name + 'の部位図';
+  stage.appendChild(img);
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 1000 542');
+  const shapes = {};
+  const info = el('p', 'parts-info', '部位を選ぶと、味わいの違いが見られます。');
+  const btns = el('div', 'parts-btns');
+  const btnMap = {};
+
+  function select(id){
+    const r = p.regions.find(x => x.id === id);
+    Object.keys(shapes).forEach(k => {
+      shapes[k].classList.toggle('active', k === id);
+      btnMap[k].classList.toggle('active', k === id);
+    });
+    info.textContent = r.label + '：' + r.desc;
+  }
+
+  p.regions.forEach(r => {
+    const e = document.createElementNS(NS, 'ellipse');
+    e.setAttribute('class', 'part');
+    e.setAttribute('cx', r.cx); e.setAttribute('cy', r.cy);
+    e.setAttribute('rx', r.rx); e.setAttribute('ry', r.ry);
+    e.setAttribute('fill', r.color);
+    e.addEventListener('click', () => select(r.id));
+    svg.appendChild(e);
+    shapes[r.id] = e;
+
+    const b = el('button', 'parts-btn', r.label);
+    b.type = 'button';
+    b.addEventListener('click', () => select(r.id));
+    btns.appendChild(b);
+    btnMap[r.id] = b;
+  });
+  stage.appendChild(svg);
+  box.append(stage, btns, info);
+  if (p.note) box.appendChild(el('p', 'parts-note', p.note));
+  box.hidden = false;
+}
+
+function selectFish(id){
+  currentFishId = id;
+  const f = fishById(id);
+  if (!f) return;
+
+  // 詳細を開いた魚は「捕まえた」扱い
+  if (!caught.has(id)) { caught.add(id); saveCaught(); }
+
+  // ヘッダー(魚の絵・名前・旬)
+  const hero = document.getElementById('detailHero');
+  const heroImg = document.getElementById('detailImg');
+  hero.classList.toggle('no-img', !!f.hideHero);
+  heroImg.src = f.hideHero ? '' : f.img;
+  heroImg.alt = f.hideHero ? '' : f.name;
+  document.getElementById('detailName').textContent = f.name;
+
+  // 1. 問い
+  const triviaBlock = document.getElementById('detailTriviaBlock');
+  if (f.interaction && f.interaction.type === 'quiz') {
+    triviaBlock.className = 'story-trivia hidden';   // 答えるまで隠す
+    renderQuiz(f);
+  } else {
+    triviaBlock.className = 'story-trivia';
+    renderFlip(f);
+  }
+
+  // 2. 答え・豆知識
+  setRich(document.getElementById('detailTrivia'), f.trivia);
+  const illWrap = document.getElementById('detailIllWrap');
+  const illImg = document.getElementById('detailIllImg');
+  const illCaption = document.getElementById('detailIllCaption');
+  if (f.illustration) {
+    illImg.src = f.illustration;
+    illImg.alt = f.illAlt || '';
+    illCaption.textContent = f.illCaption || '';
+    illWrap.style.display = 'block';
+    const legend = document.getElementById('detailIllLegend');
+    legend.innerHTML = '';
+    if (f.illLegend) {
+      f.illLegend.forEach(it => {
+        const li = document.createElement('li');
+        const dot = document.createElement('span'); dot.className = 'dot'; dot.style.background = it.color;
+        li.append(dot, document.createTextNode(it.text));
+        legend.appendChild(li);
+      });
+      legend.hidden = false;
+    } else {
+      legend.hidden = true;
+    }
+  } else {
+    illWrap.style.display = 'none';
+    illImg.removeAttribute('src');
+  }
+
+  renderCompare(f);
+
+  // 3. 味わい
+  document.getElementById('detailLead').textContent = f.lead || '';
+  const about = document.getElementById('detailAbout'); about.textContent = '';
+  (f.about || []).forEach(r => {
+    const row = document.createElement('div'); row.className = 'about-row';
+    const k = document.createElement('div'); k.className = 'about-k'; k.textContent = r.k;
+    const v = document.createElement('p'); v.className = 'about-v'; setRich(v, r.v);
+    row.append(k, v); about.appendChild(row);
+  });
+  renderParts(f);
+
+  // 店主のひとこと
+  const ownerBlock = document.getElementById('detailOwnerBlock');
+  if (f.ownerNote) {
+    document.getElementById('detailOwner').textContent = f.ownerNote;
+    ownerBlock.hidden = false;
+  } else {
+    ownerBlock.hidden = true;
+  }
+
+  document.getElementById('toMenuLabel').textContent =
+    (f.menuItems && f.menuItems.length) ? 'この魚を使ったメニューを見る' : 'この魚に合うお酒を見る';
+
+  sendLog('魚を見た', { fishId: f.id, fishName: f.name });
+  goScreen('detail');
+}
+
+/* ============ 画像の拡大表示 ============ */
+const lightbox = document.getElementById('lightbox');
+const lbScroll = document.getElementById('lbScroll');
+const lbImg = document.getElementById('lbImg');
+function openLightbox(src, alt){
+  lbImg.alt = alt || '';
+  lbImg.onload = () => { lbScroll.scrollLeft = (lbScroll.scrollWidth - lbScroll.clientWidth) / 2; };
+  lbImg.src = src;
+  lightbox.classList.add('open');
+  document.getElementById('lbClose').focus();
+}
+function closeLightbox(){ lightbox.classList.remove('open'); }
+document.getElementById('lbClose').addEventListener('click', closeLightbox);
+lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLightbox(); });
+document.getElementById('detailIllImg').addEventListener('click', (e) => {
+  openLightbox(e.target.getAttribute('src'), e.target.alt);
+});
+
+/* ============ メニュー・お酒 ============ */
+function sakeCardHtml(s){
+  return `
+    <div class="sake-card" style="margin-bottom:0; background: rgba(0,0,0,0.15);">
+      <div class="tags">
+        <span class="tag">${s.tag}</span>
+        <span class="tag pair">${s.pair}</span>
+      </div>
+      <div class="name-row">
+        <span class="name">${s.name}</span>
+        <span class="region">〈${s.region}〉${s.group}</span>
+      </div>
+      <p class="pair-line">${s.line}</p>
+      <p class="taste">${s.taste}</p>
+      ${(s.match && s.match.length) ? `<div class="match"><span class="match-label">合う</span>${s.match.map(m => `<span class="chip-m">${m}</span>`).join('')}</div>` : ''}
+    </div>`;
+}
+
+function goToMenu(){
+  const f = fishById(currentFishId);
+  if (!f) return;
+  const s = sakeList.find(x => x.id === f.recommendedSake);
+  const hasMenu = f.menuItems && f.menuItems.length > 0;
+
+  document.getElementById('menuTitle').textContent =
+    hasMenu ? `${f.name}を使用した料理と相性の良いお酒` : `${f.name}に合うお酒`;
+
+  const wrap = document.getElementById('menuScreenList');
+
+  if (hasMenu) {
+    wrap.innerHTML = f.menuItems.map(m => {
+      const ms = sakeList.find(x => x.id === m.recommendedSake) || s;
+      return `
+        <div class="menu-item" onclick="this.classList.toggle('open')">
+          <div class="name">
+            ${m.name}
+            <svg class="chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+          <div class="desc">${m.description || ''}</div>
+          <div class="tap-hint">🍶 タップして、合うお酒を見る</div>
+          ${ms ? `<div class="pairing-sake">${sakeCardHtml(ms)}</div>` : ''}
+        </div>`;
+    }).join('');
+  } else {
+    // 実メニューが未登録のときは、ダミーの料理は出さず、お酒の提案だけを表示
+    wrap.innerHTML = `
+      <p class="menu-empty">この魚の料理は、スタッフにおたずねください。</p>
+      <div class="sake-group-label" style="margin-top:0;">おすすめのペアリング</div>
+      ${s ? sakeCardHtml(s) : ''}`;
+  }
+  document.getElementById('finishButton').textContent =
+    (farewellDone && !surveyReview) ? '最初に戻る' : 'おしまいにする';
+  goScreen('menu');
+}
+
+/* ============ アンケート・結果 ============ */
+// 性別と年齢の両方を選んだ時点で回答完了。お礼を表示し、「最初の画面に戻る」を押せるようにする
+function onSurveyChange(){
+  const genderEl = document.querySelector('input[name="s-gender"]:checked');
+  const ageEl = document.querySelector('input[name="s-age"]:checked');
+  // 性別を選んだら、2つ目の質問をふわっと出す
+  if (genderEl) {
+    const ageBox = document.getElementById('group-age');
+    if (ageBox.hidden) {
+      ageBox.hidden = false; ageBox.classList.add('pop-in');
+      ageBox.scrollIntoView({ block: 'center', behavior: REDUCED_MOTION ? 'auto' : 'smooth' });
+    }
+  }
+  if (!genderEl || !ageEl) return;                 // どちらか未選択なら、まだ何も起こらない
+  if (surveyDone) return;                           // すでに完了している
+
+  selectNeedsExplain = true;                        // このあとの魚の画面では、挨拶を省いて説明から
+  if (!surveyReview) {                             // 確認モードでは、保存もログ送信もしない
+    if (surveyProfile) return;                     // 二重に記録しない
+    surveyProfile = { gender: genderEl.value, age: ageEl.value };
+    store.set('fish_survey', JSON.stringify(surveyProfile));
+    sendLog('アンケート回答', { gender: genderEl.value, age: ageEl.value, fishId: currentFishId });
+  }
+
+  // 回答は固定し、お礼を表示
+  document.querySelectorAll('.screen[data-screen="survey"] input').forEach(i => i.disabled = true);
+  const backToTop = document.getElementById('surveyBackBtn');
+  backToTop.disabled = false;
+  backToTop.classList.replace('btn-ghost', 'btn-primary');
+  surveyDone = true;
+  surveyTalk.img.classList.add('done');                                   // 魚がぴょんと跳ねて…
+  fishSays(SURVEY_THANKS, THANKS_WAVE, false);                          // …「ありがとうございました。」としゃべる
+  document.getElementById('header-back-btn').style.display = 'none';   // アンケートへは戻さない
+  screenHistory = [];
+  document.getElementById('surveyHead').scrollIntoView({ block: 'center', behavior: REDUCED_MOTION ? 'auto' : 'smooth' });
+}
+
+// ---- 魚がしゃべる(吹き出し)。アンケート画面と、最初の画面で共用 ----
+const SURVEY_LINES = [
+  { text: 'ご来店、\nありがとうございます！', wave: '', hold: 0.6, sub: 'タップで次へ' },
+  { text: 'ここでは、\n居酒屋 乞食の\n新鮮なお魚たちに\n関する豆知識と、', wave: '豆知識', hold: 0.8, sub: 'タップで次へ' },
+  { text: '相性の良い日本酒を\nご案内します！\nぜひ、たのしんで\nいってください！', wave: '日本酒', hold: 0.8, sub: 'タップで次へ' },
+  { text: 'その前に、最初に\nお二つだけ、\n聞かせてくださいね。', wave: 'お二つだけ', sub: 'タップするだけです' }
+];
+const TALK_T0 = 0.6, TALK_TS = 0.04;                                   // 1文字目が出るまで / 1文字ごとの間隔(秒)。CSSの --t0, --ts と同じ値
+const talkSettle = (text) => TALK_T0 + [...text.replace(/\n/g, '')].length * TALK_TS + 0.25;   // 吹き出しの文字が出きるまでの秒数
+const SURVEY_THANKS = 'ありがとうございます。\nそれでは、水槽へ\nご案内しますね。\nどうぞ、ごゆっくり\nお楽しみください。';
+const THANKS_WAVE   = '';                  // お礼の言葉は、強調せず、そのまま
+// 魚ごとの「口」の位置(画像の左端からの割合 x, 上端からの割合 y)。左向きの絵での位置
+const MOUTH = {
+  aji:[.075,.56], katsuo:[.07,.62], maguro:[.05,.62], salmon:[.05,.60], hirame:[.12,.60],
+  shimaaji:[.085,.59], maiwashi:[.07,.54], madako:[.30,.45], unagi:[.17,.79], yariika:[.30,.62], amaebi:[.30,.43]
+};
+
+function createFishTalk(root){
+  const q = s => root.querySelector(s);
+  const wrap = q('.talk-fish-wrap'), img = q('.talk-fish'), bubble = q('.talk-bubble'), main = q('.talk-main'), sub = q('.talk-sub');
+  let fishId = 'aji', timers = [], seq = null;
+  const vertical = root.dataset.orient === 'v';
+
+  function setFish(id){
+    const f = fishById(id) || fishById('aji');
+    fishId = f.id; img.src = f.img;
+  }
+  function build(text, waveWord){
+    main.innerHTML = '';
+    const sr = document.createElement('span'); sr.className = 'sr-only'; sr.textContent = text.replace(/\n/g, ' '); main.appendChild(sr);
+    const w0 = waveWord ? text.indexOf(waveWord) : -1;
+    let last = null;
+    [...text].forEach((c, i) => {
+      if (c === '\n') { main.appendChild(document.createElement('br')); last = null; return; }
+      if (last && '、。，．！？!?'.includes(c)) { last.textContent += c; return; }   // 句読点は直前の文字と一緒に(行頭に残さない)
+      const sp = document.createElement('span');
+      sp.className = 'ch' + ((w0 >= 0 && i >= w0 && i < w0 + waveWord.length) ? ' wave' : '');
+      sp.style.setProperty('--i', i); sp.textContent = c; sp.setAttribute('aria-hidden', 'true');
+      main.appendChild(sp); last = sp;
+    });
+  }
+  // 魚の口の位置を測り、吹き出しのしっぽの先と、口から出る泡の位置を合わせる
+  function layout(){
+    const m = MOUTH[fishId] || [.08,.58];
+    const r = wrap.getBoundingClientRect(), b = bubble.getBoundingClientRect(), h = root.getBoundingClientRect();
+    if (!r.width || !r.height || !b.height) return;
+    const mx = r.left + (1 - m[0]) * r.width, my = r.top + m[1] * r.height;     // scaleX(-1) で反転するため、口は右側
+    if (vertical) {                                                              // 魚が上、吹き出しが下: しっぽは上向き
+      bubble.style.setProperty('--tail-x', Math.max(28, Math.min(b.width - 28, mx - b.left)) + 'px');
+      bubble.style.setProperty('--tail-len', Math.max(14, Math.min(90, b.top - my)) + 'px');
+      root.querySelectorAll('.air').forEach((a, i) => { a.style.left = (mx - h.left + 4 + i * 6) + 'px'; a.style.top = (my - h.top - 4) + 'px'; });
+      return;
+    }
+    const len = Math.max(10, Math.min(36, b.left - mx));
+    const ty  = Math.max(16, Math.min(b.height - 16, my - b.top));
+    bubble.style.setProperty('--tail-len', len + 'px');
+    bubble.style.setProperty('--tail-y', ty + 'px');
+    root.querySelectorAll('.air').forEach((a, i) => { a.style.left = (mx - h.left + 2 + i * 6) + 'px'; a.style.top = (my - h.top - 4) + 'px'; });
+  }
+  // 吹き出しを引っ込めて、口からもう一度ふくらませ、ひとことしゃべる
+  function say(text, opt = {}){
+    bubble.classList.remove('play', 'skip', 'static'); void bubble.offsetWidth;
+    build(text, opt.wave || '');
+    if (sub) {
+      sub.style.display = opt.withSub ? '' : 'none';
+      if (opt.subText) sub.textContent = opt.subText;
+      sub.style.animationDelay = Math.max(0, talkSettle(text) - 0.3) + 's';   // 本文が出きるころに、下の一言を出す
+    }
+    bubble.classList.toggle('thanks', opt.cls === 'thanks');
+    void bubble.offsetWidth;
+    layout();
+    bubble.classList.add('play');
+  }
+  function whenReady(fn){ if (img.complete && img.naturalWidth) fn(); else img.onload = fn; }
+  function stop(){ timers.forEach(clearTimeout); timers = []; seq = null; }
+
+  // 複数のひとことを、順番にしゃべる。タップで次のひとことへ
+  function speakCurrent(){
+    if (!seq) return;
+    const ln = seq.lines[seq.i];
+    say(ln.text, { wave: ln.wave, withSub: !!ln.sub, subText: ln.sub });
+    if (seq.i === seq.lines.length - 1 && seq.onLast) seq.onLast(ln);
+    if (seq.i < seq.lines.length - 1) {
+      const ms = (talkSettle(ln.text) + (ln.hold == null ? 1.9 : ln.hold)) * 1000;
+      timers.push(setTimeout(() => { if (seq) { seq.i++; speakCurrent(); } }, ms));
+    }
+  }
+  function sequence(lines, onLast){
+    stop(); seq = { lines, i: 0, onLast };
+    whenReady(speakCurrent);
+  }
+  function next(){
+    if (!seq || seq.i >= seq.lines.length - 1) return;
+    timers.forEach(clearTimeout); timers = [];
+    seq.i++; speakCurrent();
+  }
+  function isLast(){ return !seq || seq.i >= seq.lines.length - 1; }
+  return { root, img, bubble, setFish, say, layout, sequence, next, stop, whenReady, isLast };
+}
+
+const surveyTalk = createFishTalk(document.getElementById('surveyHead'));
+const selectTalk = createFishTalk(document.getElementById('selectHead'));
+const farewellTalk = createFishTalk(document.getElementById('farewellHead'));
+const surveyStage = createFishTalk(document.getElementById('surveyStage'));
+const farewellStage = createFishTalk(document.getElementById('farewellStage'));
+const relayoutTalks = () => { surveyTalk.layout(); selectTalk.layout(); farewellTalk.layout(); surveyStage.layout(); farewellStage.layout(); };
+window.addEventListener('resize', relayoutTalks);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayoutTalks);
+
+// アンケート側の呼び出し口
+let surveyDone = false;
+function setSurveyFish(id){ surveyTalk.setFish(id); surveyStage.setFish(id); }
+function fishSays(text, waveWord, withSub){ surveyTalk.say(text, { wave: waveWord, withSub: withSub, cls: text === SURVEY_THANKS ? 'thanks' : '' }); }
+// 魚が話しきったら、質問が現れる
+let surveyIntroToken = 0, surveyRevealTimer = null;
+function hideSurveyQuestions(){
+  clearTimeout(surveyRevealTimer);
+  ['group-gender','surveyFoot'].forEach(id => { const e = document.getElementById(id); e.hidden = true; e.classList.remove('pop-in'); });
+}
+function revealSurveyQuestions(token){
+  if (token !== surveyIntroToken) return;
+  if (document.querySelector('.screen.active')?.dataset.screen !== 'survey') return;
+  ['group-gender','surveyFoot'].forEach(id => { const e = document.getElementById(id); if (e.hidden) { e.hidden = false; e.classList.add('pop-in'); } });
+}
+// ---- 「画面いっぱいに話す → 話しおわったら上へ小さく移る」の共通部品(冒頭の質問・最後のひとことで使う) ----
+function createStage(cfg){
+  const { stageEl, headEl, talk, stageTalk, lines } = cfg;
+  const inner = () => stageEl.querySelector('.stage-inner');
+  let moveTimer = null, revealTimer = null;
+  function resetInner(){ const i = inner(); i.style.transition = 'none'; i.style.transform = ''; i.style.opacity = ''; }
+  function show(){
+    const hh = document.getElementById('main-header').offsetHeight || 66;
+    stageEl.style.setProperty('--stage-top', hh + 'px');
+    resetInner();
+    stageEl.hidden = false;
+    headEl.classList.add('await'); headEl.classList.remove('pop-in');         // 小さい方の魚は、移ってくるまで隠す
+  }
+  function hide(){
+    clearTimeout(moveTimer); clearTimeout(revealTimer); stageTalk.stop();
+    stageEl.hidden = true; resetInner();
+  }
+  // 小さい吹き出し(上)には、最後のひとことを、そのまま表示しておく
+  function compactFinal(){
+    const last = lines[lines.length - 1];
+    talk.say(last.text, { wave: last.wave, withSub: !!last.sub, subText: last.sub, cls: last.compactCls });
+    talk.bubble.classList.add('skip', 'static');
+  }
+  // 話しおわり → 大きな魚と吹き出しが、上へ小さく移り、質問(入力欄)が現れる
+  function finish(token){
+    if (!cfg.valid(token) || stageEl.hidden) return;
+    stageTalk.stop(); clearTimeout(revealTimer);
+    compactFinal();
+    headEl.classList.remove('await'); headEl.classList.add('pop-in');
+    if (REDUCED_MOTION) { cfg.reveal(token); hide(); return; }
+    setTimeout(() => cfg.reveal(token), 450);                  // 大きな魚が上へ移りはじめてから出す(重ならないように)
+    const i = inner(), sr = i.getBoundingClientRect(), cr = headEl.getBoundingClientRect();
+    const tx = (cr.left + cr.width / 2) - (sr.left + sr.width / 2), ty = (cr.top + cr.height / 2) - (sr.top + sr.height / 2);
+    i.style.transition = 'transform .8s cubic-bezier(.45,.05,.25,1), opacity .45s ease .12s';
+    i.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(.4)';
+    i.style.opacity = '0';
+    clearTimeout(moveTimer); moveTimer = setTimeout(hide, 900);
+  }
+  function start(token){
+    clearTimeout(moveTimer); clearTimeout(revealTimer); stageTalk.stop();
+    show();
+    stageTalk.sequence(lines, (ln) => {
+      if (!cfg.valid(token)) return;
+      // 最後の吹き出しの文字が出きる → 下の一言が出きる、のあとに、上へ移る
+      const ms = REDUCED_MOTION ? 500 : (talkSettle(ln.text) + (ln.sub ? 0.5 : 0) + 0.6) * 1000;
+      clearTimeout(revealTimer); revealTimer = setTimeout(() => finish(token), ms);
+    });
+  }
+  // 大きな吹き出しをタップすると、次の吹き出しへ(最後なら、話を飛ばして先へ)
+  function skip(){
+    if (cfg.blocked && cfg.blocked()) return;
+    if (!stageTalk.isLast()) { stageTalk.next(); return; }
+    stageTalk.bubble.classList.add('skip');
+    clearTimeout(revealTimer);
+    finish(cfg.token());
+  }
+  stageTalk.bubble.addEventListener('click', skip);
+  stageTalk.bubble.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); skip(); } });
+  return { show, hide, start, finish, compactFinal };
+}
+
+// ---- 冒頭の質問 ----
+const surveyHeadEl = document.getElementById('surveyHead');
+const surveyStageCtl = createStage({
+  stageEl: document.getElementById('surveyStage'), headEl: surveyHeadEl,
+  talk: surveyTalk, stageTalk: surveyStage, lines: SURVEY_LINES,
+  valid: (t) => t === surveyIntroToken && document.querySelector('.screen.active')?.dataset.screen === 'survey',
+  reveal: (t) => revealSurveyQuestions(t),
+  token: () => surveyIntroToken,
+  blocked: () => surveyDone
+});
+function playSurveyIntro(){
+  const token = ++surveyIntroToken;
+  const fresh = !surveyDone && !document.querySelector('.screen[data-screen="survey"] input:checked');
+  if (!fresh) {                                          // すでに選び始めている・回答ずみ: 大きな表示はせず、小さいまま
+    surveyStageCtl.hide(); surveyHeadEl.classList.remove('await');
+    if (!surveyDone) surveyStageCtl.compactFinal();
+    return;
+  }
+  hideSurveyQuestions();
+  surveyStageCtl.start(token);
+}
+
+// 最初の画面(魚を選ぶ画面)で、魚が話して案内する
+const SELECT_LINES = {
+  // 冒頭の質問を答え済みの方には、冒頭と同じ案内を、水槽の魚が話す
+  welcome: SURVEY_LINES[0], explain1: SURVEY_LINES[1], explain2: SURVEY_LINES[2],
+  action:  { text: '気になるお魚を、\nタップして\n捕まえてくださいね。', wave: 'タップ' },
+  more:    { text: 'ほかのお魚も、\n捕まえてみませんか？', wave: '' },
+  all:     { text: '全部のお魚に、\n会えましたね。', wave: '' }
+};
+let selectGreeted = false, selectNeedsExplain = false;
+function startSelectTalk(){
+  const f = fishById(currentFishId);
+  selectTalk.setFish(f ? f.id : 'aji');                // 案内役は、直前に見たお魚(はじめは真鯵)
+  const n = caught.size, total = fishList.length;
+  let lines;
+  if (selectNeedsExplain)  lines = [SELECT_LINES.action];                                                // 冒頭で説明を聞いたあとは、案内だけ
+  else if (!selectGreeted) lines = [SELECT_LINES.welcome, SELECT_LINES.explain1, SELECT_LINES.explain2, SELECT_LINES.action];   // 回答済みの方が水槽を開いたとき   // ページを開いて最初は、捕まえた数にかかわらず、案内を最後まで話す
+  else if (n === 0)        lines = [SELECT_LINES.action];
+  else if (n >= total)     lines = [SELECT_LINES.all];
+  else                     lines = [SELECT_LINES.more];
+  selectGreeted = true; selectNeedsExplain = false;
+  selectTalk.sequence(lines);
+}
+(function(){
+  const b = selectTalk.bubble;
+  b.addEventListener('click', () => selectTalk.next());
+  b.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectTalk.next(); } });
+})();
+
+// ---- 最後のひとこと(任意・1問だけ)。魚が話して聞くので、アンケートっぽくならない ----
+const FAREWELL_LINES = [
+  { text: 'ここまで、\nありがとうございます。', wave: '', hold: 0.9, sub: 'タップで次へ' },
+  { text: 'お店へ、ひとこと\nいただけませんか？', wave: 'ひとこと', hold: 0.7, sub: 'タップで次へ' },
+  // 具体的に伝える: 料理・お酒・このコンテンツなど、何でもよいこと。上に残る小さい吹き出しは、長いので少し小さい文字に(compactCls)
+  { text: '料理やお酒、\nこのコンテンツなど、\nどんなことでも\n感想をいただけたら\n嬉しいです。', wave: 'どんなことでも', compactCls: 'thanks' }
+];
+const FAREWELL_SENT = 'ありがとうございます。\n励みになります。\nこの後も、どうぞ\nお楽しみください。';
+const FAREWELL_SKIP = 'ありがとうございます。\nまたお待ちしています。\nこの後も、どうぞ\nお楽しみください。';
+let farewellDone = store.get('fish_farewell_done') === '1';          // 1端末1回: この端末で、すでに答えた(または「このまま終わる」を選んだ)か
+let farewellToken = 0, farewellTimer = null, farewellFinished = false;
+const fwEl = id => document.getElementById(id);
+function hideFarewellForm(){ clearTimeout(farewellTimer); const f = fwEl('farewellForm'); f.hidden = true; f.classList.remove('pop-in'); }
+function resetFarewellUI(){
+  hideFarewellForm(); fwEl('farewellDone').hidden = true;
+  fwEl('farewellText').value = ''; fwEl('farewellSend').disabled = true;
+  farewellTalk.img.classList.remove('done'); farewellFinished = false;
+}
+function revealFarewellForm(token){
+  if (token !== farewellToken || farewellFinished) return;
+  if (document.querySelector('.screen.active')?.dataset.screen !== 'farewell') return;
+  const f = fwEl('farewellForm'); if (f.hidden) { f.hidden = false; f.classList.add('pop-in'); }
+}
+const farewellStageCtl = createStage({
+  stageEl: document.getElementById('farewellStage'), headEl: document.getElementById('farewellHead'),
+  talk: farewellTalk, stageTalk: farewellStage, lines: FAREWELL_LINES,
+  valid: (t) => t === farewellToken && !farewellFinished && document.querySelector('.screen.active')?.dataset.screen === 'farewell',
+  reveal: (t) => revealFarewellForm(t),
+  token: () => farewellToken,
+  blocked: () => farewellFinished
+});
+function setFarewellFish(id){ farewellTalk.setFish(id); farewellStage.setFish(id); }
+function playFarewellIntro(){
+  const token = ++farewellToken;
+  if (farewellFinished) return;
+  hideFarewellForm();
+  farewellStageCtl.start(token);
+}
+function finishFarewell(kind){
+  if (farewellFinished) return;
+  farewellFinished = true;
+  if (!surveyReview) { farewellDone = true; store.set('fish_farewell_done', '1'); }   // 確認モードでは記録しない
+  hideFarewellForm();
+  farewellTalk.stop();
+  farewellTalk.img.classList.add('done');
+  farewellTalk.say(kind === 'sent' ? FAREWELL_SENT : FAREWELL_SKIP, { wave: '', cls: 'thanks' });
+  fwEl('farewellDone').hidden = false; fwEl('farewellDone').classList.add('pop-in');
+  document.getElementById('header-back-btn').style.display = 'none';
+  screenHistory = [];
+}
+function farewellSend(){
+  const msg = fwEl('farewellText').value.trim();
+  if (!msg) return;
+  if (!surveyReview) sendLog('ひとこと', { message: msg.slice(0, 200), fishId: currentFishId });   // 確認モードでは送信しない
+  finishFarewell('sent');
+}
+(function(){
+  fwEl('farewellText').addEventListener('input', () => { fwEl('farewellSend').disabled = !fwEl('farewellText').value.trim(); });
+  fwEl('farewellSend').addEventListener('click', farewellSend);
+  fwEl('farewellSkip').addEventListener('click', () => finishFarewell('skip'));
+})();
+function openFarewellReview(){            // 確認用: 最後のひとこと画面を、何度でも新品の状態で開く(送信されません)
+  clearTimeout(opTimer); clearTimeout(opGuard);
+  surveyReview = true;
+  resetFarewellUI();
+  setFarewellFish(currentFishId || 'aji');
+  screenHistory = [];
+  goScreen('farewell');
+}
+
+// ---- アンケート画面の見た目確認用 ----
+// 通常は「初回の1回だけ」しか見られないため、画面を確認するときは、何度でも新品の状態で開けるようにする。
+// 使い方: アドレスの末尾に ?survey を付けて開く(本番でも可)。この間の回答は、保存もログ送信もしません。
+let surveyReview = false;
+function resetSurveyUI(){
+  document.querySelectorAll('.screen[data-screen="survey"] input').forEach(i => { i.checked = false; i.disabled = false; });
+  const q2 = document.getElementById('group-age'); q2.hidden = true; q2.classList.remove('pop-in');
+  hideSurveyQuestions();
+  surveyDone = false;
+  surveyTalk.img.classList.remove('done');
+  const b = document.getElementById('surveyBackBtn');
+  b.disabled = true; b.classList.remove('btn-primary'); b.classList.add('btn-ghost');
+}
+function openSurveyReview(){
+  clearTimeout(opTimer); clearTimeout(opGuard);
+  surveyReview = true;
+  resetSurveyUI();
+  setSurveyFish(currentFishId);
+  screenHistory = [];
+  goScreen('survey');
+}
+
+// 初回はアンケートへ。回答済みなら最初の画面へ戻る
+function handleFinishClick(){
+  if (farewellDone && !surveyReview) { goScreen('select'); return; }   // この端末では、すでに聞いたので、そのまま戻る
+  resetFarewellUI();
+  setFarewellFish(currentFishId || 'aji');                 // 最後にしゃべる魚は、いま見ていた魚
+  goScreen('farewell');
+}
+
+function renderResult(){
+  const total = fishList.length;
+  const n = caught.size;
+  document.getElementById('resCaught').textContent = n;
+  document.getElementById('resTotal').textContent = total;
+
+  document.getElementById('resMsg').textContent = (n >= total)
+    ? 'すべての魚を捕まえました。魚博士です！'
+    : `まだ ${total - n} 種類の魚が泳いでいます。`;
+
+  document.getElementById('orderBtn').hidden = !ORDER_URL;
+}
+
+function goOrder(){ if (ORDER_URL) location.href = ORDER_URL; }
+
+
+/* ============ 読みやすい折り返し: 文節の切れ目に <wbr> を入れる ============
+   日本語は、そのままだと文字の途中どこでも折り返されます。「、」「。」「を」や、助詞(は・が・も・に・で・と・へ・や・の)の
+   あと(次が漢字・カタカナ・数字のとき)でだけ折り返せるようにして、言葉が途中で切れないようにします。
+   うまく動かない場合は PHRASE_ON を false にすると、通常の折り返しに戻ります。 */
+const PHRASE_ON = true;
+const PHRASE_SEL = '.story-lead, .about-v, .story-trivia p, .trivia-illustration-caption, .compare-card .note, .compare-foot, .parts-info, .parts-note, .story-owner p, .quiz-question, .quiz-result-text, .flip-card-front p, .flip-card-back p, .flip-sub, .menu-item .desc, .menu-empty, .sake-card .taste, .sake-card .pair-line, .sake-legend, .menu-notice, .note, .ill-legend li, .result-sub, .slice-caption';
+const RE_NEXT_OK = /[\u4E00-\u9FFF\u3005\u30A0-\u30FF0-9A-Za-z]/;      // 漢字・々・カタカナ・数字・英字
+const PARTICLES = 'がはもにでとへやの';
+// 途中で切ると不自然になる語(この中の位置では折り返さない)
+const PROTECT = ['ようやく','ともに','ところ','ほとんど','やはり','やがて','やわらか','やさしい','とても','どうも','ありがと','ありがた','それでは','おいしい','どんどん','ねっとり','ほっこり','もちもち','ぷりぷり','ふっくら','とろける','なめらか','ください','ございます','いただ','にんにく','どんな','そのとき','ひとこと','ひとつ','ふたつ','マリアナ諸島','イクチオトキシン','アスタキサンチン','ホッコクアカエビ','という','として','について','によって','による','ために','ような','ように','られる','される'];
+const RE_HIRA = /[\u3041-\u309F]/, RE_KATA = /[\u30A1-\u30FA\u30FC]/, RE_KANJI = /[\u4E00-\u9FFF\u3005]/;
+function protectedAt(seg, i){                       // i と i+1 の間が、保護する語の内側かどうか
+  for (const w of PROTECT) {
+    let k = seg.indexOf(w);
+    while (k >= 0) { if (i >= k && i < k + w.length - 1) return true; k = seg.indexOf(w, k + 1); }
+  }
+  return false;
+}
+// 長すぎる塊(12文字超)は、自然な切れ目のうち、なるべく真ん中に近い所で分ける
+function quoteDepths(seg){                            // 「」の内側かどうか(内側では折り返さない)
+  const d = []; let depth = 0;
+  for (const ch of seg) { if (ch === '「') depth++; d.push(depth); if (ch === '」') depth = Math.max(0, depth - 1); }
+  return d;
+}
+function splitLong(seg){
+  if (seg.length <= 12) return [seg];
+  let best = -1, bestScore = 1e9;
+  const qd = quoteDepths(seg);
+  for (let i = 2; i < seg.length - 2; i++) {
+    const c = seg[i], n = seg[i + 1];
+    if (qd[i] > 0 && qd[i + 1] > 0) continue;                                                   // 「…」の内側
+    let ok = false;
+    if (n === '「' || n === '（') ok = true;                                                  // 括弧の前
+    else if (['ほど','から','まで','より','など'].includes(seg.slice(i - 1, i + 1)) && !(PARTICLES.includes(n) || n === 'を')) ok = true;   // 二文字の助詞のあと
+    else if (['ような','ように'].includes(seg.slice(i - 2, i + 1))) ok = true;                  // 「〜のような|…」
+    else if (RE_HIRA.test(c) && RE_HIRA.test(seg[i - 1]) && RE_KANJI.test(n)) ok = true;       // ひらがな2文字以上 → 漢字の境目
+    else if ((PARTICLES.includes(c) || c === 'を') && !(PARTICLES.includes(n) || n === 'を')) ok = true;   // 助詞のあと(には・では・でも など続く所は除く)
+    else if (RE_HIRA.test(c) && RE_HIRA.test(seg[i - 1]) && RE_KATA.test(n)) ok = true;       // ひらがな → カタカナの境目
+    if (!ok || protectedAt(seg, i)) continue;
+    if (i + 1 < 3 || seg.length - (i + 1) < 3) continue;
+    const score = Math.abs((i + 1) - seg.length / 2);
+    if (score < bestScore) { bestScore = score; best = i; }
+  }
+  if (best < 0) return [seg];
+  return splitLong(seg.slice(0, best + 1)).concat(splitLong(seg.slice(best + 1)));
+}
+function splitJa(t){
+  const parts = []; let cur = '', depth = 0;
+  for (let i = 0; i < t.length; i++) {
+    const c = t[i], n = t[i + 1]; cur += c;
+    if (c === '「') depth++; else if (c === '」') depth = Math.max(0, depth - 1);
+    if (n === undefined) break;
+    if (depth > 0) continue;                                               // 「…」の内側では切らない
+    const brk = '、。，．！？'.includes(c) || c === 'を' || (PARTICLES.includes(c) && RE_NEXT_OK.test(n));
+    if (brk && !'、。，．！？）」』】'.includes(n)) { parts.push(cur); cur = ''; }
+  }
+  if (cur) parts.push(cur);
+  return parts.flatMap(splitLong);
+}
+const phraseDone = new WeakSet();
+function phraseNode(tn){
+  if (phraseDone.has(tn)) return;
+  phraseDone.add(tn);
+  const t = tn.nodeValue; if (!t || t.trim().length < 6) return;
+  const parts = splitJa(t); if (parts.length < 2) return;
+  const frag = document.createDocumentFragment();
+  parts.forEach((p, i) => { const n = document.createTextNode(p); phraseDone.add(n); frag.appendChild(n); if (i < parts.length - 1) frag.appendChild(document.createElement('wbr')); });
+  tn.parentNode.replaceChild(frag, tn);
+}
+function applyPhrase(){
+  if (!PHRASE_ON) return;
+  document.querySelectorAll(PHRASE_SEL).forEach(el => {
+    el.classList.add('phrase');
+    const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), nodes = [];
+    while (w.nextNode()) nodes.push(w.currentNode);
+    nodes.forEach(phraseNode);
+  });
+}
+if (PHRASE_ON) {
+  const mainEl = document.querySelector('main');
+  const obs = new MutationObserver(() => { obs.disconnect(); applyPhrase(); obs.observe(mainEl, { childList: true, subtree: true, characterData: true }); });
+  obs.observe(mainEl, { childList: true, subtree: true, characterData: true });
+  applyPhrase();
+}
+
+/* ============ 初期化 ============ */
+sendLog('アクセス');
+document.getElementById('totalCount').textContent = fishList.length;
+if (/[?&]survey\b/.test(location.search)) {
+  openSurveyReview();      // 確認用: ?survey(冒頭の質問)
+} else if (/[?&]farewell\b/.test(location.search)) {
+  openFarewellReview();    // 確認用: ?farewell(最後のひとこと)
+} else if (OP_FIRST_VISIT_ONLY && store.get('fish_op_seen')) {
+  goScreen('select');      // 2回目以降はOPを飛ばす(OP_FIRST_VISIT_ONLYがtrueのとき)
+} else {
+  startOp();
+}
+</script>
+</body>
+</html>
