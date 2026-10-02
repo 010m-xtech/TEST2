@@ -141,7 +141,16 @@
         }
         .noren-half.left  { border-right: 2px solid #6e2416; }
         .noren-half.right { border-left: 2px solid #6e2416; }
-        .noren-half span { color: #f4eee2; font-size: clamp(40px, 13vw, 72px); font-weight: 800; letter-spacing: .15em; text-shadow: 0 2px 6px rgba(0,0,0,.35); }
+        .noren-half { overflow: hidden; }
+        /* ロゴは画面幅いっぱいの箱の中央に置き、左右の布それぞれが半分ずつ見せる → 開くとロゴが真ん中から割れる */
+        .noren-mark {
+            position: absolute; top: 0; bottom: 0; width: 200%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+        }
+        .noren-half.left  .noren-mark { left: 0; }
+        .noren-half.right .noren-mark { right: 0; }
+        .noren-mark img { width: clamp(120px, 38vw, 190px); height: auto; filter: drop-shadow(0 2px 6px rgba(0,0,0,.3)); }
+        .noren-mark p { color: #f4eee2; font-size: clamp(13px, 3.6vw, 16px); letter-spacing: .5em; padding-left: .5em; font-weight: 600; }
         .noren-drop .noren-rod, .noren-open .noren-rod { transform: translateY(0); }
         .noren-drop .noren-half { transform: translateY(0); }
         .noren-open .noren-rod { transform: translateY(-120%); transition-delay: .5s; }
@@ -544,9 +553,9 @@
         <!-- ▼ 暖簾（結果 → 商品紹介 の切り替え演出） ▼ -->
         <div v-if="norenStage" class="noren font-wa fixed inset-0 z-50 flex overflow-hidden pointer-events-none" :class="'noren-' + norenStage" aria-hidden="true">
             <div class="noren-rod"></div>
-            <!-- 縦書きは右から読むので、右側が「本日の」 -->
-            <div class="noren-half left"><span class="tategaki">１杯</span></div>
-            <div class="noren-half right"><span class="tategaki">本日の</span></div>
+            <!-- 中央に「かごや」ロゴ。左右の布で半分ずつ表示し、開くとロゴが割れる -->
+            <div class="noren-half left"><div class="noren-mark"><img src="logo_w.png" alt=""><p>本日の1杯</p></div></div>
+            <div class="noren-half right"><div class="noren-mark"><img src="logo_w.png" alt=""><p>本日の1杯</p></div></div>
         </div>
     </div>
 
