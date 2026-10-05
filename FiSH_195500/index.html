@@ -741,7 +741,7 @@
   <main>
 
     <!-- Screen: オープニング -->
-    <section class="screen active" data-screen="op" onclick="finishOp()">
+    <section class="screen active" data-screen="op" onclick="skipOp()">
       <div class="op-wrapper">
         <img src="koziki_title.webp" id="op-logo" class="op-logo-img" alt="居酒屋 乞食">
         <p class="skip-telop">画面をタップしてスキップ</p>
@@ -948,7 +948,7 @@
 
 <script>
 /* ============ 設定 ============ */
-const GAS_URL    = 'YOUR_GAS_WEBHOOK_URL_HERE';   // ログ送信先(未設定なら送信しません)
+const GAS_URL    = 'https://script.google.com/macros/s/AKfycbz8YmIVNIWbQ-xKcXRG1YQyDQoPlF92KZKPuf2VuLOhPzaiMnB-_fpj_mdhFeUUlVfk/exec';   // ログ送信先(未設定なら送信しません)
 const ORDER_URL  = '';                            // 注文ページのURL(空なら「注文する」ボタンは出ません)
 const OP_FIRST_VISIT_ONLY = false;                // true: OPは端末ごとに初回だけ表示 / false: 毎回表示
 
@@ -976,15 +976,60 @@ if (!fishDeviceId) {
   store.set('fish_device_id', fishDeviceId);
 }
 
-function sendLog(action, extra) {
-  if (!GAS_ENABLED) return;
-  const payload = Object.assign({ deviceId: fishDeviceId, action: action }, extra || {});
-  fetch(GAS_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify(payload)
-  }).catch(err => console.log('送信エラー:', err));
+/* ============ 利用ログ(Googleスプレッドシートへ) ============
+   ・GAS_URL に、Google Apps Script の「ウェブアプリのURL」を入れると、利用の記録が送られます(手順は別紙)。
+   ・お客様の名前や連絡先は取りません。端末は、ランダムなIDで区別します。
+   ・スタッフの確認用の端末は、アドレスの末尾に ?nolog を付けて開くと、以後その端末の記録を送りません(?nolog=0 で解除)。
+   ・QRの置き場所ごとに数えたいときは、アドレスの末尾に ?src=モニター や ?src=卓上 のように付けてQRを作ります(席は ?t=3 など)。 */
+(function(){
+  const m = location.search.match(/[?&]nolog(?:=(\w*))?/);
+  if (m) { if (m[1] === '0' || m[1] === 'off') store.remove('fish_nolog'); else store.set('fish_nolog', '1'); }
+})();
+const LOG_OFF = store.get('fish_nolog') === '1';
+const fishStart = Date.now();
+const fishSessionId = 'fses_' + fishStart.toString(36) + Math.random().toString(36).slice(2, 6);   // 1回の来訪(ページを開くたび)
+const fishVisit = (parseInt(store.get('fish_visits') || '0', 10) || 0) + 1;                       // この端末の何回目の来訪か
+store.set('fish_visits', String(fishVisit));
+const fishDevice = /iPhone|iPod/.test(navigator.userAgent) ? 'iPhone' : /iPad/.test(navigator.userAgent) ? 'iPad' : /Android/.test(navigator.userAgent) ? 'Android' : 'その他';
+const fishBrowser = (() => { const u = navigator.userAgent;
+  if (/Line\//i.test(u)) return 'LINE'; if (/Instagram/i.test(u)) return 'Instagram'; if (/FBAN|FBAV/.test(u)) return 'Facebook';
+  if (/Edg\//.test(u)) return 'Edge'; if (/CriOS|Chrome\//.test(u)) return 'Chrome'; if (/Safari\//.test(u)) return 'Safari'; return 'その他'; })();
+const fishQuery = (k) => { const m = location.search.match(new RegExp('[?&]' + k + '=([^&#]*)')); try { return m ? decodeURIComponent(m[1]).slice(0, 40) : ''; } catch(e){ return ''; } };
+const fishSrc = fishQuery('src'), fishTable = fishQuery('t') || fishQuery('table');
+
+function logPayload(action, extra){
+  const scr = document.querySelector('.screen.active');
+  return Object.assign({
+    deviceId: fishDeviceId, sessionId: fishSessionId, action: action,
+    screen: scr ? scr.dataset.screen : '', device: fishDevice, browser: fishBrowser, visit: fishVisit,
+    src: fishSrc, table: fishTable, caught: (typeof caught !== 'undefined' && caught) ? caught.size : 0,
+    sec: Math.round((Date.now() - fishStart) / 1000)
+  }, extra || {});
 }
+function sendLog(action, extra) {
+  if (!GAS_ENABLED || LOG_OFF) return;
+  if (typeof surveyReview !== 'undefined' && surveyReview) return;        // 確認用の画面での操作は、記録しない
+  try {
+    fetch(GAS_URL, { method: 'POST', mode: 'no-cors', keepalive: true, headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(logPayload(action, extra)) })
+      .catch(err => console.log('送信エラー:', err));
+  } catch(e) {}
+}
+// 画面を閉じる・アプリを切り替えるとき(離脱の記録)。確実に送るため sendBeacon を使います
+let leaveSentAt = 0;
+function sendLeave(){
+  if (!GAS_ENABLED || LOG_OFF) return;
+  if (typeof surveyReview !== 'undefined' && surveyReview) return;
+  if (Date.now() - leaveSentAt < 3000) return;
+  leaveSentAt = Date.now();
+  const body = JSON.stringify(logPayload('離脱'));
+  try {
+    if (!(navigator.sendBeacon && navigator.sendBeacon(GAS_URL, new Blob([body], { type: 'text/plain' })))) {
+      fetch(GAS_URL, { method: 'POST', mode: 'no-cors', keepalive: true, headers: { 'Content-Type': 'text/plain' }, body });
+    }
+  } catch(e) {}
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') sendLeave(); });
+window.addEventListener('pagehide', sendLeave);
 
 /* ============ 魚データ ============
    ownerNote : 「店主のひとこと」。空なら表示されません。
@@ -1382,6 +1427,7 @@ function goScreen(name, isBack = false){
   if (name === 'select') startSelectTalk(); else selectTalk.stop();
   if (name === 'farewell') playFarewellIntro(); else { farewellTalk.stop(); farewellStageCtl.hide(); }
   if (name !== 'survey') { surveyTalk.stop(); surveyStageCtl.hide(); }
+  sendLog('画面', { screen: name });                    // どの画面を見たか(離脱位置の分析に使います)
 }
 
 function goBack() {
@@ -1420,6 +1466,11 @@ function startOp(){
   opGuard = setTimeout(showOpLogo, 10000);          // 動画が終わらない場合の保険
 }
 
+// タップでスキップ(自然に終わったときと区別して記録する)
+function skipOp(){
+  if (document.querySelector('.screen.active')?.dataset.screen === 'op') sendLog('OPスキップ');
+  finishOp();
+}
 function finishOp(){
   clearTimeout(opTimer); clearTimeout(opGuard);
   if (document.querySelector('.screen.active')?.dataset.screen === 'op') {
@@ -1624,6 +1675,7 @@ function answerQuiz(f, idx, buttons, result, rTitle, rText, rExtra){
   const correct = !!q.options[idx].isCorrect;
   buttons.forEach(b => b.disabled = true);
   buttons[idx].classList.add('selected');
+  sendLog('クイズ回答', { fishId: f.id, fishName: f.name, value: correct ? '正解' : '不正解', choice: q.options[idx].text });
 
   result.className = 'quiz-result-box show ' + (correct ? 'correct' : 'incorrect');
   rTitle.textContent = correct ? '⭕ 正解！' : '❌ ざんねん...';
@@ -1651,7 +1703,10 @@ function renderFlip(f){
       </div>
       <div class="flip-card-back"><p>${f.interaction.back}</p></div>
     </div>`;
-  card.addEventListener('click', () => card.classList.toggle('is-flipped'));
+  card.addEventListener('click', () => {
+    card.classList.toggle('is-flipped');
+    if (card.classList.contains('is-flipped')) sendLog('めくった', { fishId: f.id, fishName: f.name });
+  });
   box.appendChild(card);
 }
 
@@ -1677,6 +1732,7 @@ function renderParts(f){
   const box = document.getElementById('detailParts');
   if (!f.parts) { box.hidden = true; box.innerHTML = ''; return; }
   const p = f.parts;
+  const logPart = (r) => sendLog('部位タップ', { fishId: f.id, fishName: f.name, value: r.label });
   box.innerHTML = '';
   box.appendChild(el('h4', 'parts-title', p.title));
 
@@ -1713,7 +1769,7 @@ function renderParts(f){
 
     const b = el('button', 'parts-btn', r.label);
     b.type = 'button';
-    b.addEventListener('click', () => select(r.id));
+    b.addEventListener('click', () => { logPart(r); select(r.id); });
     btns.appendChild(b);
     btnMap[r.id] = b;
   });
@@ -1848,6 +1904,7 @@ function goToMenu(){
   if (!f) return;
   const s = sakeList.find(x => x.id === f.recommendedSake);
   const hasMenu = f.menuItems && f.menuItems.length > 0;
+  sendLog('お酒を見た', { fishId: f.id, fishName: f.name, value: s ? s.name : '' });
 
   document.getElementById('menuTitle').textContent =
     hasMenu ? `${f.name}を使用した料理と相性の良いお酒` : `${f.name}に合うお酒`;
@@ -2197,6 +2254,7 @@ function finishFarewell(kind){
   hideFarewellForm();
   farewellTalk.stop();
   farewellTalk.img.classList.add('done');
+  if (kind !== 'sent' && !surveyReview) sendLog('ひとこと(スキップ)');
   farewellTalk.say(kind === 'sent' ? FAREWELL_SENT : FAREWELL_SKIP, { wave: '', cls: 'thanks' });
   fwEl('farewellDone').hidden = false; fwEl('farewellDone').classList.add('pop-in');
   document.getElementById('header-back-btn').style.display = 'none';
@@ -2263,9 +2321,10 @@ function renderResult(){
     : `まだ ${total - n} 種類の魚が泳いでいます。`;
 
   document.getElementById('orderBtn').hidden = !ORDER_URL;
+  sendLog('結果を見た', { value: n });
 }
 
-function goOrder(){ if (ORDER_URL) location.href = ORDER_URL; }
+function goOrder(){ if (ORDER_URL) { sendLog('注文ボタン'); setTimeout(() => { location.href = ORDER_URL; }, 150); } }
 
 
 /* ============ 読みやすい折り返し: 文節の切れ目に <wbr> を入れる ============
@@ -2354,7 +2413,7 @@ if (PHRASE_ON) {
 }
 
 /* ============ 初期化 ============ */
-sendLog('アクセス');
+sendLog('アクセス', { value: fishVisit === 1 ? 'はじめて' : '2回目以降' });
 document.getElementById('totalCount').textContent = fishList.length;
 if (/[?&]survey\b/.test(location.search)) {
   openSurveyReview();      // 確認用: ?survey(冒頭の質問)
