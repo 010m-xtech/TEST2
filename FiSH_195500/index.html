@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>居酒屋 乞食 のお魚たち</title>
+<title>お魚の豆知識と日本酒｜居酒屋 乞食</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
@@ -709,6 +709,15 @@
   .about-v{ margin:0; font-size:15.5px; line-height:1.9; color:#fff; text-wrap:pretty; letter-spacing:.02em; }
   .about-v .em{ color:#fff; }
   .story-lead{ font-size:17.5px; }
+
+  /* 見出し: お店の名前を、上に小さく(提供元の表示) */
+  .brand-text{ min-width:0; display:flex; flex-direction:column; justify-content:center; }
+  .brand-shop{
+    font-family: var(--font-mincho); font-weight:700; font-size:12.5px; letter-spacing:.14em;
+    color: var(--shu-pale); line-height:1.25; white-space:nowrap;
+  }
+  .brand h1{ font-size:17px; line-height:1.3; white-space:nowrap; }
+  @media (max-width:340px){ .brand h1{ font-size:14px; letter-spacing:0.02em; } .brand-shop{ font-size:11px; letter-spacing:.1em; } header{ padding-left:14px; padding-right:14px; } .brand{ gap:8px; } .seal{ width:40px; height:40px; } }
 </style>
 </head>
 <body>
@@ -731,7 +740,7 @@
   <header id="main-header" style="display: none;">
     <div class="brand" onclick="goScreen('select')">
       <img src="koziki_logo.webp" class="seal" alt="居酒屋 乞食ロゴ">
-      <div><h1>居酒屋 乞食 のお魚たち</h1></div>
+      <div class="brand-text"><span class="brand-shop">居酒屋 乞食</span><h1>お魚の豆知識と日本酒</h1></div>
     </div>
     <button id="header-back-btn" class="header-back-btn" onclick="goBack()" style="display: none;">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
@@ -820,8 +829,8 @@
       <h2 class="title" style="line-height: 1.6; word-break: keep-all;" id="menuTitle"></h2>
 
       <div class="menu-notice">
-        ※ご注文は、注文用QRまたは口頭で承ります。<br>
-        ※仕入れの都合で、品切れの場合があります。
+        ※掲載のお酒は、お取り扱いがない場合があります。<br>
+        ※お取り扱いの有無は、スタッフにおたずねください。
       </div>
 
       <div class="sake-legend"><span class="lg"><b>流す</b>脂をスッと切る</span><span class="lg"><b>重ねる</b>旨みを深める</span></div>
@@ -1033,8 +1042,8 @@ window.addEventListener('pagehide', sendLeave);
 
 /* ============ 魚データ ============
    ownerNote : 「店主のひとこと」。空なら表示されません。
-   menuItems : 実際のメニュー。 { name, description, recommendedSake } を入れてください。
-               空のときは、お酒の提案だけを表示します(ダミーのメニューは出しません)。 */
+   (料理のメニューは掲載しません。日本酒のみを紹介します)
+*/
 const fishList = [
   {
     id: "aji", name: "真鯵", kana: "まあじ", img: "maaji.webp",
@@ -1056,8 +1065,7 @@ const fishList = [
     trivia: "尾の近くの硬いウロコ**「ゼイゴ」**は、アジの仲間だけの特徴。調理前に、これを取り除きます。",
     illustration: "maaji_kaisetsu2.webp", illAlt: "アジのゼイゴ",
     illCaption: "尾の近くにある「ゼイゴ」",
-    ownerNote: "",
-    menuItems: [], recommendedSake: "hakkaisan"
+    ownerNote: "", recommendedSake: "hakkaisan"
   },
   {
     id: "katsuo", name: "カツオ", kana: "かつお", img: "katsuo.webp",
@@ -1085,8 +1093,7 @@ const fishList = [
       ],
       foot: "形はそっくり。腹の縞が目印です。"
     },
-    ownerNote: "",
-    menuItems: [], recommendedSake: "tateyama"
+    ownerNote: "", recommendedSake: "tateyama"
   },
   {
     id: "maguro", name: "まぐろ", kana: "まぐろ", img: "maguro.webp",
@@ -1127,8 +1134,7 @@ const fishList = [
       ],
       foot: "形はそっくり。腹の縞が目印です。"
     },
-    ownerNote: "",
-    menuItems: [], recommendedSake: "zaku"
+    ownerNote: "", recommendedSake: "zaku"
   },
   {
     id: "salmon", name: "サーモン", kana: "さーもん", img: "sa-mon.webp",
@@ -1149,8 +1155,7 @@ const fishList = [
       extra: "salmonSlice"
     },
     trivia: "生で食べるサーモンは、寄生虫対策がされた**養殖**が基本。天然の鮭は、加熱が基本です。",
-    ownerNote: "",
-    menuItems: [], recommendedSake: "oze"
+    ownerNote: "", recommendedSake: "oze"
   },
   {
     id: "hirame", name: "ヒラメ", kana: "ひらめ", img: "hirame.webp",
@@ -1173,8 +1178,7 @@ const fishList = [
       </div>`
     },
     trivia: "生まれたては目が両側にあり、成長すると**右目が左側へ**移ります。海底の砂に潜るため、背中の色を周りに合わせて変えることもできます。",
-    ownerNote: "",
-    menuItems: [], recommendedSake: "hakkaisan"
+    ownerNote: "", recommendedSake: "hakkaisan"
   },
   {
     id: "shimaaji", name: "シマアジ", kana: "しまあじ", img: "shimaaji.webp",
@@ -1193,11 +1197,10 @@ const fishList = [
       ],
       explanation: "体の中央を走る**黄色いライン**が由来と言われます。このラインは、成長すると薄れていきます。"
     },
-    trivia: "天然は漁獲量が少なく**「幻の魚」**とも呼ばれます。お店で食べられるものは、養殖が多いです。",
+    trivia: "天然は漁獲量が少なく**「幻の魚」**とも呼ばれます。流通しているものは、養殖が多いです。",
     illustration: "shimaaji_kaisetsu2.webp", illAlt: "シマアジの黄色いライン",
     illCaption: "頭の後ろから尾へ走る黄色いライン",
-    ownerNote: "",
-    menuItems: [], recommendedSake: "manozuru"
+    ownerNote: "", recommendedSake: "manozuru"
   },
   {
     id: "maiwashi", name: "真いわし", kana: "まいわし", img: "iwashi.webp",
@@ -1215,8 +1218,7 @@ const fishList = [
     trivia: "敵から身を守るため、何万匹もの大きな群れ**「トルネード」**を作って泳ぎます。",
     illustration: "iwashi_kaisetsu.webp", illAlt: "イワシの群れ（トルネード）",
     illCaption: "群れで泳ぐイワシ（トルネード）",
-    ownerNote: "",
-    menuItems: [], recommendedSake: "tateyama"
+    ownerNote: "", recommendedSake: "tateyama"
   },
   {
     id: "madako", name: "真だこ", kana: "まだこ", img: "tako.webp",
@@ -1244,8 +1246,7 @@ const fishList = [
       { color: "#B3261E", text: "心臓（全身用）× 1" },
       { color: "#F08A6B", text: "鰓心臓（えら用）× 2" }
     ],
-    ownerNote: "",
-    menuItems: [], recommendedSake: "manozuru"
+    ownerNote: "", recommendedSake: "manozuru"
   },
   {
     id: "unagi", name: "うなぎ", kana: "うなぎ", img: "unagi.webp",
@@ -1261,8 +1262,7 @@ const fishList = [
       back: "血に<b class='em'>毒</b>（イクチオトキシン）があるためです。熱に弱く、60℃で5分ほど加熱すると毒性がなくなるので、蒲焼きなどで加熱して食べます。"
     },
     trivia: "長年謎でしたが、近年ようやく、産卵場所が**「マリアナ諸島付近」**と分かりました。",
-    ownerNote: "",
-    menuItems: [], recommendedSake: "zaku"
+    ownerNote: "", recommendedSake: "zaku"
   },
   {
     id: "yariika", name: "ヤリイカ", kana: "やりいか", img: "ika.webp",
@@ -1284,8 +1284,7 @@ const fishList = [
     trivia: "名前は、細長く先が尖った胴体が**「槍の穂先」**に似ていることに由来します。",
     illustration: "ika_kaisetsu.webp", illAlt: "槍の穂先とヤリイカ",
     illCaption: "槍の穂先（左）に似たヤリイカ",
-    ownerNote: "",
-    menuItems: [], recommendedSake: "oze"
+    ownerNote: "", recommendedSake: "oze"
   },
   {
     id: "amaebi", name: "甘エビ", kana: "あまえび", img: "ebi.webp",
@@ -1301,8 +1300,7 @@ const fishList = [
       back: "本当です！<br>生まれた時はすべてオスで、数年（4〜6歳ごろ）たつとメスに性転換します。"
     },
     trivia: "水揚げ後、少し時間がたつと、**自己消化でアミノ酸が増え**、より甘くなります。",
-    ownerNote: "",
-    menuItems: [], recommendedSake: "oze"
+    ownerNote: "", recommendedSake: "oze"
   }
 ];
 
@@ -1855,8 +1853,7 @@ function selectFish(id){
     ownerBlock.hidden = true;
   }
 
-  document.getElementById('toMenuLabel').textContent =
-    (f.menuItems && f.menuItems.length) ? 'この魚を使ったメニューを見る' : 'この魚に合うお酒を見る';
+  document.getElementById('toMenuLabel').textContent = 'この魚に合う日本酒を見る';
 
   sendLog('魚を見た', { fishId: f.id, fishName: f.name });
   goScreen('detail');
@@ -1902,36 +1899,12 @@ function sakeCardHtml(s){
 function goToMenu(){
   const f = fishById(currentFishId);
   if (!f) return;
-  const s = sakeList.find(x => x.id === f.recommendedSake);
-  const hasMenu = f.menuItems && f.menuItems.length > 0;
-  sendLog('お酒を見た', { fishId: f.id, fishName: f.name, value: s ? s.name : '' });
+  const sake = sakeList.find(x => x.id === f.recommendedSake);
+  sendLog('お酒を見た', { fishId: f.id, fishName: f.name, value: sake ? sake.name : '' });
 
-  document.getElementById('menuTitle').textContent =
-    hasMenu ? `${f.name}を使用した料理と相性の良いお酒` : `${f.name}に合うお酒`;
-
-  const wrap = document.getElementById('menuScreenList');
-
-  if (hasMenu) {
-    wrap.innerHTML = f.menuItems.map(m => {
-      const ms = sakeList.find(x => x.id === m.recommendedSake) || s;
-      return `
-        <div class="menu-item" onclick="this.classList.toggle('open')">
-          <div class="name">
-            ${m.name}
-            <svg class="chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-          </div>
-          <div class="desc">${m.description || ''}</div>
-          <div class="tap-hint">🍶 タップして、合うお酒を見る</div>
-          ${ms ? `<div class="pairing-sake">${sakeCardHtml(ms)}</div>` : ''}
-        </div>`;
-    }).join('');
-  } else {
-    // 実メニューが未登録のときは、ダミーの料理は出さず、お酒の提案だけを表示
-    wrap.innerHTML = `
-      <p class="menu-empty">この魚の料理は、スタッフにおたずねください。</p>
-      <div class="sake-group-label" style="margin-top:0;">おすすめのペアリング</div>
-      ${s ? sakeCardHtml(s) : ''}`;
-  }
+  document.getElementById('menuTitle').textContent = `${f.name}に合う日本酒`;
+  // 料理のメニューは載せず、日本酒だけを紹介する
+  document.getElementById('menuScreenList').innerHTML = sake ? sakeCardHtml(sake) : '';
   document.getElementById('finishButton').textContent =
     (farewellDone && !surveyReview) ? '最初に戻る' : 'おしまいにする';
   goScreen('menu');
@@ -1977,7 +1950,7 @@ function onSurveyChange(){
 // ---- 魚がしゃべる(吹き出し)。アンケート画面と、最初の画面で共用 ----
 const SURVEY_LINES = [
   { text: 'ご来店、\nありがとうございます！', wave: '', hold: 0.6, sub: 'タップで次へ' },
-  { text: 'ここでは、\n居酒屋 乞食の\n新鮮なお魚たちに\n関する豆知識と、', wave: '豆知識', hold: 0.8, sub: 'タップで次へ' },
+  { text: 'ここでは、\nお魚たちに関する\n豆知識と、', wave: '豆知識', hold: 0.8, sub: 'タップで次へ' },
   { text: '相性の良い日本酒を\nご案内します！\nぜひ、たのしんで\nいってください！', wave: '日本酒', hold: 0.8, sub: 'タップで次へ' },
   { text: 'その前に、最初に\nお二つだけ、\n聞かせてくださいね。', wave: 'お二つだけ', sub: 'タップするだけです' }
 ];
