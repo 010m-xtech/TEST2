@@ -1,0 +1,1714 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>おさかな クイズ コレクション</title>
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts (Game1,2用のStickとGame3用のYomogi) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Stick&family=Yomogi&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* 共通・Game1・Game2用 */
+            --ai: #2C4A78;
+            --ai-light: #4C6A94;
+            --ai-pale: #DCE7F5;
+            --shu: #E8563E;
+            --shu-pale: #FFE3DA;
+            --maru: #2E86AB;
+            --batsu: #E8563E;
+            --sumi: #3A342C;
+            --font: 'Stick', sans-serif;
+
+            /* Game3 (おおきさくらべ)用 */
+            --g3-kinari: rgba(253, 248, 240, 0.75);
+            --g3-ai: #30547A;
+            --g3-ai-light: #52759E;
+            --g3-ai-pale: #E4EDF7;
+            --g3-shu: #E25B45;
+            --g3-shu-pale: #FCE7E3;
+            --g3-sumi: #3A3228;
+            --g3-line: #D4C5AC; /* 【修正1】未定義だった変数を追加 */
+            --g3-font: 'Yomogi', cursive;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: var(--font);
+            background-color: transparent;
+            color: #4a3b32;
+            word-break: keep-all;
+            overflow-wrap: break-word;
+            -webkit-font-smoothing: antialiased;
+            margin: 0; padding: 0;
+            min-height: 100vh;
+        }
+
+        /* 共通背景（動画なし/読み込み失敗時は、この静止背景が表示される） */
+        .video-bg-container {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: -10;
+            overflow: hidden;
+            background:
+                radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.55) 0, rgba(255, 255, 255, 0) 45%),
+                radial-gradient(circle at 85% 85%, rgba(255, 176, 124, 0.35) 0, rgba(255, 176, 124, 0) 50%),
+                #FDECC8;
+        }
+        .video-bg-container video {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            transform: translate(-50%, -50%);
+            transition: opacity 1.5s linear;
+        }
+        /* 【修正4】軽量モード・動画失敗時は動画を完全に非表示 */
+        body.lite .video-bg-container video,
+        .video-bg-container.no-video video { display: none; }
+
+        /* オープニング用のCSS */
+        #intro-container {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: #000; z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+            transition: opacity 1s ease; cursor: pointer;
+        }
+        #intro-video {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; transition: opacity 1s ease;
+        }
+        #intro-logo {
+            position: relative; z-index: 10; max-width: 80%; max-height: 80%;
+            opacity: 0; transition: opacity 1s ease; object-fit: contain;
+        }
+        #intro-skip-text {
+            position: absolute; bottom: 8vh; left: 50%; transform: translateX(-50%);
+            color: #fff; font-size: 15px; font-weight: bold; z-index: 20;
+            white-space: nowrap; letter-spacing: 0.1em;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            animation: blinkAndFloat 2s infinite ease-in-out;
+            pointer-events: none;
+        }
+
+        @keyframes blinkAndFloat {
+            0%, 100% { opacity: 0.3; transform: translate(-50%, 0); }
+            50% { opacity: 1; transform: translate(-50%, -10px); }
+        }
+
+        /* 【修正2】誤タップ防止：この間は押せない */
+        .tap-lock { pointer-events: none !important; }
+
+        /* 【修正3】「もどる」ボタン */
+        #back-btn {
+            position: fixed; top: 10px; left: 10px; z-index: 40;
+            display: none;
+            font-family: var(--font); font-weight: 900; font-size: 15px;
+            color: var(--sumi);
+            background: rgba(255, 255, 255, 0.92);
+            border: none; padding: 10px 16px; min-height: 44px; min-width: 44px;
+            clip-path: polygon(3% 5%, 45% 1%, 90% 4%, 98% 20%, 99% 70%, 94% 95%, 55% 99%, 12% 96%, 2% 80%, 0% 40%);
+            filter: drop-shadow(3px 3px 0 rgba(74, 59, 50, 0.35));
+            cursor: pointer;
+        }
+        #back-btn:active { transform: translate(2px, 2px); filter: drop-shadow(0 0 0 rgba(74, 59, 50, 0.35)); }
+        body.in-game #back-btn { display: block; }
+        /* もどるボタンと重ならないよう、ゲーム画面の上に余白をとる */
+        body.in-game #game1-container,
+        body.in-game #game2-container,
+        body.in-game #game3-container { padding-top: 56px; }
+        body.in-game #game2-container .app,
+        body.in-game #game3-container .app { min-height: calc(100vh - 56px); }
+
+        /* メニュー画面のお店ロゴ（タップ不可・加工しない） */
+        #menu-logo {
+            width: 76px; height: auto; margin-top: 18px;
+            pointer-events: none; user-select: none; -webkit-user-drag: none;
+            opacity: 0.95;
+        }
+
+        .kirie-box {
+            background-color: rgba(255, 255, 255, 0.85);
+            clip-path: polygon(2% 3%, 30% 1%, 75% 2%, 98% 4%, 99% 30%, 97% 75%, 96% 97%, 70% 99%, 25% 97%, 4% 96%, 1% 70%, 2% 25%);
+            filter: drop-shadow(6px 6px 0px rgba(74, 59, 50, 0.4));
+            transform: rotate(-1deg);
+        }
+        .kirie-btn {
+            clip-path: polygon(3% 4%, 25% 1%, 80% 3%, 97% 5%, 99% 50%, 96% 96%, 75% 98%, 20% 96%, 4% 97%, 1% 50%);
+            filter: drop-shadow(4px 4px 0px rgba(74, 59, 50, 0.4));
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .kirie-btn:nth-child(odd) {
+            clip-path: polygon(1% 5%, 40% 1%, 98% 3%, 96% 50%, 99% 95%, 60% 98%, 3% 97%, 4% 50%);
+            transform: rotate(1deg);
+        }
+        .kirie-btn:nth-child(even) {
+            clip-path: polygon(4% 2%, 70% 3%, 96% 1%, 98% 60%, 95% 98%, 30% 96%, 1% 95%, 2% 40%);
+            transform: rotate(-1deg);
+        }
+        .kirie-btn:active {
+            transform: translate(4px, 4px) rotate(0deg) !important;
+            filter: drop-shadow(0px 0px 0px rgba(74, 59, 50, 0.4)) !important;
+        }
+
+        .kirie-title { display: inline-block; transform: rotate(-2deg); }
+        .kirie-badge {
+            clip-path: polygon(4% 3%, 96% 5%, 98% 95%, 5% 96%);
+            filter: drop-shadow(3px 3px 0px rgba(74, 59, 50, 0.3));
+            transform: rotate(2deg);
+        }
+        .kirie-img-box {
+            background-color: #fdf6e3;
+            clip-path: polygon(2% 3%, 97% 2%, 96% 97%, 3% 96%);
+            filter: drop-shadow(4px 4px 0px rgba(74, 59, 50, 0.15));
+        }
+        .btn-orange { background-color: #ffb07c; }
+        .btn-blue { background-color: #93c5fd; }
+        .btn-green { background-color: #86efac; }
+        .btn-pink { background-color: #f9a8d4; }
+        .btn-yellow { background-color: #fde047; }
+        .btn-gray { background-color: #e5e7eb; }
+
+        .silhouette { filter: brightness(0); transition: filter 0.3s ease; }
+        .hint-mode { filter: brightness(0.3) grayscale(0.5); transition: filter 0.3s ease; }
+
+        .fade-in { animation: fadeIn 0.5s ease-in forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .swim-in { animation: swimIn 2.5s ease-in-out forwards; }
+        @keyframes swimIn {
+            0% { opacity: 0; transform: translateX(60px) translateY(10px) rotate(-3deg); }
+            50% { opacity: 0.8; transform: translateX(20px) translateY(-5px) rotate(2deg); }
+            100% { opacity: 1; transform: translateX(0) translateY(0) rotate(0deg); }
+        }
+
+        @keyframes animSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes animFlip { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
+        @keyframes animShake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px) rotate(-3deg); }
+            20%, 40%, 60%, 80% { transform: translateX(5px) rotate(3deg); }
+        }
+        .anim-spin { animation: animSpin 0.6s ease; }
+        .anim-flip { animation: animFlip 0.6s ease; }
+        .anim-shake { animation: animShake 0.6s ease; }
+
+        #game2-container .app {
+            width: 100%; max-width: 460px; min-height: 100vh;
+            background: transparent; position: relative;
+            display: flex; flex-direction: column; margin: auto;
+        }
+        #game2-container header { padding: 32px 20px 12px; text-align: center; }
+        #game2-container header h1 {
+            font-size: 20px; font-weight: 900; color: var(--ai); margin: 0;
+            letter-spacing: 0.03em; display: inline-block;
+            padding: 10px 28px; position: relative;
+            filter: drop-shadow(3px 5px 0 rgba(0,0,0,0.15));
+        }
+        #game2-container header h1::before {
+            content: ""; position: absolute; inset: 0; z-index: -1;
+            background: rgba(255, 255, 255, 0.85);
+            clip-path: polygon(2% 8%, 35% 2%, 80% 5%, 97% 4%, 99% 45%, 96% 92%, 60% 98%, 20% 95%, 4% 97%, 0% 50%);
+        }
+        #game2-container main { flex: 1; padding: 10px 20px 40px; display: flex; flex-direction: column; }
+
+        #game2-container .screen { display: none; flex: 1; flex-direction: column; animation: pop .35s ease both; }
+        #game2-container .screen.active { display: flex; }
+        @keyframes pop { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+
+        #game2-container .start-wrap {
+            width: 100%; margin: auto; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; gap: 22px; padding: 60px 20px; min-height: 360px;
+            background: transparent; filter: drop-shadow(3px 5px 0 rgba(0,0,0,0.15)); position: relative;
+        }
+        #game2-container .start-wrap::before {
+            content: ""; position: absolute; inset: 0; z-index: -1;
+            background: rgba(255, 255, 255, 0.85);
+            clip-path: polygon(1% 2%, 35% 0%, 75% 2%, 98% 1%, 100% 35%, 98% 75%, 99% 98%, 65% 100%, 25% 98%, 2% 99%, 0% 65%, 1% 25%);
+        }
+
+        #game2-container .start-title, #game2-container .start-lead, #game2-container .start-wrap .big-btn {
+            position: relative; z-index: 1;
+        }
+        #game2-container .start-fish-img {
+            position: absolute; z-index: 0; opacity: 0.75;
+            pointer-events: auto; cursor: pointer;
+        }
+
+        #game2-container .start-title { font-size: 26px; font-weight: 900; color: var(--ai); line-height: 1.5; margin: 0; }
+        #game2-container .start-lead { font-size: 15px; color: #000; line-height: 1.9; margin: 0; max-width: 260px; }
+
+        #game2-container .big-btn {
+            font-family: var(--font); font-weight: 900; font-size: 19px; color: #fff;
+            background: transparent; border: none; padding: 18px 48px;
+            filter: drop-shadow(3px 5px 0 rgba(0,0,0,0.15));
+            cursor: pointer; position: relative;
+            transition: transform .08s ease, filter .08s ease;
+        }
+        #game2-container .big-btn::before {
+            content: ""; position: absolute; inset: 0; z-index: -1; background: var(--shu);
+            clip-path: polygon(3% 5%, 45% 1%, 85% 6%, 98% 18%, 99% 65%, 94% 93%, 60% 98%, 15% 95%, 2% 80%, 0% 45%);
+        }
+        #game2-container .big-btn:active { transform: translateY(4px); filter: drop-shadow(0px 1px 0 rgba(0,0,0,0.15)); }
+        #game2-container .big-btn.gray-btn { color: #333; font-size: 16px; padding: 12px 32px; margin-top: 10px; }
+        #game2-container .big-btn.gray-btn::before { background: #cbd5e1; }
+
+        #game2-container .q-progress {
+            width: 85%; max-width: 320px; height: 12px; margin: 4px auto 14px;
+            background: rgba(255, 255, 255, 0.8); border-radius: 10px; position: relative; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+        #game2-container .q-progress-inner {
+            height: 100%; background: var(--ai-light); border-radius: 10px; width: 0%; transition: width 0.4s ease-out;
+        }
+        #game2-container .q-progress-fish {
+            position: absolute; top: -24px; width: 60px; height: auto;
+            transform: translateX(-50%) scaleX(-1); transition: left 0.4s ease-out; z-index: 2;
+        }
+
+        #game2-container .q-card {
+            background: transparent; padding: 20px 22px; filter: drop-shadow(3px 5px 0 rgba(0,0,0,0.15));
+            text-align: center; margin-bottom: 12px; display: flex; flex-direction: column; align-items: center; position: relative;
+        }
+        #game2-container .q-card::before {
+            content: ""; position: absolute; inset: 0; z-index: -1; background: rgba(255, 255, 255, 0.75);
+            clip-path: polygon(2% 1%, 40% 0%, 80% 2%, 99% 1%, 100% 40%, 98% 80%, 97% 98%, 60% 100%, 20% 98%, 1% 99%, 0% 60%, 1% 20%);
+        }
+        #game2-container .q-num { font-size: 13px; color: var(--ai-light); font-weight: 700; margin-bottom: 8px; }
+        #game2-container .q-text { font-size: 19px; font-weight: 700; color: var(--sumi); line-height: 1.6; margin: 0; }
+
+        #game2-container .q-img-wrap { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 10px; width: 100%; }
+        #game2-container .q-img { max-width: 100%; max-height: 160px; border-radius: 12px; display: none; object-fit: contain; cursor: pointer; }
+        #game2-container .q-img.multi { max-width: 30%; max-height: 110px; }
+        #game2-container .q-img.silhouette { filter: brightness(0); }
+
+        #game2-container .ans-row { display: flex; gap: 16px; justify-content: center; margin-top: auto; margin-bottom: 56px; }
+        #game2-container .ans-btn {
+            flex: 1; max-width: 150px; aspect-ratio: 1 / 1; border: none; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            filter: drop-shadow(3px 5px 0 rgba(0,0,0,0.15)); transition: transform .08s ease, filter .08s ease;
+            background: transparent; position: relative; padding: 0;
+        }
+        #game2-container .ans-btn:active { transform: translateY(4px) scale(0.95); filter: drop-shadow(0px 1px 0 rgba(0,0,0,0.15)); }
+        #game2-container .ans-btn::before { content: ""; position: absolute; inset: 0; z-index: -1; }
+        #game2-container .ans-btn svg { width: 56%; height: 56%; position: relative; z-index: 1; }
+
+        #game2-container .ans-maru::before {
+            background: var(--ai-pale);
+            clip-path: polygon(18% 4%, 48% 0%, 78% 7%, 95% 22%, 100% 52%, 93% 82%, 76% 98%, 46% 100%, 15% 93%, 2% 70%, 0% 38%, 4% 15%);
+        }
+        #game2-container .ans-maru svg { stroke: var(--maru); }
+
+        #game2-container .ans-batsu::before {
+            background: var(--shu-pale);
+            clip-path: polygon(12% 10%, 38% 3%, 72% 9%, 92% 26%, 99% 58%, 87% 89%, 64% 99%, 30% 97%, 6% 83%, 0% 55%, 3% 28%);
+        }
+        #game2-container .ans-batsu svg { stroke: var(--batsu); }
+
+        #game2-container .result-feedback {
+            width: 100%; margin: auto; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; gap: 12px; padding: 24px 20px; background: rgba(255, 255, 255, 0.85);
+            border-radius: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+        #game2-container .feedback-icon { width: 90px; height: 90px; }
+        #game2-container .feedback-word { font-size: 26px; font-weight: 900; }
+        #game2-container .feedback-word.ok { color: var(--maru); }
+        #game2-container .feedback-word.ng { color: var(--batsu); }
+        #game2-container .feedback-text { font-size: 15px; color: #000; line-height: 1.9; max-width: 280px; margin: 0; }
+
+        #game2-container .feedback-img-wrap { position: relative; margin-top: 4px; display: none; max-width: 100%; }
+        #game2-container .feedback-img { max-width: 100%; max-height: 140px; border-radius: 12px; display: block; object-fit: contain; cursor: pointer; }
+        #game2-container .telop {
+            position: absolute; background: rgba(0, 0, 0, 0.65); color: #fff; padding: 2px 8px; border-radius: 6px;
+            font-size: 13px; font-weight: 700; top: 10px; letter-spacing: 0.05em;
+        }
+        #game2-container .telop.left { left: 10px; }
+        #game2-container .telop.right { right: 10px; }
+
+        #game2-container .final-wrap {
+            width: 100%; margin: auto; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; gap: 18px; padding: 60px 20px; min-height: 360px; background: rgba(255, 255, 255, 0.85);
+            border-radius: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); position: relative; overflow: hidden;
+        }
+        #game2-container .final-score, #game2-container .final-msg, #game2-container .final-wrap .big-btn { position: relative; z-index: 1; }
+        #game2-container .final-fish-img { position: absolute; z-index: 0; opacity: 0.75; pointer-events: auto; cursor: pointer; }
+        #game2-container .final-score { font-size: 46px; font-weight: 900; color: var(--ai); margin: 0; }
+        #game2-container .final-score span { font-size: 22px; color: #7a6f5c; }
+        #game2-container .final-msg { font-size: 16px; color: var(--sumi); font-weight: 700; line-height: 1.8; max-width: 260px; margin: 0; }
+
+        @keyframes fishBounce {
+            0% { transform: translate(0, 0) rotate(var(--rot, 0deg)); }
+            25% { transform: translate(-3px, -15px) rotate(calc(var(--rot, 0deg) - 15deg)) scale(1.1); }
+            50% { transform: translate(0, -25px) rotate(calc(var(--rot, 0deg) + 15deg)) scale(1.2); }
+            75% { transform: translate(3px, -15px) rotate(calc(var(--rot, 0deg) - 15deg)) scale(1.1); }
+            100% { transform: translate(0, 0) rotate(var(--rot, 0deg)); }
+        }
+        .animate-bounce { animation: fishBounce 0.5s ease; }
+        @keyframes fishRotate {
+            0% { transform: translate(0, 0) rotate(var(--rot, 0deg)); }
+            100% { transform: translate(0, 0) rotate(calc(var(--rot, 0deg) + 360deg)); }
+        }
+        .animate-rotate { animation: fishRotate 0.6s ease-in-out; }
+
+        #game3-container {
+            font-family: var(--g3-font);
+            font-weight: 900;
+            -webkit-text-stroke: 0.6px currentColor;
+            text-shadow: 0.2px 0.2px 0 currentColor;
+        }
+        #game3-container .app {
+            width: 100%; max-width: 460px; min-height: 100vh;
+            background: var(--g3-kinari);
+            position: relative;
+            box-shadow: 0 0 40px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column; margin: auto;
+        }
+        #game3-container header { padding: 18px 20px 12px; text-align: center; }
+        #game3-container header h1 { font-size: 20px; font-weight: 900; color: var(--g3-ai); margin: 0; letter-spacing: 0.03em; }
+        #game3-container main { flex: 1; padding: 10px 20px 40px; display: flex; flex-direction: column; }
+
+        @keyframes g3-wobble {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-1deg); }
+            75% { transform: rotate(1deg); }
+        }
+        @keyframes g3-fish-jump {
+            0% { transform: rotate(-90deg) scale(1); }
+            25% { transform: rotate(-100deg) scale(1.1); }
+            50% { transform: rotate(-80deg) scale(1.1); }
+            75% { transform: rotate(-100deg) scale(1.1); }
+            100% { transform: rotate(-90deg) scale(1); }
+        }
+        #game3-container .animate-fish { animation: g3-fish-jump 0.4s ease; }
+        #game3-container .screen { display: none; flex: 1; flex-direction: column; animation: g3-pop .35s ease both; }
+        #game3-container .screen.active { display: flex; }
+        @keyframes g3-pop { from{opacity:0; transform:scale(0.96) rotate(-2deg);} to{opacity:1; transform:scale(1) rotate(0deg);} }
+        @media (prefers-reduced-motion: reduce){ #game3-container .screen{ animation:none; } }
+
+        #game3-container .center-wrap {
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; gap: 20px; padding: 10px 0 30px;
+        }
+        #game3-container .mascot { width: 120px; height: 120px; }
+        #game3-container .center-title { font-size: 24px; font-weight: 900; color: var(--g3-ai); line-height: 1.5; margin: 0; }
+        #game3-container .center-lead { font-size: 15px; color: #000; line-height: 1.9; margin: 0; max-width: 270px; }
+
+        #game3-container .big-btn {
+            font-family: var(--g3-font); font-weight: 900; font-size: 22px;
+            color: #fff; background: var(--g3-shu);
+            border: 3px solid var(--g3-sumi);
+            border-radius: 40px 15px 50px 25px / 20px 40px 15px 45px;
+            padding: 16px 40px; box-shadow: 4px 6px 0 var(--g3-sumi);
+            cursor: pointer; transition: all 0.15s; position: relative; z-index: 1;
+        }
+        #game3-container .big-btn:hover { animation: g3-wobble 1s ease-in-out infinite; }
+        #game3-container .big-btn:active { box-shadow: 0px 2px 0 var(--g3-sumi); transform: translateY(4px) translateX(2px); animation: none; }
+
+        #game3-container .height-options { display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 260px; margin: 0 auto; }
+        #game3-container .height-btn {
+            font-family: var(--g3-font); background: #fff; border: 3px solid var(--g3-sumi);
+            padding: 12px 20px; box-shadow: 3px 4px 0 rgba(58,52,44,0.15);
+            cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: space-between;
+        }
+        #game3-container .height-btn:hover { transform: scale(1.02) rotate(-1deg); }
+        #game3-container .height-btn:active { box-shadow: 0px 1px 0 rgba(58,52,44,0.15); transform: translateY(2px) translateX(1px); }
+        #game3-container .height-btn:nth-child(1) { border-radius: 15px 25px 10px 20px / 20px 10px 25px 15px; }
+        #game3-container .height-btn:nth-child(2) { border-radius: 25px 10px 20px 15px / 15px 20px 10px 25px; }
+        #game3-container .height-btn:nth-child(3) { border-radius: 10px 20px 15px 25px / 25px 15px 20px 10px; }
+        #game3-container .height-btn:nth-child(4) { border-radius: 20px 15px 25px 10px / 10px 25px 15px 20px; }
+        #game3-container .height-btn:nth-child(5) { border-radius: 15px 20px 25px 10px / 20px 15px 10px 25px; }
+        #game3-container .height-btn:nth-child(6) { border-radius: 10px 15px 20px 25px / 25px 20px 15px 10px; }
+        #game3-container .height-btn .cm { font-size: 22px; font-weight: 900; color: var(--g3-ai); }
+        #game3-container .height-btn .unit { font-size: 14px; font-weight: 900; color: var(--g3-ai); margin-left: 2px; }
+        #game3-container .height-btn .age { font-size: 12.5px; color: #000; font-weight: 900; }
+
+        #game3-container .theme-options { display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 320px; margin: 0 auto; }
+        #game3-container .theme-btn {
+            font-family: var(--g3-font); background: #fff; border: 3px solid var(--g3-sumi);
+            padding: 16px 20px; box-shadow: 3px 4px 0 rgba(58,52,44,0.15);
+            cursor: pointer; transition: all 0.15s; font-size: 16.5px; font-weight: 900; color: var(--g3-ai);
+            text-align: left; line-height: 1.4;
+        }
+        #game3-container .theme-btn:hover { transform: scale(1.02) rotate(-1deg); }
+        #game3-container .theme-btn:active { box-shadow: 0px 1px 0 rgba(58,52,44,0.15); transform: translateY(2px) translateX(1px); }
+        #game3-container .theme-btn:nth-child(1) { border-radius: 15px 25px 10px 20px / 20px 10px 25px 15px; }
+        #game3-container .theme-btn:nth-child(2) { border-radius: 25px 10px 20px 15px / 15px 20px 10px 25px; }
+        #game3-container .theme-btn:nth-child(3) { border-radius: 10px 20px 15px 25px / 25px 15px 20px 10px; }
+        #game3-container .theme-btn:nth-child(4) { border-radius: 20px 15px 25px 10px / 10px 25px 15px 20px; }
+        #game3-container .theme-btn .highlight { color: var(--g3-shu); }
+
+        #game3-container .q-progress { display: flex; justify-content: center; gap: 8px; margin: 4px 0 18px; }
+        #game3-container .q-dot {
+            width: 14px; height: 14px;
+            border-radius: 45% 65% 50% 55% / 55% 45% 60% 40%;
+            border: 2px solid var(--g3-sumi); background: var(--g3-line); transition: all 0.3s;
+        }
+        #game3-container .q-dot.done { background: var(--g3-ai-light); border-color: var(--g3-sumi); }
+        #game3-container .q-dot.now { background: var(--g3-shu); transform: scale(1.4) rotate(10deg); }
+
+        #game3-container .compare-card {
+            background: #fff; padding: 18px 16px 14px;
+            border-radius: 8px 30px 12px 25px / 25px 10px 30px 15px;
+            border: 3px solid var(--g3-sumi); box-shadow: 5px 7px 0 rgba(58,52,44,0.15); margin-bottom: 18px;
+        }
+        #game3-container .compare-stage { position: relative; padding: 10px 4px 10px; overflow: visible; }
+        #game3-container .compare-inner {
+            position: relative; display: flex; flex-direction: row; justify-content: space-evenly;
+            align-items: flex-end; height: 270px; gap: 16px; border-bottom: 4px solid var(--g3-sumi);
+        }
+        #game3-container .bar-col { display: flex; align-items: flex-end; justify-content: center; height: 100%; width: 45%; }
+        #game3-container .compare-labels { display: flex; flex-direction: row; justify-content: space-evenly; padding-top: 12px; gap: 16px; }
+        #game3-container .bar-label { font-size: 15px; font-weight: 900; color: var(--g3-sumi); line-height: 1.3; text-align: center; width: 45%; }
+
+        #game3-container .sentence-card { text-align: center; margin-top: 4px; }
+        #game3-container .sentence-main { font-size: 19px; font-weight: 900; color: var(--g3-sumi); line-height: 1.7; }
+        #game3-container .sentence-main .name { color: var(--g3-shu); }
+        #game3-container .sentence-sub { font-size: 13.5px; color: #000; margin-top: 6px; font-weight: 900; }
+        #game3-container .sentence-info {
+            font-size: 13.5px; color: var(--g3-sumi); font-weight: 900;
+            margin-top: 14px; padding: 12px; background: var(--g3-kinari);
+            border-radius: 12px 15px 10px 18px / 18px 10px 15px 12px;
+            border: 2px dashed #D4C5AC; line-height: 1.6; text-align: left;
+        }
+
+        #game3-container .nav-row { display: flex; gap: 12px; margin-top: auto; padding-top: 20px; }
+        #game3-container .nav-btn {
+            flex: 1; font-family: var(--g3-font); font-weight: 900; font-size: 18px; padding: 12px 10px;
+            border-radius: 20px 10px 25px 15px / 15px 25px 10px 20px; border: 3px solid var(--g3-sumi);
+            background: #fff; color: var(--g3-sumi); cursor: pointer; box-shadow: 3px 4px 0 var(--g3-sumi); transition: all 0.15s;
+        }
+        #game3-container .nav-btn:active:not(:disabled) { box-shadow: 0px 1px 0 var(--g3-sumi); transform: translateY(3px) translateX(1px); }
+        #game3-container .nav-btn:disabled { opacity: 0.5; box-shadow: 1px 2px 0 var(--g3-sumi); transform: translateY(2px); cursor: default; border-style: dashed;}
+        #game3-container .nav-btn.primary { background: var(--g3-ai); color: #fff; border-radius: 15px 25px 10px 20px / 20px 10px 25px 15px; }
+
+    </style>
+</head>
+<body class="flex items-center justify-center">
+
+    <!-- オープニング（動画は src ではなく data-src。軽量モードでは読み込まない） -->
+    <div id="intro-container">
+        <video id="intro-video" data-src="title3.mp4" muted playsinline preload="auto"></video>
+        <img id="intro-logo" src="koziki_title2.webp" alt="NO FISH NO LIFE">
+        <div id="intro-skip-text">画面をタップしてスキップ</div>
+    </div>
+
+    <!-- 共通背景動画（失敗・軽量モード時は .video-bg-container の静止背景が見える） -->
+    <div class="video-bg-container" id="bg-container">
+        <video id="bg-video-1" data-src="marubatsu_back.mp4" muted playsinline preload="auto" style="opacity: 1;"></video>
+        <video id="bg-video-2" data-src="marubatsu_back.mp4" muted playsinline preload="none" style="opacity: 0;"></video>
+    </div>
+
+    <!-- 【修正3】もどるボタン（ゲーム中だけ表示） -->
+    <button id="back-btn" onclick="showMenu()" aria-label="ゲームをえらぶ にもどる">← もどる</button>
+
+    <!-- ゲーム選択（メニュー）画面 -->
+    <div id="menu-screen" class="w-full max-w-md mx-auto relative overflow-hidden flex flex-col items-center justify-center min-h-screen p-4">
+        <div class="kirie-box p-8 text-center flex flex-col items-center justify-center w-full min-h-[400px]">
+            <h1 class="text-3xl font-bold mb-8 text-red-500 kirie-title leading-snug">
+                あそぶ ゲーム を<br>えらんでね！
+            </h1>
+            <button onclick="openGame1()" class="kirie-btn btn-orange text-xl font-bold py-5 px-4 w-full mb-4 flex flex-col items-center gap-1">
+                <span class="text-sm font-normal">🐟 どんな かたち かな？</span>
+                シルエット クイズ
+            </button>
+            <button onclick="openGame2()" class="kirie-btn btn-blue text-xl font-bold py-5 px-4 w-full mb-4 flex flex-col items-center gap-1">
+                <span class="text-sm font-normal">⭕️❌ どっち が せいかい？</span>
+                おさかな ○✕ くいず
+            </button>
+            <button onclick="openGame3()" class="kirie-btn btn-green text-xl font-bold py-5 px-4 w-full flex flex-col items-center gap-1">
+                <span class="text-sm font-normal">📏 ぼく・わたしと どっちが おおきい？</span>
+                おおきさ くらべ
+            </button>
+        </div>
+        <!-- お店のロゴ（小さく・タップ不可・加工なし） -->
+        <img id="menu-logo" src="koziki_mark.webp" alt="Koziki since 1983" onerror="this.style.display='none'">
+    </div>
+
+    <!-- GAME 1: おさかな シルエット クイズ -->
+    <div id="game1-container" class="hidden w-full max-w-md mx-auto relative overflow-hidden p-4">
+        <!-- スタート画面 -->
+        <div id="screen-start" class="kirie-box p-8 text-center flex flex-col items-center justify-center min-h-[400px]">
+            <h1 class="text-4xl font-bold mb-8 leading-snug kirie-title text-orange-600">おさかな<br>シルエット<br>クイズ</h1>
+            <button onclick="g1_startGame()" class="kirie-btn btn-orange text-2xl font-bold py-4 px-10 mb-4 w-full">スタート！</button>
+            <button onclick="showMenu()" class="kirie-btn btn-gray text-lg font-bold py-2 px-6 w-full">ゲーム を えらぶ</button>
+        </div>
+
+        <!-- クイズ画面 -->
+        <div id="screen-quiz" class="hidden -mt-6">
+            <div class="kirie-box p-4 pt-5 flex flex-col items-center min-h-[400px]">
+                <h2 id="g1-question-number" class="text-2xl font-bold mb-2 btn-yellow inline-block px-6 py-2 kirie-badge">1 もんめ</h2>
+                <p class="mb-2 font-bold text-lg">これは なんの おさかな かな？</p>
+                <div class="w-48 h-48 mb-2 relative flex justify-center items-center kirie-img-box p-2">
+                    <img id="g1-fish-image" src="" alt="おさかな" class="max-w-full max-h-full object-contain">
+                </div>
+                <button onclick="g1_showHint()" id="g1-hint-btn" class="kirie-btn btn-green text-lg font-bold py-2 px-8 mb-4">ひんと</button>
+                <div id="g1-options-container" class="w-full flex flex-col gap-3"></div>
+            </div>
+        </div>
+
+        <!-- 結果ポップアップ -->
+        <div id="g1-popup-result" class="hidden fixed top-0 left-0 w-full h-full bg-black/40 flex items-center justify-center p-4 z-50">
+            <div class="kirie-box p-8 text-center bg-white w-full max-w-sm fade-in flex flex-col items-center">
+                <h2 id="g1-popup-title" class="text-4xl font-bold mb-4 text-red-500 kirie-title">せいかい！</h2>
+                <div class="w-40 h-40 mb-4 relative flex justify-center items-center kirie-img-box p-2">
+                    <img id="g1-result-image" src="" alt="こたえの おさかな" class="max-w-full max-h-full object-contain cursor-pointer" onclick="g1_playResultAnimation()">
+                </div>
+                <p id="g1-popup-text" class="text-xl mb-6 font-bold"></p>
+                <p id="g1-popup-trivia" class="text-base mb-6 font-bold text-gray-700 bg-yellow-100 p-3 rounded-lg kirie-box w-full"></p>
+                <button id="g1-next-btn" onclick="g1_nextQuestion()" class="kirie-btn btn-blue text-xl font-bold py-3 px-8 w-full">つぎの もんだい へ</button>
+            </div>
+        </div>
+
+        <!-- おわりの画面 -->
+        <div id="screen-end" class="hidden kirie-box p-8 text-center flex flex-col items-center justify-center min-h-[400px]">
+            <h2 class="text-4xl font-bold mb-6 kirie-title">おしまい！</h2>
+            <div class="mb-8">
+                <p class="text-xl font-bold mb-4">きみの せいかい かず は...</p>
+                <p id="g1-final-score" class="text-4xl font-bold btn-yellow inline-block px-8 py-4 kirie-badge">5 もん</p>
+            </div>
+            <button onclick="g1_showAquarium()" class="kirie-btn btn-blue text-xl font-bold py-4 px-10 mb-4 w-full">すいそう を みる！</button>
+            <button onclick="g1_resetGame()" class="kirie-btn btn-green text-xl font-bold py-4 px-10 mb-4 w-full">もういちど あそぶ</button>
+            <button onclick="showMenu()" class="kirie-btn btn-gray text-lg font-bold py-2 px-6 w-full">ゲーム を えらぶ</button>
+        </div>
+
+        <!-- すいそう画面 -->
+        <div id="screen-aquarium" class="hidden kirie-box p-6 flex flex-col items-center justify-center min-h-[500px] w-full">
+            <h2 class="text-2xl font-bold mb-4 kirie-badge btn-blue px-6 py-2">きみの すいそう</h2>
+            <div class="w-full h-[300px] relative overflow-hidden bg-cyan-100/60 mb-6 kirie-img-box">
+                <div id="g1-aquarium-fish-area" class="w-full h-full relative"></div>
+            </div>
+            <button onclick="g1_resetGame()" class="kirie-btn btn-green text-xl font-bold py-4 px-10 mb-4 w-full">もういちど あそぶ</button>
+            <button onclick="showMenu()" class="kirie-btn btn-gray text-lg font-bold py-2 px-6 w-full">ゲーム を えらぶ</button>
+        </div>
+    </div>
+
+    <!-- GAME 2: おさかな ○✕ くいず -->
+    <div id="game2-container" class="hidden w-full relative overflow-hidden">
+        <div class="app">
+            <header><h1>おさかな ○✕ くいず</h1></header>
+            <main>
+                <!-- スタート画面 -->
+                <section class="screen active" data-screen="start">
+                    <div class="start-wrap">
+                        <p class="start-title">おさかなの こと、<br>どれくらい しってるかな?</p>
+                        <p class="start-lead">○か ✕で こたえてね。<br>ぜんぶで 5もん あるよ!</p>
+                        <button class="big-btn" onclick="g2_startQuiz()">はじめる</button>
+                        <button class="big-btn gray-btn" onclick="showMenu()">ゲーム を えらぶ</button>
+                    </div>
+                </section>
+
+                <!-- 出題画面 -->
+                <section class="screen" data-screen="quiz">
+                    <div class="q-progress" id="g2-qProgress"></div>
+                    <div class="q-card">
+                        <div class="q-num" id="g2-qNum">1 もんめ</div>
+                        <div class="q-text" id="g2-qText"></div>
+                        <div id="g2-qImgWrap" class="q-img-wrap"></div>
+                    </div>
+                    <div class="ans-row">
+                        <button class="ans-btn ans-maru" onclick="g2_answer(true)" aria-label="まる">
+                            <svg viewBox="0 0 60 60" fill="none"><circle cx="30" cy="30" r="22" stroke-width="7"/></svg>
+                        </button>
+                        <button class="ans-btn ans-batsu" onclick="g2_answer(false)" aria-label="ばつ">
+                            <svg viewBox="0 0 60 60" fill="none"><path d="M14 14l32 32M46 14L14 46" stroke-width="7" stroke-linecap="round"/></svg>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- こたえあわせ画面 -->
+                <section class="screen" data-screen="feedback">
+                    <div class="result-feedback">
+                        <svg class="feedback-icon" id="g2-feedbackIcon" viewBox="0 0 100 100" fill="none"></svg>
+                        <div class="feedback-word" id="g2-feedbackWord"></div>
+                        <p class="feedback-text" id="g2-feedbackText"></p>
+                        <div id="g2-feedbackImgWrap" class="feedback-img-wrap">
+                            <img id="g2-feedbackImg" class="feedback-img" src="" alt="かいせつ画像">
+                            <div class="telop left">カレイ</div>
+                            <div class="telop right">ヒラメ</div>
+                        </div>
+                        <button class="big-btn" id="g2-nextBtn" style="margin-top: 4px;" onclick="g2_nextQuestion()">つぎへすすむ</button>
+                    </div>
+                </section>
+
+                <!-- さいごの画面 -->
+                <section class="screen" data-screen="final">
+                    <div class="final-wrap">
+                        <div class="final-score" id="g2-finalScore">0<span> / 5 もん</span></div>
+                        <p class="final-msg" id="g2-finalMsg"></p>
+                        <button class="big-btn" onclick="g2_startQuiz()">もういちど あそぶ</button>
+                        <button class="big-btn gray-btn" onclick="showMenu()">ゲーム を えらぶ</button>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- GAME 3: おおきさくらべ -->
+    <div id="game3-container" class="hidden w-full relative overflow-hidden">
+        <div class="app">
+            <header><h1>おおきさ くらべ</h1></header>
+            <main>
+                <!-- スタート画面 -->
+                <section class="screen active" data-screen="start">
+                    <div class="center-wrap">
+                        <img class="mascot" src="sokutei.webp" alt="おおきさくらべ" style="width:100px;height:200px;object-fit:contain;">
+                        <p class="center-title">さかなって、<br>どれくらい おおきいかな?</p>
+                        <p class="center-lead">じぶんの しんちょうと<br>くらべて みてみよう!</p>
+                        <button class="big-btn" onclick="g3_goScreen('height-select')">はじめる</button>
+                        <button class="big-btn" style="background:var(--g3-line); color:var(--g3-sumi); font-size:16px; padding:10px 30px; box-shadow:3px 4px 0 var(--g3-sumi);" onclick="showMenu()">ゲーム を えらぶ</button>
+                    </div>
+                </section>
+
+                <!-- しんちょうをえらぶ画面 -->
+                <section class="screen" data-screen="height-select">
+                    <div class="center-wrap">
+                        <p class="center-title">じぶんの しんちょうは<br>どれくらいかな？</p>
+                        <p class="center-lead">だいたいの おおきさを<br>えらんでね！</p>
+                        <div class="height-options">
+                            <button class="height-btn" onclick="g3_setHeight(100)">
+                                <div><span class="cm">100</span><span class="unit">cm</span></div>
+                                <span class="age">(4〜5さい くらい)</span>
+                            </button>
+                            <button class="height-btn" onclick="g3_setHeight(110)">
+                                <div><span class="cm">110</span><span class="unit">cm</span></div>
+                                <span class="age">(5〜6さい くらい)</span>
+                            </button>
+                            <button class="height-btn" onclick="g3_setHeight(120)">
+                                <div><span class="cm">120</span><span class="unit">cm</span></div>
+                                <span class="age">(7〜8さい くらい)</span>
+                            </button>
+                            <button class="height-btn" onclick="g3_setHeight(130)">
+                                <div><span class="cm">130</span><span class="unit">cm</span></div>
+                                <span class="age">(8〜9さい くらい)</span>
+                            </button>
+                            <button class="height-btn" onclick="g3_setHeight(160)">
+                                <div><span class="cm">160</span><span class="unit">cm</span></div>
+                                <span class="age">(ママ くらい)</span>
+                            </button>
+                            <button class="height-btn" onclick="g3_setHeight(170)">
+                                <div><span class="cm">170</span><span class="unit">cm</span></div>
+                                <span class="age">(パパ くらい)</span>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- テーマをえらぶ画面 -->
+                <section class="screen" data-screen="theme-select">
+                    <div class="center-wrap">
+                        <p class="center-title">どんな おさかなを<br>みてみる？</p>
+                        <div class="theme-options">
+                            <button class="theme-btn" onclick="g3_startTheme('same')">
+                                ぼく・わたしと<br>「<span class="highlight">おなじくらい</span>」のおさかな
+                            </button>
+                            <button class="theme-btn" onclick="g3_startTheme('adult')">
+                                パパ・ママより<br>「<span class="highlight">おおきい</span>」おさかな
+                            </button>
+                            <button class="theme-btn" onclick="g3_startTheme('huge')">
+                                バスやおうちみたいに<br>「<span class="highlight">とてつもなくおおきい</span>」おさかな
+                            </button>
+                            <button class="theme-btn" onclick="g3_startTheme('tiny')">
+                                「<span class="highlight">てのひら くらい</span>」の<br>ちいさな おさかな
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- くらべる画面 -->
+                <section class="screen" data-screen="compare">
+                    <div class="q-progress" id="g3-qProgress"></div>
+                    <div class="compare-card">
+                        <div class="compare-stage" id="g3-compareStage">
+                            <div class="compare-inner" id="g3-compareInner"></div>
+                            <div class="compare-labels" id="g3-compareLabels"></div>
+                        </div>
+                    </div>
+                    <div class="sentence-card">
+                        <p class="sentence-main" id="g3-sentenceMain"></p>
+                        <p class="sentence-sub" id="g3-sentenceSub"></p>
+                        <div class="sentence-info" id="g3-sentenceInfo"></div>
+                    </div>
+                    <div class="nav-row">
+                        <button class="nav-btn" id="g3-prevBtn" onclick="g3_prevRound()">まえへ</button>
+                        <button class="nav-btn primary" id="g3-nextBtn" onclick="g3_nextRound()">つぎへ</button>
+                    </div>
+                </section>
+
+                <!-- おわり画面 -->
+                <section class="screen" data-screen="end">
+                    <div class="center-wrap">
+                        <img id="g3-endMascot" class="mascot" src="" alt="おさかな" style="transform: rotate(-90deg); object-fit: contain; cursor: pointer;" onclick="g3_animateEndMascot()">
+                        <p class="center-title">たのしんで もらえたかな?</p>
+                        <p class="center-lead">おおきい いきものも、<br>ちいさい いきものも、みんな すごいね。</p>
+                        <button class="big-btn" onclick="g3_goScreen('theme-select')">もういちど みる</button>
+                        <button class="big-btn" style="background:var(--g3-line); color:var(--g3-sumi); font-size:16px; padding:10px 30px; box-shadow:3px 4px 0 var(--g3-sumi); margin-top:10px;" onclick="showMenu()">ゲーム を えらぶ</button>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // ------------------------------------------------
+        // 設定
+        // ------------------------------------------------
+        const IDLE_RETURN_MS = 60000; // 【修正3】操作がなければメニューへ戻るまでの時間（ミリ秒）
+        const TAP_LOCK_MS = 500;      // 【修正2】誤タップ防止の時間（ミリ秒）
+
+        // ------------------------------------------------
+        // 利用ログ（Googleスプレッドシートに記録）
+        //   LOG_URL に Apps Script のウェブアプリURLを入れると有効になります。空のままなら何も送りません。
+        //   端末名は、URLに ?device=テーブル1 のように付けて一度開くと、その端末に記憶されます。
+        // ------------------------------------------------
+        const LOG_URL = 'https://script.google.com/macros/s/AKfycbzNoFEmdJAbO2_tcaQ4cB8s6bUED4DmmYrZKgWxIU5B37as2Lhle7viPhQJ65hFU7-3sg/exec';
+        const LOG_SESSION_ID = Math.random().toString(36).slice(2, 8) + Date.now().toString(36);
+        let g3_theme = '';
+
+        const LOG_DEVICE_NAME = (function () {
+            try {
+                const q = new URLSearchParams(location.search).get('device');
+                if (q) localStorage.setItem('fishQuizDeviceName', q.slice(0, 40));
+                return localStorage.getItem('fishQuizDeviceName') || '';
+            } catch (e) { return ''; }
+        })();
+
+        function summarizeDevice() {
+            const ua = navigator.userAgent;
+            let os = 'その他';
+            if (/iPad/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) os = 'iPad';
+            else if (/iPhone/.test(ua)) os = 'iPhone';
+            else if (/Android/.test(ua)) os = /Mobile/.test(ua) ? 'Android(スマホ)' : 'Android(タブレット)';
+            else if (/Windows/.test(ua)) os = 'Windows';
+            else if (/Macintosh/.test(ua)) os = 'Mac';
+            let br = 'その他';
+            if (/Edg\//.test(ua)) br = 'Edge';
+            else if (/CriOS|Chrome\//.test(ua)) br = 'Chrome';
+            else if (/FxiOS|Firefox\//.test(ua)) br = 'Firefox';
+            else if (/Safari\//.test(ua)) br = 'Safari';
+            return os + ' / ' + br;
+        }
+        const LOG_DEVICE_INFO = summarizeDevice();
+
+        // event: load / select / start / finish   game: game1 / game2 / game3
+        function logEvent(event, game, detail) {
+            if (!LOG_URL) return;
+            try {
+                const body = JSON.stringify({
+                    sessionId: LOG_SESSION_ID,
+                    device: LOG_DEVICE_NAME,
+                    deviceInfo: LOG_DEVICE_INFO,
+                    screen: window.innerWidth + 'x' + window.innerHeight,
+                    event: event,
+                    game: game || '',
+                    detail: detail || ''
+                });
+                fetch(LOG_URL, {
+                    method: 'POST', mode: 'no-cors', keepalive: true,
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: body
+                }).catch(() => {});
+            } catch (e) { /* ログの失敗でゲームを止めない */ }
+        }
+
+        // ------------------------------------------------
+        // 【修正2】誤タップ防止ヘルパー
+        // ------------------------------------------------
+        function lockTap(elements, ms) {
+            const list = Array.from(elements).filter(Boolean);
+            list.forEach(el => el.classList.add('tap-lock'));
+            setTimeout(() => list.forEach(el => el.classList.remove('tap-lock')), ms || TAP_LOCK_MS);
+        }
+
+        // ------------------------------------------------
+        // 【修正4】軽量モード判定
+        //   ?lite=1 で軽量モード（この端末に記憶）、?lite=0 で解除
+        //   端末の「データセーバー」設定でも自動で軽量モード
+        // ------------------------------------------------
+        let isLite = false;
+        (function detectLite() {
+            const params = new URLSearchParams(location.search);
+            const q = params.get('lite');
+            try {
+                if (q === '1') localStorage.setItem('fishQuizLite', '1');
+                if (q === '0') localStorage.removeItem('fishQuizLite');
+                isLite = localStorage.getItem('fishQuizLite') === '1';
+            } catch (e) {
+                isLite = (q === '1');
+            }
+            try {
+                if (navigator.connection && navigator.connection.saveData) isLite = true;
+                if (window.matchMedia && window.matchMedia('(prefers-reduced-data: reduce)').matches) isLite = true;
+            } catch (e) {}
+            if (isLite) document.body.classList.add('lite');
+        })();
+
+        // ------------------------------------------------
+        // 共通: メニューの切り替え処理
+        // ------------------------------------------------
+        function setInGame(flag) {
+            document.body.classList.toggle('in-game', flag);
+            if (flag) resetIdleTimer(); else clearTimeout(idleTimer);
+        }
+
+        function showMenu() {
+            document.getElementById("menu-screen").classList.remove("hidden");
+            document.getElementById("game1-container").classList.add("hidden");
+            document.getElementById("game2-container").classList.add("hidden");
+            document.getElementById("game3-container").classList.add("hidden");
+            setInGame(false);
+
+            // Game 1 のリセット
+            document.getElementById("g1-popup-result").classList.add("hidden");
+            document.getElementById("screen-aquarium").classList.add("hidden");
+            document.getElementById("screen-quiz").classList.add("hidden");
+            document.getElementById("screen-end").classList.add("hidden");
+            document.getElementById("screen-start").classList.remove("hidden");
+
+            // Game 2 のリセット
+            g2_goScreen('start');
+
+            // Game 3 のリセット
+            g3_goScreen('start');
+            window.scrollTo({top: 0});
+        }
+
+        function openGame1() {
+            logEvent('select', 'game1');
+            document.getElementById("menu-screen").classList.add("hidden");
+            document.getElementById("game1-container").classList.remove("hidden");
+            setInGame(true);
+        }
+
+        function openGame2() {
+            logEvent('select', 'game2');
+            document.getElementById("menu-screen").classList.add("hidden");
+            document.getElementById("game2-container").classList.remove("hidden");
+            g2_goScreen('start');
+            setInGame(true);
+        }
+
+        function openGame3() {
+            logEvent('select', 'game3');
+            document.getElementById("menu-screen").classList.add("hidden");
+            document.getElementById("game3-container").classList.remove("hidden");
+            g3_goScreen('start');
+            setInGame(true);
+        }
+
+        // ------------------------------------------------
+        // 【修正3】操作がなければ自動でメニューに戻る
+        // ------------------------------------------------
+        let idleTimer = null;
+        function resetIdleTimer() {
+            clearTimeout(idleTimer);
+            if (!document.body.classList.contains('in-game')) return;
+            idleTimer = setTimeout(showMenu, IDLE_RETURN_MS);
+        }
+        ['pointerdown', 'touchstart', 'mousedown', 'keydown', 'scroll'].forEach(evt => {
+            window.addEventListener(evt, resetIdleTimer, { passive: true });
+        });
+
+        // ------------------------------------------------
+        // 共通: 背景動画（クロスフェードループ）とオープニング
+        // 【修正4】軽量モード／再生失敗時は静止背景にフォールバック
+        // ------------------------------------------------
+        function disableBgVideo() {
+            const box = document.getElementById('bg-container');
+            if (box) box.classList.add('no-video');
+            ['bg-video-1', 'bg-video-2'].forEach(id => {
+                const v = document.getElementById(id);
+                if (v) { try { v.pause(); } catch (e) {} v.removeAttribute('src'); v.load(); }
+            });
+        }
+
+        function initBackgroundVideo() {
+            const v1 = document.getElementById('bg-video-1');
+            const v2 = document.getElementById('bg-video-2');
+            if (!v1 || !v2) return;
+
+            if (isLite) { disableBgVideo(); return; }
+
+            v1.src = v1.dataset.src;
+            v2.src = v2.dataset.src;
+            v2.preload = 'auto';
+
+            const fadeDuration = 1.5;
+            let activeVideo = v1;
+            let nextVideo = v2;
+            let isSwapping = false;
+            let failed = false;
+
+            const fail = () => { if (failed) return; failed = true; disableBgVideo(); };
+
+            v1.addEventListener('error', fail);
+            v2.addEventListener('error', fail);
+            v1.play().catch(fail);
+
+            // 4秒たっても再生が始まらなければ静止背景にする（iOS Safariの自動再生制限など）
+            setTimeout(() => {
+                if (!failed && (v1.paused || v1.readyState < 2 || v1.currentTime === 0)) fail();
+            }, 4000);
+
+            function handleTimeUpdate(e) {
+                const vid = e.target;
+                if (vid !== activeVideo) return;
+
+                if (vid.duration > 0 && (vid.duration - vid.currentTime <= fadeDuration)) {
+                    if (isSwapping) return;
+                    isSwapping = true;
+
+                    nextVideo.currentTime = 0;
+                    nextVideo.play().catch(() => {});
+                    nextVideo.style.opacity = 1;
+                    activeVideo.style.opacity = 0;
+
+                    setTimeout(() => {
+                        let temp = activeVideo;
+                        activeVideo = nextVideo;
+                        nextVideo = temp;
+                        isSwapping = false;
+                    }, fadeDuration * 1000);
+                }
+            }
+            v1.addEventListener('timeupdate', handleTimeUpdate);
+            v2.addEventListener('timeupdate', handleTimeUpdate);
+
+            // タブが隠れたときは動画を止めて電池を節約
+            document.addEventListener('visibilitychange', () => {
+                if (failed) return;
+                if (document.hidden) { v1.pause(); v2.pause(); }
+                else { activeVideo.play().catch(() => {}); }
+            });
+        }
+
+        function initIntro() {
+            const introContainer = document.getElementById('intro-container');
+            const introVideo = document.getElementById('intro-video');
+            const introLogo = document.getElementById('intro-logo');
+            if (!introContainer) return;
+
+            let introSkipped = false;
+            let introTimeouts = [];
+            let introPhaseTriggered = false;
+
+            const endIntro = () => {
+                if (introSkipped) return;
+                introSkipped = true;
+                introTimeouts.forEach(clearTimeout);
+                introContainer.style.opacity = '0';
+                setTimeout(() => {
+                    introContainer.style.display = 'none';
+                    if (introVideo) { try { introVideo.pause(); } catch (e) {} }
+                }, 1000);
+            };
+
+            // 動画なしでロゴだけ見せて終了する
+            const logoOnly = () => {
+                if (introSkipped || introPhaseTriggered) return;
+                introPhaseTriggered = true;
+                if (introVideo) { try { introVideo.pause(); } catch (e) {} introVideo.style.display = 'none'; }
+                if (introLogo) introLogo.style.opacity = '1';
+                introTimeouts.push(setTimeout(endIntro, 2800));
+            };
+
+            introContainer.addEventListener('click', endIntro);
+            introContainer.addEventListener('touchstart', endIntro, {passive: true});
+
+            if (isLite || !introVideo) {
+                logoOnly();
+                return;
+            }
+
+            introVideo.src = introVideo.dataset.src;
+            introVideo.addEventListener('error', logoOnly);
+            introVideo.play().catch(logoOnly);
+
+            // 3.5秒たっても動画が動かなければロゴだけにする
+            introTimeouts.push(setTimeout(() => {
+                if (!introPhaseTriggered && (introVideo.paused || introVideo.currentTime === 0)) logoOnly();
+            }, 3500));
+
+            introVideo.addEventListener('timeupdate', () => {
+                if (introSkipped || introPhaseTriggered) return;
+
+                // 5秒経過で暗くなりロゴ表示
+                if (introVideo.currentTime >= 5.0) {
+                    introPhaseTriggered = true;
+                    introVideo.style.opacity = '0';
+                    if (introLogo) introLogo.style.opacity = '1';
+
+                    // 5秒+2秒=7秒後に終了
+                    introTimeouts.push(setTimeout(endIntro, 2000));
+                }
+            });
+            introVideo.addEventListener('ended', () => {
+                if (!introSkipped && !introPhaseTriggered) {
+                    introPhaseTriggered = true;
+                    introVideo.style.opacity = '0';
+                    if (introLogo) introLogo.style.opacity = '1';
+                    introTimeouts.push(setTimeout(endIntro, 2000));
+                }
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            logEvent('load', '', isLite ? '軽量モード' : '通常');
+            initBackgroundVideo();
+
+            // Game 2の装飾用の魚を配置
+            g2_initDecorativeFishes();
+            g2_addTapAnimation(document.getElementById('g2-feedbackImg'));
+
+            initIntro();
+        });
+
+        // ================================================
+        // GAME 1 の ロジック
+        // ================================================
+        const g1_isRandomMode = true;
+        const g1_maxQuestions = 5;
+        const g1_allFishData = [
+            { name: "まぐろ", img: "maguro.webp", options: ["まぐろ", "じんべえざめ", "まんぼう"], trivia: "まぐろ は とっても はやく およぐよ！" },
+            { name: "じんべえざめ", img: "zinnbe.webp", options: ["くじら", "じんべえざめ", "えい"], trivia: "せかいで いちばん おおきい おさかな だよ！" },
+            { name: "まんぼう", img: "manbo.webp", options: ["えい", "たつのおとしご", "まんぼう"], trivia: "とっても おおきくて のんびりやさん だよ！" },
+            { name: "えい", img: "ei.webp", options: ["えい", "ひらめ", "とびうお"], trivia: "うみの そこを ひらひら とぶように およぐよ！" },
+            { name: "ひらめ", img: "hirame.webp", options: ["まぐろ", "ひらめ", "ちょうちんあんこう"], trivia: "すな に かくれて かくれんぼ が じょうず！" },
+            { name: "たつのおとしご", img: "tatsuoto.webp", options: ["たつのおとしご", "えい", "とびうお"], trivia: "くるくる の しっぽ で くさ を つかむんだよ！" },
+            { name: "とびうお", img: "tobiuo.webp", options: ["じんべえざめ", "とびうお", "まんぼう"], trivia: "むなびれ を ひろげて そら を とぶよ！" },
+            { name: "ちょうちんあんこう", img: "ankoo.webp", options: ["ちょうちんあんこう", "まぐろ", "ひらめ"], trivia: "あたま の ひかり で えもの を よぶよ！" }
+        ];
+
+        let g1_currentQuestions = [];
+        let g1_currentIndex = 0;
+        let g1_score = 0;
+        let g1_correctFishes = [];
+        const g1_btnColors = ["btn-orange", "btn-blue", "btn-pink"];
+
+        function g1_startGame() {
+            logEvent('start', 'game1');
+            g1_score = 0;
+            g1_currentIndex = 0;
+            g1_correctFishes = [];
+            if (g1_isRandomMode) {
+                let shuffled = [...g1_allFishData].sort(() => 0.5 - Math.random());
+                g1_currentQuestions = shuffled.slice(0, g1_maxQuestions);
+            } else {
+                g1_currentQuestions = g1_allFishData.slice(0, g1_maxQuestions);
+            }
+            document.getElementById("screen-start").classList.add("hidden");
+            document.getElementById("screen-quiz").classList.remove("hidden");
+            g1_setQuestion();
+        }
+
+        function g1_setQuestion() {
+            const q = g1_currentQuestions[g1_currentIndex];
+            document.getElementById("g1-question-number").textContent = `${g1_currentIndex + 1} もんめ`;
+
+            const fishImage = document.getElementById("g1-fish-image");
+            fishImage.src = q.img;
+            fishImage.classList.remove("hint-mode");
+            fishImage.classList.add("silhouette");
+            document.getElementById("g1-hint-btn").style.display = "block";
+
+            fishImage.classList.remove("fade-in", "swim-in");
+            void fishImage.offsetWidth;
+            fishImage.classList.add("swim-in");
+
+            const optionsContainer = document.getElementById("g1-options-container");
+            optionsContainer.innerHTML = "";
+            let shuffledOptions = [...q.options].sort(() => 0.5 - Math.random());
+
+            shuffledOptions.forEach((optionText, index) => {
+                const btn = document.createElement("button");
+                btn.textContent = optionText;
+                const colorClass = g1_btnColors[index % g1_btnColors.length];
+                btn.className = `kirie-btn ${colorClass} text-xl font-bold py-4 px-6 w-full`;
+                btn.onclick = () => g1_checkAnswer(optionText, q.name);
+                optionsContainer.appendChild(btn);
+            });
+
+            // 【修正2】前のポップアップの「つぎへ」連打で、次の問題を誤って答えないようにする
+            lockTap(optionsContainer.children);
+        }
+
+        function g1_checkAnswer(selected, correct) {
+            document.getElementById("g1-popup-result").classList.remove("hidden");
+            // 【修正2】ポップアップが出た直後は「つぎへ」を押せない
+            lockTap([document.getElementById("g1-next-btn")]);
+
+            const q = g1_currentQuestions[g1_currentIndex];
+            const resultImage = document.getElementById("g1-result-image");
+            resultImage.src = q.img;
+
+            const fishImage = document.getElementById("g1-fish-image");
+            fishImage.classList.remove("silhouette", "hint-mode");
+            resultImage.className = "max-w-full max-h-full object-contain cursor-pointer";
+
+            const popupTitle = document.getElementById("g1-popup-title");
+            const popupText = document.getElementById("g1-popup-text");
+            if (selected === correct) {
+                g1_score++;
+                g1_correctFishes.push(q);
+                const msgs = ["すごいね！", "やったね！"];
+                popupTitle.textContent = msgs[Math.floor(Math.random() * msgs.length)];
+                popupTitle.className = "text-4xl font-bold mb-4 text-red-500 kirie-title";
+            } else {
+                popupTitle.textContent = "おしい！";
+                popupTitle.className = "text-4xl font-bold mb-4 text-blue-500 kirie-title";
+            }
+            popupText.innerHTML = `せいかい は<br>「${correct}」でした！`;
+            document.getElementById("g1-popup-trivia").innerHTML = `💡 まめちしき<br><span class="text-sm">${q.trivia}</span>`;
+        }
+
+        function g1_playResultAnimation() {
+            const resultImage = document.getElementById("g1-result-image");
+            const anims = ["anim-spin", "anim-flip", "anim-shake"];
+            const randomAnim = anims[Math.floor(Math.random() * anims.length)];
+            resultImage.classList.remove("anim-spin", "anim-flip", "anim-shake");
+            void resultImage.offsetWidth;
+            resultImage.classList.add(randomAnim);
+        }
+
+        function g1_showHint() {
+            const fishImage = document.getElementById("g1-fish-image");
+            fishImage.classList.remove("silhouette");
+            fishImage.classList.add("hint-mode");
+            document.getElementById("g1-hint-btn").style.display = "none";
+        }
+
+        function g1_nextQuestion() {
+            document.getElementById("g1-popup-result").classList.add("hidden");
+            g1_currentIndex++;
+            if (g1_currentIndex < g1_currentQuestions.length) {
+                g1_setQuestion();
+            } else {
+                g1_showEndScreen();
+            }
+        }
+
+        function g1_showEndScreen() {
+            document.getElementById("screen-quiz").classList.add("hidden");
+            document.getElementById("screen-end").classList.remove("hidden");
+            document.getElementById("g1-final-score").textContent = `${g1_score} もん`;
+            logEvent('finish', 'game1', g1_score + '/' + g1_currentQuestions.length);
+            // 【修正2】終了画面でも直後の誤タップを防ぐ
+            lockTap(document.querySelectorAll('#screen-end button'));
+        }
+
+        function g1_showAquarium() {
+            document.getElementById("screen-end").classList.add("hidden");
+            const screenAquarium = document.getElementById("screen-aquarium");
+            screenAquarium.classList.remove("hidden");
+
+            const area = document.getElementById("g1-aquarium-fish-area");
+            area.innerHTML = "";
+
+            if (g1_correctFishes.length === 0) {
+                area.innerHTML = '<p class="text-gray-500 text-center mt-20 font-bold">おさかな が いないみたい...</p>';
+                return;
+            }
+
+            g1_correctFishes.forEach((fish) => {
+                const img = document.createElement("img");
+                img.src = fish.img; img.alt = fish.name;
+                img.className = "absolute object-contain cursor-pointer drop-shadow-md";
+
+                const size = 60 + Math.random() * 50;
+                img.style.width = `${size}px`; img.style.height = `${size}px`;
+
+                let currentX = Math.random() * 80;
+                let currentY = Math.random() * 70;
+                let currentScaleX = 1;
+
+                img.style.left = `${currentX}%`; img.style.top = `${currentY}%`;
+                img.style.transform = `scaleX(${currentScaleX})`;
+
+                let isDragging = false, swimTimer = null, startX = 0, startY = 0, lastDragX = 0, hasMoved = false;
+
+                const swimFreely = () => {
+                    if (!screenAquarium.classList.contains("hidden") && !isDragging) {
+                        const nextX = Math.random() * 80;
+                        const nextY = Math.random() * 70;
+                        const nextRotate = -15 + Math.random() * 30;
+                        const duration = 4000 + Math.random() * 4000;
+
+                        if (nextX < currentX) currentScaleX = -1;
+                        else if (nextX > currentX) currentScaleX = 1;
+                        currentX = nextX;
+
+                        img.style.transition = `all ${duration}ms ease-in-out`;
+                        img.style.left = `${nextX}%`; img.style.top = `${nextY}%`;
+                        img.style.transform = `rotate(${nextRotate}deg) scaleX(${currentScaleX})`;
+                        swimTimer = setTimeout(swimFreely, duration);
+                    }
+                };
+
+                swimTimer = setTimeout(swimFreely, 100 + Math.random() * 1000);
+
+                const startDrag = (e) => {
+                    isDragging = true; hasMoved = false; clearTimeout(swimTimer);
+                    img.style.transition = 'none';
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                    startX = clientX; startY = clientY; lastDragX = clientX;
+                    if(e.cancelable) e.preventDefault();
+                    document.addEventListener('mousemove', doDrag, {passive: false});
+                    document.addEventListener('touchmove', doDrag, {passive: false});
+                    document.addEventListener('mouseup', endDrag);
+                    document.addEventListener('touchend', endDrag);
+                };
+
+                const doDrag = (e) => {
+                    if (!isDragging) return;
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                    if (Math.abs(clientX - startX) > 5 || Math.abs(clientY - startY) > 5) hasMoved = true;
+
+                    const moveX = clientX - lastDragX;
+                    if (moveX < -2) currentScaleX = -1;
+                    if (moveX > 2) currentScaleX = 1;
+                    img.style.transform = `scaleX(${currentScaleX})`;
+                    lastDragX = clientX;
+
+                    const rect = area.getBoundingClientRect();
+                    let x = clientX - rect.left - (size / 2);
+                    let y = clientY - rect.top - (size / 2);
+                    x = Math.max(0, Math.min(x, rect.width - size));
+                    y = Math.max(0, Math.min(y, rect.height - size));
+
+                    currentX = (x / rect.width) * 100;
+                    img.style.left = `${currentX}%`;
+                    img.style.top = `${(y / rect.height) * 100}%`;
+                    if(e.cancelable) e.preventDefault();
+                };
+
+                const endDrag = (e) => {
+                    if (!isDragging) return;
+                    isDragging = false;
+                    document.removeEventListener('mousemove', doDrag);
+                    document.removeEventListener('touchmove', doDrag);
+                    document.removeEventListener('mouseup', endDrag);
+                    document.removeEventListener('touchend', endDrag);
+
+                    if (!hasMoved) {
+                        img.classList.remove("anim-spin"); void img.offsetWidth;
+                        img.classList.add("anim-spin");
+                        setTimeout(() => { img.classList.remove("anim-spin"); swimFreely(); }, 600);
+                    } else {
+                        swimFreely();
+                    }
+                };
+
+                img.addEventListener('mousedown', startDrag);
+                img.addEventListener('touchstart', startDrag, {passive: false});
+                area.appendChild(img);
+            });
+        }
+
+        function g1_resetGame() {
+            document.getElementById("screen-end").classList.add("hidden");
+            document.getElementById("screen-aquarium").classList.add("hidden");
+            document.getElementById("screen-start").classList.remove("hidden");
+        }
+
+        // ================================================
+        // GAME 2 の ロジック
+        // ================================================
+        const g2_allQuestions = [
+            { text: "たこの あしは 8ほん ある", correct: true, image: "tako.webp", okText: "そのとおり!たこの あしは 8ほんだよ。", ngText: "おしい!たこの あしは 8ほん あるんだよ。" },
+            { text: "いわしは みずのなかで なかまと およぐ", correct: true, image: "iwashi.webp", multiImage: true, showFeedbackImage: true, feedbackImage: "iwashit.webp", okText: "やったね!おおきな さかなに たべられないように、たくさんのおともだちと くっついて およぐんだよ。", ngText: "おしい!おおきな さかなに たべられないように、たくさんのおともだちと くっついて およぐんだよ。" },
+            { text: "あまえびは うまれたときから ずっと おんなのこ", correct: false, image: "amaebi.webp", okText: "すごい!あまえびは さいしょ おとこのこで、あとから おんなのこに かわるんだよ。", ngText: "おしい!あまえびは さいしょ おとこのこなんだよ。" },
+            { text: "うなぎの からだは へびみたいに ながい", correct: true, image: "unagi.webp", showFeedbackImage: true, silhouette: true, okText: "そのとおり! うなぎは にょろにょろと ながい かたちを しているよ。", ngText: "おしい! うなぎは へびのように なが〜い さかななんだよ。" },
+            { text: "ひらめの めは からだの みぎがわに ある", correct: false, image: "hiramekarei.webp", showFeedbackImage: true, showTelop: true, okText: "やったね!めが ひだりに あるのが ひらめ、みぎに あるのが かれい だよ。", ngText: "おしい!めが ひだりに あるのが ひらめ、みぎに あるのが かれい だよ。" },
+            { text: "やりいかの からだは さんかくの かたち", correct: true, image: "yariika.webp", showFeedbackImage: true, feedbackImage: "yariika2.webp", silhouette: true, okText: "そのとおり!やりの ような かたちを しているね。", ngText: "おしい!やりいかは さんかくの かたちを しているんだよ。" },
+            { text: "かつおは およぐのを やめても へいき", correct: false, image: "katsuo.webp", showFeedbackImage: true, feedbackImage: "katsuo_batsu.webp", okText: "すごい!かつおは およぎつづけないと いきが できないんだよ。", ngText: "おしい!かつおは およぎつづけないと いきが できないんだよ。" },
+            { text: "「あじ」というなまえは、<br>たべて「あじがいい」からついた", correct: true, image: "aji.webp", showFeedbackImage: true, okText: "そのとおり!たべると とっても おいしい(あじがいい)から、「あじ」という なまえに なったんだよ。", ngText: "おしい!たべると とっても おいしい(あじがいい)から、「あじ」という なまえに なったんだよ。" }
+        ];
+
+        let g2_questions = [];
+        const g2_maxQuestions = 5;
+
+        let g2_currentIndex = 0;
+        let g2_correctCount = 0;
+
+        function g2_addTapAnimation(el) {
+            if (!el) return;
+            el.addEventListener('click', function() {
+                const src = el.src || '';
+                const isRotate = src.includes('aji') || src.includes('hirame') || src.includes('katsuo') || src.includes('iwashi') || src.includes('unagi');
+                const animClass = isRotate ? 'animate-rotate' : 'animate-bounce';
+                el.classList.remove('animate-bounce', 'animate-rotate');
+                void el.offsetWidth;
+                el.classList.add(animClass);
+            });
+            el.addEventListener('animationend', function() {
+                el.classList.remove('animate-bounce', 'animate-rotate');
+            });
+        }
+
+        function g2_goScreen(name){
+            document.querySelectorAll('#game2-container .screen').forEach(el=>{
+                el.classList.toggle('active', el.dataset.screen === name);
+            });
+            window.scrollTo({top:0, behavior:'smooth'});
+        }
+
+        function g2_startQuiz(){
+            logEvent('start', 'game2');
+            g2_currentIndex = 0;
+            g2_correctCount = 0;
+            let shuffled = [...g2_allQuestions].sort(() => 0.5 - Math.random());
+            g2_questions = shuffled.slice(0, g2_maxQuestions);
+
+            g2_renderProgress();
+            g2_renderQuestion();
+            g2_goScreen('quiz');
+        }
+
+        function g2_renderProgress(){
+            const wrap = document.getElementById('g2-qProgress');
+            if (!wrap.querySelector('.q-progress-inner')) {
+                wrap.innerHTML = "";
+                const inner = document.createElement('div');
+                inner.className = 'q-progress-inner';
+                wrap.appendChild(inner);
+                const fish = document.createElement('img');
+                fish.src = 'aji.webp'; fish.className = 'q-progress-fish';
+                wrap.appendChild(fish);
+            }
+            const inner = wrap.querySelector('.q-progress-inner');
+            const fish = wrap.querySelector('.q-progress-fish');
+            const percentage = ((g2_currentIndex + 1) / g2_questions.length) * 100;
+            inner.style.width = percentage + '%';
+            fish.style.left = percentage + '%';
+        }
+
+        function g2_renderQuestion(){
+            const q = g2_questions[g2_currentIndex];
+            document.getElementById('g2-qNum').textContent = (g2_currentIndex + 1) + ' もんめ';
+            document.getElementById('g2-qText').innerHTML = q.text;
+
+            const qImgWrap = document.getElementById('g2-qImgWrap');
+            qImgWrap.innerHTML = '';
+
+            if (q.image) {
+                const imgCount = q.multiImage ? 3 : 1;
+                for (let i = 0; i < imgCount; i++) {
+                    const img = document.createElement('img');
+                    img.src = q.image; img.className = 'q-img'; img.style.display = 'block';
+                    if (q.multiImage) img.classList.add('multi');
+                    if (q.silhouette) img.classList.add('silhouette');
+                    img.alt = 'もんだいの画像';
+                    img.style.setProperty('--rot', '0deg');
+                    g2_addTapAnimation(img);
+                    qImgWrap.appendChild(img);
+                }
+            }
+            g2_renderProgress();
+
+            // 【修正2】「つぎへ」連打で次の問題を誤って答えないよう、○✕を一瞬ロック
+            lockTap(document.querySelectorAll('#game2-container .ans-btn'));
+        }
+
+        function g2_answer(userAnswer){
+            const q = g2_questions[g2_currentIndex];
+            const isCorrect = (userAnswer === q.correct);
+            if (isCorrect) g2_correctCount++;
+
+            const icon = document.getElementById('g2-feedbackIcon');
+            const word = document.getElementById('g2-feedbackWord');
+            const text = document.getElementById('g2-feedbackText');
+            const feedbackImgWrap = document.getElementById('g2-feedbackImgWrap');
+            const feedbackImg = document.getElementById('g2-feedbackImg');
+
+            if (isCorrect){
+                icon.innerHTML = '<circle cx="50" cy="50" r="36" stroke="#2E86AB" stroke-width="9"/>';
+                const okWords = ["やったね!", "すごい!"];
+                word.textContent = okWords[Math.floor(Math.random() * okWords.length)];
+                word.className = "feedback-word ok";
+                text.textContent = q.okText;
+            } else {
+                icon.innerHTML = '<path d="M25 25l50 50M75 25L25 75" stroke="#E8563E" stroke-width="9" stroke-linecap="round"/>';
+                word.textContent = "おしい!";
+                word.className = "feedback-word ng";
+                text.textContent = q.ngText;
+            }
+
+            if (q.showFeedbackImage) {
+                feedbackImg.src = q.feedbackImage || q.image;
+                feedbackImgWrap.style.display = 'inline-block';
+                const telops = feedbackImgWrap.querySelectorAll('.telop');
+                telops.forEach(t => t.style.display = q.showTelop ? 'block' : 'none');
+            } else {
+                feedbackImgWrap.style.display = 'none';
+            }
+
+            const nextBtn = document.getElementById('g2-nextBtn');
+            if (g2_currentIndex === g2_questions.length - 1) {
+                nextBtn.textContent = "けっかをみる";
+            } else {
+                nextBtn.textContent = "つぎへすすむ";
+            }
+            // 【修正2】こたえあわせ画面が出た直後は「つぎへ」を押せない
+            lockTap([nextBtn]);
+            g2_goScreen('feedback');
+        }
+
+        function g2_nextQuestion(){
+            g2_currentIndex++;
+            if (g2_currentIndex < g2_questions.length){
+                g2_renderQuestion();
+                g2_goScreen('quiz');
+            } else {
+                g2_showFinal();
+            }
+        }
+
+        function g2_showFinal(){
+            logEvent('finish', 'game2', g2_correctCount + '/' + g2_questions.length);
+            document.getElementById('g2-finalScore').innerHTML = g2_correctCount + '<span> / ' + g2_questions.length + ' もん</span>';
+            let msg = "";
+            if (g2_correctCount === g2_questions.length){
+                msg = "すごい!ぜんもん せいかい!<br>さかなはかせだね!";
+            } else if (g2_correctCount >= g2_questions.length / 2){
+                msg = "よく できました!<br>また ちょうせんしてね。";
+            } else {
+                msg = "たのしんで もらえたかな?<br>また あそんでね。";
+            }
+            document.getElementById('g2-finalMsg').innerHTML = msg;
+            g2_goScreen('final');
+            // 【修正2】結果画面でも直後の誤タップを防ぐ
+            lockTap(document.querySelectorAll('#game2-container .final-wrap .big-btn'));
+        }
+
+        function g2_initDecorativeFishes() {
+            const fishDataStart = [
+                { src: 'aji.webp', top: -2, left: 6, size: 100, rotate: -15 },
+                { src: 'amaebi.webp', top: 8, right: 6, size: 95, rotate: 10 },
+                { src: 'hirame.webp', top: 42.0, left: 2, size: 105, rotate: 5 },
+                { src: 'iwashi.webp', top: 41, right: 2, size: 110, rotate: -10 },
+                { src: 'katsuo2.webp', top: 81, left: 8, size: 100, rotate: 15 },
+                { src: 'tako.webp', top: 89, right: 8, size: 95, rotate: -10 }
+            ];
+            const fishDataFinal = [
+                { src: 'aji.webp', top: 5, left: 6, size: 100, rotate: -15 },
+                { src: 'hirame.webp', top: 8, right: 6, size: 105, rotate: 5 },
+                { src: 'amaebi.webp', top: 42, left: -7, size: 85, rotate: 10 },
+                { src: 'iwashi.webp', top: 32, right: 4, size: 80, rotate: -10 },
+                { src: 'katsuo2.webp', top: 79, left: 8, size: 100, rotate: 15 },
+                { src: 'tako.webp', top: 86, right: 8, size: 95, rotate: -10 }
+            ];
+            const targets = [
+                { selector: '#game2-container .start-wrap', className: 'start-fish-img', data: fishDataStart },
+                { selector: '#game2-container .final-wrap', className: 'final-fish-img', data: fishDataFinal }
+            ];
+
+            targets.forEach(target => {
+                const wrap = document.querySelector(target.selector);
+                if (wrap) {
+                    target.data.forEach(fish => {
+                        const img = document.createElement('img');
+                        img.src = fish.src; img.className = target.className;
+                        img.style.width = fish.size + 'px'; img.style.top = fish.top + '%';
+                        if (fish.left !== undefined) img.style.left = fish.left + '%';
+                        else img.style.right = fish.right + '%';
+                        img.style.setProperty('--rot', fish.rotate + 'deg');
+                        img.style.transform = `rotate(var(--rot))`;
+                        g2_addTapAnimation(img);
+                        wrap.appendChild(img);
+                    });
+                }
+            });
+        }
+
+        // ================================================
+        // GAME 3 の ロジック (おおきさくらべ)
+        // ================================================
+        let g3_CHILD_CM = 116;
+        const g3_PX_PER_CM = 1.5;
+
+        const g3_fishData = {
+            same: [
+                { id:"sake", name:"サケ", cm:90, displaySize:"70せんち から 90せんち くらい", img:"sake.webp", info:"まるまる ふとった からだで、うまれた かわを めざして おおきな うみを たくさん およぐ、力もちな おさかなだよ。" },
+                { id:"tara", name:"タラ", cm:100, displaySize:"100せんち くらい", img:"tara.webp", info:"とっても おおきな くちと、ぽっこり でた おなかが とくちょう。じぶんより ちいさな おさかなや エビを 丸のみに しちゃうよ！" },
+                { id:"buri", name:"ぶり", cm:100, displaySize:"80せんち から 100せんち くらい", img:"buri.webp", info:"1メートルくらい おおきくなると「ぶり」と よばれるよ。おおきくなるに つれて なまえが かわる ふしぎな おさかななんだ！" }
+            ],
+            adult: [
+                { id:"manbo", name:"マンボウ", cm:300, displaySize:"200せんち から 300せんち くらい", img:"manbo.webp", info:"ぺしゃんこな かたちを しているけど、たてにも よこにも 3メートルくらいに なる、とっても おおきな おさかな なんだ。" },
+                { id:"maguro", name:"まぐろ", cm:300, displaySize:"200せんち から 300せんち くらい", img:"g3_maguro.webp", info:"パパやママより ずっと おおきくて、くるま みたいに スピードを だして およぐんだ。たいじゅうも 200キロ いじょう あるよ！" }
+            ],
+            huge: [
+                { id:"ryugu", name:"リュウグウノツカイ", cm:1100, displaySize:"300せんち から 1100せんち くらい", img:"ryugu.webp", info:"うみの ずっと ふかい ところに すんでいる、ふしぎな おさかな。ぎんいろの ながーい からだと、あかい ヒレが とくちょう だよ！" },
+                { id:"zinbee", name:"ジンベエザメ", cm:2000, displaySize:"550せんち から 2000せんち", img:"zinbee.webp", info:"せかいで いちばん おおきな おさかな だよ！<br>ビルみたいに おおきな からだ なのに、<br>たべるのは ちいさな プランクトンなんだ。" }
+            ],
+            tiny: [
+                { id:"kakure", name:"カクレクマノミ", cm:15, displaySize:"10せんち から 15せんち くらい", img:"kakure.webp", info:"オレンジと しろの しましま もようが とっても かわいいね。イソギンチャクの なかに かくれて くらして いるよ。" },
+                { id:"sanma", name:"さんま", cm:30, displaySize:"30せんち くらい", img:"sanma.webp", info:"ほそながくて、えんぴつを おおきくした ような かたち。あきに なると おおきな むれに なって たくさん およいで くるよ。" }
+            ]
+        };
+
+        let g3_rounds = [];
+        let g3_currentIndex = 0;
+
+        function g3_goScreen(name){
+            document.querySelectorAll('#game3-container .screen').forEach(el=>{
+                el.classList.toggle('active', el.dataset.screen === name);
+            });
+            window.scrollTo({top:0, behavior:'smooth'});
+        }
+
+        function g3_setHeight(cm){
+            g3_CHILD_CM = cm;
+            g3_goScreen('theme-select');
+        }
+
+        function g3_startTheme(themeId){
+            g3_theme = themeId;
+            logEvent('start', 'game3', themeId);
+            g3_rounds = g3_fishData[themeId];
+            g3_currentIndex = 0;
+            g3_renderRound();
+            g3_goScreen('compare');
+        }
+
+        function g3_renderProgress(){
+            const wrap = document.getElementById('g3-qProgress');
+            wrap.innerHTML = "";
+            g3_rounds.forEach((r,i)=>{
+                const dot = document.createElement('div');
+                dot.className = 'q-dot';
+                if (i < g3_currentIndex) dot.classList.add('done');
+                if (i === g3_currentIndex) dot.classList.add('now');
+                wrap.appendChild(dot);
+            });
+        }
+
+        function g3_formatCm(cm){
+            if (cm >= 100){
+                const m = (cm / 100).toFixed(cm % 100 === 0 ? 0 : 1);
+                return m + 'm';
+            }
+            return cm + 'cm';
+        }
+
+        function g3_renderRound(){
+            const r = g3_rounds[g3_currentIndex];
+            g3_renderProgress();
+
+            const maxCm = Math.max(g3_CHILD_CM, r.cm);
+            const childPercent = Math.max(0.5, (g3_CHILD_CM / maxCm) * 100);
+            const baseFishPercent = Math.max(0.5, (r.cm / maxCm) * 100);
+
+            // 画像を魚の外周でトリミング済みなので、全ての魚を「長さ＝高さ」で同じルールで描く
+            const extraFishStyle = `height: ${baseFishPercent}% !important; width: auto !important; max-width: none;`;
+            const fishDisplayPercent = 100;
+
+            const inner = document.getElementById('g3-compareInner');
+            inner.innerHTML = `
+                <div class="bar-col" style="z-index: 1;">
+                    <div style="width: 100%; aspect-ratio: 1 / 1; position: relative; display: flex; align-items: flex-end; justify-content: center;">
+                        <div style="position: absolute; bottom: ${childPercent}%; left: 0%; width: 220%; border-bottom: 3px dashed var(--g3-ai-light); opacity: 0.6; z-index: 0; pointer-events: none;"></div>
+
+                        <svg style="height:${childPercent}%; width:auto; display: block; position: relative; z-index: 1;" viewBox="0 5 100 193" preserveAspectRatio="xMidYMax meet">
+                            <circle cx="50" cy="30" r="22" fill="var(--g3-ai-pale)" stroke="var(--g3-sumi)" stroke-width="6"/>
+                            <line x1="50" y1="52" x2="50" y2="120" stroke="var(--g3-sumi)" stroke-width="8" stroke-linecap="round"/>
+                            <line x1="50" y1="70" x2="15" y2="50" stroke="var(--g3-sumi)" stroke-width="6" stroke-linecap="round"/>
+                            <line x1="50" y1="70" x2="85" y2="50" stroke="var(--g3-sumi)" stroke-width="6" stroke-linecap="round"/>
+                            <line x1="50" y1="115" x2="20" y2="194" stroke="var(--g3-sumi)" stroke-width="8" stroke-linecap="round"/>
+                            <line x1="50" y1="115" x2="80" y2="194" stroke="var(--g3-sumi)" stroke-width="8" stroke-linecap="round"/>
+                            <circle cx="42" cy="25" r="3" fill="var(--g3-sumi)"/>
+                            <circle cx="58" cy="25" r="3" fill="var(--g3-sumi)"/>
+                            <path d="M42 38 Q50 45 58 38" stroke="var(--g3-sumi)" stroke-width="3" fill="none" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="bar-col" style="z-index: 1;">
+                    <div style="width: 100%; aspect-ratio: 1 / 1; position: relative; display: flex; align-items: flex-end; justify-content: center;">
+                        <img src="${r.img}" alt="${r.name}" style="width:${fishDisplayPercent}%; height:auto; object-fit: contain; object-position: bottom center; filter: drop-shadow(5px -4px 0 rgba(0,0,0,0.15)); display: block; ${extraFishStyle}" />
+                    </div>
+                </div>
+            `;
+
+            const labels = document.getElementById('g3-compareLabels');
+            let personLabel = "じぶん";
+            if (g3_CHILD_CM === 160) personLabel = "ママ";
+            if (g3_CHILD_CM === 170) personLabel = "パパ";
+
+            labels.innerHTML = `
+                <div class="bar-label">${personLabel}<br>(${g3_formatCm(g3_CHILD_CM)})</div>
+                <div class="bar-label">${r.name}</div>
+            `;
+
+            let mainSentence = "";
+            let subSentence = "";
+            const diffRatio = r.cm / g3_CHILD_CM;
+
+            if (diffRatio >= 5.0) {
+                mainSentence = `<span class="name">${r.name}</span>は とてつもなく おおきいね！`;
+            } else if (diffRatio >= 1.5) {
+                mainSentence = `<span class="name">${r.name}</span>は ${personLabel}より ずっと おおきい！`;
+            } else if (diffRatio > 1.15){
+                mainSentence = `<span class="name">${r.name}</span>は ${personLabel}より おおきいよ!`;
+            } else if (diffRatio < 0.3){
+                mainSentence = `<span class="name">${r.name}</span>は ${personLabel}より ずっと ちいさいよ!`;
+            } else if (diffRatio < 0.85){
+                mainSentence = `<span class="name">${r.name}</span>は ${personLabel}より ちいさいね。`;
+            } else {
+                mainSentence = `<span class="name">${r.name}</span>は ${personLabel}と おなじくらいだよ!`;
+            }
+
+            subSentence = `おおきさは ${r.displaySize}だよ`;
+
+            document.getElementById('g3-sentenceMain').innerHTML = mainSentence;
+            document.getElementById('g3-sentenceSub').textContent = subSentence;
+            document.getElementById('g3-sentenceInfo').innerHTML = r.info;
+
+            document.getElementById('g3-prevBtn').disabled = false;
+            document.getElementById('g3-prevBtn').textContent = (g3_currentIndex === 0) ? 'もどる' : 'まえへ';
+            document.getElementById('g3-nextBtn').textContent = (g3_currentIndex === g3_rounds.length - 1) ? 'おわる' : 'つぎへ';
+
+            // 【修正2】ページ切り替え直後の連打を防ぐ
+            lockTap([document.getElementById('g3-prevBtn'), document.getElementById('g3-nextBtn')], 400);
+        }
+
+        function g3_prevRound(){
+            if (g3_currentIndex > 0){
+                g3_currentIndex--;
+                g3_renderRound();
+            } else {
+                g3_goScreen('theme-select');
+            }
+        }
+
+        function g3_nextRound(){
+            if (g3_currentIndex < g3_rounds.length - 1){
+                g3_currentIndex++;
+                g3_renderRound();
+            } else {
+                const allFishes = Object.values(g3_fishData).flat();
+                const randomFish = allFishes[Math.floor(Math.random() * allFishes.length)];
+                const endMascot = document.getElementById('g3-endMascot');
+                if(endMascot) endMascot.src = randomFish.img;
+
+                logEvent('finish', 'game3', g3_theme);
+                g3_goScreen('end');
+            }
+        }
+
+        function g3_animateEndMascot() {
+            const mascot = document.getElementById('g3-endMascot');
+            if(!mascot) return;
+            mascot.classList.remove('animate-fish');
+            void mascot.offsetWidth;
+            mascot.classList.add('animate-fish');
+        }
+
+    </script>
+</body>
+</html>
