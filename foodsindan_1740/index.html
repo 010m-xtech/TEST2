@@ -89,6 +89,10 @@
             transition: background .2s ease;
         }
         .btn-ghost:hover { background: rgba(212,168,90,0.1); }
+        /* トップのメニューボタン（イラスト付き） */
+        .menu-btn { min-height: 72px; text-decoration: none; transition: transform .15s ease; }
+        .menu-btn:active { transform: scale(0.97); }
+        .menu-icon { width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
         /* パネル */
         .panel {
@@ -191,7 +195,7 @@
             <!-- 1. トップ画面 -->
             <div v-else-if="step === 'start'" key="start" class="w-full max-w-md mx-auto my-auto flex flex-col items-center text-center">
                 <!-- 自由の女神 -->
-                <svg viewBox="0 0 100 200" class="w-20 h-40 mb-4 drop-shadow-[0_0_16px_rgba(212,168,90,0.45)]" aria-hidden="true">
+                <svg viewBox="0 0 100 200" class="w-16 h-32 mb-3 drop-shadow-[0_0_16px_rgba(212,168,90,0.45)]" aria-hidden="true">
                     <!-- 炎 -->
                     <path d="M74 4 C81 12 84 19 80 26 C78 30 70 30 68 26 C65 19 69 12 74 4Z" fill="#d4a85a"/>
                     <path d="M74 13 C77 18 77 22 75 25 C74 27 72 26 72 24 C71 21 72 17 74 13Z" fill="#fff4e0" opacity=".9"/>
@@ -223,14 +227,52 @@
                 <h2 class="text-xl sm:text-2xl font-black tracking-wider mb-4 leading-relaxed">
                     今夜のあなたに<br>ぴったりの一皿を。
                 </h2>
-                <p class="text-sm text-muted leading-relaxed mb-10">
+                <p class="text-sm text-muted leading-relaxed mb-7">
                     <span class="text-gold font-bold text-base">8つ</span>の直感質問に答えるだけ。<br>
                     あなたのタイプと、今夜の<span class="text-cream font-bold">スターティングラインナップ</span><br>（おすすめ3品）を発表します。
                 </p>
 
-                <button @click="startQuiz" class="btn-primary w-full py-4 rounded-md font-head text-lg tracking-[0.3em]">
-                    PLAY BALL
+                <!-- 診断へ -->
+                <button @click="startQuiz" class="menu-btn btn-primary w-full rounded-lg flex items-center gap-4 px-4 py-3 text-left">
+                    <span class="menu-icon" style="background: rgba(242,232,213,0.14);">
+                        <!-- バットとボール -->
+                        <svg viewBox="0 0 48 48" class="w-11 h-11" aria-hidden="true">
+                            <path d="M38 6 C41 4 44 7 42 10 L19 33 L15 29 Z" fill="#e2b77a" stroke="#7a4f2a" stroke-width="1.5" stroke-linejoin="round"/>
+                            <path d="M15 29 L19 33 L13 39 C12 40 10 40 9 39 C8 38 8 36 9 35 Z" fill="#7a4f2a"/>
+                            <circle cx="10.5" cy="37.5" r="2.2" fill="#5a3a1e"/>
+                            <circle cx="34" cy="33" r="7.5" fill="#f7f1e3" stroke="#c9bfa8" stroke-width="1"/>
+                            <path d="M29.5 27.5 C32 31 32 35 29.5 38.5 M38.5 27.5 C36 31 36 35 38.5 38.5" fill="none" stroke="#b8423a" stroke-width="1.2"/>
+                        </svg>
+                    </span>
+                    <span class="flex-1">
+                        <span class="block font-black text-lg leading-tight">フード診断スタート</span>
+                        <span class="block text-[11px] opacity-80 mt-0.5">8つの質問で、今夜の一皿を発見</span>
+                    </span>
+                    <span class="text-xl opacity-80">▶</span>
                 </button>
+
+                <!-- その前に遊ぶ -->
+                <a href="../foodtower_1740/" class="menu-btn btn-ghost w-full rounded-lg flex items-center gap-4 px-4 py-3 mt-3 text-left" style="background: rgba(31,48,80,0.6);">
+                    <span class="menu-icon" style="background: rgba(212,168,90,0.14);">
+                        <!-- 積み上がったバーガー -->
+                        <svg viewBox="0 0 48 48" class="w-11 h-11" aria-hidden="true">
+                            <path d="M9 17 C9 6 39 6 39 17 Z" fill="#d58a3c"/>
+                            <g fill="#fff2d2"><ellipse cx="18" cy="11" rx="1.4" ry=".8"/><ellipse cx="25" cy="9" rx="1.4" ry=".8"/><ellipse cx="31" cy="12" rx="1.4" ry=".8"/></g>
+                            <path d="M8 19 L11 17 L14 19 L17 17 L20 19 L23 17 L26 19 L29 17 L32 19 L35 17 L38 19 L40 18 L40 21 L8 21 Z" fill="#6fae3c"/>
+                            <rect x="9" y="21" width="30" height="3" fill="#f2b632"/>
+                            <path d="M14 24 L17 28 L20 24 Z" fill="#f2b632"/>
+                            <rect x="8" y="24" width="32" height="7" rx="3.5" fill="#5a3420"/>
+                            <rect x="10" y="31" width="28" height="3" rx="1.5" fill="#d0413a"/>
+                            <rect x="9" y="34" width="30" height="7" rx="3" fill="#d58a3c"/>
+                            <path d="M4 44 H44" stroke="#f2e8d5" stroke-width="2.5" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                    <span class="flex-1">
+                        <span class="block font-black text-base leading-tight text-cream">その前に遊んでみる</span>
+                        <span class="block text-[11px] mt-0.5">BURGER STACK｜高く積んでみよう</span>
+                    </span>
+                    <span class="text-xl">▶</span>
+                </a>
                 <div class="text-[10px] text-muted mt-4 font-head tracking-[0.3em]">EST. AMERICA ・ BEER ・ GOOD FOOD</div>
             </div>
 
