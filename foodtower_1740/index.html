@@ -1,1 +1,604 @@
 
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>BURGER STACK｜大衆酒場アメリカ</title>
+    <!-- 物理演算 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Yellowtail&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --navy: #0d1626;
+            --navy-3: #1f3050;
+            --cream: #f2e8d5;
+            --red: #b8423a;
+            --gold: #d4a85a;
+            --muted: #9aa6b8;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html, body {
+            margin: 0; height: 100%; overflow: hidden;
+            background: var(--navy); color: var(--cream);
+            font-family: 'Noto Sans JP', sans-serif;
+            touch-action: none; user-select: none; -webkit-user-select: none;
+        }
+        #game { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+        .font-head { font-family: 'Oswald', 'Noto Sans JP', sans-serif; letter-spacing: 0.08em; }
+        .font-neon { font-family: 'Yellowtail', cursive; }
+        .neon { color: #fff4e0; text-shadow: 0 0 4px #fff, 0 0 12px var(--gold), 0 0 28px rgba(212,168,90,0.7); }
+
+        /* 上部バー */
+        #hud {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 5;
+            padding: calc(env(safe-area-inset-top) + 10px) 14px 10px;
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+            background: linear-gradient(180deg, rgba(13,22,38,0.92), rgba(13,22,38,0));
+            pointer-events: none;
+        }
+        #hud a { pointer-events: auto; }
+        .back { color: var(--muted); font-size: 11px; text-decoration: none; letter-spacing: .15em; }
+        .stat { text-align: center; }
+        .stat .label { font-size: 9px; color: var(--muted); letter-spacing: .3em; }
+        .stat .value { font-size: 26px; font-weight: 700; color: var(--gold); line-height: 1.1; }
+        .stat .value small { font-size: 12px; color: var(--cream); margin-left: 2px; }
+        .next { text-align: right; min-width: 64px; }
+        .next .label { font-size: 9px; color: var(--muted); letter-spacing: .3em; }
+        .next .name { font-size: 11px; font-weight: 700; }
+
+        /* 回転ボタン */
+        #rotate {
+            position: fixed; right: 16px; bottom: calc(env(safe-area-inset-bottom) + 18px); z-index: 5;
+            width: 58px; height: 58px; border-radius: 50%;
+            background: rgba(31,48,80,0.9); color: var(--gold);
+            border: 1.5px solid rgba(212,168,90,0.7); font-size: 26px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+        }
+        #rotate:active { transform: scale(0.94); }
+        #hint {
+            position: fixed; left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom) + 34px); z-index: 4;
+            text-align: center; font-size: 11px; color: var(--muted); letter-spacing: .1em; pointer-events: none;
+        }
+
+        /* マイルストーン */
+        #toast {
+            position: fixed; left: 50%; top: 26%; z-index: 6;
+            transform: translate(-50%, -50%) scale(.8); opacity: 0;
+            background: rgba(13,22,38,0.88); border: 1px solid rgba(212,168,90,0.6);
+            padding: 10px 18px; border-radius: 8px; text-align: center; white-space: nowrap;
+            transition: opacity .3s ease, transform .3s cubic-bezier(.2,1.6,.4,1);
+            pointer-events: none;
+        }
+        #toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        #toast .t1 { font-size: 10px; color: var(--gold); letter-spacing: .3em; }
+        #toast .t2 { font-size: 16px; font-weight: 900; }
+
+        /* スタート・ゲームオーバー画面 */
+        .overlay {
+            position: fixed; inset: 0; z-index: 10;
+            display: flex; align-items: center; justify-content: center; padding: 24px 16px;
+            background: rgba(8,13,23,0.78); backdrop-filter: blur(4px);
+        }
+        .overlay.hidden { display: none; }
+        .card {
+            width: 100%; max-width: 360px; text-align: center;
+            background: linear-gradient(180deg, rgba(31,48,80,0.95), rgba(13,22,38,0.97));
+            border: 1px solid rgba(212,168,90,0.35); border-radius: 16px;
+            padding: 26px 20px 22px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            animation: pop .5s cubic-bezier(.2,1.4,.4,1) both;
+        }
+        @keyframes pop { from { transform: scale(.9); opacity: 0; } to { transform: none; opacity: 1; } }
+        .card h1 { margin: 0; font-size: 44px; line-height: 1; font-weight: 400; }
+        .card .sub { font-size: 11px; color: var(--gold); letter-spacing: .4em; margin: 6px 0 16px; }
+        .rules { text-align: left; font-size: 13px; line-height: 1.8; color: var(--cream); margin: 0 auto 20px; padding: 0; list-style: none; max-width: 270px; }
+        .rules li::before { content: '★'; color: var(--gold); font-size: 10px; margin-right: 8px; }
+        .btn {
+            display: block; width: 100%; padding: 15px; border-radius: 8px; border: 1px solid rgba(242,232,213,0.25);
+            background: var(--red); color: var(--cream); font-size: 16px; font-weight: 700; letter-spacing: .25em;
+            box-shadow: 0 6px 20px rgba(184,66,58,0.35); text-decoration: none; cursor: pointer;
+        }
+        .btn:active { transform: scale(.97); }
+        .btn-ghost {
+            display: block; margin-top: 10px; padding: 12px; border-radius: 8px;
+            border: 1px solid rgba(212,168,90,0.6); color: var(--gold);
+            font-size: 13px; font-weight: 700; letter-spacing: .1em; text-decoration: none;
+        }
+        .result-height { font-size: 56px; font-weight: 700; color: var(--gold); line-height: 1; margin: 8px 0 2px; }
+        .result-height small { font-size: 18px; color: var(--cream); margin-left: 4px; }
+        .result-meta { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+        .result-title { font-size: 15px; font-weight: 900; margin-bottom: 4px; }
+        .result-note { font-size: 11px; color: var(--muted); margin: 12px 0 18px; }
+        .best { font-size: 11px; color: var(--gold); letter-spacing: .1em; }
+    </style>
+</head>
+<body>
+    <canvas id="game"></canvas>
+
+    <div id="hud">
+        <a class="back font-head" href="../foodsindan_1740/">← 診断へ</a>
+        <div class="stat">
+            <div class="label font-head">HEIGHT</div>
+            <div class="value font-head"><span id="height">0</span><small>cm</small></div>
+        </div>
+        <div class="next">
+            <div class="label font-head">NEXT</div>
+            <div class="name" id="nextName">-</div>
+        </div>
+    </div>
+
+    <button id="rotate" aria-label="回転">⟳</button>
+    <div id="hint">指でずらして、はなすと落ちます</div>
+
+    <div id="toast"><div class="t1 font-head">NICE STACK!</div><div class="t2" id="toastText"></div></div>
+
+    <!-- スタート画面 -->
+    <div class="overlay" id="startScreen">
+        <div class="card">
+            <div class="font-head" style="font-size:10px;color:var(--muted);letter-spacing:.4em;">TAISHU SAKABA AMERICA</div>
+            <h1 class="font-neon neon" style="margin-top:8px;">Burger Stack</h1>
+            <div class="sub font-head">HOW HIGH CAN YOU GO?</div>
+            <ul class="rules">
+                <li>具材を指で左右にずらして、はなすと落ちます</li>
+                <li>⟳ ボタンで向きを変えられます</li>
+                <li>ひとつでもお皿から落ちたらゲームセット</li>
+                <li>どこまで高く積めるかチャレンジ！</li>
+            </ul>
+            <button class="btn font-head" id="startBtn">PLAY BALL</button>
+            <div class="best" id="bestStart" style="margin-top:12px;"></div>
+        </div>
+    </div>
+
+    <!-- ゲームオーバー画面 -->
+    <div class="overlay hidden" id="overScreen">
+        <div class="card">
+            <div class="font-head" style="font-size:12px;color:var(--muted);letter-spacing:.4em;">GAME SET</div>
+            <div class="result-height font-head"><span id="resHeight">0</span><small>cm</small></div>
+            <div class="result-meta"><span id="resCount">0</span>個 積み上げ</div>
+            <div class="result-title" id="resTitle"></div>
+            <div class="best" id="bestOver"></div>
+            <div class="result-note">記録はスタッフに見せて自慢してください！</div>
+            <button class="btn font-head" id="retryBtn">ONE MORE</button>
+            <a class="btn-ghost" href="../foodsindan_1740/">フード診断に戻る</a>
+        </div>
+    </div>
+
+    <script>
+    (() => {
+        const { Engine, Bodies, Body, Composite } = Matter;
+
+        // ===== 具材の定義 =====
+        // w / h は基準サイズ（スマホ幅400pxのとき）。img に透過PNG/WebPを指定すると、その画像で描画します。
+        // shape: 'rect'（角丸の四角）, 'dome'（バンズ上）, 'circle'
+        const ITEMS = [
+            { key: 'patty',   name: 'ビーフパティ',     shape: 'rect',   w: 118, h: 26, weight: 14, img: '' },
+            { key: 'cheese',  name: 'チェダーチーズ',   shape: 'rect',   w: 124, h: 9,  weight: 10, img: '' },
+            { key: 'bacon',   name: 'ベーコン',         shape: 'rect',   w: 136, h: 10, weight: 10, img: '' },
+            { key: 'lettuce', name: 'レタス',           shape: 'rect',   w: 128, h: 12, weight: 10, img: '' },
+            { key: 'tomato',  name: 'トマト',           shape: 'rect',   w: 104, h: 13, weight: 9,  img: '' },
+            { key: 'egg',     name: '目玉焼き',         shape: 'rect',   w: 100, h: 12, weight: 7,  img: '' },
+            { key: 'onion',   name: 'オニオンリング',   shape: 'circle', w: 46,  h: 46, weight: 7,  img: '' },
+            { key: 'pickle',  name: 'ピクルス',         shape: 'circle', w: 26,  h: 26, weight: 6,  img: '' },
+            { key: 'hotdog',  name: 'ホットドッグ',     shape: 'rect',   w: 132, h: 30, weight: 7,  img: '' },
+            { key: 'ribs',    name: 'スペアリブ',       shape: 'rect',   w: 120, h: 24, weight: 6,  img: '' },
+            { key: 'fries',   name: 'フライドポテト',   shape: 'rect',   w: 52,  h: 62, weight: 5,  img: '' },
+            { key: 'bun',     name: 'バンズ',           shape: 'dome',   w: 120, h: 36, weight: 7,  img: '' },
+            { key: 'ball',    name: 'ホームランボール', shape: 'circle', w: 28,  h: 28, weight: 2,  img: '' }
+        ];
+        const BASE_BUN = { key: 'bunBottom', name: 'バンズ', shape: 'rect', w: 120, h: 22, img: '' };
+
+        // ===== 高さの節目（cm） =====
+        const MILESTONES = [
+            { cm: 30,  text: 'ホットドッグ2本分！' },
+            { cm: 84,  text: '野球バットの長さ超え！' },
+            { cm: 150, text: 'ジャイアントバーガー誕生！' },
+            { cm: 193, text: 'メジャーリーガーの身長超え！' },
+            { cm: 300, text: '外野フェンス超え！' },
+            { cm: 530, text: '自由の女神の顔の大きさ超え！' },
+            { cm: 800, text: 'もはやニューヨークの摩天楼！' }
+        ];
+        const TITLES = [
+            { cm: 0,   text: 'ルーキー・バーガー' },
+            { cm: 60,  text: 'レギュラー・バーガー' },
+            { cm: 150, text: 'オールスター・バーガー' },
+            { cm: 300, text: 'MVP・バーガー' },
+            { cm: 530, text: '殿堂入りバーガー！' }
+        ];
+
+        // ===== 画像の読み込み（img指定があるものだけ） =====
+        const images = {};
+        [...ITEMS, BASE_BUN].forEach(it => {
+            if (!it.img) return;
+            const im = new Image();
+            im.src = it.img;
+            images[it.key] = im;
+        });
+
+        // ===== キャンバス =====
+        const canvas = document.getElementById('game');
+        const ctx = canvas.getContext('2d');
+        let W = 0, H = 0, S = 1, DPR = 1;
+        const resize = () => {
+            DPR = Math.min(window.devicePixelRatio || 1, 2);
+            W = window.innerWidth; H = window.innerHeight;
+            canvas.width = W * DPR; canvas.height = H * DPR;
+            ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+        };
+        resize();
+        window.addEventListener('resize', resize);
+
+        // ===== 状態 =====
+        let engine, plate, plateY, plateW, pieces = [];
+        let state = 'title';            // title | aim | falling | over
+        let current = null, nextItem = null;
+        let aimX = 0, aimAngle = 0;
+        let camOffset = 0, camTarget = 0;
+        let fallStart = 0, calmFrames = 0, lastDropped = null;
+        let bestHeight = 0, reached = new Set();
+
+        let hoverY = 150;               // 待機中の具材の画面上の高さ（タワーの少し上に来るよう毎回調整）
+        const HOVER_Y = () => hoverY;
+        const cmOf = px => Math.max(0, Math.round(px / S));
+
+        try { bestHeight = Number(localStorage.getItem('burgerStackBest') || 0); } catch (e) {}
+        const showBest = () => {
+            const t = bestHeight > 0 ? `BEST ${bestHeight}cm` : '';
+            document.getElementById('bestStart').textContent = t;
+            document.getElementById('bestOver').textContent = t;
+        };
+        showBest();
+
+        const pickItem = () => {
+            const total = ITEMS.reduce((a, b) => a + b.weight, 0);
+            let r = Math.random() * total;
+            for (const it of ITEMS) { if ((r -= it.weight) < 0) return it; }
+            return ITEMS[0];
+        };
+
+        const makeBody = (it, x, y, angle) => {
+            const w = it.w * S, h = it.h * S;
+            const opts = { friction: 0.9, frictionStatic: 1.2, frictionAir: 0.015, restitution: 0.02, density: 0.0018, angle, slop: 0.02 };
+            let body;
+            if (it.shape === 'circle') {
+                body = Bodies.circle(x, y, w / 2, opts);
+            } else if (it.shape === 'dome') {
+                // 上半分が丸いバンズ（多角形で近似）
+                const pts = [];
+                const n = 10;
+                for (let i = 0; i <= n; i++) {
+                    const t = Math.PI + (Math.PI * i) / n;
+                    pts.push({ x: Math.cos(t) * w / 2, y: Math.sin(t) * h * 0.9 + h * 0.35 });
+                }
+                body = Bodies.fromVertices(x, y, [pts], opts);
+            } else {
+                body = Bodies.rectangle(x, y, w, h, { ...opts, chamfer: { radius: Math.min(h / 2.2, 8 * S) } });
+            }
+            body.item = it;
+            return body;
+        };
+
+        // ===== ゲーム開始 =====
+        const startGame = () => {
+            S = Math.min(1.15, Math.max(0.75, W / 400));
+            engine = Engine.create();
+            engine.gravity.y = 1;
+            engine.positionIterations = 10;
+            engine.velocityIterations = 8;
+
+            plateW = Math.min(W * 0.62, 260 * S);
+            plateY = H - 110;
+            plate = Bodies.rectangle(W / 2, plateY + 8, plateW, 16, { isStatic: true, friction: 1, frictionStatic: 1.5, chamfer: { radius: 6 } });
+            Composite.add(engine.world, plate);
+
+            pieces = [];
+            const base = makeBody(BASE_BUN, W / 2, plateY - BASE_BUN.h * S / 2 - 1, 0);
+            pieces.push(base);
+            Composite.add(engine.world, base);
+
+            camOffset = camTarget = 0;
+            reached = new Set();
+            nextItem = pickItem();
+            spawn();
+            document.getElementById('height').textContent = '0';
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('overScreen').classList.add('hidden');
+        };
+
+        const spawn = () => {
+            current = nextItem;
+            nextItem = pickItem();
+            aimX = W / 2;
+            aimAngle = 0;
+            // タワーの頂上から約170px上で待機（高すぎると跳ねて落ちやすい）
+            hoverY = Math.max(130, towerTop() + camTarget - 170);
+            document.getElementById('nextName').textContent = nextItem.name;
+            state = 'aim';
+        };
+
+        const drop = () => {
+            if (state !== 'aim') return;
+            const worldY = HOVER_Y() - camOffset;
+            const body = makeBody(current, aimX, worldY, aimAngle);
+            pieces.push(body);
+            Composite.add(engine.world, body);
+            lastDropped = body;
+            fallStart = performance.now();
+            calmFrames = 0;
+            state = 'falling';
+        };
+
+        // タワーの一番高い位置（ワールド座標のy）
+        const towerTop = () => {
+            let top = plateY;
+            for (const b of pieces) if (b.bounds.min.y < top) top = b.bounds.min.y;
+            return top;
+        };
+
+        const updateHeight = () => {
+            const cm = cmOf(plateY - towerTop());
+            document.getElementById('height').textContent = cm;
+            for (const m of MILESTONES) {
+                if (cm >= m.cm && !reached.has(m.cm)) { reached.add(m.cm); toast(m.text); }
+            }
+            return cm;
+        };
+
+        let toastTimer = null;
+        const toast = (text) => {
+            const el = document.getElementById('toast');
+            document.getElementById('toastText').textContent = text;
+            el.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
+        };
+
+        const gameOver = () => {
+            state = 'over';
+            // 落ちた具材を除いた高さで記録
+            const standing = pieces.filter(b => b.position.y < plateY + 20);
+            let top = plateY;
+            for (const b of standing) if (b.bounds.min.y < top) top = b.bounds.min.y;
+            const cm = cmOf(plateY - top);
+            const count = Math.max(0, standing.length - 1);
+            if (cm > bestHeight) {
+                bestHeight = cm;
+                try { localStorage.setItem('burgerStackBest', String(cm)); } catch (e) {}
+            }
+            showBest();
+            let title = TITLES[0].text;
+            for (const t of TITLES) if (cm >= t.cm) title = t.text;
+            document.getElementById('resHeight').textContent = cm;
+            document.getElementById('resCount').textContent = count;
+            document.getElementById('resTitle').textContent = title;
+            setTimeout(() => document.getElementById('overScreen').classList.remove('hidden'), 700);
+        };
+
+        // ===== 操作 =====
+        const clampAim = (x) => {
+            const half = (current ? Math.max(current.w, current.h) * S : 60) / 2;
+            return Math.min(W - half - 4, Math.max(half + 4, x));
+        };
+        canvas.addEventListener('pointerdown', e => { if (state === 'aim') aimX = clampAim(e.clientX); });
+        canvas.addEventListener('pointermove', e => { if (state === 'aim' && e.buttons) aimX = clampAim(e.clientX); });
+        canvas.addEventListener('pointerup', e => { if (state === 'aim') { aimX = clampAim(e.clientX); drop(); } });
+        document.getElementById('rotate').addEventListener('pointerdown', e => {
+            e.stopPropagation();
+            if (state === 'aim') aimAngle += Math.PI / 4;
+        });
+        document.getElementById('startBtn').addEventListener('click', startGame);
+        document.getElementById('retryBtn').addEventListener('click', startGame);
+
+        // ===== 描画 =====
+        const rr = (x, y, w, h, r) => {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.arcTo(x + w, y, x + w, y + h, r);
+            ctx.arcTo(x + w, y + h, x, y + h, r);
+            ctx.arcTo(x, y + h, x, y, r);
+            ctx.arcTo(x, y, x + w, y, r);
+            ctx.closePath();
+        };
+
+        // 具材を (0,0) 中心で描く
+        const drawItem = (it) => {
+            const w = it.w * S, h = it.h * S;
+            if (images[it.key] && images[it.key].complete && images[it.key].naturalWidth) {
+                ctx.drawImage(images[it.key], -w / 2, -h / 2, w, h);
+                return;
+            }
+            ctx.lineWidth = 1.2;
+            switch (it.key) {
+                case 'patty':
+                    rr(-w/2, -h/2, w, h, h/2.2); ctx.fillStyle = '#5a3420'; ctx.fill();
+                    ctx.fillStyle = '#3e2214';
+                    for (let i = -3; i <= 3; i++) { ctx.beginPath(); ctx.arc(i * w / 8, (i % 2) * h / 6, 2.2 * S, 0, Math.PI * 2); ctx.fill(); }
+                    ctx.strokeStyle = '#7a4a2c'; ctx.beginPath(); ctx.moveTo(-w/2 + 8, -h/2 + 4); ctx.lineTo(w/2 - 8, -h/2 + 4); ctx.stroke();
+                    break;
+                case 'cheese':
+                    ctx.fillStyle = '#f2b632'; rr(-w/2, -h/2, w, h, 2); ctx.fill();
+                    ctx.beginPath(); ctx.moveTo(-w/4, h/2); ctx.lineTo(-w/4 + 8*S, h/2 + 8*S); ctx.lineTo(-w/4 + 14*S, h/2); ctx.fill();
+                    ctx.beginPath(); ctx.moveTo(w/5, h/2); ctx.lineTo(w/5 + 5*S, h/2 + 6*S); ctx.lineTo(w/5 + 10*S, h/2); ctx.fill();
+                    break;
+                case 'bacon':
+                    rr(-w/2, -h/2, w, h, h/2); ctx.fillStyle = '#b5483a'; ctx.fill();
+                    ctx.strokeStyle = '#f0c9a8'; ctx.lineWidth = 2 * S;
+                    ctx.beginPath(); for (let x = -w/2 + 4; x <= w/2 - 4; x += 6) ctx.lineTo(x, Math.sin(x / 6) * h / 5); ctx.stroke();
+                    break;
+                case 'lettuce':
+                    ctx.fillStyle = '#6fae3c'; ctx.beginPath(); ctx.moveTo(-w/2, 0);
+                    for (let x = -w/2; x <= w/2; x += 8) ctx.lineTo(x, -h/2 + (Math.round(x / 8) % 2 ? 0 : 3));
+                    for (let x = w/2; x >= -w/2; x -= 8) ctx.lineTo(x, h/2 - (Math.round(x / 8) % 2 ? 0 : 3));
+                    ctx.closePath(); ctx.fill();
+                    break;
+                case 'tomato':
+                    rr(-w/2, -h/2, w, h, h/2); ctx.fillStyle = '#d0413a'; ctx.fill();
+                    ctx.fillStyle = '#f07a62';
+                    for (let i = -2; i <= 2; i++) { ctx.beginPath(); ctx.ellipse(i * w / 5.5, 0, 5 * S, h / 4, 0, 0, Math.PI * 2); ctx.fill(); }
+                    break;
+                case 'egg':
+                    rr(-w/2, -h/2, w, h, h/2); ctx.fillStyle = '#fbf6ea'; ctx.fill();
+                    ctx.fillStyle = '#f2a51c'; ctx.beginPath(); ctx.ellipse(w/10, -h/8, w/7, h/2.4, 0, 0, Math.PI * 2); ctx.fill();
+                    break;
+                case 'onion':
+                    ctx.strokeStyle = '#c98a3a'; ctx.lineWidth = w * 0.26;
+                    ctx.beginPath(); ctx.arc(0, 0, w * 0.37, 0, Math.PI * 2); ctx.stroke();
+                    ctx.strokeStyle = '#e2b066'; ctx.lineWidth = 2 * S;
+                    ctx.beginPath(); ctx.arc(0, 0, w * 0.37, 0, Math.PI * 2); ctx.stroke();
+                    break;
+                case 'pickle':
+                    ctx.fillStyle = '#7a9a3a'; ctx.beginPath(); ctx.arc(0, 0, w/2, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = '#b9cf72'; ctx.beginPath(); ctx.arc(0, 0, w/3, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = '#7a9a3a';
+                    for (let i = 0; i < 5; i++) { const a = i * 1.26; ctx.beginPath(); ctx.arc(Math.cos(a) * w/6, Math.sin(a) * w/6, 1.6 * S, 0, Math.PI * 2); ctx.fill(); }
+                    break;
+                case 'hotdog':
+                    rr(-w/2, -h/2 + h*0.25, w, h*0.75, h*0.35); ctx.fillStyle = '#d99a52'; ctx.fill();
+                    rr(-w/2 - 4*S, -h/2, w + 8*S, h*0.5, h*0.25); ctx.fillStyle = '#a8432c'; ctx.fill();
+                    ctx.strokeStyle = '#f2c230'; ctx.lineWidth = 2.2 * S;
+                    ctx.beginPath(); for (let x = -w/2 + 6; x <= w/2 - 6; x += 5) ctx.lineTo(x, -h/4 + Math.sin(x / 4) * 3 * S); ctx.stroke();
+                    break;
+                case 'ribs':
+                    rr(-w/2, -h/2, w, h, h/3); ctx.fillStyle = '#7b2f1c'; ctx.fill();
+                    ctx.fillStyle = '#efe2c8';
+                    for (let i = -2; i <= 2; i++) { rr(i * w / 5.5 - 3*S, -h/2 - 4*S, 6*S, 8*S, 3*S); ctx.fill(); }
+                    ctx.strokeStyle = '#a1462a'; ctx.lineWidth = 1.5;
+                    for (let i = -2; i <= 2; i++) { ctx.beginPath(); ctx.moveTo(i * w / 5.5, -h/2 + 4); ctx.lineTo(i * w / 5.5, h/2 - 4); ctx.stroke(); }
+                    break;
+                case 'fries':
+                    ctx.fillStyle = '#f2c94c';
+                    for (let i = -2; i <= 2; i++) { ctx.fillRect(i * w / 6 - 3*S, -h/2, 6*S, h * 0.55); }
+                    ctx.fillStyle = '#b8423a'; ctx.beginPath();
+                    ctx.moveTo(-w/2, -h/2 + h*0.3); ctx.lineTo(w/2, -h/2 + h*0.3); ctx.lineTo(w/2 - 5*S, h/2); ctx.lineTo(-w/2 + 5*S, h/2); ctx.closePath(); ctx.fill();
+                    ctx.fillStyle = '#f2e8d5'; ctx.font = `700 ${9*S}px Oswald`; ctx.textAlign = 'center'; ctx.fillText('USA', 0, h * 0.22);
+                    break;
+                case 'bun': {
+                    ctx.fillStyle = '#d58a3c'; ctx.beginPath();
+                    ctx.moveTo(-w/2, h*0.35);
+                    ctx.bezierCurveTo(-w/2, -h*0.75, w/2, -h*0.75, w/2, h*0.35);
+                    ctx.closePath(); ctx.fill();
+                    ctx.fillStyle = '#fff2d2';
+                    [[-0.25,-0.1],[0,-0.25],[0.22,-0.05],[-0.05,0.05],[0.3,0.15],[-0.32,0.15]].forEach(([sx, sy]) => {
+                        ctx.beginPath(); ctx.ellipse(sx * w, sy * h, 2.4 * S, 1.3 * S, 0.4, 0, Math.PI * 2); ctx.fill();
+                    });
+                    break;
+                }
+                case 'bunBottom':
+                    rr(-w/2, -h/2, w, h, h/2.5); ctx.fillStyle = '#d58a3c'; ctx.fill();
+                    ctx.fillStyle = '#efc58a'; ctx.fillRect(-w/2 + 4, -h/2 + 2, w - 8, h * 0.28);
+                    break;
+                case 'ball':
+                    ctx.fillStyle = '#f7f1e3'; ctx.beginPath(); ctx.arc(0, 0, w/2, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = '#b8423a'; ctx.lineWidth = 1.4 * S;
+                    ctx.beginPath(); ctx.arc(-w * 0.62, 0, w * 0.45, -0.75, 0.75); ctx.stroke();
+                    ctx.beginPath(); ctx.arc(w * 0.62, 0, w * 0.45, Math.PI - 0.75, Math.PI + 0.75); ctx.stroke();
+                    break;
+            }
+        };
+
+        const drawBackground = () => {
+            const g = ctx.createLinearGradient(0, 0, 0, H);
+            g.addColorStop(0, '#0a1120'); g.addColorStop(1, '#16233a');
+            ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+            // 背景の星（カメラに合わせてゆっくり動く）
+            ctx.fillStyle = 'rgba(242,232,213,0.25)';
+            for (let i = 0; i < 40; i++) {
+                const x = (i * 97) % W;
+                const y = ((i * 173 + camOffset * 0.3) % (H + 40)) - 20;
+                ctx.fillRect(x, y, 1.5, 1.5);
+            }
+            // 高さの目盛り（50cmごと）
+            ctx.font = '600 10px Oswald'; ctx.textAlign = 'left';
+            for (let cm = 100; cm < 3000; cm += 100) {
+                const y = plateY - cm * S + camOffset;
+                if (y < 60) continue;
+                if (y > H) continue;
+                ctx.strokeStyle = 'rgba(212,168,90,0.12)'; ctx.setLineDash([4, 8]);
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); ctx.setLineDash([]);
+                ctx.fillStyle = 'rgba(212,168,90,0.45)'; ctx.fillText(cm + 'cm', 8, y - 4);
+            }
+            // ベスト記録ライン
+            if (bestHeight > 0) {
+                const y = plateY - bestHeight * S + camOffset;
+                if (y > 60 && y < H) {
+                    ctx.strokeStyle = 'rgba(184,66,58,0.8)'; ctx.lineWidth = 1.5; ctx.setLineDash([8, 5]);
+                    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); ctx.setLineDash([]);
+                    ctx.fillStyle = '#e06a5f'; ctx.textAlign = 'right'; ctx.fillText('BEST', W - 8, y - 4);
+                }
+            }
+        };
+
+        const drawPlate = () => {
+            const y = plateY + camOffset;
+            ctx.fillStyle = 'rgba(0,0,0,0.35)';
+            ctx.beginPath(); ctx.ellipse(W/2, y + 26, plateW * 0.55, 8, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#f2e8d5';
+            ctx.beginPath(); ctx.ellipse(W/2, y + 8, plateW / 2 + 14, 14, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#dccfb6';
+            ctx.beginPath(); ctx.ellipse(W/2, y + 6, plateW / 2 - 4, 8, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = '#b8423a'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.ellipse(W/2, y + 8, plateW / 2 + 9, 11, 0, 0, Math.PI * 2); ctx.stroke();
+        };
+
+        const render = () => {
+            drawBackground();
+            if (!engine) return;
+            drawPlate();
+            for (const b of pieces) {
+                ctx.save();
+                ctx.translate(b.position.x, b.position.y + camOffset);
+                ctx.rotate(b.angle);
+                // 多角形は重心がずれるので補正
+                if (b.item.shape === 'dome') ctx.translate(0, (b.item.h * S) * 0.03);
+                drawItem(b.item);
+                ctx.restore();
+            }
+            if (state === 'aim' && current) {
+                // 落下ガイド
+                ctx.strokeStyle = 'rgba(242,232,213,0.25)'; ctx.setLineDash([3, 6]); ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(aimX, HOVER_Y()); ctx.lineTo(aimX, H); ctx.stroke(); ctx.setLineDash([]);
+                ctx.save();
+                ctx.translate(aimX, HOVER_Y());
+                ctx.rotate(aimAngle);
+                drawItem(current);
+                ctx.restore();
+            }
+        };
+
+        // ===== メインループ =====
+        const loop = (now) => {
+            if (engine && state !== 'title') {
+                Engine.update(engine, 1000 / 60);
+
+                // 落下判定：お皿より下に落ちたらゲームセット
+                if (state !== 'over') {
+                    for (const b of pieces) {
+                        if (b.position.y > plateY + 120 || b.position.x < -80 || b.position.x > W + 80) { gameOver(); break; }
+                    }
+                }
+
+                // 静止したら次の具材へ
+                if (state === 'falling') {
+                    const moving = pieces.some(b => b.speed > 0.12 || Math.abs(b.angularSpeed) > 0.01);
+                    calmFrames = moving ? 0 : calmFrames + 1;
+                    const waited = now - fallStart;
+                    if ((calmFrames > 18 && waited > 500) || waited > 3500) {
+                        updateHeight();
+                        // タワーの頂上が画面の上から40%あたりに来るようにカメラを上げる
+                        camTarget = Math.max(0, H * 0.4 - towerTop());
+                        spawn();
+                    }
+                }
+                camOffset += (camTarget - camOffset) * 0.08;
+            }
+            render();
+            requestAnimationFrame(loop);
+        };
+        requestAnimationFrame(loop);
+    })();
+    </script>
+</body>
+</html>
