@@ -1775,6 +1775,35 @@ function startMug3D(){
   const sparkGeo = new T.BufferGeometry(); sparkGeo.setAttribute("position", new T.BufferAttribute(sp, 3));
   const sparkMat = new T.PointsMaterial({ map: glowTex, size: .16, color: 0xffe2a0, opacity: .9, sizeAttenuation: true, ...add });
   const sparks = new T.Points(sparkGeo, sparkMat); swirl.add(sparks);
+
+  // 生ビール速達トラックが、金の輪の上を走る(写真は左向き。右へ進むときは左右反転した絵に替える)
+  const truck = (() => {
+    const tex = new T.Texture(), texR = new T.Texture();
+    texR.wrapS = T.RepeatWrapping; texR.repeat.x = -1; texR.offset.x = 1;
+    [tex, texR].forEach(t => { t.encoding = T.sRGBEncoding; });
+    new T.ImageLoader().load("truck.webp", im => { [tex, texR].forEach(t => { t.image = im; t.needsUpdate = true; }); });
+    const opt = { transparent: true, depthWrite: false, toneMapped: false };
+    const matL = new T.SpriteMaterial({ map: tex, ...opt }), matR = new T.SpriteMaterial({ map: texR, ...opt });
+    const sp = new T.Sprite(matL); sp.scale.set(1.3, 1.3 * 178 / 436, 1); sp.renderOrder = 5; swirl.add(sp);
+    return { sp, matL, matR, u: .15, dir: 1, right: false };
+  })();
+  const _a = new T.Vector3(), _b = new T.Vector3();
+  function driveTruck(dt){
+    const tk = truck;
+    tk.u += tk.dir * dt / 7; // 下から上まで約7秒
+    if (tk.u > .97) { tk.u = .97; tk.dir = -1; } else if (tk.u < .03) { tk.u = .03; tk.dir = 1; }
+    const p = helix.getPointAt(tk.u), q = helix.getPointAt(Math.min(1, Math.max(0, tk.u + tk.dir * .01)));
+    tk.sp.position.set(p.x, p.y + tk.sp.scale.y * .42, p.z); // タイヤが金の線に乗るように少し上へ
+    // 画面上で、どちらへ・どの傾きで進んでいるか
+    _a.copy(p); swirl.localToWorld(_a).project(camera); _b.copy(q); swirl.localToWorld(_b).project(camera);
+    const dx = (_b.x - _a.x) * camera.aspect, dy = _b.y - _a.y;
+    if (Math.abs(dx) > .0015) tk.right = dx > 0;
+    tk.sp.material = tk.right ? tk.matR : tk.matL;
+    const ang = tk.right ? Math.atan2(dy, dx) : Math.atan2(-dy, -dx);
+    const want = Math.max(-.32, Math.min(.32, ang));
+    tk.sp.material.rotation += (want - tk.sp.material.rotation) * .2;
+    tk.matL.rotation = tk.matR.rotation = tk.sp.material.rotation;
+  }
   const floorGlow = new T.Mesh(new T.PlaneGeometry(5.5, 5.5), new T.MeshBasicMaterial({ map: glowTex, color: 0xffb340, opacity: .55, ...add }));
   floorGlow.rotation.x = -Math.PI / 2; floorGlow.position.y = BOTTOM - .02; scene.add(floorGlow);
   const shadow = new T.Mesh(new T.CircleGeometry(1.5, 48), new T.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: .5 }));
@@ -1824,6 +1853,7 @@ function startMug3D(){
     });
     bubbles.forEach(b => { b.position.y += b.userData.v * dt; if (b.position.y > TOP) b.position.y = FLOOR + .05; });
     swirl.rotation.y = el * .9;
+    swirl.updateMatrixWorld(); driveTruck(dt);
     const boost = sc === 2 ? 1 : .6;
     core.material.opacity = .55 + .35 * boost; halo.material.opacity = .12 + .14 * boost;
     sparkMat.size = .12 + .08 * boost + Math.sin(el * 6) * .02; floorGlow.material.opacity = .35 + .3 * boost;
