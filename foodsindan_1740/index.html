@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>大衆酒場アメリカ Food Lineup</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vue.js (Vue 3) -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Playfair+Display:ital,wght@1,600&family=Yellowtail&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --navy: #0d1626;
+            --navy-2: #16233a;
+            --navy-3: #1f3050;
+            --cream: #f2e8d5;
+            --red: #b8423a;
+            --gold: #d4a85a;
+            --muted: #9aa6b8;
+        }
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            color: var(--cream);
+            background-color: var(--navy);
+            /* 控えめな星条旗モチーフ：うっすらストライプ＋星 */
+            background-image:
+                radial-gradient(ellipse at 50% 0%, rgba(212,168,90,0.14), transparent 60%),
+                radial-gradient(ellipse at 50% 120%, rgba(184,66,58,0.22), transparent 55%),
+                repeating-linear-gradient(180deg, rgba(255,255,255,0.025) 0 22px, transparent 22px 44px);
+        }
+        .stars-bg {
+            background-image: radial-gradient(rgba(242,232,213,0.35) 1px, transparent 1.5px);
+            background-size: 28px 28px;
+            mask-image: linear-gradient(180deg, #000 0%, transparent 45%);
+            -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 45%);
+        }
+        .font-head { font-family: 'Oswald', 'Noto Sans JP', sans-serif; letter-spacing: 0.08em; }
+        .font-serif-it { font-family: 'Playfair Display', serif; font-style: italic; }
+        .font-neon { font-family: 'Yellowtail', cursive; }
+        .text-gold { color: var(--gold); }
+        .text-cream { color: var(--cream); }
+        .text-muted { color: var(--muted); }
+        .text-red { color: var(--red); }
+
+        .fade-enter-active { transition: opacity 0.9s ease; }
+        .fade-leave-active { transition: opacity 0.5s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
+        #chartjs-tooltip { display: none !important; }
+
+        /* ネオンサイン */
+        .neon {
+            color: #fff4e0;
+            text-shadow: 0 0 4px #fff, 0 0 12px var(--gold), 0 0 28px rgba(212,168,90,0.7), 0 0 48px rgba(184,66,58,0.5);
+            animation: flicker 4s infinite;
+        }
+        @keyframes flicker {
+            0%, 18%, 22%, 25%, 53%, 57%, 100% { opacity: 1; }
+            20%, 24%, 55% { opacity: 0.55; }
+        }
+        .intro-fade { animation: introIn 2.4s cubic-bezier(0.25, 1, 0.5, 1) forwards; opacity: 0; }
+        @keyframes introIn {
+            0% { opacity: 0; transform: translateY(12px) scale(0.96); filter: blur(10px); }
+            100% { opacity: 1; transform: none; filter: blur(0); }
+        }
+
+        /* 区切り線（★ ― ★） */
+        .rule { display: flex; align-items: center; gap: 10px; color: var(--gold); font-size: 10px; }
+        .rule::before, .rule::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, rgba(212,168,90,0.6), transparent); }
+
+        /* ボタン */
+        .btn-primary {
+            background: var(--red); color: var(--cream);
+            border: 1px solid rgba(242,232,213,0.25);
+            box-shadow: 0 6px 20px rgba(184,66,58,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+            transition: transform .15s ease, background .2s ease;
+        }
+        .btn-primary:hover { background: #c84d44; }
+        .btn-primary:active { transform: scale(0.97); }
+        .btn-ghost {
+            border: 1px solid rgba(212,168,90,0.6); color: var(--gold);
+            transition: background .2s ease;
+        }
+        .btn-ghost:hover { background: rgba(212,168,90,0.1); }
+
+        /* パネル */
+        .panel {
+            background: linear-gradient(180deg, rgba(31,48,80,0.75), rgba(13,22,38,0.85));
+            border: 1px solid rgba(212,168,90,0.28);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+            backdrop-filter: blur(6px);
+        }
+
+        /* 質問カード */
+        .q-card {
+            background: rgba(22,35,58,0.9);
+            border: 1px solid rgba(242,232,213,0.15);
+            transition: border-color .25s ease, transform .2s ease, box-shadow .25s ease;
+        }
+        .q-card:hover { border-color: rgba(212,168,90,0.7); box-shadow: 0 0 18px rgba(212,168,90,0.18); }
+        .q-card:active { transform: scale(0.98); }
+
+        /* ローディング：回転するボール */
+        .spin-ball { animation: spin 1.1s linear infinite, bounce 1.1s ease-in-out infinite alternate; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes bounce { from { translate: 0 -10px; } to { translate: 0 10px; } }
+
+        /* タイプ発表エンブレム */
+        .emblem {
+            width: 132px; height: 132px; border-radius: 9999px;
+            border: 2px solid var(--gold);
+            outline: 1px solid rgba(212,168,90,0.4); outline-offset: 5px;
+            background: radial-gradient(circle at 50% 35%, var(--navy-3), var(--navy));
+            box-shadow: 0 0 40px rgba(212,168,90,0.2);
+            animation: stamp .7s cubic-bezier(.2,1.6,.4,1) both;
+        }
+        @keyframes stamp { from { transform: scale(1.8) rotate(-12deg); opacity: 0; } to { transform: none; opacity: 1; } }
+        .rise { animation: rise .8s ease both; }
+        @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+        /* わくわく演出：スタジアムのスポットライト */
+        .stage { background: radial-gradient(ellipse at 50% 100%, rgba(31,48,80,0.9), #05090f 70%); }
+        .beam {
+            position: absolute; top: -10%; width: 38%; height: 130%;
+            background: linear-gradient(180deg, rgba(255,244,224,0.22), transparent 80%);
+            clip-path: polygon(45% 0, 55% 0, 100% 100%, 0 100%);
+            transform-origin: 50% 0;
+            filter: blur(2px);
+        }
+        .beam-l { left: 4%; animation: sweepL 2.2s ease-in-out infinite alternate; }
+        .beam-r { right: 4%; animation: sweepR 2.2s ease-in-out infinite alternate; }
+        @keyframes sweepL { from { transform: rotate(-28deg); } to { transform: rotate(14deg); } }
+        @keyframes sweepR { from { transform: rotate(28deg); } to { transform: rotate(-14deg); } }
+        .count-pop { animation: countPop .85s cubic-bezier(.2,1.4,.4,1) both; }
+        @keyframes countPop { 0% { transform: scale(2.4); opacity: 0; } 40% { opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+        .scoreboard {
+            font-family: 'Oswald', sans-serif;
+            background: #070b12;
+            border: 3px solid #2b3a55;
+            box-shadow: inset 0 0 25px rgba(0,0,0,0.9), 0 0 30px rgba(212,168,90,0.15);
+            color: #ffcf6e;
+            text-shadow: 0 0 10px rgba(255,190,80,0.9);
+        }
+        .burst-star {
+            position: absolute; left: 50%; top: 50%;
+            color: var(--gold); font-size: 18px;
+            animation: burst 1.2s ease-out forwards;
+        }
+        @keyframes burst {
+            0% { transform: translate(-50%, -50%) rotate(var(--a)) translateY(0) scale(0.4); opacity: 1; }
+            100% { transform: translate(-50%, -50%) rotate(var(--a)) translateY(-150px) scale(1); opacity: 0; }
+        }
+
+        /* おすすめラインナップカード */
+        .lineup-card {
+            background: linear-gradient(135deg, rgba(242,232,213,0.97), rgba(232,218,192,0.97));
+            color: var(--navy);
+            border-left: 6px solid var(--red);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            opacity: 0;
+            animation: slideIn .7s cubic-bezier(.2,1,.3,1) forwards;
+        }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-40px) rotate(-2deg); } to { opacity: 1; transform: none; } }
+        .order-badge {
+            font-family: 'Oswald', sans-serif;
+            background: var(--navy); color: var(--gold);
+            border: 2px solid var(--gold);
+        }
+    </style>
+</head>
+
+<body class="m-0 p-0 w-screen h-screen overflow-hidden relative">
+    <div class="stars-bg absolute inset-0 pointer-events-none z-0"></div>
+
+    <div id="app" class="relative z-10 w-full h-full overflow-y-auto overflow-x-hidden flex flex-col items-center justify-center px-4 py-6">
+
+        <transition name="fade" mode="out-in">
+
+            <!-- 0. イントロ（ネオンサイン） -->
+            <div v-if="step === 'intro'" key="intro" class="absolute inset-0 z-50 flex flex-col items-center justify-center cursor-pointer text-center" @click="skipIntro">
+                <div class="intro-fade flex flex-col items-center">
+                    <div class="text-gold text-xs font-head tracking-[0.5em] mb-4">★ ★ ★ ★ ★</div>
+                    <div class="font-neon neon text-6xl sm:text-7xl leading-none">America</div>
+                    <div class="font-head text-sm text-cream mt-4 tracking-[0.4em]">大衆酒場アメリカ</div>
+                    <div class="text-muted text-[11px] mt-10 tracking-widest">TAP TO ENTER</div>
+                </div>
+            </div>
+
+            <!-- 1. トップ画面 -->
+            <div v-else-if="step === 'start'" key="start" class="w-full max-w-md flex flex-col items-center text-center">
+                <!-- 自由の女神のトーチ -->
+                <svg viewBox="0 0 64 120" class="w-12 h-24 mb-4 drop-shadow-[0_0_14px_rgba(212,168,90,0.6)]" aria-hidden="true">
+                    <path d="M32 4 C41 17 46 27 41 37 C38 43 26 43 23 37 C18 27 24 17 32 4Z" fill="#d4a85a"/>
+                    <path d="M32 18 C36 25 37 31 34 36 C32 39 30 38 29 35 C28 30 30 25 32 18Z" fill="#fff4e0" opacity=".85"/>
+                    <path d="M17 43 H47 L42 56 H22 Z" fill="none" stroke="#f2e8d5" stroke-width="2.5" stroke-linejoin="round"/>
+                    <path d="M27 56 H37 L35 112 H29 Z" fill="none" stroke="#f2e8d5" stroke-width="2.5" stroke-linejoin="round"/>
+                    <path d="M25 70 H39 M26 86 H38" stroke="#f2e8d5" stroke-width="1.5"/>
+                </svg>
+
+                <div class="font-head text-gold text-xs tracking-[0.45em] mb-2">TAISHU SAKABA</div>
+                <h1 class="font-neon neon text-6xl leading-none mb-3">America</h1>
+                <div class="rule w-48 mb-6">★</div>
+
+                <h2 class="text-xl sm:text-2xl font-black tracking-wider mb-4 leading-relaxed">
+                    今夜のあなたに<br>ぴったりの一皿を。
+                </h2>
+                <p class="text-sm text-muted leading-relaxed mb-10">
+                    <span class="text-gold font-bold text-base">8つ</span>の直感質問に答えるだけ。<br>
+                    あなたのタイプと、今夜の<span class="text-cream font-bold">スターティングラインナップ</span><br>（おすすめ3品）を発表します。
+                </p>
+
+                <button @click="startQuiz" class="btn-primary w-full py-4 rounded-md font-head text-lg tracking-[0.3em]">
+                    PLAY BALL
+                </button>
+                <div class="text-[10px] text-muted mt-4 font-head tracking-[0.3em]">EST. AMERICA ・ BEER ・ BOURBON ・ GOOD FOOD</div>
+            </div>
+
+            <!-- 2. 質問画面（全8問） -->
+            <div v-else-if="step === 'quiz'" key="quiz" class="w-full max-w-[360px] sm:max-w-[400px] mx-auto flex flex-col self-start mt-2">
+                <div class="w-full flex items-center justify-between mb-2">
+                    <button @click="goBack" class="text-muted hover:text-white text-xs font-head tracking-widest flex items-center transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                        BACK
+                    </button>
+                    <div class="font-head text-sm text-muted tracking-widest">
+                        INNING <span class="text-gold text-lg">{{ currentQuestionIndex + 1 }}</span> / 8
+                    </div>
+                </div>
+                <!-- 8イニング風プログレス -->
+                <div class="w-full grid grid-cols-8 gap-1 mb-6">
+                    <div v-for="n in 8" :key="n" class="h-1.5 rounded-sm transition-all duration-300"
+                         :style="{ background: n <= currentQuestionIndex + 1 ? 'var(--gold)' : 'rgba(242,232,213,0.12)' }"></div>
+                </div>
+
+                <h2 class="font-bold mb-5 text-center text-[clamp(14px,4.4vw,18px)] tracking-tight leading-snug">
+                    <span class="font-head text-gold mr-1">Q{{ currentQuestionIndex + 1 }}.</span>{{ currentQuestion.text }}
+                </h2>
+
+                <div class="space-y-4">
+                    <div v-for="(option, idx) in currentQuestion.options" :key="idx"
+                         @click="answerQuestion(option.type)"
+                         class="q-card rounded-lg overflow-hidden cursor-pointer">
+                        <div v-if="option.imgText" class="w-full h-36 sm:h-44 flex items-center justify-center bg-[var(--cream)]">
+                            <span class="font-head font-bold text-4xl tracking-[0.2em]" style="color: var(--red)">{{ option.imgText }}</span>
+                        </div>
+                        <div v-else-if="option.img" class="w-full h-36 sm:h-44 flex items-center justify-center bg-white overflow-hidden">
+                            <img :src="option.img" class="w-full h-full object-contain scale-[1.35]" alt="">
+                        </div>
+                        <div class="p-3 flex items-center justify-center text-center min-h-[3.5rem]">
+                            <div class="font-bold text-sm sm:text-base tracking-wide leading-snug">
+                                <span class="font-head text-gold mr-2 text-lg">{{ idx === 0 ? 'A' : 'B' }}</span>{{ option.text }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2.5 集計中 -->
+            <div v-else-if="step === 'pouring'" key="pouring" class="w-full max-w-md flex flex-col items-center justify-center text-center min-h-[60vh]">
+                <svg viewBox="0 0 64 64" class="spin-ball w-16 h-16 mb-8" aria-hidden="true">
+                    <circle cx="32" cy="32" r="29" fill="#c8692c" stroke="#2a160b" stroke-width="2.5"/>
+                    <path d="M32 3 V61 M3 32 H61 M11 11 Q32 32 11 53 M53 11 Q32 32 53 53" fill="none" stroke="#2a160b" stroke-width="2.5"/>
+                </svg>
+                <div class="font-head text-2xl tracking-[0.25em] mb-2">CHECKING THE STATS</div>
+                <p class="text-sm text-gold animate-pulse">あなたのデータを分析中...</p>
+            </div>
+
+            <!-- 3. タイプ発表 -->
+            <div v-else-if="step === 'result' && finalResult" key="result" class="w-full max-w-md flex flex-col items-center text-center">
+                <div class="panel w-full rounded-2xl px-5 pt-7 pb-6 flex flex-col items-center">
+                    <div class="font-head text-xs tracking-[0.45em] text-muted mb-4 rise">YOUR TYPE IS</div>
+
+                    <div class="emblem flex flex-col items-center justify-center mb-5">
+                        <div class="text-gold text-[9px] tracking-[0.3em]">★ ★ ★</div>
+                        <div class="font-head text-4xl font-bold leading-none my-1">{{ finalResult.no }}</div>
+                        <div class="font-head text-[9px] tracking-[0.25em] text-muted">{{ finalResult.motif }}</div>
+                    </div>
+
+                    <h2 class="font-head text-4xl sm:text-5xl font-bold leading-none tracking-wider rise" style="animation-delay:.3s">{{ finalResult.enTitle }}</h2>
+                    <div class="text-gold font-bold tracking-[0.2em] mt-2 mb-4 rise" style="animation-delay:.4s">{{ finalResult.jaTitle }} タイプ</div>
+                    <p class="font-serif-it text-cream text-base mb-1 rise" style="animation-delay:.5s">“{{ finalResult.catch }}”</p>
+                    <p class="text-sm text-muted mb-5 rise" style="animation-delay:.55s">{{ finalResult.description }}</p>
+
+                    <div class="w-full flex items-center gap-3 rise" style="animation-delay:.7s">
+                        <div class="w-[42%] aspect-square relative">
+                            <canvas id="radarChart" class="absolute inset-0 w-full h-full"></canvas>
+                        </div>
+                        <div class="flex-1 text-left">
+                            <div class="font-head text-xs text-gold tracking-[0.3em] mb-1">SCOUTING REPORT</div>
+                            <p class="text-[12px] leading-relaxed text-cream/90">{{ finalResult.features }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button @click="startReveal" class="btn-primary w-full mt-6 py-4 rounded-md font-bold tracking-widest rise" style="animation-delay:1s">
+                    今夜のおすすめを発表する ▶
+                </button>
+            </div>
+
+            <!-- 4. わくわく演出（スタジアムのラインナップ発表） -->
+            <div v-else-if="step === 'reveal'" key="reveal" class="stage fixed inset-0 z-40 overflow-hidden flex flex-col items-center justify-center cursor-pointer" @click="finishReveal">
+                <div class="beam beam-l"></div>
+                <div class="beam beam-r"></div>
+
+                <div class="relative z-10 flex flex-col items-center text-center px-6">
+                    <div class="font-head text-gold text-xs tracking-[0.5em] mb-3">LADIES AND GENTLEMEN...</div>
+                    <div class="font-head text-cream text-lg tracking-[0.3em] mb-8">TONIGHT'S STARTING LINEUP</div>
+
+                    <div class="scoreboard rounded-md w-44 h-36 flex items-center justify-center relative">
+                        <div v-if="revealCount > 0" :key="revealCount" class="count-pop text-8xl font-bold">{{ revealCount }}</div>
+                        <div v-else key="go" class="count-pop text-3xl font-bold tracking-widest leading-tight">PLAY<br>BALL!</div>
+                    </div>
+
+                    <div v-if="revealCount === 0" class="absolute left-1/2 top-[62%]">
+                        <span v-for="n in 12" :key="n" class="burst-star" :style="{ '--a': (n * 30) + 'deg', animationDelay: (n % 3) * 0.06 + 's' }">★</span>
+                    </div>
+
+                    <div class="text-[11px] text-muted mt-10 tracking-widest">for {{ finalResult && finalResult.enTitle }}</div>
+                </div>
+            </div>
+
+            <!-- 5. おすすめフード3品 -->
+            <div v-else-if="step === 'menu' && finalResult" key="menu" class="w-full max-w-md flex flex-col self-start mt-2">
+                <div class="text-center mb-5">
+                    <div class="font-head text-gold text-xs tracking-[0.45em] mb-1">STARTING LINEUP</div>
+                    <h2 class="font-head text-2xl font-bold tracking-wider">{{ finalResult.enTitle }}</h2>
+                    <div class="text-xs text-muted mt-1">{{ finalResult.jaTitle }}タイプのあなたへ、今夜の3品</div>
+                </div>
+
+                <div class="space-y-4">
+                    <div v-for="(food, i) in finalResult.foods" :key="food.name"
+                         class="lineup-card rounded-md p-4 flex gap-4"
+                         :style="{ animationDelay: (0.25 + i * 0.45) + 's' }">
+                        <div class="order-badge shrink-0 w-12 h-12 rounded-full flex flex-col items-center justify-center leading-none">
+                            <span class="text-lg font-bold">{{ i + 1 }}</span>
+                            <span class="text-[8px] tracking-widest">{{ ['ST','ND','RD'][i] }}</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <img v-if="food.img" :src="food.img" class="w-full h-32 object-cover rounded mb-3" alt="">
+                            <div class="font-head text-[10px] tracking-[0.25em]" style="color: var(--red)">{{ food.en }}</div>
+                            <div class="text-lg font-black leading-snug mb-2">{{ food.name }}</div>
+                            <div class="text-[10px] font-bold tracking-widest mb-1" style="color: var(--red)">★ こだわり</div>
+                            <p class="text-[12.5px] leading-relaxed text-[#2a3448]">{{ food.kodawari }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rise text-center mt-6" style="animation-delay:1.8s">
+                    <div class="rule mb-3">★</div>
+                    <p class="text-xs text-muted mb-5">気になる一皿は、この画面をスタッフにお見せください。</p>
+                    <div class="flex gap-3">
+                        <button @click="step = 'result'" class="btn-ghost flex-1 py-3 rounded-md text-sm font-bold tracking-wider">タイプを見る</button>
+                        <button @click="resetQuiz" class="btn-primary flex-1 py-3 rounded-md font-head tracking-[0.25em]">ONE MORE</button>
+                    </div>
+                </div>
+            </div>
+
+        </transition>
+    </div>
+
+    <script>
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbxR1aGoqqA31wemgAzYQQnZjlA9rGCn2hsDIp9zkU_U2mrKm8nGHV64me4j7cKJ8OhQ/exec';
+
+        const { createApp, ref, computed, onMounted, watch } = Vue;
+
+        createApp({
+            setup() {
+                const step = ref('intro');
+                const currentQuestionIndex = ref(0);
+                const answersHistory = ref([]);
+                const isSubmitted = ref(false);
+                const revealCount = ref(3);
+                let revealTimers = [];
+                let chartInstance = null;
+
+                onMounted(() => {
+                    setTimeout(() => {
+                        if (step.value === 'intro') step.value = 'start';
+                    }, 3200);
+                });
+
+                const skipIntro = () => {
+                    if (step.value === 'intro') step.value = 'start';
+                };
+
+                const questions = [
+                    { text: 'あなたの性別をお聞かせください', options: [{ text: '男性', type: 'A', img: '1-1seibetuotoko.jpg' }, { text: '女性', type: 'B', img: '1-2seibetuonna.jpg' }] },
+                    { text: 'あなたの年齢をお聞かせください', options: [{ text: '35歳未満', imgText: 'UNDER 35', type: 'A' }, { text: '35歳以上', imgText: 'OVER 35', type: 'B' }] },
+                    { text: '今のお腹の空き具合は？', options: [{ text: 'ガッツリ満たされたい', type: 'A', img: '3-1.jpg' }, { text: '少しずつつまみたい', type: 'B', img: '3-2.jpg' }] },
+                    { text: '今の食事のペースは？', options: [{ text: 'テンポよくサクッと楽しみたい', type: 'A', img: '4-1.jpg' }, { text: 'ゆっくりじっくり楽しみたい', type: 'B', img: '4-2.jpg' }] },
+                    { text: 'どのように美味しさを感じたい？', options: [{ text: '口の中でパッと広がる美味しさ', type: 'A', img: '5-1.jpg' }, { text: '味わいながらじんわり感じる旨み', type: 'B', img: '5-2.jpg' }] },
+                    { text: '今惹かれる味は？', options: [{ text: 'しっかりした味わい', type: 'A', img: '6-1.jpg' }, { text: '繊細で優しい味わい', type: 'B', img: '6-2.jpg' }] },
+                    { text: '一緒に合わせたい飲み物のイメージは？', options: [{ text: '冷えたビールや炭酸で爽快に', type: 'A', img: '7-1craft.jpg' }, { text: 'ワインやバーボンを香りとともに', type: 'B', img: '7-2wine.jpg' }] },
+                    { text: '今の気分は？', options: [{ text: '明るく気分を発散したい', type: 'A', img: '8-1okiru.jpg' }, { text: '静かに心身をリセットしたい', type: 'B', img: '8-2yasumu.jpg' }] }
+                ];
+
+                // ※ foods のメニュー名・こだわり文はお店の実メニューに合わせて書き換えてください。
+                //    img に画像ファイル名を入れると、カードに写真が表示されます。
+                const resultTypes = {
+                    type1: {
+                        id: 'type1', no: '01', motif: 'BALLPARK',
+                        enTitle: 'GRAND SLAM', jaTitle: 'グランドスラム',
+                        catch: 'Go big, or go home.',
+                        description: '濃厚な旨みで豪快に満たされたい、ホームラン級の食欲派',
+                        features: 'じっくり火を入れた肉の旨み、とろけるチーズのコク。重めのビールやバーボンと合わせて、一皿で満塁ホームランを狙うタイプです。',
+                        foods: [
+                            { name: 'スモークBBQスペアリブ', en: 'SMOKED BBQ SPARE RIBS', img: '', kodawari: '低温でじっくり燻した骨付き肉に、スパイスを効かせた自家製BBQソースを重ね塗り。骨からほろっと外れる柔らかさです。' },
+                            { name: '濃厚マック&チーズ', en: "MAC 'N' CHEESE", img: '', kodawari: '数種のチーズをブレンドしたソースで仕上げ、表面はこんがりオーブン焼きに。アメリカの家庭の味を酒場仕立てで。' },
+                            { name: 'テキサス・チリコンカン', en: 'TEXAS CHILI', img: '', kodawari: '粗挽き肉と豆をスパイスで煮込んだ、ピリッと深い一杯。トルティーヤチップスですくってどうぞ。' }
+                        ]
+                    },
+                    type2: {
+                        id: 'type2', no: '02', motif: 'MOTHER ROAD',
+                        enTitle: 'ROUTE 66', jaTitle: 'ルート66',
+                        catch: 'Take it slow, enjoy the ride.',
+                        description: '優しい旨みをゆっくり味わう、旅の途中のダイナー派',
+                        features: 'じんわり広がるスープや煮込みの滋味を、香りのいいお酒とともにゆっくり。長いドライブの途中で立ち寄るダイナーのような、ほっとする時間を好むタイプです。',
+                        foods: [
+                            { name: 'ニューイングランド・クラムチャウダー', en: 'CLAM CHOWDER', img: '', kodawari: 'あさりの旨みを丁寧に引き出し、ミルクでまろやかに。クラッカーを砕いて入れるのがアメリカ流です。' },
+                            { name: 'チキンポットパイ', en: 'CHICKEN POT PIE', img: '', kodawari: '鶏肉と野菜のクリーム煮をサクサクのパイ生地で包んで焼き上げ。崩しながら熱々をどうぞ。' },
+                            { name: 'ハーブローストチキン', en: 'HERB ROAST CHICKEN', img: '', kodawari: 'ハーブとガーリックでマリネし、皮はパリッと中はしっとり。シンプルだからこそ素材の旨みが際立ちます。' }
+                        ]
+                    },
+                    type3: {
+                        id: 'type3', no: '03', motif: 'HARDWOOD',
+                        enTitle: 'FAST BREAK', jaTitle: 'ファストブレイク',
+                        catch: 'Grab a beer. Let’s go!',
+                        description: 'テンポよく、ビール片手に盛り上がりたいスピード派',
+                        features: '揚げたての香ばしさとスパイスのキレ。冷えたビールやハイボールと交互に、コートを駆け抜ける速攻のようにテンポよく楽しむタイプです。',
+                        foods: [
+                            { name: 'バッファローウィング', en: 'BUFFALO WINGS', img: '', kodawari: 'カラッと揚げた手羽を、バターとホットソースの特製ソースで絡めて。ブルーチーズディップとセロリを添えた本場スタイル。' },
+                            { name: 'ビアバッター・オニオンリング', en: 'BEER-BATTERED ONION RINGS', img: '', kodawari: 'ビールを使った衣で揚げるから、驚くほど軽い食感。甘い玉ねぎとの相性は、ビールの最高の相棒です。' },
+                            { name: 'ポップコーンシュリンプ', en: 'POPCORN SHRIMP', img: '', kodawari: '小エビをスパイス衣でひと口サイズに。ポップコーン感覚で、つまむ手が止まりません。' }
+                        ]
+                    },
+                    type4: {
+                        id: 'type4', no: '04', motif: 'NEW YORK HARBOR',
+                        enTitle: 'LADY LIBERTY', jaTitle: 'レディ・リバティ',
+                        catch: 'Fresh, free, and fabulous.',
+                        description: '素材の鮮やかさで心も軽やかに。自由で爽やかなフレッシュ派',
+                        features: '新鮮な魚介や野菜の彩り、パッと広がる爽快感。自由の女神が見守る港町のように、軽やかで華やかな一皿を好むタイプです。',
+                        foods: [
+                            { name: 'ロブスターロール', en: 'LOBSTER ROLL', img: '', kodawari: 'ぷりっとしたロブスターをレモン香るソースで和え、バターで焼いたバンズにたっぷり。ニューイングランドの港町の味。' },
+                            { name: 'シュリンプカクテル', en: 'SHRIMP COCKTAIL', img: '', kodawari: '茹でたての大ぶりエビを冷やして、ホースラディッシュの効いたカクテルソースで。クラシックなステーキハウスの定番前菜。' },
+                            { name: 'コブサラダ', en: 'COBB SALAD', img: '', kodawari: 'アボカド、ベーコン、卵、チキン、トマトを彩りよく並べて。食べる直前に混ぜて、食感の違いを楽しんでください。' }
+                        ]
+                    }
+                };
+
+                const currentQuestion = computed(() => questions[currentQuestionIndex.value]);
+
+                const finalResult = computed(() => {
+                    if (answersHistory.value.length < 8) return null;
+                    const scores = { type1: 0, type2: 0, type3: 0, type4: 0 };
+                    const [, , q3, q4, q5, q6, q7, q8] = answersHistory.value;
+
+                    // スコアリングは元の診断と同じロジック（type1:濃厚 / type2:優しい / type3:揚げ物 / type4:フレッシュ）
+                    if (q3 === 'A') { scores.type1 += 2; scores.type3 += 1; } else { scores.type2 += 1; scores.type4 += 2; }
+                    if (q4 === 'A') { scores.type3 += 2; scores.type4 += 1; } else { scores.type1 += 1; scores.type2 += 2; }
+                    if (q5 === 'A') { scores.type3 += 1; scores.type4 += 2; } else { scores.type1 += 2; scores.type2 += 1; }
+                    if (q6 === 'A') { scores.type1 += 2; scores.type3 += 1; } else { scores.type2 += 2; scores.type4 += 1; }
+                    if (q7 === 'A') { scores.type3 += 2; scores.type4 += 1; } else { scores.type1 += 1; scores.type2 += 2; }
+                    if (q8 === 'A') { scores.type1 += 1; scores.type3 += 2; } else { scores.type2 += 1; scores.type4 += 2; }
+
+                    let maxScore = -1, resultTypeId = 'type1';
+                    for (const [typeId, score] of Object.entries(scores)) {
+                        if (score > maxScore) { maxScore = score; resultTypeId = typeId; }
+                    }
+                    return resultTypes[resultTypeId];
+                });
+
+                const getChartData = () => {
+                    if (answersHistory.value.length < 8) return [0, 0, 0];
+                    const [, , q3, q4, q5, q6, q7, q8] = answersHistory.value;
+
+                    let volume = 1.5, tempo = 1.5, depth = 1.5;
+                    if (q3 === 'A') volume += 1.75;
+                    if (q6 === 'A') volume += 1.75;
+                    if (q4 === 'A') tempo += 1.2;
+                    if (q5 === 'A') tempo += 1.0;
+                    if (q7 === 'A') tempo += 1.3;
+                    if (q4 === 'B') depth += 1.0;
+                    if (q5 === 'B') depth += 1.2;
+                    if (q8 === 'B') depth += 1.3;
+
+                    const clamp = (val) => Math.min(Math.max(val, 1.5), 5);
+                    return [clamp(volume), clamp(tempo), clamp(depth)];
+                };
+
+                const renderChart = () => {
+                    const ctxElement = document.getElementById('radarChart');
+                    if (!ctxElement) { if (step.value === 'result') setTimeout(renderChart, 100); return; }
+                    if (chartInstance) chartInstance.destroy();
+
+                    const grid = 'rgba(242, 232, 213, 0.15)';
+                    chartInstance = new Chart(ctxElement.getContext('2d'), {
+                        type: 'radar',
+                        data: {
+                            labels: ['VOLUME', 'TEMPO', 'DEPTH'],
+                            datasets: [{
+                                data: getChartData(),
+                                backgroundColor: 'rgba(212, 168, 90, 0.25)',
+                                borderColor: '#d4a85a',
+                                borderWidth: 1.5,
+                                pointBackgroundColor: '#f2e8d5',
+                                pointRadius: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            layout: { padding: 4 },
+                            plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                            scales: {
+                                r: {
+                                    min: 0, max: 5,
+                                    angleLines: { color: grid },
+                                    grid: { color: grid },
+                                    pointLabels: { color: '#f2e8d5', font: { size: 9, family: 'Oswald', weight: '600' }, padding: 2 },
+                                    ticks: { display: false, stepSize: 1 }
+                                }
+                            }
+                        }
+                    });
+                };
+
+                watch(step, (newStep) => {
+                    if (newStep === 'result') setTimeout(renderChart, 700);
+                    const app = document.getElementById('app');
+                    if (app) app.scrollTo({ top: 0 });
+                });
+
+                const clearRevealTimers = () => {
+                    revealTimers.forEach(clearTimeout);
+                    revealTimers = [];
+                };
+
+                // わくわく演出：3 → 2 → 1 → PLAY BALL! → おすすめ発表
+                const startReveal = () => {
+                    clearRevealTimers();
+                    revealCount.value = 3;
+                    step.value = 'reveal';
+                    revealTimers.push(setTimeout(() => revealCount.value = 2, 1700));
+                    revealTimers.push(setTimeout(() => revealCount.value = 1, 2500));
+                    revealTimers.push(setTimeout(() => revealCount.value = 0, 3300));
+                    revealTimers.push(setTimeout(() => { if (step.value === 'reveal') step.value = 'menu'; }, 4800));
+                };
+
+                const finishReveal = () => {
+                    // カウント中のタップはスキップ扱い
+                    clearRevealTimers();
+                    step.value = 'menu';
+                };
+
+                const startQuiz = () => {
+                    step.value = 'quiz';
+                    answersHistory.value = [];
+                    currentQuestionIndex.value = 0;
+                    isSubmitted.value = false;
+                };
+
+                const goBack = () => {
+                    if (currentQuestionIndex.value > 0) {
+                        answersHistory.value.pop();
+                        currentQuestionIndex.value--;
+                    } else {
+                        step.value = 'start';
+                    }
+                };
+
+                const sendToGoogleSheet = (q1, q2, type, category) => {
+                    if (!GAS_URL) return;
+                    try {
+                        const params = new URLSearchParams();
+                        params.append('q1', q1); params.append('q2', q2);
+                        params.append('type', type); params.append('category', category);
+                        params.append('gender', q1); params.append('age', q2);
+                        params.append('result', type); params.append('ua', navigator.userAgent);
+                        fetch(GAS_URL, {
+                            method: 'POST', mode: 'no-cors',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: params.toString()
+                        });
+                    } catch (error) {}
+                };
+
+                const answerQuestion = (type) => {
+                    if (step.value !== 'quiz') return;
+                    answersHistory.value.push(type);
+
+                    if (currentQuestionIndex.value < questions.length - 1) {
+                        currentQuestionIndex.value++;
+                        const app = document.getElementById('app');
+                        if (app) app.scrollTo({ top: 0, behavior: 'smooth' });
+                        return;
+                    }
+
+                    step.value = 'pouring';
+                    setTimeout(() => {
+                        if (step.value !== 'pouring') return;
+                        step.value = 'result';
+                        if (!isSubmitted.value) {
+                            const q1Ans = answersHistory.value[0] === 'A' ? '男性' : '女性';
+                            const q2Ans = answersHistory.value[1] === 'A' ? '35歳未満' : '35歳以上';
+                            const typeId = finalResult.value ? finalResult.value.id : 'unknown';
+                            sendToGoogleSheet(q1Ans, q2Ans, typeId, '大衆酒場アメリカ');
+                            isSubmitted.value = true;
+                        }
+                    }, 2600);
+                };
+
+                const resetQuiz = () => {
+                    clearRevealTimers();
+                    step.value = 'start';
+                    currentQuestionIndex.value = 0;
+                    answersHistory.value = [];
+                    isSubmitted.value = false;
+                    if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+                };
+
+                return {
+                    step, currentQuestionIndex, currentQuestion, answersHistory, finalResult, revealCount,
+                    skipIntro, startQuiz, goBack, answerQuestion, startReveal, finishReveal, resetQuiz
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
