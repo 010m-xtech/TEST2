@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://www.gstatic.com https://www.google.com https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https://*.googleapis.com https://*.firebaseapp.com https://www.google.com https://www.recaptcha.net; frame-src https://www.google.com https://www.recaptcha.net https://*.firebaseapp.com; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>ハッピーリング採点チャレンジ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -846,10 +848,21 @@ li.mine{background:#F7D37A1F; border-radius:12px}
 // Firebase の画面でコピーした firebaseConfig の中身を、下の null と入れ替えてください。
 // 例: const FIREBASE_CONFIG = { apiKey: "...", authDomain: "...", projectId: "...", storageBucket: "...", messagingSenderId: "...", appId: "..." };
 // null のままなら、ランキングはその端末の中だけに残ります。
-const FIREBASE_CONFIG = null;
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDNc8_qYEmgqpD2EMuDA2_yHMn8yjx2_Dc",
+  authDomain: "happyringnagomu.firebaseapp.com",
+  projectId: "happyringnagomu",
+  storageBucket: "happyringnagomu.firebasestorage.app",
+  messagingSenderId: "778654814075",
+  appId: "1:778654814075:web:0a34cca23959514d6ab7de"
+};
 const FIREBASE_SDK = "10.12.2";
+// いたずら防止(任意): App Check に登録した reCAPTCHA v3 の「サイトキー」を入れると、
+// このページ以外からの書き込みを Firebase が断るようになります。null のままでも動きます。
+const APPCHECK_SITE_KEY = null;
 // ================================================================
 const $ = id => document.getElementById(id);
+
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 // ---------- 画面の切り替え ----------
@@ -1096,7 +1109,7 @@ function showBest(){
 showBest();
 
 // ---------- 状態 ----------
-let sample = null, db = null, isStaff = false, maxImages = 1;
+let sample = null, db = null, isStaff = false, maxImages = 1, isFb = false, myUid = "";
 let img = null, photoHash = null, thumb = null, ctl = null, last = null, savedId = null, savedName = "", tipTimer = null;
 
 // ---------- 写真の準備 ----------
@@ -1560,12 +1573,27 @@ function renderBoard(){
     li.children[0].textContent = rank;
     loadThumb(d.id, li.children[1]);
     const who = li.children[2]; who.textContent = String(v.name || "名もなき呑み人");
-    if (v.memo) { const m = document.createElement("span"); m.className = "memo"; m.textContent = "「" + String(v.memo).slice(0, 10) + "」"; who.append(m); }
     const sub = document.createElement("span");
     const dt = v.createdAt ? new Date(Number(v.createdAt)) : null;
     sub.textContent = `リング ${Number(v.rings) || 0} 本` + (dt ? ` ・ ${dt.getMonth() + 1}/${dt.getDate()}` : "");
     who.append(sub);
     li.children[3].innerHTML = `${score}<small>点</small>`;
+    const mineRec = isFb ? (myUid && v.uid === myUid) : !db;
+    if (mineRec && !(isStaff && staffMode)) {
+      const del = document.createElement("div"); del.className = "del";
+      if (deleting === d.id) {
+        const yes = document.createElement("button"); yes.className = "yes"; yes.type = "button"; yes.textContent = "消す";
+        const no = document.createElement("button"); no.type = "button"; no.textContent = "やめる";
+        yes.onclick = () => removeRecord(d.id);
+        no.onclick = () => { deleting = null; renderBoard(); };
+        del.append(no, yes);
+      } else {
+        const b = document.createElement("button"); b.type = "button"; b.textContent = "自分の記録を消す";
+        b.onclick = () => { deleting = d.id; renderBoard(); };
+        del.append(b);
+      }
+      li.append(del);
+    }
     if (isStaff && staffMode) {
       const del = document.createElement("div"); del.className = "del";
       if (deleting === d.id) {
@@ -1587,9 +1615,14 @@ function renderBoard(){
 
 async function removeRecord(id){
   try {
-    await db.doc("scores/" + id).delete();
-    await db.doc("thumbs/" + id).delete().catch(() => {});
-    thumbs.delete(id);
+    if (!db) { // この端末だけのランキング
+      store.set(LOCAL_KEY, localRecords().filter(r => r.id !== id)); loadLocalBoards();
+    } else {
+      await db.doc("thumbs/" + id).delete().catch(() => {}); // 先に見本の写真(記録が残っているうちに持ち主を確かめるため)
+      await db.doc("scores/" + id).delete();
+      thumbs.delete(id);
+    }
+    if (id === savedId) { savedId = null; savedName = ""; $("saveNote").textContent = "記録を消しました。"; if (last) updateSaveButton(); }
   } catch (_) {}
   deleting = null; renderBoard();
 }
@@ -1639,12 +1672,24 @@ $("saveForm").addEventListener("submit", async e => {
       const dup = await db.collection("scores").where("hash", "==", photoHash).limit(1).get();
       if (!dup.empty) { $("sheetNote").textContent = "この写真はすでに記録されています。新しい一杯で挑戦してください。"; return; }
     }
-    const ref = await db.collection("scores").add({
-      name: name.slice(0, 12), memo, score: last.total, rings: last.rings, scores: last.scores,
-      comment: last.comment, createdAt: last.at, hash: photoHash || "", day: dayKey(last.at), month: monthKey(last.at),
-    });
+    let ref;
+    if (isFb) {
+      // 感想は表に出さず、お店だけが見られる private に残す
+      if (!myUid) { await firebase.auth().signInAnonymously(); myUid = firebase.auth().currentUser.uid; }
+      ref = db.collection("scores").doc();
+      const batch = db.batch();
+      batch.set(db.doc("private/" + ref.id), { memo, name: name.slice(0, 12), score: last.total, createdAt: last.at, uid: myUid });
+      batch.set(ref, { name: name.slice(0, 12), score: last.total, rings: last.rings, scores: last.scores,
+        createdAt: last.at, hash: photoHash || "", day: dayKey(last.at), month: monthKey(last.at), uid: myUid });
+      await batch.commit();
+    } else {
+      ref = await db.collection("scores").add({
+        name: name.slice(0, 12), memo, score: last.total, rings: last.rings, scores: last.scores,
+        comment: last.comment, createdAt: last.at, hash: photoHash || "", day: dayKey(last.at), month: monthKey(last.at),
+      });
+    }
     savedId = ref.id; savedName = name.slice(0, 12);
-    if (thumb) { await db.doc("thumbs/" + ref.id).set({ img: thumb }).catch(() => {}); thumbs.delete(ref.id); }
+    if (thumb) { await db.doc("thumbs/" + ref.id).set(isFb ? { img: thumb, uid: myUid } : { img: thumb }).catch(() => {}); thumbs.delete(ref.id); }
     $("saveSheet").hidden = true;
     $("saveNote").textContent = `「${savedName}」で記録しました。`;
     updateSaveButton();
@@ -1896,9 +1941,18 @@ async function startFirebase(){
   try {
     await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_SDK}/firebase-app-compat.js`);
     await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_SDK}/firebase-firestore-compat.js`);
+    await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_SDK}/firebase-auth-compat.js`);
     firebase.initializeApp(FIREBASE_CONFIG);
+    if (APPCHECK_SITE_KEY) {
+      await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_SDK}/firebase-app-check-compat.js`);
+      firebase.appCheck().activate(new firebase.appCheck.ReCaptchaV3Provider(APPCHECK_SITE_KEY), true);
+    }
+    isFb = true;
+    // 名前もパスワードもいらない「匿名ログイン」。この端末で記録したものを、この端末から消せるようにするため
+    firebase.auth().onAuthStateChanged(u => { myUid = u ? u.uid : ""; renderBoard(); });
+    firebase.auth().signInAnonymously().catch(() => {});
     startRemoteBoards(firebase.firestore());
-  } catch (_) { loadLocalBoards(); renderBoard(); } // 読み込めないときは端末内ランキングで続ける
+  } catch (_) { isFb = false; loadLocalBoards(); renderBoard(); } // 読み込めないときは端末内ランキングで続ける
 }
 
 loadLocalBoards();
