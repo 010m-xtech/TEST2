@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>大衆酒場アメリカ Food Lineup</title>
+    <title>大衆酒場アメリカ フード診断</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Vue.js (Vue 3) -->
@@ -162,12 +162,12 @@
         .lineup-card {
             background: linear-gradient(135deg, rgba(242,232,213,0.97), rgba(232,218,192,0.97));
             color: var(--navy);
-            border-left: 6px solid var(--red);
+            border-top: 4px solid var(--red);
             box-shadow: 0 10px 30px rgba(0,0,0,0.4);
             opacity: 0;
             animation: slideIn .7s cubic-bezier(.2,1,.3,1) forwards;
         }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-40px) rotate(-2deg); } to { opacity: 1; transform: none; } }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(30px) scale(0.96); } to { opacity: 1; transform: none; } }
         .order-badge {
             font-family: 'Oswald', sans-serif;
             background: var(--navy); color: var(--gold);
@@ -179,7 +179,16 @@
 <body class="m-0 p-0 w-screen h-screen overflow-hidden relative">
     <div class="stars-bg absolute inset-0 pointer-events-none z-0"></div>
 
-    <div id="app" class="relative z-10 w-full h-full overflow-y-auto overflow-x-hidden flex flex-col items-center justify-center px-4 py-6">
+    <!-- 野球ボールのアイコン（<use href="#baseball"> で再利用） -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <symbol id="baseball" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10.5" fill="#f7f1e3" stroke="#c9bfa8" stroke-width="1"/>
+            <path d="M6.2 3.6 C9.6 8.4 9.6 15.6 6.2 20.4 M17.8 3.6 C14.4 8.4 14.4 15.6 17.8 20.4" fill="none" stroke="#b8423a" stroke-width="1.1"/>
+            <path d="M6.6 6.2 L8.4 5.5 M7.6 8.6 L9.4 8.2 M8.1 11.2 L9.9 11.1 M8.1 13.6 L9.9 13.8 M7.6 16.1 L9.4 16.6 M6.6 18.4 L8.4 19.1 M17.4 6.2 L15.6 5.5 M16.4 8.6 L14.6 8.2 M15.9 11.2 L14.1 11.1 M15.9 13.6 L14.1 13.8 M16.4 16.1 L14.6 16.6 M17.4 18.4 L15.6 19.1" stroke="#b8423a" stroke-width="0.9" stroke-linecap="round"/>
+        </symbol>
+    </svg>
+
+    <div id="app" class="relative z-10 w-full h-full overflow-y-auto overflow-x-hidden flex flex-col items-center px-4 py-6">
 
         <transition name="fade" mode="out-in">
 
@@ -194,14 +203,31 @@
             </div>
 
             <!-- 1. トップ画面 -->
-            <div v-else-if="step === 'start'" key="start" class="w-full max-w-md flex flex-col items-center text-center">
-                <!-- 自由の女神のトーチ -->
-                <svg viewBox="0 0 64 120" class="w-12 h-24 mb-4 drop-shadow-[0_0_14px_rgba(212,168,90,0.6)]" aria-hidden="true">
-                    <path d="M32 4 C41 17 46 27 41 37 C38 43 26 43 23 37 C18 27 24 17 32 4Z" fill="#d4a85a"/>
-                    <path d="M32 18 C36 25 37 31 34 36 C32 39 30 38 29 35 C28 30 30 25 32 18Z" fill="#fff4e0" opacity=".85"/>
-                    <path d="M17 43 H47 L42 56 H22 Z" fill="none" stroke="#f2e8d5" stroke-width="2.5" stroke-linejoin="round"/>
-                    <path d="M27 56 H37 L35 112 H29 Z" fill="none" stroke="#f2e8d5" stroke-width="2.5" stroke-linejoin="round"/>
-                    <path d="M25 70 H39 M26 86 H38" stroke="#f2e8d5" stroke-width="1.5"/>
+            <div v-else-if="step === 'start'" key="start" class="w-full max-w-md mx-auto my-auto flex flex-col items-center text-center">
+                <!-- 自由の女神 -->
+                <svg viewBox="0 0 100 200" class="w-20 h-40 mb-4 drop-shadow-[0_0_16px_rgba(212,168,90,0.45)]" aria-hidden="true">
+                    <!-- 炎 -->
+                    <path d="M74 4 C81 12 84 19 80 26 C78 30 70 30 68 26 C65 19 69 12 74 4Z" fill="#d4a85a"/>
+                    <path d="M74 13 C77 18 77 22 75 25 C74 27 72 26 72 24 C71 21 72 17 74 13Z" fill="#fff4e0" opacity=".9"/>
+                    <g fill="#f2e8d5">
+                        <!-- トーチと掲げた右腕 -->
+                        <path d="M65 30 H83 L79 38 H69 Z"/>
+                        <path d="M70 38 H78 L68 78 L58 76 Z"/>
+                        <!-- 王冠（7本のスパイク） -->
+                        <path d="M45 58 L30 44 L41 56 Z M45 56 L36 37 L44 54 Z M47 55 L46 33 L49 54 Z M50 55 L57 35 L52 55 Z M52 57 L64 42 L54 58 Z M44 61 L27 55 L43 63 Z M54 61 L67 53 L55 63 Z"/>
+                        <!-- 頭 -->
+                        <circle cx="49" cy="64" r="8"/>
+                        <!-- ローブ -->
+                        <path d="M40 74 Q49 70 60 74 L64 82 C66 110 68 135 70 160 H28 C30 135 31 110 34 84 Z"/>
+                        <!-- 左手の銘板 -->
+                        <path d="M26 92 L38 88 L42 112 L30 116 Z"/>
+                        <!-- 台座 -->
+                        <path d="M24 162 H76 V170 H24 Z M18 172 H82 V196 H18 Z"/>
+                    </g>
+                    <!-- ローブのひだ・銘板の縁 -->
+                    <path d="M44 86 C42 110 41 135 40 158 M52 84 C53 110 55 135 57 158 M60 90 C62 115 63 135 64 158" stroke="#0d1626" stroke-width="1.2" fill="none" opacity=".55"/>
+                    <path d="M28.5 93.5 L37 90.5 L40.5 110.5 L31.5 113.5 Z" stroke="#0d1626" stroke-width="1" fill="none" opacity=".55"/>
+                    <path d="M18 180 H82" stroke="#0d1626" stroke-width="1" opacity=".4"/>
                 </svg>
 
                 <div class="font-head text-gold text-xs tracking-[0.45em] mb-2">TAISHU SAKABA</div>
@@ -223,20 +249,22 @@
             </div>
 
             <!-- 2. 質問画面（全8問） -->
-            <div v-else-if="step === 'quiz'" key="quiz" class="w-full max-w-[360px] sm:max-w-[400px] mx-auto flex flex-col self-start mt-2">
+            <div v-else-if="step === 'quiz'" key="quiz" class="w-full max-w-[360px] sm:max-w-[400px] mx-auto flex flex-col mt-2">
                 <div class="w-full flex items-center justify-between mb-2">
                     <button @click="goBack" class="text-muted hover:text-white text-xs font-head tracking-widest flex items-center transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
                         BACK
                     </button>
-                    <div class="font-head text-sm text-muted tracking-widest">
+                    <div class="font-head text-sm text-muted tracking-widest flex items-center gap-1.5">
+                        <svg viewBox="0 0 24 24" class="w-4 h-4" aria-hidden="true"><use href="#baseball"/></svg>
                         INNING <span class="text-gold text-lg">{{ currentQuestionIndex + 1 }}</span> / 8
                     </div>
                 </div>
-                <!-- 8イニング風プログレス -->
-                <div class="w-full grid grid-cols-8 gap-1 mb-6">
-                    <div v-for="n in 8" :key="n" class="h-1.5 rounded-sm transition-all duration-300"
-                         :style="{ background: n <= currentQuestionIndex + 1 ? 'var(--gold)' : 'rgba(242,232,213,0.12)' }"></div>
+                <!-- 8イニング分の野球ボール -->
+                <div class="w-full flex justify-between items-center mb-6 px-1">
+                    <svg v-for="n in 8" :key="n" viewBox="0 0 24 24" class="w-7 h-7 transition-all duration-300"
+                         :class="n === currentQuestionIndex + 1 ? 'scale-110 drop-shadow-[0_0_6px_rgba(212,168,90,0.8)]' : ''"
+                         :style="{ opacity: n <= currentQuestionIndex + 1 ? 1 : 0.22 }" aria-hidden="true"><use href="#baseball"/></svg>
                 </div>
 
                 <h2 class="font-bold mb-5 text-center text-[clamp(14px,4.4vw,18px)] tracking-tight leading-snug">
@@ -263,17 +291,14 @@
             </div>
 
             <!-- 2.5 集計中 -->
-            <div v-else-if="step === 'pouring'" key="pouring" class="w-full max-w-md flex flex-col items-center justify-center text-center min-h-[60vh]">
-                <svg viewBox="0 0 64 64" class="spin-ball w-16 h-16 mb-8" aria-hidden="true">
-                    <circle cx="32" cy="32" r="29" fill="#c8692c" stroke="#2a160b" stroke-width="2.5"/>
-                    <path d="M32 3 V61 M3 32 H61 M11 11 Q32 32 11 53 M53 11 Q32 32 53 53" fill="none" stroke="#2a160b" stroke-width="2.5"/>
-                </svg>
+            <div v-else-if="step === 'pouring'" key="pouring" class="w-full max-w-md mx-auto my-auto flex flex-col items-center justify-center text-center min-h-[60vh]">
+                <svg viewBox="0 0 24 24" class="spin-ball w-16 h-16 mb-8" aria-hidden="true"><use href="#baseball"/></svg>
                 <div class="font-head text-2xl tracking-[0.25em] mb-2">CHECKING THE STATS</div>
                 <p class="text-sm text-gold animate-pulse">あなたのデータを分析中...</p>
             </div>
 
             <!-- 3. タイプ発表 -->
-            <div v-else-if="step === 'result' && finalResult" key="result" class="w-full max-w-md flex flex-col items-center text-center">
+            <div v-else-if="step === 'result' && finalResult" key="result" class="w-full max-w-md mx-auto my-auto flex flex-col items-center text-center">
                 <div class="panel w-full rounded-2xl px-5 pt-7 pb-6 flex flex-col items-center">
                     <div class="font-head text-xs tracking-[0.45em] text-muted mb-4 rise">YOUR TYPE IS</div>
 
@@ -327,7 +352,7 @@
             </div>
 
             <!-- 5. おすすめフード3品 -->
-            <div v-else-if="step === 'menu' && finalResult" key="menu" class="w-full max-w-md flex flex-col self-start mt-2">
+            <div v-else-if="step === 'menu' && finalResult" key="menu" class="w-full max-w-md mx-auto flex flex-col items-stretch mt-2 pb-4">
                 <div class="text-center mb-5">
                     <div class="font-head text-gold text-xs tracking-[0.45em] mb-1">STARTING LINEUP</div>
                     <h2 class="font-head text-2xl font-bold tracking-wider">{{ finalResult.enTitle }}</h2>
@@ -336,19 +361,17 @@
 
                 <div class="space-y-4">
                     <div v-for="(food, i) in finalResult.foods" :key="food.name"
-                         class="lineup-card rounded-md p-4 flex gap-4"
+                         class="lineup-card rounded-md px-5 pt-4 pb-5 flex flex-col items-center text-center"
                          :style="{ animationDelay: (0.25 + i * 0.45) + 's' }">
-                        <div class="order-badge shrink-0 w-12 h-12 rounded-full flex flex-col items-center justify-center leading-none">
+                        <div class="order-badge w-11 h-11 rounded-full flex flex-col items-center justify-center leading-none mb-2">
                             <span class="text-lg font-bold">{{ i + 1 }}</span>
                             <span class="text-[8px] tracking-widest">{{ ['ST','ND','RD'][i] }}</span>
                         </div>
-                        <div class="flex-1 min-w-0">
-                            <img v-if="food.img" :src="food.img" class="w-full h-32 object-cover rounded mb-3" alt="">
-                            <div class="font-head text-[10px] tracking-[0.25em]" style="color: var(--red)">{{ food.en }}</div>
-                            <div class="text-lg font-black leading-snug mb-2">{{ food.name }}</div>
-                            <div class="text-[10px] font-bold tracking-widest mb-1" style="color: var(--red)">★ こだわり</div>
-                            <p class="text-[12.5px] leading-relaxed text-[#2a3448]">{{ food.kodawari }}</p>
-                        </div>
+                        <img v-if="food.img" :src="food.img" class="w-full h-36 object-cover rounded mb-3" alt="">
+                        <div class="font-head text-[10px] tracking-[0.25em]" style="color: var(--red)">{{ food.en }}</div>
+                        <div class="text-lg font-black leading-snug mb-2">{{ food.name }}</div>
+                        <div class="text-[10px] font-bold tracking-widest mb-1" style="color: var(--red)">★ こだわり ★</div>
+                        <p class="text-[12.5px] leading-relaxed text-[#2a3448]">{{ food.kodawari }}</p>
                     </div>
                 </div>
 
@@ -391,25 +414,25 @@
                 };
 
                 const questions = [
-                    { text: 'あなたの性別をお聞かせください', options: [{ text: '男性', type: 'A', img: '1-1seibetuotoko.jpg' }, { text: '女性', type: 'B', img: '1-2seibetuonna.jpg' }] },
+                    { text: 'あなたの性別をお聞かせください', options: [{ text: '男性', type: 'A', img: '1-1seibetuotoko.webp' }, { text: '女性', type: 'B', img: '1-2seibetuonna.webp' }] },
                     { text: 'あなたの年齢をお聞かせください', options: [{ text: '35歳未満', imgText: 'UNDER 35', type: 'A' }, { text: '35歳以上', imgText: 'OVER 35', type: 'B' }] },
-                    { text: '今のお腹の空き具合は？', options: [{ text: 'ガッツリ満たされたい', type: 'A', img: '3-1.jpg' }, { text: '少しずつつまみたい', type: 'B', img: '3-2.jpg' }] },
-                    { text: '今の食事のペースは？', options: [{ text: 'テンポよくサクッと楽しみたい', type: 'A', img: '4-1.jpg' }, { text: 'ゆっくりじっくり楽しみたい', type: 'B', img: '4-2.jpg' }] },
-                    { text: 'どのように美味しさを感じたい？', options: [{ text: '口の中でパッと広がる美味しさ', type: 'A', img: '5-1.jpg' }, { text: '味わいながらじんわり感じる旨み', type: 'B', img: '5-2.jpg' }] },
-                    { text: '今惹かれる味は？', options: [{ text: 'しっかりした味わい', type: 'A', img: '6-1.jpg' }, { text: '繊細で優しい味わい', type: 'B', img: '6-2.jpg' }] },
-                    { text: '一緒に合わせたい飲み物のイメージは？', options: [{ text: '冷えたビールや炭酸で爽快に', type: 'A', img: '7-1craft.jpg' }, { text: 'ワインやバーボンを香りとともに', type: 'B', img: '7-2wine.jpg' }] },
-                    { text: '今の気分は？', options: [{ text: '明るく気分を発散したい', type: 'A', img: '8-1okiru.jpg' }, { text: '静かに心身をリセットしたい', type: 'B', img: '8-2yasumu.jpg' }] }
+                    { text: '今のお腹の空き具合は？', options: [{ text: 'ガッツリ満たされたい', type: 'A', img: '3-1.webp' }, { text: '少しずつつまみたい', type: 'B', img: '3-2.webp' }] },
+                    { text: '今の食事のペースは？', options: [{ text: 'テンポよくサクッと楽しみたい', type: 'A', img: '4-1.webp' }, { text: 'ゆっくりじっくり楽しみたい', type: 'B', img: '4-2.webp' }] },
+                    { text: 'どのように美味しさを感じたい？', options: [{ text: '口の中でパッと広がる美味しさ', type: 'A', img: '5-1.webp' }, { text: '味わいながらじんわり感じる旨み', type: 'B', img: '5-2.webp' }] },
+                    { text: '今惹かれる味は？', options: [{ text: 'しっかりした味わい', type: 'A', img: '6-1.webp' }, { text: '繊細で優しい味わい', type: 'B', img: '6-2.webp' }] },
+                    { text: '一緒に合わせたい飲み物のイメージは？', options: [{ text: '冷えたビールや炭酸で爽快に', type: 'A', img: '7-1craft.webp' }, { text: 'ワインやバーボンを香りとともに', type: 'B', img: '7-2wine.webp' }] },
+                    { text: '今の気分は？', options: [{ text: '明るく気分を発散したい', type: 'A', img: '8-1okiru.webp' }, { text: '静かに心身をリセットしたい', type: 'B', img: '8-2yasumu.webp' }] }
                 ];
 
                 // ※ foods のメニュー名・こだわり文はお店の実メニューに合わせて書き換えてください。
                 //    img に画像ファイル名を入れると、カードに写真が表示されます。
                 const resultTypes = {
                     type1: {
-                        id: 'type1', no: '01', motif: 'BALLPARK',
-                        enTitle: 'GRAND SLAM', jaTitle: 'グランドスラム',
-                        catch: 'Go big, or go home.',
-                        description: '濃厚な旨みで豪快に満たされたい、ホームラン級の食欲派',
-                        features: 'じっくり火を入れた肉の旨み、とろけるチーズのコク。重めのビールやバーボンと合わせて、一皿で満塁ホームランを狙うタイプです。',
+                        id: 'type1', no: 'HR', motif: 'OVER THE FENCE',
+                        enTitle: 'HOME RUN', jaTitle: 'ホームラン',
+                        catch: 'Swing big, eat big.',
+                        description: '濃厚な旨みで豪快に満たされたい、フルスイングの食欲派',
+                        features: 'じっくり火を入れた肉の旨み、とろけるチーズのコク。重めのビールやバーボンと合わせて、一皿でスタンドまで運ぶような満足感を求めるタイプです。',
                         foods: [
                             { name: 'スモークBBQスペアリブ', en: 'SMOKED BBQ SPARE RIBS', img: '', kodawari: '低温でじっくり燻した骨付き肉に、スパイスを効かせた自家製BBQソースを重ね塗り。骨からほろっと外れる柔らかさです。' },
                             { name: '濃厚マック&チーズ', en: "MAC 'N' CHEESE", img: '', kodawari: '数種のチーズをブレンドしたソースで仕上げ、表面はこんがりオーブン焼きに。アメリカの家庭の味を酒場仕立てで。' },
@@ -417,11 +440,11 @@
                         ]
                     },
                     type2: {
-                        id: 'type2', no: '02', motif: 'MOTHER ROAD',
-                        enTitle: 'ROUTE 66', jaTitle: 'ルート66',
-                        catch: 'Take it slow, enjoy the ride.',
-                        description: '優しい旨みをゆっくり味わう、旅の途中のダイナー派',
-                        features: 'じんわり広がるスープや煮込みの滋味を、香りのいいお酒とともにゆっくり。長いドライブの途中で立ち寄るダイナーのような、ほっとする時間を好むタイプです。',
+                        id: 'type2', no: '3B', motif: 'THREE BASES',
+                        enTitle: 'TRIPLE', jaTitle: '3塁打',
+                        catch: 'Round the bases, nice and slow.',
+                        description: '優しい旨みをゆっくり味わう、じっくり塁を回る余裕派',
+                        features: 'じんわり広がるスープや煮込みの滋味を、香りのいいお酒とともにゆっくり。ダイヤモンドを大きく回る3塁打のように、時間をかけて味わいを深めていくタイプです。',
                         foods: [
                             { name: 'ニューイングランド・クラムチャウダー', en: 'CLAM CHOWDER', img: '', kodawari: 'あさりの旨みを丁寧に引き出し、ミルクでまろやかに。クラッカーを砕いて入れるのがアメリカ流です。' },
                             { name: 'チキンポットパイ', en: 'CHICKEN POT PIE', img: '', kodawari: '鶏肉と野菜のクリーム煮をサクサクのパイ生地で包んで焼き上げ。崩しながら熱々をどうぞ。' },
@@ -429,11 +452,11 @@
                         ]
                     },
                     type3: {
-                        id: 'type3', no: '03', motif: 'HARDWOOD',
-                        enTitle: 'FAST BREAK', jaTitle: 'ファストブレイク',
-                        catch: 'Grab a beer. Let’s go!',
+                        id: 'type3', no: '2B', motif: 'TWO BASES',
+                        enTitle: 'DOUBLE', jaTitle: '2塁打',
+                        catch: 'Grab a beer. Go, go, go!',
                         description: 'テンポよく、ビール片手に盛り上がりたいスピード派',
-                        features: '揚げたての香ばしさとスパイスのキレ。冷えたビールやハイボールと交互に、コートを駆け抜ける速攻のようにテンポよく楽しむタイプです。',
+                        features: '揚げたての香ばしさとスパイスのキレ。冷えたビールやハイボールと交互に、外野を抜けていく2塁打のように、勢いよくテンポよく楽しむタイプです。',
                         foods: [
                             { name: 'バッファローウィング', en: 'BUFFALO WINGS', img: '', kodawari: 'カラッと揚げた手羽を、バターとホットソースの特製ソースで絡めて。ブルーチーズディップとセロリを添えた本場スタイル。' },
                             { name: 'ビアバッター・オニオンリング', en: 'BEER-BATTERED ONION RINGS', img: '', kodawari: 'ビールを使った衣で揚げるから、驚くほど軽い食感。甘い玉ねぎとの相性は、ビールの最高の相棒です。' },
@@ -441,11 +464,11 @@
                         ]
                     },
                     type4: {
-                        id: 'type4', no: '04', motif: 'NEW YORK HARBOR',
-                        enTitle: 'LADY LIBERTY', jaTitle: 'レディ・リバティ',
-                        catch: 'Fresh, free, and fabulous.',
-                        description: '素材の鮮やかさで心も軽やかに。自由で爽やかなフレッシュ派',
-                        features: '新鮮な魚介や野菜の彩り、パッと広がる爽快感。自由の女神が見守る港町のように、軽やかで華やかな一皿を好むタイプです。',
+                        id: 'type4', no: '1B', motif: 'ONE BASE',
+                        enTitle: 'HIT', jaTitle: 'シングルヒット',
+                        catch: 'Clean hit, fresh start.',
+                        description: '素材の鮮やかさで心も軽やかに。クリーンヒットな爽やかフレッシュ派',
+                        features: '新鮮な魚介や野菜の彩り、パッと広がる爽快感。芯でとらえたクリーンヒットのように、軽やかでキレのある一皿を好むタイプです。',
                         foods: [
                             { name: 'ロブスターロール', en: 'LOBSTER ROLL', img: '', kodawari: 'ぷりっとしたロブスターをレモン香るソースで和え、バターで焼いたバンズにたっぷり。ニューイングランドの港町の味。' },
                             { name: 'シュリンプカクテル', en: 'SHRIMP COCKTAIL', img: '', kodawari: '茹でたての大ぶりエビを冷やして、ホースラディッシュの効いたカクテルソースで。クラシックなステーキハウスの定番前菜。' },
