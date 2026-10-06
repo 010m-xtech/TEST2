@@ -1929,7 +1929,7 @@ function imgSrc(n) { return (window.__IMG && window.__IMG[n]) || n; }
 /* ============ アコーディオン開閉 ============ */
 function toggleAccordion(element) {
   element.classList.toggle('open');
-  if (element.classList.contains('open')) markDone(element);
+  if (element.classList.contains('open')) { markDone(element); logCard(cardTitle(element)); }
 }
 
 /* ============ 原料データ ============ */
@@ -1947,6 +1947,7 @@ function showMaterialDetail(key, element) {
   document.querySelectorAll('.floating-item').forEach(el => el.classList.remove('active'));
   element.classList.add('active');
   markDone(element);
+  logCard((materialData[key] || {}).title);
 
   const data = materialData[key];
   document.getElementById('materialTitle').textContent = data.title;
@@ -2067,11 +2068,20 @@ const whiskyGroups = [
 
 /* ============ 画面遷移 ============ */
 let currentScreen = '';
+const screenLabels = {
+  'top': 'トップ',
+  'sake-intro': '日本酒｜導入', 'sake-types': '日本酒｜特定名称酒', 'sake-methods': '日本酒｜造り', 'our-sake': '日本酒｜吾熊の日本酒',
+  'shochu-intro': '焼酎｜導入', 'shochu-materials': '焼酎｜原料', 'shochu-labels': '焼酎｜ラベル', 'our-shochu': '焼酎｜吾熊の焼酎',
+  'whisky-intro': 'ウイスキー｜導入', 'whisky-types': 'ウイスキー｜ラベル', 'world-whisky': 'ウイスキー｜世界のウイスキー',
+  'whisky-deep': 'ウイスキー｜さまざまな個性', 'our-whisky': 'ウイスキー｜吾熊のウイスキー'
+};
 const drinkByScreen = { 'sake-intro': '日本酒', 'shochu-intro': '焼酎', 'whisky-intro': 'ウイスキー' };
 function goScreen(name){
   // トップ画面でお酒のアイコンを選んだときだけ記録する（「戻る」操作では記録しない）
-  if (currentScreen === 'top' && drinkByScreen[name]) sendData({ type: 'select', drink: drinkByScreen[name] });
+  const prevScreen = currentScreen;
+  if (prevScreen === 'top' && drinkByScreen[name]) sendData({ type: 'select', drink: drinkByScreen[name] });
   currentScreen = name;
+  if (prevScreen !== '' && prevScreen !== name) sendData({ type: 'view' });   // どの画面を見たか
   document.querySelectorAll('.screen').forEach(el=>{
     el.classList.toggle('active', el.dataset.screen === name);
   });
@@ -2280,6 +2290,7 @@ function answerQuiz(box, picked) {
   komeo.classList.add(ok ? 'komeo-hop' : 'komeo-wobble');
 
   markDone(box);
+  sendData({ type: 'quiz', detail: d.q.replace(/^Q\.\s*/, '').replace(/<[^>]+>/g, '').slice(0, 40) + '｜' + (ok ? '正解' : '不正解') });
   result.hidden = false;
   result.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 }
@@ -2429,7 +2440,10 @@ function initProgress() {
   window.addEventListener('resize', setHdr);
   window.addEventListener('load', setHdr);
 
-  document.querySelectorAll('.flip-card').forEach(f => f.addEventListener('click', () => markDone(f)));
+  document.querySelectorAll('.flip-card').forEach(f => f.addEventListener('click', () => {
+    markDone(f);
+    if (f.classList.contains('is-flipped')) logCard((f.querySelector('.flip-card-front h3') || {}).textContent.replace(/\s+/g, '').trim());
+  }));
 
   document.querySelectorAll('.screen').forEach(sec => {
     const name = sec.dataset.screen;
@@ -2523,6 +2537,23 @@ function deviceLabel() {
   return os + ' / ' + br;
 }
 
+// 開いたカード・タップした項目の記録（同じ項目は1回だけ）
+const loggedCards = {};
+function logCard(label) {
+  if (!label) return;
+  const key = currentScreen + '|' + label;
+  if (loggedCards[key]) return;
+  loggedCards[key] = true;
+  sendData({ type: 'card', detail: label });
+}
+function cardTitle(el) {
+  const t = el.querySelector('.accordion-header > div');
+  if (!t) return '';
+  const c = t.cloneNode(true);
+  c.querySelectorAll('rt, small').forEach(x => x.remove());
+  return c.textContent.replace(/\s+/g, ' ').trim();
+}
+
 function getProfile() {
   try { return JSON.parse(storageGet(SURVEY_CONFIG.profileKey) || '{}') || {}; } catch (e) { return {}; }
 }
@@ -2535,6 +2566,7 @@ function baseInfo() {
     deviceId: getDeviceId(),
     device: deviceLabel(),
     viewport: window.innerWidth + 'x' + window.innerHeight,
+    screenName: screenLabels[currentScreen] || '',
     gender: p.gender || '',
     age: p.age || ''
   };
@@ -2809,6 +2841,7 @@ function initSakeMatrix() {
     panel.innerHTML = '<div class="mdetail-in"><div class="mdetail-name">' + d.name + '</div>' +
       '<div class="mdetail-hint">' + d.hint + '</div><p class="mdetail-body">' + d.body + '</p></div>';
     markDone(box);
+    logCard(d.name);
   }));
 }
 
