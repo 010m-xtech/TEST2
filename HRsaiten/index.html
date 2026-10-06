@@ -328,6 +328,10 @@ li.mine{background:#F7D37A1F; border-radius:12px}
 .panel .grab{justify-self:center; width:40px; height:5px; border-radius:3px; background:var(--line)}
 .panel h3{margin:0; text-align:center; font-family:var(--f-display); font-weight:400; font-size:20px}
 .panel input{width:100%; min-height:var(--tap); padding:12px 18px; border-radius:16px; border:0; background:#00000059; color:var(--text); font:700 17px var(--f-body); box-shadow:inset 0 0 0 1px var(--line)}
+.fld{display:grid; gap:6px; text-align:left}
+.fld > span{font-size:12.5px; font-weight:900; color:var(--gold); letter-spacing:.06em}
+.fld small{margin-left:6px; font-size:11px; font-weight:700; color:var(--text-dim); letter-spacing:0}
+.who .memo{display:block; margin-top:1px; font-weight:700; font-size:12.5px; color:var(--gold); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .panel input:focus{outline:none; box-shadow:inset 0 0 0 1.5px var(--gold)}
 
 
@@ -479,7 +483,7 @@ li.mine{background:#F7D37A1F; border-radius:12px}
         <ol class="rules card">
           <li><span class="n">一</span><div><b>一口飲んだら、ジョッキを置く</b><span>泡が落ち着いて、水平な輪が残ります。</span></div></li>
           <li><span class="n">二</span><div><b>いつも同じ飲み口から</b><span>違う場所から飲むと、せっかくの輪が流れてしまいます。</span></div></li>
-          <li><span class="n">三</span><div><b>4〜5口で、テンポよく飲み干す</b><span>5口で飲み切ると輪は4本。これが理想の一杯です。</span></div></li>
+          <li><span class="n">三</span><div><b>テンポよく飲み干す</b><span>間をあけすぎず、同じくらいの量ずつ飲むと、輪がきれいに残ります。</span></div></li>
         </ol>
       </div>
 
@@ -487,14 +491,9 @@ li.mine{background:#F7D37A1F; border-radius:12px}
         <h3>理想のハッピーリング</h3>
         <p class="lead">目指すのは、こんな一杯です。</p>
         <figure class="ideal">
-          <img src="05.webp" alt="4本の泡の輪が水平・等間隔に残ったビアグラスの見本" loading="lazy">
-          <figcaption><b>見本の一杯</b><span>4本の泡の輪が、白くくっきり、水平に、同じ間隔で一周しています。</span></figcaption>
+          <img src="05.webp" alt="泡の輪がきれいに残ったビアグラスの見本" loading="lazy">
+          <figcaption><b>見本の一杯</b><span>こんな泡の輪が残る一杯を、目指してみてください。</span></figcaption>
         </figure>
-        <ul class="points">
-          <li><b>4本</b>5口で飲み切る</li>
-          <li><b>水平</b>だれずに一周</li>
-          <li><b>等間隔</b>同じ量ずつ</li>
-        </ul>
       </div>
 
       <div class="page" data-page="2" hidden>
@@ -554,7 +553,7 @@ li.mine{background:#F7D37A1F; border-radius:12px}
       <input type="file" id="fileAlbum" accept="image/*">
       <p class="note" id="shootNote"></p>
       <p class="disclaim">※ くっきりした泡の輪だけを数えます。背景や撮り方、残ったビールなどで、正しく判定できないことがあります。</p>
-      <button class="linkish" type="button" id="toGuide">上手な撮り方を見る</button>
+      <button class="linkish" type="button" id="toGuide">遊び方・上手な撮り方を見る</button>
     </div>
     <div class="foot">
       <button class="shutter" type="button" id="shutter" hidden aria-label="撮影する"></button>
@@ -613,7 +612,7 @@ li.mine{background:#F7D37A1F; border-radius:12px}
             <div class="hanko" id="hanko"></div>
           </div>
           <p class="rankline" id="rankline"></p>
-          <p class="comment" id="comment"></p>
+          <p class="comment" id="comment" hidden></p>
           <div class="photo" id="photo"><img id="rimg" alt="採点したジョッキ"><svg id="rsvg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg></div>
           <p class="photo-cap" id="rcap"></p>
           <div class="bars" id="bars"></div>
@@ -669,7 +668,8 @@ li.mine{background:#F7D37A1F; border-radius:12px}
     <form class="panel" id="saveForm" autocomplete="off">
       <span class="grab" aria-hidden="true"></span>
       <h3>ランキングに記録する</h3>
-      <input id="name" maxlength="12" placeholder="ニックネーム(12文字まで)" aria-label="ニックネーム" enterkeyhint="done">
+      <label class="fld"><span>ニックネーム</span><input id="name" maxlength="12" placeholder="12文字まで" enterkeyhint="next"></label>
+      <label class="fld"><span>ビールの感想<small>(10文字まで・なくてもOK)</small></span><input id="memo" maxlength="10" placeholder="例：美味しかった！！" enterkeyhint="done"></label>
       <p class="note" id="sheetNote"></p>
       <button class="btn" id="save" type="submit">この名前で記録する</button>
       <button class="btn ghost" type="button" data-close="saveSheet">やめる</button>
@@ -888,7 +888,7 @@ function openHowto(i){ howFrom = current; setHowPage(i); show("howto"); }
 $("howNext").addEventListener("click", () => howPage < 2 ? setHowPage(howPage + 1) : show("shoot"));
 $("howPrev").addEventListener("click", () => howPage > 0 ? setHowPage(howPage - 1) : show(howFrom, "back"));
 $("howBack").addEventListener("click", () => show(howFrom, "back"));
-$("toGuide").addEventListener("click", () => openHowto(2));
+$("toGuide").addEventListener("click", () => openHowto(0));
 
 // ---------- 採点の物差し ----------
 const CRITERIA = [
@@ -952,7 +952,7 @@ const PROMPT = `あなたは飲食店の「ハッピーリング採点」の審�
 - count は本数で自動的に決まるので、shape・clarity・spacing の配分で、お手本と見比べて妥当な合計点になるようにすること。
 
 ■ comment
-お客様向けの明るい日本語の一言(40文字以内)。良かった点と、次に点数を上げるコツ(例:一口飲んだらジョッキを置く、毎回同じ飲み口から、4〜5口でテンポよく)を入れる。点数が低くても責める言い方はしない。
+お客様向けの明るい日本語の一言(40文字以内)。良かった点と、次に点数を上げるコツ(例:一口飲んだらジョッキを置く、毎回同じ飲み口から、テンポよく飲む)を入れる。理想の本数(何本がよいか)には触れない。点数が低くても責める言い方はしない。
 
 次の形のJSONだけを返してください:
 {"glass":true,"finished":true,"ring_count":4,"rings":[{"y":24,"x1":14,"x2":80},{"y":40,"x1":14,"x2":80},{"y":56,"x1":14,"x2":80},{"y":72,"x1":14,"x2":80}],"perfect":false,"scores":{"shape":34,"clarity":17,"spacing":17,"count":20},"comment":"4本の輪がきれい!次は同じ飲み口で揃えよう"}`;
@@ -1053,7 +1053,7 @@ const TIPS = [
   "毎回同じ飲み口から飲むと、輪が流されずに残ります。",
   "泡はビールの蓋。香りや炭酸が逃げるのを防いでくれます。",
   "泡が消えないうちに飲み切るのも、きれいな輪のコツです。",
-  "5口で飲み切ると、輪は4本。それが理想の一杯です。",
+  "同じくらいの量ずつ飲むと、輪の間隔がそろいます。",
 ];
 
 // 一番低かった項目から「次のコツ」を選ぶ
@@ -1063,8 +1063,8 @@ function adviceFor(r){
   const weakest = CRITERIA.map(c => c.key).sort((a, b) => ratio(a) - ratio(b))[0];
   if (ratio(weakest) >= .95) return "文句なしの一杯です。次も同じリズムで飲んで、100点を狙いましょう。";
   if (weakest === "count") return r.rings < 4
-    ? `今回は${r.rings}本。一口を少し小さくして、5口で飲み切ると理想の4本になります。`
-    : `今回は${r.rings}本。一口を少し大きくして、5口で飲み切ると理想の4本になります。`;
+    ? `今回は${r.rings}本。一口を少し小さくして、もう少し回数を分けて飲んでみましょう。`
+    : `今回は${r.rings}本。一口を少し大きくして、テンポよく飲み切ってみましょう。`;
   if (weakest === "shape") return "一口ごとにジョッキをまっすぐ置いて、泡が落ち着くのを待つと輪が水平に残ります。";
   if (weakest === "clarity") return "泡が消えないうちに、テンポよく次の一口へ。間をあけすぎると輪が薄くなります。";
   return "毎回同じくらいの量を飲むと、輪の間隔がそろいます。同じ飲み口から飲むのも効きます。";
@@ -1294,7 +1294,7 @@ const pct = v => Math.max(0, Math.min(100, Number(v) || 0));
 // ---------- 採点 ----------
 // スマホの中だけで採点したときの、店長のひとこと
 function localComment(t){
-  if (t >= 90) return "見事な輪！この調子で、次も4〜5口でテンポよく。";
+  if (t >= 90) return "見事な輪！この調子で、次も同じリズムでテンポよく。";
   if (t >= 75) return "きれいな輪が残っています。同じ飲み口からで、さらに上へ。";
   if (t >= 50) return "輪が見えてきました。一口ごとにジョッキを置いてみて。";
   return "次は一口飲んだら、ジョッキを置いてみよう。";
@@ -1399,8 +1399,7 @@ function showResult(){
   $("photo").style.setProperty("--ar", img.w / img.h);
   $("rimg").src = img.url;
   drawRings();
-  $("comment").textContent = last.comment;
-  $("comment").hidden = !last.comment;
+  $("comment").hidden = true; // 店長のひとことは出さない
   $("saveNote").textContent = "";
   updateSaveButton();
 
@@ -1561,6 +1560,7 @@ function renderBoard(){
     li.children[0].textContent = rank;
     loadThumb(d.id, li.children[1]);
     const who = li.children[2]; who.textContent = String(v.name || "名もなき呑み人");
+    if (v.memo) { const m = document.createElement("span"); m.className = "memo"; m.textContent = "「" + String(v.memo).slice(0, 10) + "」"; who.append(m); }
     const sub = document.createElement("span");
     const dt = v.createdAt ? new Date(Number(v.createdAt)) : null;
     sub.textContent = `リング ${Number(v.rings) || 0} 本` + (dt ? ` ・ ${dt.getMonth() + 1}/${dt.getDate()}` : "");
@@ -1616,13 +1616,15 @@ $("saveForm").addEventListener("submit", async e => {
   e.preventDefault();
   if (!last || savedId) return;
   const name = $("name").value.trim() || "名もなき呑み人";
+  const memo = $("memo").value.trim().slice(0, 10);
   if (isNgName(name)) { $("sheetNote").textContent = "そのニックネームは登録できません。別の名前にしてください。"; return; }
+  if (memo && isNgName(memo)) { $("sheetNote").textContent = "その感想は登録できません。別の言葉にしてください。"; return; }
   $("save").disabled = true; $("sheetNote").textContent = "記録しています…";
   try {
     if (!db) {
       const all = localRecords();
       if (photoHash && all.some(r => r.hash === photoHash)) { $("sheetNote").textContent = "この写真はすでに記録されています。新しい一杯で挑戦してください。"; return; }
-      const rec = { id: "l" + Date.now(), name: name.slice(0, 12), score: last.total, rings: last.rings, createdAt: last.at, hash: photoHash || "", img: thumb || "" };
+      const rec = { id: "l" + Date.now(), name: name.slice(0, 12), memo, score: last.total, rings: last.rings, createdAt: last.at, hash: photoHash || "", img: thumb || "" };
       all.push(rec);
       // 古いものから消して、端末の保存場所があふれないようにする(上位は残す)
       while (all.length > LOCAL_MAX) { const keep = all.slice().sort((a, b) => b.score - a.score).slice(0, 10).map(r => r.id); const i = all.findIndex(r => !keep.includes(r.id)); all.splice(i < 0 ? 0 : i, 1); }
@@ -1638,7 +1640,7 @@ $("saveForm").addEventListener("submit", async e => {
       if (!dup.empty) { $("sheetNote").textContent = "この写真はすでに記録されています。新しい一杯で挑戦してください。"; return; }
     }
     const ref = await db.collection("scores").add({
-      name: name.slice(0, 12), score: last.total, rings: last.rings, scores: last.scores,
+      name: name.slice(0, 12), memo, score: last.total, rings: last.rings, scores: last.scores,
       comment: last.comment, createdAt: last.at, hash: photoHash || "", day: dayKey(last.at), month: monthKey(last.at),
     });
     savedId = ref.id; savedName = name.slice(0, 12);

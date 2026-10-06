@@ -27,8 +27,9 @@ service cloud.firestore {
   match /databases/{database}/documents {
     match /scores/{id} {
       allow read: if true;
-      allow create: if request.resource.data.keys().hasOnly(['name','score','rings','scores','comment','createdAt','hash','day','month'])
+      allow create: if request.resource.data.keys().hasOnly(['name','memo','score','rings','scores','comment','createdAt','hash','day','month'])
         && request.resource.data.name is string && request.resource.data.name.size() <= 12
+        && (!('memo' in request.resource.data) || (request.resource.data.memo is string && request.resource.data.memo.size() <= 10))
         && request.resource.data.score is int && request.resource.data.score >= 0 && request.resource.data.score <= 100
         && request.resource.data.rings is int && request.resource.data.rings >= 0 && request.resource.data.rings <= 30
         && request.resource.data.createdAt is int
