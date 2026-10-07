@@ -329,6 +329,41 @@
           </section>
         </div>
       </div>
+      <!-- 旅のノート（最後に1回だけ出る、ひとことアンケート） -->
+      <div id="guestbook" class="absolute inset-0 z-[60] hidden">
+        <div id="guestbook-backdrop" onclick="closeGuestbook()" class="absolute inset-0 bg-ink/40 opacity-0 transition-opacity duration-300"></div>
+        <div id="guestbook-sheet" class="absolute inset-x-0 bottom-0 bg-paper rounded-t-3xl px-5 pt-3 pb-6 shadow-2xl translate-y-full transition-transform duration-500 max-h-[92%] overflow-y-auto">
+          <div class="w-10 h-1 rounded-full bg-line mx-auto mb-3"></div>
+          <button onclick="closeGuestbook()" aria-label="閉じる" class="absolute top-3 right-4 w-8 h-8 flex items-center justify-center rounded-full text-muted active:bg-line">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+
+          <div id="guestbook-form">
+            <span class="eyebrow">TRAVEL NOTE</span>
+            <h3 class="font-mincho font-extrabold text-xl text-ink leading-snug mt-1">今日の旅の記念に、<br>ひとこと残していきませんか？</h3>
+            <p class="text-[13px] text-muted mt-1.5">タップするだけでも大丈夫です。</p>
+
+            <p class="text-sm font-bold text-ink mt-5 mb-2.5">今日の味覚の旅、楽しめましたか？</p>
+            <div id="guestbook-enjoy" class="grid grid-cols-3 gap-2"></div>
+
+            <p class="text-sm font-bold text-ink mt-5 mb-2.5">次に旅してみたい土地のお酒や、<br>お店へのひとことをどうぞ</p>
+            <textarea id="guestbook-comment" rows="3" maxlength="500" oninput="updateGuestbookButton()"
+              placeholder="例）北海道のクラフトビールも飲んでみたい！&#10;　　スタッフさんのおすすめが楽しかったです"
+              class="w-full rounded-2xl border border-line bg-surface p-3 text-[15px] leading-relaxed text-ink outline-none focus:border-accent select-text"></textarea>
+
+            <button id="guestbook-submit" onclick="submitGuestbook()" disabled class="btn-primary mt-4 disabled:opacity-40">
+              <i class="fa-solid fa-feather-pointed text-sm"></i><span>旅のノートに残す</span>
+            </button>
+          </div>
+
+          <div id="guestbook-thanks" class="hidden flex-col items-center text-center py-6">
+            <div class="w-20 h-20 rounded-full border-2 border-stamp text-stamp flex items-center justify-center font-mincho font-extrabold text-lg -rotate-12">記帳</div>
+            <p class="font-mincho font-extrabold text-xl text-ink mt-5">ありがとうございました！</p>
+            <p class="text-sm text-muted mt-2 leading-relaxed">いただいた声は、次の一杯選びの参考にさせていただきます。<br>またのお越しをお待ちしています。</p>
+            <button onclick="closeGuestbook()" class="btn-secondary mt-6">閉じる</button>
+          </div>
+        </div>
+      </div>
     </main>
   </div>
 
@@ -642,6 +677,7 @@
       cancelTrip();
       if(slideshowInterval) clearInterval(slideshowInterval);
       cancelAnalyzing();
+      if(guestbookTimer) { clearTimeout(guestbookTimer); guestbookTimer = null; }
       ['view-quiz','view-analyzing','view-map','view-trip','view-story'].forEach(id=>{
         const el = document.getElementById(id);
         if(el){ el.style.opacity='0'; el.style.pointerEvents='none'; el.style.zIndex='0'; el.style.animation='none'; }
@@ -1400,11 +1436,119 @@
       
       const selected = DRINKS_DATABASE.find(d => d.id === selectedDrinkId);
       if(selected) selectDrink(selected);
+      maybeShowGuestbook(700);
+    }
+
+    // ---- 旅のノート（ひとことアンケート） ----
+    //   ストーリーを最後まで読んだとき、または一覧に戻ったときに表示。
+    //   一度表示したら、この端末では1日（24時間）たつまで表示しない
+    const GUESTBOOK_SEEN_KEY = 'sakejunrei.guestbookShown';
+    const GUESTBOOK_INTERVAL_MS = 24 * 60 * 60 * 1000;
+    const GUESTBOOK_ENJOY_OPTIONS = [
+      { value: 'とても楽しかった', label: 'とても<br>楽しかった', icon: 'fa-face-laugh-beam' },
+      { value: '楽しかった',       label: '楽しかった',          icon: 'fa-face-smile' },
+      { value: 'ふつう',           label: 'ふつう',              icon: 'fa-face-meh' }
+    ];
+    let guestbookEnjoy = '';
+    let guestbookTimer = null;
+
+    function guestbookAlreadyShown() {
+      try {
+        const shownAt = Number(localStorage.getItem(GUESTBOOK_SEEN_KEY)) || 0;
+        return Date.now() - shownAt < GUESTBOOK_INTERVAL_MS;
+      } catch(e) { return false; }
+    }
+
+    function maybeShowGuestbook(delay) {
+      if(guestbookAlreadyShown() || guestbookTimer) return;
+      guestbookTimer = setTimeout(() => {
+        guestbookTimer = null;
+        if(guestbookAlreadyShown()) return;
+        try { localStorage.setItem(GUESTBOOK_SEEN_KEY, String(Date.now())); } catch(e) {}
+        openGuestbook();
+      }, delay);
+    }
+
+    function openGuestbook() {
+      guestbookEnjoy = '';
+      document.getElementById('guestbook-comment').value = '';
+      document.getElementById('guestbook-form').style.display = '';
+      document.getElementById('guestbook-thanks').style.display = 'none';
+      const box = document.getElementById('guestbook-enjoy');
+      box.innerHTML = '';
+      GUESTBOOK_ENJOY_OPTIONS.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'option-card';
+        btn.style.cssText = 'flex-direction: column; justify-content: center; text-align: center; gap: 6px; padding: 12px 6px; font-size: 13px;';
+        btn.innerHTML = `<i class="fa-solid ${opt.icon} text-2xl text-accent"></i><span class="leading-tight">${opt.label}</span>`;
+        btn.onclick = () => {
+          guestbookEnjoy = opt.value;
+          box.querySelectorAll('button').forEach(b => b.classList.toggle('is-selected', b === btn));
+          updateGuestbookButton();
+        };
+        box.appendChild(btn);
+      });
+      updateGuestbookButton();
+
+      const root = document.getElementById('guestbook');
+      root.classList.remove('hidden');
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        document.getElementById('guestbook-backdrop').classList.replace('opacity-0', 'opacity-100');
+        document.getElementById('guestbook-sheet').classList.replace('translate-y-full', 'translate-y-0');
+      }));
+    }
+
+    function closeGuestbook() {
+      document.getElementById('guestbook-backdrop').classList.replace('opacity-100', 'opacity-0');
+      document.getElementById('guestbook-sheet').classList.replace('translate-y-0', 'translate-y-full');
+      setTimeout(() => document.getElementById('guestbook').classList.add('hidden'), 500);
+    }
+
+    function updateGuestbookButton() {
+      const comment = document.getElementById('guestbook-comment').value.trim();
+      document.getElementById('guestbook-submit').disabled = !guestbookEnjoy && !comment;
+    }
+
+    // 端末のおおまかな種類（例：iPhone（iOS 17.5）・Safari）
+    function getDeviceInfo() {
+      const ua = navigator.userAgent;
+      let os = 'その他';
+      let m;
+      if(/iPad/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) os = 'iPad';
+      else if((m = ua.match(/iPhone OS (\d+)[_.](\d+)/))) os = `iPhone（iOS ${m[1]}.${m[2]}）`;
+      else if((m = ua.match(/Android (\d+(?:\.\d+)?)/))) os = `Android ${m[1]}`;
+      else if(/Windows/.test(ua)) os = 'Windows';
+      else if(/Macintosh/.test(ua)) os = 'Mac';
+      else if(/Linux/.test(ua)) os = 'Linux';
+      const browser = /Line\//.test(ua) ? 'LINE' : /Instagram/.test(ua) ? 'Instagram'
+        : /EdgA?\//.test(ua) ? 'Edge' : /CriOS|Chrome\//.test(ua) ? 'Chrome'
+        : /FxiOS|Firefox\//.test(ua) ? 'Firefox' : /Safari\//.test(ua) ? 'Safari' : 'その他';
+      return `${os}・${browser}`;
+    }
+
+    function submitGuestbook() {
+      const comment = document.getElementById('guestbook-comment').value.trim();
+      const cfg = STORE_CONFIG.guestbook || {};
+      const answer = { device: getDeviceInfo(), enjoy: guestbookEnjoy, comment };
+      if(cfg.sheetUrl) {
+        // スプレッドシート（Google Apps Script）に送信。送信結果は読めないので、送ったらそのままお礼を表示
+        fetch(cfg.sheetUrl, { method: 'POST', mode: 'no-cors', body: new URLSearchParams(answer) }).catch(() => {});
+      } else {
+        console.info('旅のノート（送信先が未設定のため保存されません）', answer);
+      }
+      document.getElementById('guestbook-form').style.display = 'none';
+      document.getElementById('guestbook-thanks').style.display = 'flex';
     }
 
     window.onload = () => { 
       applyStoreConfig();
       renderTripPrefectures();
+      // ストーリーを最後まで読んだら、旅のノートを出す
+      const storyScroll = document.getElementById('story-scroll-area');
+      storyScroll.addEventListener('scroll', () => {
+        const storyOpen = document.getElementById('view-story').style.pointerEvents === 'auto';
+        if(storyOpen && storyScroll.scrollTop + storyScroll.clientHeight >= storyScroll.scrollHeight - 40) maybeShowGuestbook(1200);
+      });
       renderQuiz(); 
     };
   </script>
