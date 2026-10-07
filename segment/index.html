@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>パートナー店　客層セグメント判定</title>
+<style>
+/* ===== すべて #seg-app 配下にスコープ済み。ポータルにそのまま貼り付けても既存CSSと干渉しにくい作り ===== */
+#seg-app{
+  --bg:#f5f5f2; --card:#ffffff; --ink:#1d2430; --sub:#1d2430; --line:#cfd3da; --line-strong:#8f97a5;
+  --a:#17695a; --a-bg:#e3f2ee;
+  --b:#b02b64; --b-bg:#fbe8f0;
+  --c:#2150b0; --c-bg:#e6edfb;
+  --d:#7a5504; --d-bg:#f7eed9;
+  --ok:#1f7a45; --ok-bg:#dff3e6; --mid:#7a5504; --mid-bg:#f7eed9; --ng:#1d2430; --ng-bg:#eceef1;
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic",Meiryo,sans-serif;
+  color:var(--ink); background:var(--bg);
+  max-width:640px; margin:0 auto; position:relative;
+  -webkit-text-size-adjust:100%; line-height:1.5;
+}
+@media (prefers-color-scheme:dark){
+  #seg-app:not([data-theme="light"]){
+    --bg:#14181f; --card:#1d232d; --ink:#ffffff; --sub:#ffffff; --line:#313947; --line-strong:#6b7689;
+    --a:#5cc5ae; --a-bg:#1a3a34; --b:#f08db5; --b-bg:#412030; --c:#85a9f5; --c-bg:#1d2d4f; --d:#e3b657; --d-bg:#3d3216;
+    --ok:#6fd49a; --ok-bg:#183a28; --mid:#e3b657; --mid-bg:#3d3216; --ng:#ffffff; --ng-bg:#262d39;
+  }
+}
+#seg-app[data-theme="dark"]{
+  --bg:#14181f; --card:#1d232d; --ink:#ffffff; --sub:#ffffff; --line:#313947; --line-strong:#6b7689;
+  --a:#5cc5ae; --a-bg:#1a3a34; --b:#f08db5; --b-bg:#412030; --c:#85a9f5; --c-bg:#1d2d4f; --d:#e3b657; --d-bg:#3d3216;
+  --ok:#6fd49a; --ok-bg:#183a28; --mid:#e3b657; --mid-bg:#3d3216; --ng:#ffffff; --ng-bg:#262d39;
+}
+#seg-app *{box-sizing:border-box}
+#seg-app button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent}
+
+/* --- 日本語を文節の途中で改行しない --- */
+#seg-app .lead,#seg-app .field > span,#seg-app .search-hint,#seg-app .area-note,
+#seg-app .g-title b,#seg-app .g-title small,#seg-app .item-text,#seg-app .r-seg,
+#seg-app .tie,#seg-app .c-info,#seg-app .tag,#seg-app .notice,#seg-app h1{
+  word-break:keep-all;          /* 文字の途中では改行しない（区切りは<wbr>で指定） */
+  overflow-wrap:anywhere;       /* 1行に収まらない長い語だけは例外的に折り返す */
+  line-break:strict;            /* 句読点・小書き文字が行頭に来ないようにする */
+  text-wrap:pretty;
+}
+@supports (word-break:auto-phrase){   /* 対応ブラウザは文節単位の改行に任せる */
+  #seg-app .lead,#seg-app .field > span,#seg-app .search-hint,#seg-app .area-note,
+  #seg-app .g-title b,#seg-app .g-title small,#seg-app .item-text,#seg-app .r-seg,
+  #seg-app .tie,#seg-app .c-info,#seg-app .tag,#seg-app .notice,#seg-app h1{ word-break:auto-phrase }
+}
+
+/* --- ヘッダー --- */
+#seg-app .head{padding:16px 16px 12px;padding-top:max(16px,env(safe-area-inset-top,0px))}
+#seg-app h1{margin:0 0 6px;font-size:22px;line-height:1.3;font-weight:700}
+#seg-app .lead{margin:0 0 16px;font-size:14.5px;color:var(--sub)}
+#seg-app .field{display:block;margin-bottom:12px}
+#seg-app .search-links{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:-4px 0 12px}
+#seg-app .search-links a{display:flex;align-items:center;justify-content:center;min-height:50px;padding:4px 8px;border:1.5px solid var(--line-strong);border-radius:8px;background:var(--card);color:var(--ink);font-size:15px;font-weight:700;text-decoration:none;text-align:center;line-height:1.3}
+#seg-app .search-links a span{word-break:keep-all;overflow-wrap:normal}
+#seg-app .search-links a svg{flex:none;width:18px;height:18px;margin-right:6px}
+#seg-app .search-links a.off{border-style:dashed}
+#seg-app .search-links a.on{background:var(--ink);border-color:var(--ink);color:var(--card)}
+#seg-app .search-links a:active{opacity:.8}
+#seg-app .search-hint{margin:-4px 0 14px;font-size:14px;color:var(--sub);line-height:1.5}
+#seg-app .search-hint b{color:var(--ink)}
+#seg-app .notice{margin:0 0 14px;padding:10px 12px;border:1.5px solid var(--line-strong);border-left:6px solid var(--ink);border-radius:8px;background:var(--card);font-size:14px;line-height:1.65}
+#seg-app .notice b{font-size:14.5px}
+#seg-app .field > span{display:block;font-size:13.5px;font-weight:700;color:var(--sub);margin-bottom:4px}
+#seg-app input[type=text]{
+  width:100%;height:50px;padding:0 12px;font:inherit;font-size:17px; /* 16px未満だとiOSで自動ズームされる */
+  color:var(--ink);background:var(--card);border:1.5px solid var(--line-strong);border-radius:8px;
+}
+#seg-app input[type=text]::placeholder{color:var(--sub);opacity:.62}
+#seg-app input[type=text]:focus-visible,#seg-app button:focus-visible{outline:3px solid var(--c);outline-offset:2px}
+#seg-app .seg-toggle{display:grid;grid-template-columns:1fr 1fr;border:1.5px solid var(--line-strong);border-radius:8px;overflow:hidden;background:var(--card)}
+#seg-app .seg-toggle.three{grid-template-columns:repeat(3,1fr)}
+#seg-app .seg-toggle button{border:0;background:transparent;min-height:48px;padding:6px 8px;font-size:15px;line-height:1.35;cursor:pointer}
+#seg-app .seg-toggle button + button{border-left:1.5px solid var(--line-strong)}
+#seg-app .seg-toggle button[aria-pressed=true]{background:var(--ink);color:var(--card);font-weight:700}
+#seg-app .area-note{margin:8px 0 0;font-size:13.5px;color:var(--sub)}
+
+/* --- セグメントのグループ --- */
+#seg-app .groups{padding:0 12px 16px;display:grid;gap:14px}
+#seg-app .group{background:var(--card);border:1.5px solid var(--line);border-radius:12px;overflow:hidden}
+#seg-app .g-head{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1.5px solid var(--line)}
+#seg-app .g-badge{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:15px;color:#fff}
+#seg-app .g-title{flex:1;min-width:0}
+#seg-app .g-title b{display:block;font-size:16px;line-height:1.35}
+#seg-app .g-title small{font-size:13px;color:var(--sub)}
+#seg-app .g-count{flex:none;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums}
+#seg-app .g-a .g-badge{background:var(--a)} #seg-app .g-b .g-badge{background:var(--b)}
+#seg-app .g-c .g-badge{background:var(--c)} #seg-app .g-d .g-badge{background:var(--d)}
+#seg-app .g-a .g-head{background:var(--a-bg)} #seg-app .g-b .g-head{background:var(--b-bg)}
+#seg-app .g-c .g-head{background:var(--c-bg)} #seg-app .g-d .g-head{background:var(--d-bg)}
+#seg-app .g-a{--k:var(--a);--kbg:var(--a-bg)} #seg-app .g-b{--k:var(--b);--kbg:var(--b-bg)}
+#seg-app .g-c{--k:var(--c);--kbg:var(--c-bg)} #seg-app .g-d{--k:var(--d);--kbg:var(--d-bg)}
+
+/* --- 項目（タップで○がつく） --- */
+#seg-app .item{
+  display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;
+  min-height:56px;padding:12px 14px;border:0;border-top:1px solid var(--line);background:transparent;cursor:pointer;-webkit-user-select:none;user-select:none;
+}
+#seg-app .g-head + .item{border-top:0}
+#seg-app .mark{flex:none;padding:0;width:28px;height:28px;margin-top:1px;border-radius:50%;border:1.5px solid var(--line-strong);background:var(--card);transition:border-width .08s,border-color .08s}
+#seg-app .item.on{background:var(--kbg)}
+#seg-app .item.on .mark{border:7px solid var(--k)} /* 太い輪＝シートの「〇」 */
+#seg-app .item-text{flex:1;min-width:0;font-size:16px;line-height:1.6;font-weight:500}
+#seg-app .item.on .item-text{font-weight:700}
+#seg-app .item-text a{color:var(--c);font-weight:700;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px;padding:6px 1px}
+#seg-app .tag{display:inline-block;margin-top:3px;padding:2px 9px;border-radius:99px;background:var(--ng-bg);color:var(--sub);font-size:12.5px;font-weight:600}
+
+
+/* --- 判定結果に応じたコンテンツ --- */
+#seg-app .contents{padding:0 12px 20px}
+#seg-app .c-box{border:1.5px solid var(--line);border-left:6px solid var(--k,var(--line-strong));border-radius:10px;background:var(--card);margin-bottom:10px;overflow:hidden}
+#seg-app .c-row{display:flex;align-items:center;gap:10px;padding:12px 14px}
+#seg-app .c-info{flex:1;min-width:0}
+#seg-app .c-info b{display:block;font-size:16px;line-height:1.4}
+#seg-app .c-info small{display:block;font-size:13.5px;color:var(--sub);margin-top:2px}
+#seg-app .c-go{flex:none;display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:76px;padding:0 14px;border:0;border-radius:8px;background:var(--k,var(--ink));color:#fff;font-size:15px;font-weight:700;text-decoration:none;cursor:pointer}
+
+/* --- 保存済みの店舗 --- */
+#seg-app .hist-btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:50px;margin:0 0 12px;border:1.5px solid var(--line-strong);border-radius:8px;background:var(--card);font-size:15.5px;font-weight:700;cursor:pointer}
+#seg-app .history{margin:0 12px 14px;border:1.5px solid var(--ink);border-radius:12px;background:var(--card);overflow:hidden}
+#seg-app .history[hidden]{display:none}
+#seg-app .h-head{padding:12px 14px;border-bottom:1.5px solid var(--line);font-size:16px;font-weight:700}
+#seg-app .h-filter{padding:10px 14px;border-bottom:1.5px solid var(--line)}
+#seg-app .h-filter input{height:44px;font-size:16px}
+#seg-app .h-note{padding:12px 14px;font-size:14px;line-height:1.6}
+#seg-app .h-list{list-style:none;margin:0;padding:0;max-height:60vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#seg-app .h-item{display:flex;align-items:stretch;border-top:1px solid var(--line)}
+#seg-app .h-item:first-child{border-top:0}
+#seg-app .h-load{flex:1;min-width:0;text-align:left;border:0;background:transparent;padding:12px 14px;cursor:pointer}
+#seg-app .h-load b{display:block;font-size:16px;line-height:1.4;overflow-wrap:anywhere}
+#seg-app .h-load span{display:block;margin-top:3px;font-size:13.5px;line-height:1.5}
+#seg-app .h-badge{display:inline-block;min-width:22px;padding:0 6px;margin-right:6px;border-radius:99px;color:#fff;font-weight:700;text-align:center;font-size:13px}
+#seg-app .h-badge.c-a{background:var(--a)} #seg-app .h-badge.c-b{background:var(--b)}
+#seg-app .h-badge.c-c{background:var(--c)} #seg-app .h-badge.c-d{background:var(--d)}
+#seg-app .h-del{flex:none;width:84px;border:0;border-left:1px solid var(--line);background:transparent;font-size:13.5px;font-weight:600;cursor:pointer}
+#seg-app .h-del.armed{background:#b3261e;color:#fff}
+#seg-app .btn.primary{background:var(--ink);color:var(--card);border-color:var(--ink)}
+
+/* --- 画面下に固定される結果 --- */
+#seg-app .result{
+  position:sticky;bottom:0;z-index:5;
+  background:var(--card);border-top:2px solid var(--ink);
+  padding:10px 14px;padding-bottom:max(10px,env(safe-area-inset-bottom,0px));
+  box-shadow:0 -6px 16px rgba(0,0,0,.08);
+}
+#seg-app .r-top{display:flex;align-items:center;gap:10px}
+#seg-app .r-main{flex:1;min-width:0}
+#seg-app .r-label{font-size:12.5px;color:var(--sub);font-weight:600}
+#seg-app .r-seg{font-size:16.5px;font-weight:700;line-height:1.35}
+#seg-app .status{flex:none;padding:6px 12px;border-radius:99px;font-size:14.5px;font-weight:700;background:var(--ng-bg);color:var(--ng)}
+#seg-app .status.ok{background:var(--ok-bg);color:var(--ok)}
+#seg-app .status.mid{background:var(--mid-bg);color:var(--mid)}
+#seg-app .r-bars{display:grid;grid-template-columns:repeat(4,1fr) auto;gap:6px;margin-top:8px;align-items:stretch}
+#seg-app .cell{border:1.5px solid var(--line);border-radius:8px;padding:4px 0;text-align:center;font-size:13.5px;line-height:1.3;font-variant-numeric:tabular-nums}
+#seg-app .cell b{display:block;font-size:18px}
+#seg-app .cell.top{border-color:var(--k);background:var(--kbg);font-weight:700}
+#seg-app .cell.c-a{--k:var(--a);--kbg:var(--a-bg)} #seg-app .cell.c-b{--k:var(--b);--kbg:var(--b-bg)}
+#seg-app .cell.c-c{--k:var(--c);--kbg:var(--c-bg)} #seg-app .cell.c-d{--k:var(--d);--kbg:var(--d-bg)}
+#seg-app .btns{display:flex;flex-direction:column;gap:4px}
+#seg-app .btn{border:1.5px solid var(--line-strong);background:var(--card);border-radius:8px;padding:0 12px;min-height:0;flex:1;font-size:14px;font-weight:600;cursor:pointer}
+#seg-app .tie{margin:8px 0 0;font-size:13.5px;color:var(--sub);min-height:1em}
+#seg-app .toast{position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);background:var(--ink);color:var(--card);padding:8px 14px;border-radius:8px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s}
+#seg-app .toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){#seg-app *{transition:none!important}}
+</style>
+</head>
+<body style="margin:0;background:#f5f5f2">
+
+<div id="seg-app">
+  <div class="head">
+    <h1>パートナー店　客層セグメント判定</h1>
+    <p class="lead">現地・HPで確認できた項目をタップして○をつけると、中心となる客層が自動で判定されます。</p>
+
+    <button type="button" class="hist-btn" id="seg-hist-toggle" aria-expanded="false">保存済みの店舗を見る</button>
+
+    <label class="field">
+      <span>店舗名</span>
+      <input type="text" id="seg-shop" placeholder="店舗名を入力（例：〇〇酒場 栄店）" autocomplete="off" enterkeyhint="done">
+    </label>
+    <div class="field" style="margin-bottom:8px">
+      <span>検索する県（食べログ・HOTPEPPER共通）</span>
+      <div class="seg-toggle three" id="seg-pref">
+        <button type="button" data-pref="愛知県" data-sa="SA33" aria-pressed="true">愛知</button>
+        <button type="button" data-pref="三重県" data-sa="SA34" aria-pressed="false">三重</button>
+        <button type="button" data-pref="岐阜県" data-sa="SA31" aria-pressed="false">岐阜</button>
+      </div>
+    </div>
+    <div class="search-links">
+      <a href="#" id="seg-s-tabelog" rel="noopener" class="off" aria-disabled="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg><span>食べログで<wbr>検索</span></a>
+      <a href="#" id="seg-s-hotpepper" rel="noopener" class="off" aria-disabled="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg><span>HOTPEPPER<wbr>で検索</span></a>
+    </div>
+    <p class="search-hint" id="seg-search-hint"></p>
+    <p class="notice"><b>ご注意</b><br>食べログ・HOTPEPPERの情報だけでは判定できない場合があります。Googleマップなど別のサイトの情報や、現地での確認も合わせて行ってください。<br>この判定結果は、あくまで参考としてご利用ください。</p>
+
+    <div class="field" style="margin-bottom:0">
+      <span>エリア</span>
+      <div class="seg-toggle" id="seg-area">
+        <button type="button" data-area="normal" aria-pressed="true">1～4・10・12～15<br>エリア</button>
+        <button type="button" data-area="alt" aria-pressed="false">5～9・11<br>エリア</button>
+      </div>
+      <p class="area-note" id="seg-area-note"></p>
+    </div>
+  </div>
+
+  <section class="history" id="seg-history" hidden>
+    <div class="h-head">保存済みの店舗</div>
+    <div class="h-filter"><input type="text" id="seg-hist-q" placeholder="店舗名で絞り込み" autocomplete="off"></div>
+    <div class="h-note" id="seg-hist-note" hidden></div>
+    <ul class="h-list" id="seg-hist-list"></ul>
+  </section>
+
+  <div class="groups" id="seg-groups"></div>
+
+  <section class="contents" id="seg-contents" aria-live="polite"></section>
+
+  <div class="result" id="seg-result" aria-live="polite">
+    <div class="toast" id="seg-toast"></div>
+    <div class="r-top">
+      <div class="r-main">
+        <div class="r-label">採用セグメント</div>
+        <div class="r-seg" id="r-seg">—</div>
+      </div>
+      <div class="status" id="r-status">未判定</div>
+    </div>
+    <div class="r-bars" id="r-bars"></div>
+    <p class="tie" id="r-tie"></p>
+  </div>
+</div>
+
+<script>
+(function(){
+  /* ===================== 設定（ここを編集すれば項目・基準を変更できます） ===================== */
+  var SEGMENTS = {
+    A:{ name:'A.ミドル・シニア女性層(F2F3)＆ファミリー層', short:'A', cls:'g-a', cell:'c-a' },
+    B:{ name:'B.若年女性層(F1)',                         short:'B', cls:'g-b', cell:'c-b' },
+    C:{ name:'C.若年男性層(M1)',                         short:'C', cls:'g-c', cell:'c-c' },
+    D:{ name:'D.ミドル・シニア男性層(M2M3)',              short:'D', cls:'g-d', cell:'c-d' }
+  };
+  // 同数のときの優先順位
+  var PRIORITY = {
+    normal:['A','B','C','D'],
+    alt:   ['B','C','A','D']      // 5～9・11エリア
+  };
+  // 判定項目。segs に複数入れると、1回の○で複数セグメントに加算されます
+  var ITEMS = [
+    {id:'room',   segs:['A','D'], text:'（完全・半）個室あり'},
+    {id:'park',   segs:['A'], text:'駐車場あり'},
+    {id:'lunch',  segs:['A'], text:'ランチセット（コース）あり・1500円以上'},
+    {id:'kids',   segs:['A'], text:'キッズメニューあり'},
+
+    {id:'joshi',  segs:['B'], text:'食べログの「利用シーン」に"女子会"と記載あり。HOTPEPPERで「女子会」と記載'},
+    {id:'oshare', segs:['B'], text:'食べログの「設備・空間」の項目に”おしゃれな空間”と表記、且つ、客単価の高い方の額が～8,000円'},
+    {id:'logo',   segs:['B'], text:'店舗オリジナルロゴ・イラスト入りグラス・ジョッキあり'},
+    {id:'cocktail',segs:['B'],text:'カクテル・ノンアルカクテルの種類計8種以上'},
+
+    {id:'nomi',   segs:['C'], text:'飲み放題付きコースあり・4000円以下'},
+    {id:'noback', segs:['C'], text:'テーブル席の椅子が背もたれ無し'},
+    {id:'beer',   segs:['C'], text:'生ビールかハイボール1杯500円未満'},
+    {id:'cheap',  segs:['C'], text:'グルメサイトの客単価が3000円未満（夜営業の際）'},
+
+    {id:'smoke',  segs:['D'], text:'店内喫煙可（喫煙・分煙スペース有）'},
+    {id:'course', segs:['D'], text:'コースがフードのみ3000円以上または、飲み放付き4000円以上しかない'},
+    {id:'sake',   segs:['D'], text:'日本酒・焼酎の銘柄数が計8種類以上'}
+  ];
+  // ★ セグメントごとのコンテンツの場所（URL、またはポータル内の #アンカー）。空なら案内ボタンは出ません
+  var SEGMENT_PAGES = {
+    A:'',   // 例: 'https://portal.example.com/contents/a'  または '#segment-a'
+    B:'',
+    C:'',
+    D:''
+  };
+  // ボタンを押したときの開き方: '_top'=ポータル画面全体で開く（iframe埋め込み時もOK） / '_blank'=別タブ / '_self'=この枠内
+  var LINK_TARGET = '_top';
+  // 「導入見送り」のときも案内ボタンを出す場合は true
+  var SHOW_ON_SKIP = false;
+  // 食べログ内の検索ページのURL。{q}=店舗名（2か所に入ります）、{area}=選んだ県。食べログは複数県を同時に指定できないため、県を切り替えて検索します
+  var TABELOG_URL = 'https://tabelog.com/rstLst/?vs=1&sa={area}&sk={q}&lid=hd_search1&vac_net=&svd=&svt=1900&svps=2&hfc=1&sw={q}';
+  // HOTPEPPER内の検索ページのURL。{q}=店舗名、{sa}=選んだ県のエリアコード（愛知=SA33 / 三重=SA34 / 岐阜=SA31）
+  var HOTPEPPER_URL = 'https://www.hotpepper.jp/CSP/psh010/doBasic?FWT={q}&SA={sa}';
+  // 項目文中のこの語句に、リンクを自動で付けます
+  var SITE_LINKS = {
+    '食べログ':  'https://tabelog.com/',
+    'HOTPEPPER': 'https://www.hotpepper.jp/'
+  };
+  function linkify(text){
+    var out = text;
+    Object.keys(SITE_LINKS).forEach(function(w){
+      out = out.split(w).join('<a href="'+SITE_LINKS[w]+'" target="_blank" rel="noopener">'+w+'</a>');
+    });
+    return out;
+  }
+  // ステータス基準：最多該当数が3以上=本提案 / 2=参考提示 / それ以外=導入見送り
+  function statusOf(max){
+    if(max>=3) return {label:'本提案', cls:'ok'};
+    if(max===2) return {label:'参考提示', cls:'mid'};
+    return {label:'導入見送り', cls:''};
+  }
+  /* ====================================================================================== */
+
+  var root = document.getElementById('seg-app');
+  var $ = function(id){return document.getElementById(id);};
+  var state = { checked:{}, area:'normal' };
+  var ORDER = ['A','B','C','D'];
+  var rows = {};   // id -> [button要素...]
+
+  // 各セグメントの項目数（シートの「4項目中」）
+  function itemsOf(k){ return ITEMS.filter(function(i){return i.segs.indexOf(k)>-1;}); }
+
+  // ---- 文節で区切る（未対応ブラウザ向け。区切り位置に<wbr>を入れる）----
+  var segmenter = (window.Intl && Intl.Segmenter) ? new Intl.Segmenter('ja',{granularity:'word'}) : null;
+  var AUTO_PHRASE = !!(window.CSS && CSS.supports && CSS.supports('word-break','auto-phrase'));
+  var ATTACH_PREV = /^([ぁ-ゟ]{1,3}|[、。，．,.!！?？)）」』】〕〉》・:：;；～〜ー]+|以上|以下|未満|円|種類?|銘柄|杯|個|枚|名|人|品|席|％|%|時間|分|台|件)$/;
+  var OPEN_BRACKET = /[「『（(【〔〈《]$/;
+  function phraseSplit(text){
+    var chunks = [];
+    var it = segmenter.segment(text)[Symbol.iterator]();
+    var r, prev = '';
+    while(!(r = it.next()).done){
+      var seg = r.value.segment;
+      var glue = chunks.length && (
+        /^\s+$/.test(seg) ||
+        ATTACH_PREV.test(seg) && !/^(円|種類?|銘柄|杯|個|枚|名|人|品|席|％|%|時間|分|台|件)$/.test(seg) ||
+        /^(円|種類?|銘柄|杯|個|枚|名|人|品|席|％|%|時間|分|台|件)$/.test(seg) && /[0-9０-９〜～]$/.test(prev) ||
+        OPEN_BRACKET.test(prev)
+      );
+      if(glue) chunks[chunks.length-1] += seg; else chunks.push(seg);
+      prev = seg;
+    }
+    // 細かく切れすぎないよう、「4文字以上で、ひらがな・句読点で終わる」ところだけを改行候補にする
+    var out = [], acc = '';
+    chunks.forEach(function(c){
+      acc += c;
+      if((acc.length >= 4 && /[ぁ-ゟ、。，．,!！?？)）」』】〕〉》以上以下未満]$/.test(acc)) || (acc.length >= 6 && /・$/.test(acc))){ out.push(acc); acc = ''; }
+    });
+    if(acc){
+      if(acc.length < 3 && out.length) out[out.length-1] += acc; else out.push(acc);
+    }
+    return out;
+  }
+  function ph(el){
+    if(!segmenter || AUTO_PHRASE || !el) return;
+    var w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null), nodes = [];
+    while(w.nextNode()) nodes.push(w.currentNode);
+    nodes.forEach(function(n){
+      if(!n.nodeValue || !n.nodeValue.trim()) return;
+      if(n.parentNode && n.parentNode.nodeName === 'A') return;   // リンクの語句（食べログ等）は分割しない
+      var chunks = phraseSplit(n.nodeValue);
+      if(chunks.length < 2) return;
+      var frag = document.createDocumentFragment();
+      chunks.forEach(function(c,i){
+        if(i) frag.appendChild(document.createElement('wbr'));
+        frag.appendChild(document.createTextNode(c));
+      });
+      n.parentNode.replaceChild(frag, n);
+    });
+  }
+
+  // ---- 描画（項目は最初に1回だけ作る） ----
+  var groupsEl = $('seg-groups');
+  ORDER.forEach(function(k){
+    var seg = SEGMENTS[k], list = itemsOf(k);
+    var g = document.createElement('section');
+    g.className = 'group ' + seg.cls;
+    g.id = 'grp-' + k;
+    g.innerHTML =
+      '<div class="g-head"><div class="g-badge">'+k+'</div>'+
+      '<div class="g-title"><b>'+seg.name.replace(/^[A-D]\./,'')+'</b><small data-prio></small></div>'+
+      '<div class="g-count" data-count>0 / '+list.length+'</div></div>';
+    list.forEach(function(it){
+      var b = document.createElement('div');
+      b.className = 'item';
+      var shared = it.segs.length>1 ? '<span class="tag">'+it.segs.join('・')+' 共通（どちらにも加算）</span>' : '';
+      b.innerHTML = '<button type="button" class="mark" role="checkbox" aria-checked="false"></button>'+
+                    '<span class="item-text">'+linkify(it.text)+'<br>'+shared+'</span>';
+      b.querySelector('.mark').setAttribute('aria-label', it.text);
+      ph(b.querySelector('.item-text'));
+      // 行のどこをタップしても○が切り替わる（文中のリンクを押したときは切り替えない）
+      b.addEventListener('click', function(e){
+        if(e.target.closest && e.target.closest('a')) return;
+        toggle(it.id);
+      });
+      (rows[it.id] = rows[it.id] || []).push(b);
+      g.appendChild(b);
+    });
+    ph(g.querySelector('.g-title b'));
+    groupsEl.appendChild(g);
+  });
+
+  function toggle(id){
+    state.checked[id] = !state.checked[id];
+    update();
+  }
+
+  // ---- 集計 ----
+  function counts(){
+    var c = {A:0,B:0,C:0,D:0};
+    ITEMS.forEach(function(it){
+      if(state.checked[it.id]) it.segs.forEach(function(k){ c[k]++; });
+    });
+    return c;
+  }
+
+  function judge(){
+    var c = counts(), pri = PRIORITY[state.area];
+    var max = Math.max(c.A,c.B,c.C,c.D);
+    var tied = pri.filter(function(k){return c[k]===max;});
+    return { c:c, max:max, win:tied[0], tied:tied, pri:pri };
+  }
+
+  function update(){
+    var j = judge();
+    var any = ITEMS.some(function(it){return state.checked[it.id];});
+
+    // 項目の見た目
+    ITEMS.forEach(function(it){
+      rows[it.id].forEach(function(b){
+        b.classList.toggle('on', !!state.checked[it.id]);
+        b.querySelector('.mark').setAttribute('aria-checked', state.checked[it.id] ? 'true':'false');
+      });
+    });
+
+    // グループ見出し
+    ORDER.forEach(function(k){
+      var g = $('grp-'+k);
+      g.querySelector('[data-count]').textContent = j.c[k] + ' / ' + itemsOf(k).length;
+      g.querySelector('[data-prio]').textContent = '同数時の優先順位：' + (j.pri.indexOf(k)+1);
+    });
+
+    // 結果バー
+    var bars = '';
+    ORDER.forEach(function(k){
+      var top = any && k===j.win ? ' top' : '';
+      bars += '<div class="cell '+SEGMENTS[k].cell+top+'">'+k+'<b>'+j.c[k]+'</b></div>';
+    });
+    bars += '<div class="btns"><button type="button" class="btn primary" id="seg-save">保存</button><button type="button" class="btn" id="seg-reset">リセット</button></div>';
+    $('r-bars').innerHTML = bars;
+    $('seg-save').onclick = saveCurrent;
+    $('seg-reset').onclick = resetAll;
+
+    var st = statusOf(j.max);
+    var segEl = $('r-seg'), stEl = $('r-status'), tieEl = $('r-tie');
+    if(!any){
+      segEl.textContent = '—';
+      stEl.textContent = '未判定'; stEl.className = 'status';
+      tieEl.textContent = '項目をタップして○をつけてください';
+    }else{
+      segEl.textContent = SEGMENTS[j.win].name;
+      stEl.textContent = st.label; stEl.className = 'status ' + st.cls;
+      tieEl.textContent = (j.max>0 && j.tied.length>1)
+        ? '同数（' + j.tied.join('・') + '）のため、優先順位により ' + j.win + ' を採用'
+        : '';
+    }
+
+    // エリア表示
+    Array.prototype.forEach.call(document.querySelectorAll('#seg-area button'), function(b){
+      b.setAttribute('aria-pressed', b.getAttribute('data-area')===state.area ? 'true':'false');
+    });
+    $('seg-area-note').textContent = '同数時の優先順位：' + j.pri.join(' ＞ ');
+    ph($('seg-area-note')); ph($('r-seg')); ph($('r-tie'));
+
+    renderContents(j, any, st);
+    notifyPortal(j, any, st);
+  }
+
+
+  // ---- 判定結果に応じた案内（セグメント別コンテンツの場所へ） ----
+  function safeUrl(u){ return /^(https?:\/\/|\/|\.\/|\.\.\/|#)/.test(u||'') ? u : ''; }
+  var lastKey = null;
+  function renderContents(j, any, st){
+    var box = $('seg-contents');
+    var url = any ? safeUrl(SEGMENT_PAGES[j.win]) : '';
+    var skip = (j.max<2) && !SHOW_ON_SKIP;
+    var key = (!any || !url || skip) ? 'none' : j.win + '|' + st.label + '|' + url;
+    if(key === lastKey) return;
+    lastKey = key;
+    box.innerHTML = '';
+    box.className = 'contents';
+    if(key === 'none') return;
+
+    box.className = 'contents ' + SEGMENTS[j.win].cls;
+    var card = document.createElement('div'); card.className = 'c-box';
+    var row = document.createElement('div'); row.className = 'c-row';
+    var info = document.createElement('div'); info.className = 'c-info';
+    var t = document.createElement('b'); t.textContent = SEGMENTS[j.win].name + ' のコンテンツ'; ph(t);
+    var d = document.createElement('small'); d.textContent = '判定：' + st.label;
+    info.appendChild(t); info.appendChild(d);
+    var a = document.createElement('a'); a.className = 'c-go'; a.textContent = '見る';
+    a.href = url; a.target = LINK_TARGET; if(LINK_TARGET==='_blank') a.rel = 'noopener';
+    row.appendChild(info); row.appendChild(a); card.appendChild(row); box.appendChild(card);
+  }
+
+  // ポータル側に判定結果を知らせる（親ページが受け取れば、ポータルの一覧を絞り込める）
+  function notifyPortal(j, any, st){
+    var detail = {
+      type:'segment-judged', judged:any,
+      segment: any ? j.win : null,
+      segmentName: any ? SEGMENTS[j.win].name : null,
+      status: any ? st.label : null,
+      max: j.max, counts: j.c, area: state.area,
+      shop: $('seg-shop').value.trim()
+    };
+    try{ root.dispatchEvent(new CustomEvent('segmentjudged',{bubbles:true,detail:detail})); }catch(e){}
+    try{ if(window.parent && window.parent !== window) window.parent.postMessage(detail,'*'); }catch(e){}
+  }
+
+  // ---- 操作 ----
+  Array.prototype.forEach.call(document.querySelectorAll('#seg-area button'), function(b){
+    b.addEventListener('click', function(){ state.area = b.getAttribute('data-area'); update(); });
+  });
+
+  function resetAll(){
+    state.checked = {};
+    $('seg-shop').value = '';
+    refreshSearchUi();
+    update();
+    try{ window.scrollTo(0,0); }catch(e){}
+    toast('リセットしました');
+  }
+
+  function toast(msg){
+    var t = $('seg-toast'); t.textContent = msg; t.classList.add('show');
+    setTimeout(function(){ t.classList.remove('show'); }, 1600);
+  }
+
+  // ---- 保存済みの店舗（この端末のブラウザに保存）----
+  var HKEY = 'partner-seg-history-v1', HMAX = 200;
+  var storageOk = false;
+  try{ localStorage.setItem('__seg_t','1'); localStorage.removeItem('__seg_t'); storageOk = true; }catch(e){}
+  function loadHist(){
+    try{ var v = localStorage.getItem(HKEY); var a = v ? JSON.parse(v) : []; return Array.isArray(a) ? a : []; }catch(e){ return []; }
+  }
+  function storeHist(list){
+    try{ localStorage.setItem(HKEY, JSON.stringify(list)); return true; }catch(e){ return false; }
+  }
+  function two(n){ return (n<10?'0':'') + n; }
+  function fmtDate(ts){
+    var d = new Date(ts);
+    return d.getFullYear()+'/'+two(d.getMonth()+1)+'/'+two(d.getDate())+' '+two(d.getHours())+':'+two(d.getMinutes());
+  }
+  function areaLabel(a){ return a==='alt' ? '5～9・11エリア' : '1～4・10・12～15エリア'; }
+
+  function saveCurrent(){
+    var name = $('seg-shop').value.trim();
+    if(!name){ toast('店舗名を入力してください'); $('seg-shop').focus(); return; }
+    if(!storageOk){ toast('この環境では保存できません'); return; }
+    var j = judge();
+    var ids = ITEMS.filter(function(it){return state.checked[it.id];}).map(function(it){return it.id;});
+    var any = ids.length > 0;
+    var rec = {
+      id: Date.now(), name: name, savedAt: Date.now(),
+      area: state.area, pref: pref, checked: ids,
+      win: any ? j.win : null, max: j.max, counts: j.c,
+      status: any ? statusOf(j.max).label : '未判定'
+    };
+    var list = loadHist(), msg = '保存しました';
+    var i = -1;
+    list.forEach(function(x,k){ if(x.name === name) i = k; });
+    if(i > -1){ rec.id = list[i].id; list.splice(i,1); msg = '上書き保存しました'; }
+    list.unshift(rec);
+    if(list.length > HMAX) list = list.slice(0, HMAX);
+    if(storeHist(list)){ toast(msg); renderHist(); } else { toast('保存できませんでした'); }
+  }
+
+  function renderHist(){
+    var list = loadHist();
+    updateHistToggle(!$('seg-history').hidden);
+    var q = $('seg-hist-q').value.trim().toLowerCase();
+    var ul = $('seg-hist-list'), note = $('seg-hist-note');
+    ul.innerHTML = '';
+    note.hidden = true;
+    if(!storageOk){
+      note.hidden = false;
+      note.textContent = 'この環境（ブラウザの設定やアプリ内ブラウザなど）では、履歴を保存できません。';
+      return;
+    }
+    var shown = list.filter(function(r){ return !q || r.name.toLowerCase().indexOf(q) > -1; });
+    if(!shown.length){
+      note.hidden = false;
+      note.textContent = list.length ? '該当する店舗がありません。' : 'まだ保存した店舗はありません。判定のあと「保存」を押すと、ここに残ります。';
+      return;
+    }
+    shown.forEach(function(r){
+      var li = document.createElement('li'); li.className = 'h-item';
+      var load = document.createElement('button'); load.type = 'button'; load.className = 'h-load';
+      var nm = document.createElement('b'); nm.textContent = r.name;
+      var meta = document.createElement('span');
+      if(r.win){
+        var bd = document.createElement('span'); bd.className = 'h-badge ' + SEGMENTS[r.win].cell; bd.textContent = r.win;
+        meta.appendChild(bd);
+        meta.appendChild(document.createTextNode(r.status + '（' + r.max + '件）'));
+      }else{
+        meta.appendChild(document.createTextNode('未判定'));
+      }
+      var meta2 = document.createElement('span');
+      meta2.textContent = fmtDate(r.savedAt) + '　' + (r.pref || '') + '　' + areaLabel(r.area);
+      load.appendChild(nm); load.appendChild(meta); load.appendChild(meta2);
+      load.addEventListener('click', function(){ restore(r); });
+      var del = document.createElement('button'); del.type = 'button'; del.className = 'h-del'; del.textContent = '削除';
+      var timer = null;
+      del.addEventListener('click', function(){
+        if(!del.classList.contains('armed')){
+          del.classList.add('armed'); del.textContent = 'もう一度で削除';
+          timer = setTimeout(function(){ del.classList.remove('armed'); del.textContent = '削除'; }, 3000);
+          return;
+        }
+        clearTimeout(timer);
+        storeHist(loadHist().filter(function(x){ return x.id !== r.id; }));
+        renderHist();
+      });
+      li.appendChild(load); li.appendChild(del); ul.appendChild(li);
+    });
+  }
+
+  function updateHistToggle(open){
+    $('seg-hist-toggle').textContent = open ? '保存済みの店舗を閉じる' : '保存済みの店舗（' + loadHist().length + '件）を見る';
+  }
+  function setHistOpen(open){
+    $('seg-history').hidden = !open;
+    $('seg-hist-toggle').setAttribute('aria-expanded', open ? 'true':'false');
+    if(open){ renderHist(); try{ $('seg-history').scrollIntoView({block:'start'}); }catch(e){} } else updateHistToggle(false);
+  }
+
+  function restore(r){
+    state.checked = {};
+    (r.checked || []).forEach(function(id){
+      if(ITEMS.some(function(it){ return it.id === id; })) state.checked[id] = true;
+    });
+    state.area = (r.area === 'alt') ? 'alt' : 'normal';
+    $('seg-shop').value = r.name;
+    setPref(r.pref || '愛知県');
+    update();
+    setHistOpen(false);
+    try{ window.scrollTo(0,0); }catch(e){}
+    toast('「' + r.name + '」を呼び出しました');
+  }
+
+  $('seg-hist-toggle').addEventListener('click', function(){ setHistOpen($('seg-history').hidden); });
+  $('seg-hist-q').addEventListener('input', renderHist);
+
+  // ---- 店名で食べログ / HOTPEPPER を検索 ----
+  var pref = '愛知県', prefSa = 'SA33';
+  function setPref(name){
+    Array.prototype.forEach.call(document.querySelectorAll('#seg-pref button'), function(x){
+      var on = x.getAttribute('data-pref') === name;
+      x.setAttribute('aria-pressed', on ? 'true':'false');
+      if(on){ pref = name; prefSa = x.getAttribute('data-sa'); }
+    });
+    refreshSearchUi();
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('#seg-pref button'), function(btn){
+    btn.addEventListener('click', function(){ setPref(btn.getAttribute('data-pref')); });
+  });
+  // 店名が入っているときだけ検索ボタンを「押せる」見た目にし、何が検索されるかを案内する
+  function refreshSearchUi(){
+    var name = $('seg-shop').value.trim();
+    var has = !!name;
+    ['seg-s-tabelog','seg-s-hotpepper'].forEach(function(id){
+      var el = $(id);
+      el.classList.toggle('on', has);
+      el.classList.toggle('off', !has);
+      el.setAttribute('aria-disabled', has ? 'false' : 'true');
+    });
+    var hint = $('seg-search-hint');
+    if(has){
+      hint.innerHTML = '';
+      var b = document.createElement('b'); b.textContent = '「' + name + '」';
+      hint.appendChild(b);
+      hint.appendChild(document.createTextNode('を' + pref + 'で検索できます。上のボタンを押してください。'));
+    }else{
+      hint.textContent = '店舗名を入力すると、食べログ・HOTPEPPERで検索できるようになります。';
+    }
+    ph(hint);
+  }
+  $('seg-shop').addEventListener('input', refreshSearchUi);
+
+  function bindSearch(elId, makeUrl){
+    $(elId).addEventListener('click', function(e){
+      e.preventDefault();
+      var name = $('seg-shop').value.trim();
+      if(!name){ toast('店舗名を入力してください'); $('seg-shop').focus(); return; }
+      window.open(makeUrl(name), '_blank', 'noopener');
+    });
+  }
+  bindSearch('seg-s-tabelog', function(name){
+    return TABELOG_URL.replace('{area}', encodeURIComponent(pref)).split('{q}').join(encodeURIComponent(name));
+  });
+  bindSearch('seg-s-hotpepper', function(name){
+    return HOTPEPPER_URL.replace('{sa}', prefSa).split('{q}').join(encodeURIComponent(name));
+  });
+
+  renderHist();
+  ph(root.querySelector('.lead'));
+  ph(root.querySelector('.notice'));
+  Array.prototype.forEach.call(root.querySelectorAll('.field > span'), ph);
+  refreshSearchUi();
+  update();
+})();
+</script>
+</body>
+</html>
