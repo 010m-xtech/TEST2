@@ -13,7 +13,15 @@ const STORE_CONFIG = {
   // 差し色（ボタン・強調・地図の目的地など）。#RRGGBB で指定
   accentColor: "#1F6B4F",
   // 旅の演出の出発地（お店の場所の緯度・経度）
-  tripOrigin: { label: "現在地", lat: 35.681, lon: 139.767 }
+  tripOrigin: { label: "現在地", lat: 35.681, lon: 139.767 },
+
+  // 旅のノート（最後に1回だけ出る、ひとことアンケート）の回答の送り先
+  //   Googleスプレッドシートに「日付・端末・楽しめましたか・ひとこと」が1行ずつ貯まります。
+  //   設定のしかたは guestbook-apps-script.gs の先頭に書いてあります。
+  //   空のままだと、画面には出ますが回答は保存されません。
+  guestbook: {
+    sheetUrl: "https://script.google.com/macros/s/AKfycbxipO7ned9vM6UWRRPP9w646crJHciR7QBVH_C4VNon_NwM9SadgXo9vdGyqf-S7tI_oQ/exec"
+  }
 };
 
 // ---- 銘柄データ ----------------------------------------------
