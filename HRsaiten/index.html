@@ -318,6 +318,21 @@ ol.board li:last-child{border-bottom:0}
 .pos{width:34px; height:34px; border-radius:50%; display:grid; place-items:center; font-family:var(--f-num); font-weight:900; font-size:19px; color:var(--text); background:var(--glass-2)}
 .pos.p1{color:var(--ink); background:radial-gradient(circle at 35% 28%, var(--gold-hi), var(--gold) 45%, #C98A1E); box-shadow:0 0 18px -2px #F7D37A99}
 .thumb{width:44px; height:58px; border-radius:8px; background:var(--glass-2); object-fit:cover; display:block}
+ol.board li.tap{cursor:pointer}
+ol.board li.tap .thumb{box-shadow:0 0 0 1.5px #F7D37A88}
+.photo-note{margin:0; font-size:11px; color:var(--text-dim); text-align:center}
+.viewer{position:fixed; inset:0; z-index:60; display:grid; place-items:center; align-content:center; gap:14px; padding:20px 16px; background:#000000E6; -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); animation:vIn .2s ease-out}
+.viewer[hidden]{display:none}
+@keyframes vIn{from{opacity:0}to{opacity:1}}
+.viewer figure{margin:0; display:grid; gap:12px; justify-items:center; max-width:min(420px,100%)}
+.viewer img{width:min(78vw,380px); max-height:64vh; aspect-ratio:3/4; object-fit:cover; border-radius:16px; background:var(--glass-2); box-shadow:0 0 0 2px #F7D37A, 0 20px 40px -10px #000}
+.viewer figcaption{display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:2px 12px; width:100%}
+.viewer .vr{grid-row:span 2; font-family:var(--f-num); font-size:26px; color:var(--gold)}
+.viewer .vn{font-weight:900; font-size:17px; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.viewer .vs{grid-row:span 2; font-family:var(--f-num); font-size:34px; color:var(--gold)}
+.viewer .vs small{font-size:14px; margin-left:2px}
+.viewer .vm{font-size:12px; color:var(--text-soft)}
+.viewer .btn{width:min(78vw,380px)}
 .who{min-width:0; font-weight:900; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .who span{display:block; font-weight:500; font-size:12.5px; color:var(--text-dim)}
 .pts{font-family:var(--f-num); font-weight:900; font-size:30px; line-height:1; color:var(--gold); font-variant-numeric:tabular-nums; text-align:right}
@@ -686,12 +701,20 @@ li.mine{background:#F7D37A1F; border-radius:12px}
       <label class="fld"><span>ニックネーム</span><input id="name" maxlength="12" placeholder="12文字まで" enterkeyhint="next"></label>
       <label class="fld"><span>ビールの感想<small>(10文字まで・なくてもOK)</small></span><input id="memo" maxlength="10" placeholder="例：美味しかった！！" enterkeyhint="done"></label>
       <p class="note" id="sheetNote"></p>
+      <p class="photo-note">記録した写真は、お店にも届きます(ランキングの表示と、採点の改善に使います)。</p>
       <button class="btn" id="save" type="submit">この名前で記録する</button>
       <button class="btn ghost" type="button" data-close="saveSheet">やめる</button>
     </form>
   </div>
 
-  <!-- 結果画像シート -->
+  <!-- ランキングの写真を大きく見る -->
+  <div class="viewer" id="viewer" hidden role="dialog" aria-modal="true" aria-label="写真を大きく見る">
+    <figure>
+      <img id="viewerImg" alt="">
+      <figcaption><span class="vr" id="viewerRank"></span><span class="vn" id="viewerName"></span><span class="vs" id="viewerScore"></span><span class="vm" id="viewerMeta"></span></figcaption>
+    </figure>
+    <button class="btn ghost" type="button" id="viewerClose">閉じる</button>
+  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -1123,7 +1146,7 @@ showBest();
 
 // ---------- 状態 ----------
 let sample = null, db = null, isStaff = false, maxImages = 1, isFb = false, myUid = "";
-let img = null, photoHash = null, thumb = null, ctl = null, last = null, savedId = null, savedName = "", tipTimer = null;
+let img = null, photoHash = null, thumb = null, storePhoto = null, ctl = null, last = null, savedId = null, savedName = "", tipTimer = null;
 
 // ---------- 写真の準備 ----------
 async function prepImage(f){
@@ -1157,11 +1180,20 @@ function deviceName(){
 
 function makeThumb(c){
   if (!c) return null;
-  const w = 90, h = 120, t = document.createElement("canvas"); t.width = w; t.height = h; // ランキングの小さな写真。データを軽くするため小さめ(1枚 約4KB)
+  const w = 240, h = 320, t = document.createElement("canvas"); t.width = w; t.height = h; // ランキングの写真。タップで大きく見られる大きさ(1枚 約15KB)
   const s = Math.max(w / c.width, h / c.height);
   const dw = c.width * s, dh = c.height * s;
   t.getContext("2d").drawImage(c, (w - dw) / 2, (h - dh) / 2, dw, dh);
-  return t.toDataURL("image/jpeg", .6);
+  return t.toDataURL("image/jpeg", .62);
+}
+// お店に届ける写真(長い辺 800px・1枚 約80KB)。スプレッドシートが取り込んだら Firebase から消える
+function makeStorePhoto(c){
+  if (!c) return null;
+  const s = Math.min(1, 800 / Math.max(c.width, c.height)), t = document.createElement("canvas");
+  t.width = Math.round(c.width * s); t.height = Math.round(c.height * s);
+  t.getContext("2d").drawImage(c, 0, 0, t.width, t.height);
+  for (const q of [.72, .6, .5]) { const u = t.toDataURL("image/jpeg", q); if (u.length < 380000) return u; }
+  return null;
 }
 async function hashFile(f){
   try {
@@ -1222,7 +1254,7 @@ async function usePhoto(f, preset){
   $("go").disabled = true;
   img = await prepImage(f);
   photoHash = await hashFile(f);
-  thumb = makeThumb(img.canvas);
+  thumb = makeThumb(img.canvas); storePhoto = makeStorePhoto(img.canvas);
   $("shootNote").textContent = "";
   $("cropImg").src = img.url;
   $("crop").style.setProperty("--ar", img.w / img.h);
@@ -1604,6 +1636,10 @@ function renderBoard(){
     sub.textContent = `リング ${Number(v.rings) || 0} 本` + (dt ? ` ・ ${dt.getMonth() + 1}/${dt.getDate()}` : "");
     who.append(sub);
     li.children[3].innerHTML = `${score}<small>点</small>`;
+    li.classList.add("tap"); li.tabIndex = 0;
+    const open = () => openViewer(d.id, rank, v);
+    li.addEventListener("click", e => { if (!e.target.closest(".del")) open(); });
+    li.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target === li) { e.preventDefault(); open(); } });
     const mineRec = isFb ? (myUid && v.uid === myUid) : !db;
     if (mineRec && !(isStaff && staffMode)) {
       const del = document.createElement("div"); del.className = "del";
@@ -1638,6 +1674,23 @@ function renderBoard(){
     ol.append(li);
   });
 }
+
+let viewerBack = null;
+function openViewer(id, rank, v){
+  const im = $("viewerImg"); im.removeAttribute("src");
+  loadThumb(id, im);
+  $("viewerRank").textContent = rank + "位";
+  $("viewerName").textContent = String(v.name || "名もなき呑み人");
+  $("viewerScore").innerHTML = `${Number(v.score) || 0}<small>点</small>`;
+  const dt = v.createdAt ? new Date(Number(v.createdAt)) : null;
+  $("viewerMeta").textContent = `リング ${Number(v.rings) || 0} 本` + (dt ? ` ・ ${dt.getMonth() + 1}/${dt.getDate()} ${dt.getHours()}:${String(dt.getMinutes()).padStart(2, "0")}` : "");
+  viewerBack = document.activeElement;
+  $("viewer").hidden = false; $("viewerClose").focus();
+}
+function closeViewer(){ $("viewer").hidden = true; if (viewerBack && viewerBack.focus) viewerBack.focus(); }
+$("viewerClose").addEventListener("click", closeViewer);
+$("viewer").addEventListener("click", e => { if (e.target === $("viewer") || e.target.tagName === "IMG") closeViewer(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("viewer").hidden) closeViewer(); });
 
 async function removeRecord(id){
   try {
@@ -1720,6 +1773,7 @@ $("saveForm").addEventListener("submit", async e => {
     }
     savedId = ref.id; savedName = name.slice(0, 12);
     if (thumb) { await db.doc("thumbs/" + ref.id).set(isFb ? { img: thumb, uid: myUid, expireAt: thumbExpireAt } : { img: thumb }).catch(() => {}); thumbs.delete(ref.id); }
+    if (isFb && storePhoto) await db.doc("photos/" + ref.id).set({ img: storePhoto, uid: myUid, createdAt: last.at }).catch(() => {});
     $("saveSheet").hidden = true;
     $("saveNote").textContent = `「${savedName}」で記録しました。`;
     updateSaveButton();
@@ -1733,7 +1787,7 @@ $("saveForm").addEventListener("submit", async e => {
 
 $("again").addEventListener("click", () => {
   last = null;
-  if (img) URL.revokeObjectURL(img.url); img = null; photoHash = null; thumb = null;
+  if (img) URL.revokeObjectURL(img.url); img = null; photoHash = null; thumb = null; storePhoto = null;
   $("go").disabled = true; setStatus("");
   show("shoot", "back");
 });
