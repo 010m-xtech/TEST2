@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>味覚マップ & テロワールストーリー</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Shippori+Mincho:wght@400;600;700;800&family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans JP"', 'sans-serif'],
+            mincho: ['"Shippori Mincho"', 'serif'],
+            serifEn: ['"Cinzel"', 'serif'],
+          },
+          // デザインの共通カラー（差し色は drinks.js の STORE_CONFIG.accentColor で変更）
+          colors: {
+            accent: 'rgb(var(--accent) / <alpha-value>)',
+            paper: '#F7F5F0',
+            surface: '#FFFFFF',
+            ink: '#1C1917',
+            muted: '#6B6560',
+            line: '#E7E2D9',
+            stamp: '#B91C1C'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* ===== デザインの共通ルール ===== */
+    :root {
+      --accent: 31 107 79;          /* 差し色（緑） */
+      --shadow-card: 0 1px 2px rgba(28, 25, 23, 0.04), 0 6px 20px rgba(28, 25, 23, 0.06);
+      --radius: 16px;               /* 角丸は 16px と 丸（full）の2種類だけ */
+    }
+    html, body { height: 100%; height: 100dvh; overflow: hidden; touch-action: manipulation; }
+
+    /* 見出し上の小さな英字ラベル */
+    .eyebrow { font-family: "Cinzel", serif; font-size: 12px; font-weight: 700; letter-spacing: 0.25em; color: rgb(var(--accent)); }
+
+    /* カード */
+    .card { background: #fff; border: 1px solid #E7E2D9; border-radius: var(--radius); box-shadow: var(--shadow-card); }
+
+    /* メインボタン：画面の主役の操作（旅へ出発など） */
+    .btn-primary {
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+      width: 100%; height: 56px; border-radius: var(--radius);
+      background: rgb(var(--accent)); color: #fff;
+      font-family: "Shippori Mincho", serif; font-weight: 700; font-size: 16px; letter-spacing: 0.05em;
+      box-shadow: 0 8px 20px rgb(var(--accent) / 0.28);
+      transition: transform 0.15s, filter 0.15s;
+    }
+    .btn-primary:active { transform: scale(0.97); filter: brightness(0.92); }
+
+    /* サブボタン：戻る・再診断など */
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 0.375rem;
+      height: 34px; padding: 0 14px; border-radius: 9999px;
+      background: #fff; border: 1px solid #E7E2D9; color: #1C1917;
+      font-size: 13px; font-weight: 500; transition: background 0.15s, transform 0.15s;
+    }
+    .btn-secondary:active { background: #F7F5F0; transform: scale(0.97); }
+
+    /* 選択肢ボタン：診断の回答 */
+    .option-card {
+      display: flex; align-items: center; gap: 0.75rem; width: 100%; text-align: left;
+      padding: 16px; border-radius: var(--radius);
+      background: #fff; border: 1.5px solid #E7E2D9; color: #1C1917;
+      font-size: 15px; line-height: 1.6; transition: border-color 0.15s, background 0.15s, transform 0.15s;
+    }
+    .option-card:active { transform: scale(0.99); }
+    .option-card .option-check {
+      flex-shrink: 0; width: 22px; height: 22px; border-radius: 9999px; border: 1.5px solid #E7E2D9;
+      display: flex; align-items: center; justify-content: center; color: transparent; font-size: 11px;
+      transition: all 0.15s;
+    }
+    .option-card.is-selected { border-color: rgb(var(--accent)); background: rgb(var(--accent) / 0.06); }
+    .option-card.is-selected .option-check { background: rgb(var(--accent)); border-color: rgb(var(--accent)); color: #fff; }
+
+    /* 小さなラベル（種類・産地など） */
+    .chip {
+      display: inline-flex; align-items: center; gap: 0.25rem; padding: 2px 10px; border-radius: 9999px;
+      background: rgb(var(--accent) / 0.1); color: rgb(var(--accent)); font-size: 12px; font-weight: 700;
+    }
+
+    /* ストーリー画面の章見出し */
+    .chapter {
+      display: flex; align-items: baseline; gap: 0.625rem; margin-bottom: 1rem; padding-bottom: 0.625rem;
+      border-bottom: 1px solid #E7E2D9; font-family: "Shippori Mincho", serif; font-size: 20px; font-weight: 800; color: #1C1917;
+    }
+    .chapter-num { color: rgb(var(--accent)); font-size: 20px; }
+
+    @keyframes pingSlow {
+      0% { transform: scale(0.85); opacity: 0.9; }
+      80%, 100% { transform: scale(2.4); opacity: 0; }
+    }
+    .animate-ping-slow { animation: pingSlow 1.8s cubic-bezier(0, 0, 0.2, 1) infinite; }
+
+    @keyframes expandCircle {
+      0% { clip-path: circle(0% at 50% 50%); }
+      100% { clip-path: circle(150% at 50% 50%); }
+    }
+
+    @keyframes fadeInStory {
+      0% { opacity: 0; transform: scale(0.95); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+
+<body class="bg-stone-900 text-ink font-sans h-full w-full select-none overflow-hidden flex flex-col justify-center items-center">
+
+  <div class="relative w-full max-w-md h-[100dvh] bg-paper flex flex-col overflow-hidden shadow-2xl">
+
+    <header class="relative z-50 px-4 py-3 flex items-center justify-between bg-surface border-b border-line flex-shrink-0">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-white flex-shrink-0">
+          <i class="fa-solid fa-compass text-sm"></i>
+        </div>
+        <div class="min-w-0">
+          <h1 id="app-title" class="text-[15px] font-mincho font-bold text-ink leading-tight truncate">あなたの味覚MAP</h1>
+          <p id="app-subtitle" class="text-xs text-muted leading-tight truncate">〜味覚を巡る1杯〜</p>
+        </div>
+      </div>
+      <button onclick="restartDiagnosis()" class="btn-secondary flex-shrink-0">
+        <i class="fa-solid fa-rotate-right text-xs"></i><span>再診断</span>
+      </button>
+    </header>
+
+    <main class="relative flex-1 w-full h-full overflow-clip">
+
+      <div id="view-quiz" class="absolute inset-0 z-40 flex flex-col px-5 pt-6 pb-6 bg-paper transition-all duration-500">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <span id="quiz-step-label" class="eyebrow">QUESTION 1 / 4</span>
+          </div>
+          <div id="quiz-progress" class="flex gap-1.5 mb-6"></div>
+          <h2 id="quiz-title" class="text-xl font-mincho font-bold text-ink leading-snug"></h2>
+        </div>
+        <div id="quiz-options-container" class="space-y-3 mt-auto">
+          <!-- Options injected via JS -->
+        </div>
+      </div>
+
+      <!-- 分析中の演出（質問が終わってから、おすすめが出るまで） -->
+      <div id="view-analyzing" onclick="finishAnalyzing()" class="absolute inset-0 z-0 bg-paper opacity-0 pointer-events-none transition-opacity duration-500 flex flex-col items-center justify-center px-8 text-center">
+        <span class="eyebrow">ANALYZING YOUR TASTE</span>
+        <div id="analyzing-radar" class="mt-3"></div>
+        <p id="analyzing-step" class="font-mincho font-bold text-base text-ink h-7 whitespace-nowrap"></p>
+        <div id="analyzing-bar-track" class="w-48 h-1 rounded-full bg-line mt-4 overflow-hidden transition-opacity duration-300">
+          <div id="analyzing-bar" class="h-full bg-accent" style="width: 0%"></div>
+        </div>
+        <div id="analyzing-reveal" class="mt-6 opacity-0 scale-75 transition-all duration-500">
+          <p class="text-sm text-muted">あなたは</p>
+          <p id="analyzing-type" class="font-mincho font-extrabold text-[34px] text-ink leading-tight"></p>
+          <p class="text-sm text-muted">タイプ</p>
+        </div>
+      </div>
+
+      <div id="view-map" class="absolute inset-0 z-30 flex flex-col opacity-0 pointer-events-none transition-all duration-500 bg-paper">
+
+        <!-- 選んだお酒と、あなたの好みを5角形で比べる -->
+        <div class="flex-shrink-0 px-4 pt-3">
+          <p class="text-xs text-muted mb-2 px-1">あなたは <span id="map-type-name" class="font-mincho font-bold text-sm text-accent"></span> タイプ</p>
+          <div class="card px-4 pt-3 pb-2">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p id="compare-meta" class="text-xs text-muted truncate"></p>
+                <p id="compare-name" class="font-mincho font-extrabold text-lg text-ink leading-snug truncate"></p>
+              </div>
+              <div class="text-right flex-shrink-0">
+                <p class="text-xs text-muted">相性</p>
+                <p class="font-mincho font-extrabold text-accent leading-none"><span id="compare-match" class="text-[28px]"></span><span class="text-sm ml-0.5">%</span></p>
+              </div>
+            </div>
+            <div id="compare-radar" class="flex justify-center -mt-1"></div>
+            <div class="flex justify-center gap-4 text-xs text-muted pb-1">
+              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-accent"></span>このお酒</span>
+              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full border-2 border-dashed border-muted bg-surface"></span>あなたの好み</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 種類で絞り込み -->
+        <div id="drink-filter" class="flex-shrink-0 flex gap-2 overflow-x-auto no-scrollbar px-4 pt-3 pb-2"></div>
+
+        <!-- おすすめ（上位3つ）または選んだ種類のお酒を、相性の高い順に -->
+        <div id="recommendation-list" class="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 pt-1 pb-24 space-y-2"></div>
+
+        <div id="action-journey-container" class="absolute bottom-5 left-0 right-0 px-4 z-50 opacity-0 pointer-events-none transition-all duration-500 translate-y-12">
+          <button id="journey-btn" onclick="startJourney()" class="btn-primary">
+            <span>美味しいを巡る旅へ</span>
+            <i class="fa-solid fa-plane text-sm"></i>
+          </button>
+        </div>
+      </div>
+
+      <div id="view-trip" onclick="skipTrip()" class="absolute inset-0 z-0 opacity-0 pointer-events-none transition-opacity duration-700 bg-paper overflow-hidden">
+        <svg id="trip-map" class="trip-map-layer absolute inset-0 w-full h-full transition-opacity duration-500" preserveAspectRatio="xMidYMid meet">
+          <g id="trip-prefectures"></g>
+          <path id="trip-route" d="" fill="none" style="stroke: rgb(var(--accent))" stroke-width="2.5" stroke-dasharray="2 7" stroke-linecap="round" vector-effect="non-scaling-stroke"></path>
+        </svg>
+
+        <div id="trip-origin-marker" class="trip-map-layer absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none transition-opacity duration-500">
+          <div class="w-3 h-3 rounded-full bg-ink border-2 border-white shadow"></div>
+          <span id="trip-origin-label" class="mt-1 whitespace-nowrap text-xs font-bold text-muted bg-surface/90 px-1.5 rounded-full"></span>
+        </div>
+
+        <div id="trip-dest-marker" class="absolute -translate-x-1/2 -translate-y-1/2 opacity-0 transition-opacity duration-300 pointer-events-none">
+          <span class="absolute -inset-4 rounded-full bg-accent/30 animate-ping-slow"></span>
+          <div class="relative w-4 h-4 rounded-full bg-accent border-2 border-white shadow-lg"></div>
+        </div>
+
+        <div id="trip-plane" class="trip-map-layer absolute w-9 h-9 -ml-[18px] -mt-[18px] flex items-center justify-center rounded-full bg-surface text-accent shadow-lg pointer-events-none transition-opacity duration-500">
+          <i class="fa-solid fa-plane text-base"></i>
+        </div>
+
+        <div class="absolute top-0 inset-x-0 pt-6 px-5 pointer-events-none">
+          <span class="eyebrow">NOW TRAVELING TO</span>
+          <p id="trip-destination-label" class="font-mincho font-extrabold text-[26px] text-ink mt-1"></p>
+        </div>
+
+        <div id="trip-arrival-card" class="card absolute bottom-8 inset-x-5 p-5 pr-24 opacity-0 translate-y-8 transition-all duration-500 pointer-events-none">
+          <span class="eyebrow text-muted" style="color: #6B6560">ARRIVAL</span>
+          <p id="trip-arrival-name" class="font-mincho font-extrabold text-lg text-ink leading-snug mt-1"></p>
+          <p id="trip-arrival-maker" class="text-xs text-muted mt-1"></p>
+          <div id="trip-arrival-stamp" class="absolute right-5 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full border-2 border-stamp text-stamp flex items-center justify-center font-mincho font-extrabold text-base -rotate-12 opacity-0 scale-150 transition-all duration-300">到着</div>
+        </div>
+
+        <button onclick="event.stopPropagation(); skipTrip()" class="absolute top-6 right-4 h-8 px-3.5 bg-ink/70 text-white text-xs font-bold rounded-full backdrop-blur-md active:scale-95 transition-transform">
+          SKIP <i class="fa-solid fa-forward-step ml-1"></i>
+        </button>
+      </div>
+
+      <div id="view-story" class="absolute inset-0 z-0 flex flex-col bg-paper text-ink opacity-0 pointer-events-none transition-opacity duration-1000 overflow-hidden">
+        <header class="px-4 py-2.5 flex items-center justify-between bg-paper/95 backdrop-blur-md border-b border-line flex-shrink-0 z-20">
+          <button onclick="backToFlavorMap()" class="btn-secondary">
+            <i class="fa-solid fa-arrow-left text-xs"></i><span>一覧に戻る</span>
+          </button>
+          <span id="story-region-header-tag" class="chip"></span>
+        </header>
+
+        <div id="story-scroll-area" class="flex-1 overflow-y-auto overscroll-contain pb-10">
+
+          <!-- ヒーロー：商品写真（背景は同じ写真をぼかしたもの） -->
+          <section class="relative overflow-hidden">
+            <img id="story-hero-bg" src="" alt="" class="absolute inset-0 w-full h-full object-cover scale-125 blur-2xl opacity-50">
+            <div class="absolute inset-0 bg-gradient-to-b from-paper/0 via-paper/40 to-paper"></div>
+            <div class="relative h-72">
+              <img id="story-hero-dish-img-1" src="" alt="" class="absolute inset-x-0 top-6 mx-auto h-60 w-full object-contain drop-shadow-xl transition-opacity duration-1000 opacity-100">
+              <img id="story-hero-dish-img-2" src="" alt="" class="absolute inset-x-0 top-6 mx-auto h-60 w-full object-contain drop-shadow-xl transition-opacity duration-1000 opacity-0">
+            </div>
+            <div class="relative px-5 pt-2">
+              <div id="story-chips" class="flex flex-wrap gap-1.5 mb-2"></div>
+              <h1 id="story-drink-title-main" class="text-[28px] font-mincho font-extrabold text-ink leading-tight"></h1>
+              <p id="story-drink-maker-name" class="text-[13px] text-muted mt-1.5"></p>
+            </div>
+          </section>
+
+          <!-- 相性と味わいのゲージ -->
+          <section class="px-5 pt-5">
+            <div class="card p-4">
+              <div class="flex items-center justify-between mb-4">
+                <span class="text-[13px] font-bold text-ink">あなたとの相性</span>
+                <span class="font-mincho font-extrabold text-accent leading-none"><span id="story-match" class="text-[32px]"></span><span class="text-base ml-0.5">%</span></span>
+              </div>
+              <p id="story-match-reason" class="text-[13px] text-ink/80 leading-relaxed"></p>
+              <div id="story-taste-gauges" class="flex justify-center mt-2"></div>
+              <div class="flex justify-center gap-4 mt-1 text-xs text-muted">
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-accent"></span>このお酒</span>
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full border-2 border-dashed border-muted bg-surface"></span>あなたの好み</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- 一 味わい -->
+          <section class="px-5 pt-9">
+            <h2 class="chapter"><span class="chapter-num">①</span>味わい</h2>
+            <div id="story-rich-description" class="text-[15px] text-ink/80 leading-loose space-y-4"></div>
+          </section>
+
+          <!-- 二 つくり手と土地 -->
+          <section class="px-5 pt-9">
+            <h2 class="chapter"><span class="chapter-num">②</span>お酒をめぐる環境</h2>
+            <div id="story-land-map" class="card overflow-hidden"></div>
+
+            <div id="story-gallery-section" class="card relative overflow-hidden mt-4">
+              <div class="h-52 overflow-hidden bg-line relative">
+                <img id="gallery-slide-img" src="" alt="" class="w-full h-full object-cover transition-opacity duration-300">
+                <!-- 写真が見つからないときの代わりの表示 -->
+                <div id="gallery-slide-fallback" class="absolute inset-0 hidden flex-col items-center justify-center gap-3 bg-accent/10 px-8 text-center">
+                  <i class="fa-solid fa-mountain-sun text-4xl text-accent"></i>
+                  <span id="gallery-fallback-title" class="font-mincho font-extrabold text-2xl text-ink leading-snug"></span>
+                </div>
+
+                <button id="gallery-prev" onclick="prevGallerySlide()" aria-label="前の写真" class="absolute left-2.5 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full bg-surface/85 text-ink shadow active:scale-95 transition z-10">
+                  <i class="fa-solid fa-chevron-left text-xs"></i>
+                </button>
+                <button id="gallery-next" onclick="nextGallerySlide()" aria-label="次の写真" class="absolute right-2.5 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full bg-surface/85 text-ink shadow active:scale-95 transition z-10">
+                  <i class="fa-solid fa-chevron-right text-xs"></i>
+                </button>
+
+                <div id="gallery-indicators" class="absolute bottom-2.5 left-0 right-0 flex justify-center gap-1.5 z-10"></div>
+              </div>
+              <div class="p-4">
+                <p id="gallery-slide-title" class="font-mincho font-bold text-base text-ink mb-1"></p>
+                <p id="gallery-slide-caption" class="text-sm text-ink/80 leading-relaxed"></p>
+                <p id="gallery-slide-credit" class="text-xs text-muted mt-2.5 break-all"></p>
+              </div>
+            </div>
+          </section>
+
+          <section class="px-5 pt-9">
+            <button onclick="backToFlavorMap()" class="btn-secondary w-full justify-center" style="height: 48px">
+              <i class="fa-solid fa-map-location-dot text-sm"></i><span>他のおすすめを見る</span>
+            </button>
+          </section>
+        </div>
+      </div>
+      <!-- 旅のノート（最後に1回だけ出る、ひとことアンケート） -->
+      <div id="guestbook" class="absolute inset-0 z-[60] hidden">
+        <div id="guestbook-backdrop" onclick="closeGuestbook()" class="absolute inset-0 bg-ink/40 opacity-0 transition-opacity duration-300"></div>
+        <div id="guestbook-sheet" class="absolute inset-x-0 bottom-0 bg-paper rounded-t-3xl px-5 pt-3 pb-6 shadow-2xl translate-y-full transition-transform duration-500 max-h-[92%] overflow-y-auto">
+          <div class="w-10 h-1 rounded-full bg-line mx-auto mb-3"></div>
+          <button onclick="closeGuestbook()" aria-label="閉じる" class="absolute top-3 right-4 w-8 h-8 flex items-center justify-center rounded-full text-muted active:bg-line">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+
+          <div id="guestbook-form">
+            <span class="eyebrow">TRAVEL NOTE</span>
+            <h3 class="font-mincho font-extrabold text-xl text-ink leading-snug mt-1">今日の旅の記念に、<br>ひとこと残していきませんか？</h3>
+            <p class="text-[13px] text-muted mt-1.5">タップするだけでも大丈夫です。</p>
+
+            <p class="text-sm font-bold text-ink mt-5 mb-2.5">今日の味覚の旅、楽しめましたか？</p>
+            <div id="guestbook-enjoy" class="grid grid-cols-3 gap-2"></div>
+
+            <p class="text-sm font-bold text-ink mt-5 mb-2.5">次に旅してみたい土地のお酒や、<br>お店へのひとことをどうぞ</p>
+            <textarea id="guestbook-comment" rows="3" maxlength="500" oninput="updateGuestbookButton()"
+              placeholder="例）北海道のクラフトビールも飲んでみたい！&#10;　　スタッフさんのおすすめが楽しかったです"
+              class="w-full rounded-2xl border border-line bg-surface p-3 text-[15px] leading-relaxed text-ink outline-none focus:border-accent select-text"></textarea>
+
+            <button id="guestbook-submit" onclick="submitGuestbook()" disabled class="btn-primary mt-4 disabled:opacity-40">
+              <i class="fa-solid fa-feather-pointed text-sm"></i><span>旅のノートに残す</span>
+            </button>
+          </div>
+
+          <div id="guestbook-thanks" class="hidden flex-col items-center text-center py-6">
+            <div class="w-20 h-20 rounded-full border-2 border-stamp text-stamp flex items-center justify-center font-mincho font-extrabold text-lg -rotate-12">記帳</div>
+            <p class="font-mincho font-extrabold text-xl text-ink mt-5">ありがとうございました！</p>
+            <p class="text-sm text-muted mt-2 leading-relaxed">いただいた声は、次の一杯選びの参考にさせていただきます。<br>またのお越しをお待ちしています。</p>
+            <button onclick="closeGuestbook()" class="btn-secondary mt-6">閉じる</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="japan-map.js"></script>
+  <script src="drinks.js"></script>
+  <script>
+    let currentStep = 0;
+    let quizAnswers = [];
+    let selectedDrinkId = null;
+    let currentGalleryIndex = 0;
+    let currentGalleryData = [];
+    let slideshowInterval = null;
+    let currentSlideIndex = 0;
+    let tripAnimationFrame = null;
+    let tripTimers = [];
+
+    // =============================================================
+    //  診断ロジック
+    //  味わいを5つの要素（0〜100）で表し、質問の回答からあなたの好みを計算します。
+    //  お酒の味わい（drinks.js の taste）との近さが「相性（マッチ度）」になります。
+    // =============================================================
+    const TASTE_AXES = [
+      { key: 'aroma',      label: '香り', high: '華やかな香り', low: '控えめで澄んだ香り', weight: 1.2 },
+      { key: 'body',       label: 'コク', high: '濃厚なコク',   low: '軽やかな飲み口',     weight: 1.2 },
+      { key: 'sweetness',  label: '甘み', high: 'やさしい甘み', low: 'ドライなキレ',       weight: 1.0 },
+      { key: 'acidity',    label: '酸味', high: '爽やかな酸味', low: 'まろやかな口当たり', weight: 0.8 },
+      { key: 'bitterness', label: '苦味', high: '心地よい苦味', low: '苦味の少なさ',       weight: 0.8 }
+    ];
+
+    // 4つのタイプ（香り × コク で決まる）
+    const TASTE_TYPES = {
+      aromaticLight: {
+        name: '華やか・軽快',
+        desc: '香りの華やかさと、軽やかな飲み口を楽しむタイプ。フルーティーで爽やかな一杯が好相性です。'
+      },
+      aromaticRich: {
+        name: '芳醇・リッチ',
+        desc: '豊かな香りと、しっかりしたコクの両方を求めるタイプ。飲みごたえと華やかさを兼ね備えた一杯を。'
+      },
+      crispLight: {
+        name: '爽快・キレ',
+        desc: 'すっきりとした飲み口と、後に残らないキレを好むタイプ。食事と一緒に楽しむ一杯にぴったりです。'
+      },
+      deepRich: {
+        name: '重厚・コク',
+        desc: '深いコクと長い余韻をじっくり味わうタイプ。ゆっくり向き合える、飲みごたえのある一杯がおすすめです。'
+      }
+    };
+
+    // 質問：各選択肢の profile は「その答えを選んだ人が好む味わい（0〜100）」
+    const QUESTIONS = [
+      {
+        q: "いまの気分に一番フィットする飲み心地は？",
+        options: [
+          { text: "気分をシャキッとリフレッシュする、爽やかな1杯", profile: { body: 25, acidity: 70, sweetness: 40 } },
+          { text: "会話が弾むような、香り立ちの良いワクワクする1杯", profile: { aroma: 85, body: 40 } },
+          { text: "ペースを落として、じっくり深く浸れる落ち着いた1杯", profile: { body: 80, aroma: 45 } },
+          { text: "ここで一度口内をリセットする、キレ味鋭いクリアな1杯", profile: { aroma: 20, body: 20, sweetness: 20 } }
+        ]
+      },
+      {
+        q: "グラスを近づけた時、ふわりと感じたい香りは？",
+        options: [
+          { text: "果実やお花、柑橘のようなフルーティーで華やかなアロマ", profile: { aroma: 90, sweetness: 60 } },
+          { text: "ハーブや山椒、和スパイスのような心地よい清涼感", profile: { aroma: 70, acidity: 55, bitterness: 45 } },
+          { text: "自然な甘みや麦の香ばしさ、食事に寄り添う控えめな香り", profile: { aroma: 40, sweetness: 55, body: 55 } },
+          { text: "香りは極力主張せず、澄み切ったクリーンな印象", profile: { aroma: 15 } }
+        ]
+      },
+      {
+        q: "口に含んだ瞬間の「ボディ感」はどれが理想？",
+        options: [
+          { text: "水のようにサラリと喉を通る、軽快で雑味のないタッチ", profile: { body: 10 } },
+          { text: "ほどよい瑞々しさがあり、重すぎず軽すぎない心地よさ", profile: { body: 40 } },
+          { text: "トロッとした舌触りや、口いっぱいに広がる濃密な旨味", profile: { body: 75, sweetness: 65 } },
+          { text: "舌の上にズシッと残る、飲みごたえ抜群の濃厚な重厚感", profile: { body: 95 } }
+        ]
+      },
+      {
+        q: "味わいで、いちばん惹かれるのは？",
+        options: [
+          { text: "熟した果実やはちみつのような、やさしい甘み", profile: { sweetness: 85, acidity: 35 } },
+          { text: "柑橘や青りんごのような、キリッとした酸味", profile: { acidity: 85, sweetness: 30 } },
+          { text: "カカオやコーヒー、ホップのような心地よい苦味", profile: { bitterness: 85, sweetness: 25 } },
+          { text: "甘さ控えめの、すっきりドライな味わい", profile: { sweetness: 10, bitterness: 40 } }
+        ]
+      },
+      {
+        q: "ゴクリと飲み干したあとの「余韻」はどうしたい？",
+        options: [
+          { text: "一瞬でスパッと消え去り、次の一口や箸が進むキレ", profile: { body: 25, sweetness: 20 } },
+          { text: "鼻腔からフワッと心地よい果実やボタニカルの香りが抜けていく", profile: { aroma: 85 } },
+          { text: "喉の奥にじんわりとお酒本来のふくよかな温かみが続く", profile: { body: 65, sweetness: 55 } },
+          { text: "何層にも変化する濃厚な深みやビター感を長く味わいたい", profile: { body: 90, bitterness: 70 } }
+        ]
+      }
+    ];
+
+    const NEUTRAL_PROFILE = { aroma: 50, body: 50, sweetness: 50, acidity: 50, bitterness: 50 };
+    let userProfile = { ...NEUTRAL_PROFILE };
+    let userAnswerCounts = {}; // 要素ごとに、何回の回答で好みが分かったか
+
+    // 回答の多さに応じた、その要素の確からしさ（0.2〜1）
+    const getConfidence = key => Math.max(0.2, Math.min(1, (userAnswerCounts[key] || 0) / 2));
+
+    // 回答から好みを計算：要素ごとに「選んだ答えの値」の平均（中間値50を少しだけ混ぜて極端になりすぎないようにする）
+    function computeUserProfile() {
+      const PRIOR_WEIGHT = 0.5;
+      const profile = {};
+      userAnswerCounts = {};
+      TASTE_AXES.forEach(({ key }) => {
+        let sum = 50 * PRIOR_WEIGHT, weight = PRIOR_WEIGHT;
+        quizAnswers.forEach(answer => {
+          if(answer[key] != null) { sum += answer[key]; weight += 1; }
+        });
+        profile[key] = Math.round(sum / weight);
+        userAnswerCounts[key] = weight - PRIOR_WEIGHT;
+      });
+      return profile;
+    }
+
+    // お酒の味わい（taste がなければ旧形式の x / y から換算）
+    function getDrinkTaste(drink) {
+      if(drink.taste) return { ...NEUTRAL_PROFILE, ...drink.taste };
+      return { ...NEUTRAL_PROFILE, aroma: 100 - (drink.y ?? 50), body: drink.x ?? 50 };
+    }
+
+    function getTasteTypeKey(taste) {
+      if(taste.aroma >= 50) return taste.body >= 50 ? 'aromaticRich' : 'aromaticLight';
+      return taste.body >= 50 ? 'deepRich' : 'crispLight';
+    }
+
+    // 相性（%）：5つの要素の差を重み付きで合計し、近いほど高くなる
+    //   質問でよく分かった要素ほど重く、あまり聞けていない要素は軽く扱う
+    function getMatchPercent(drink) {
+      const taste = getDrinkTaste(drink);
+      let sum = 0, max = 0;
+      TASTE_AXES.forEach(a => {
+        const w = a.weight * getConfidence(a.key);
+        sum += w * Math.pow(taste[a.key] - userProfile[a.key], 2);
+        max += w * 100 * 100;
+      });
+      const distance = Math.sqrt(sum / max); // 0（同じ）〜 1（正反対）
+      return Math.max(30, Math.min(99, Math.round(100 * (1 - distance * 1.2))));
+    }
+
+    // 相性が良い理由（好みと近く、そのお酒の特徴がはっきりしている要素を最大2つ）
+    function getMatchReason(drink) {
+      const taste = getDrinkTaste(drink);
+      const reasons = TASTE_AXES
+        .filter(a => getConfidence(a.key) >= 0.5)
+        .map(a => ({ a, strength: Math.abs(taste[a.key] - 50), gap: Math.abs(taste[a.key] - userProfile[a.key]) }))
+        .filter(r => r.gap <= 20 && r.strength >= 15)
+        .sort((p, q) => (q.strength - q.gap) - (p.strength - p.gap))
+        .slice(0, 2)
+        .map(r => taste[r.a.key] >= 50 ? r.a.high : r.a.low);
+      return reasons.length
+        ? `「${reasons.join('」と「')}」が、あなたの好みにぴったりです。`
+        : 'あなたの好みに近い、バランスのとれた一杯です。';
+    }
+
+    function getRankedDrinks() {
+      return DRINKS_DATABASE
+        .map(drink => ({ drink, match: getMatchPercent(drink) }))
+        .sort((a, b) => b.match - a.match);
+    }
+
+    // 5角形のレーダーチャート
+    //   series: [{ values, fill, stroke, dashed }]
+    //   options.labels = false で、ラベルなしの小さなチャート（一覧のアイコン用）
+    function renderRadarChart(container, series, size = 250, options = {}) {
+      const labels = options.labels !== false;
+      const c = size / 2, r = labels ? size / 2 - 38 : size / 2 - 2, n = TASTE_AXES.length;
+      const point = (i, v) => {
+        const angle = (-90 + i * 360 / n) * Math.PI / 180;
+        return [c + Math.cos(angle) * r * v / 100, c + Math.sin(angle) * r * v / 100];
+      };
+      const polygon = v => TASTE_AXES.map((a, i) => point(i, v(a)).map(x => x.toFixed(1)).join(',')).join(' ');
+      let svg = `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" class="block">`;
+      (labels ? [25, 50, 75, 100] : [50, 100]).forEach(level => {
+        svg += `<polygon points="${polygon(() => level)}" fill="none" stroke="#E7E2D9" stroke-width="1"></polygon>`;
+      });
+      TASTE_AXES.forEach((a, i) => {
+        const [x, y] = point(i, 100);
+        svg += `<line x1="${c}" y1="${c}" x2="${x}" y2="${y}" stroke="#E7E2D9" stroke-width="1"></line>`;
+        if(!labels) return;
+        const [lx, ly] = point(i, 128);
+        const on = options.highlight === a.key;
+        svg += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-size="${on ? 14 : 12}" font-weight="700" style="fill: ${on ? 'rgb(var(--accent))' : '#6B6560'}">${a.label}</text>`;
+      });
+      series.forEach(s => {
+        svg += `<polygon points="${polygon(a => s.values[a.key])}" style="fill: ${s.fill}; stroke: ${s.stroke}" stroke-width="${labels ? 2 : 1.2}" ${s.dashed ? 'stroke-dasharray="4 4"' : ''} stroke-linejoin="round"></polygon>`;
+      });
+      container.innerHTML = svg + '</svg>';
+    }
+
+    // レーダーチャートを、前の形（最初は中心）から目的の形へ徐々に変化させる
+    function animateRadarChart(container, series, size = 250, options = {}) {
+      if(container._radarAnim) cancelAnimationFrame(container._radarAnim);
+      const zero = { ...NEUTRAL_PROFILE };
+      Object.keys(zero).forEach(k => zero[k] = 0);
+      const from = container._radarValues || [];
+      const duration = options.duration || 900;
+      const start = performance.now();
+      const ease = t => 1 - Math.pow(1 - t, 3);
+      const frame = now => {
+        const t = Math.min(1, (now - start) / duration);
+        const current = series.map((s, i) => {
+          const base = from[i] || zero;
+          const values = {};
+          TASTE_AXES.forEach(a => values[a.key] = base[a.key] + (s.values[a.key] - base[a.key]) * ease(t));
+          return { ...s, values };
+        });
+        renderRadarChart(container, current, size, options);
+        container._radarValues = current.map(s => s.values);
+        if(t < 1) container._radarAnim = requestAnimationFrame(frame);
+      };
+      container._radarAnim = requestAnimationFrame(frame);
+    }
+
+    const PLACEHOLDER_IMAGE = 'https://placehold.co/300x300/e2e8f0/64748b?text=Drink';
+
+    const isDomestic = drink => drink.origin.country === '日本' && drink.origin.lat != null && drink.origin.lon != null;
+    // ---- 商品画像 ----
+    // images を省略したお酒は images/<id>.webp（なければ .jpg / .jpeg / .png）を自動で使う
+    const IMAGE_EXTENSIONS = ['webp', 'jpg', 'jpeg', 'png'];
+    function getProductSlides(drink) {
+      if(drink.images && drink.images.length) return drink.images.map(src => [src]);
+      return [IMAGE_EXTENSIONS.map(ext => `images/${drink.id}.${ext}`)];
+    }
+    // 候補を順番に試し、どれも読めなければプレースホルダーを表示
+    function loadImage(img, candidates) {
+      const list = [...candidates, PLACEHOLDER_IMAGE];
+      let i = 0;
+      img.onerror = () => { i++; if(i < list.length) img.src = list[i]; else img.onerror = null; };
+      img.src = list[0];
+    }
+    function createProductImage(drink, className) {
+      const img = document.createElement('img');
+      img.className = className;
+      img.alt = drink.name;
+      loadImage(img, getProductSlides(drink)[0]);
+      return img;
+    }
+    // 産地の短い表示（例：岐阜県 ／ フランス）
+    const getOriginLabel = drink => drink.origin.country === '日本' ? drink.origin.prefecture : drink.origin.country;
+    // 産地の詳しい表示（例：岐阜県中津川市 ／ フランス・ボルドー）
+    const getOriginDetail = drink => drink.origin.country === '日本'
+      ? `${drink.origin.prefecture}${drink.origin.area || ''}`
+      : [drink.origin.country, drink.origin.area].filter(Boolean).join('・');
+    const getMakerLine = drink => `${drink.maker}（${getOriginDetail(drink)}）`;
+
+    function applyStoreConfig() {
+      // 差し色（#RRGGBB）をCSS変数に反映
+      const hex = (STORE_CONFIG.accentColor || '').replace('#', '');
+      if(/^[0-9a-fA-F]{6}$/.test(hex)) {
+        const rgb = [0, 2, 4].map(i => parseInt(hex.slice(i, i + 2), 16)).join(' ');
+        document.documentElement.style.setProperty('--accent', rgb);
+      }
+      document.title = STORE_CONFIG.pageTitle;
+      document.getElementById('app-title').innerText = STORE_CONFIG.appTitle;
+      document.getElementById('app-subtitle').innerText = STORE_CONFIG.appSubtitle;
+    }
+
+    function renderQuiz() {
+      if (!QUESTIONS || currentStep >= QUESTIONS.length) {
+        showAnalyzingScreen();
+        return;
+      }
+      const qObj = QUESTIONS[currentStep];
+      document.getElementById('quiz-step-label').innerText = `QUESTION ${currentStep + 1} / ${QUESTIONS.length}`;
+      document.getElementById('quiz-title').innerText = qObj.q;
+      
+      const container = document.getElementById('quiz-options-container');
+      container.innerHTML = '';
+      
+      let answered = false;
+      qObj.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'option-card';
+        btn.innerHTML = '<span class="option-check"><i class="fa-solid fa-check"></i></span><span class="option-text"></span>';
+        btn.querySelector('.option-text').textContent = opt.text;
+        btn.onclick = function() {
+          if(answered) return;
+          answered = true;
+          btn.classList.add('is-selected');
+          // 選んだ状態を少し見せてから次の質問へ
+          setTimeout(() => answerQuestion(opt.profile), 220);
+        };
+        container.appendChild(btn);
+      });
+
+      document.getElementById('quiz-progress').innerHTML = QUESTIONS.map((_, i) =>
+        `<div class="h-1 flex-1 rounded-full transition-colors duration-300 ${i <= currentStep ? 'bg-accent' : 'bg-line'}"></div>`
+      ).join('');
+    }
+
+    function answerQuestion(profile) {
+      quizAnswers.push(profile);
+      userProfile = computeUserProfile();
+      currentStep++;
+      if (currentStep < QUESTIONS.length) {
+        renderQuiz();
+      } else {
+        showAnalyzingScreen();
+      }
+    }
+
+    function restartDiagnosis() {
+      currentStep=0; quizAnswers=[]; userProfile={ ...NEUTRAL_PROFILE }; userAnswerCounts={}; selectedDrinkId=null; currentCategoryFilter=RECOMMEND_FILTER;
+      cancelTrip();
+      if(slideshowInterval) clearInterval(slideshowInterval);
+      cancelAnalyzing();
+      if(guestbookTimer) { clearTimeout(guestbookTimer); guestbookTimer = null; }
+      ['view-quiz','view-analyzing','view-map','view-trip','view-story'].forEach(id=>{
+        const el = document.getElementById(id);
+        if(el){ el.style.opacity='0'; el.style.pointerEvents='none'; el.style.zIndex='0'; el.style.animation='none'; }
+      });
+      const journeyBtn = document.getElementById('action-journey-container');
+      if (journeyBtn) {
+        journeyBtn.classList.remove('opacity-100', 'pointer-events-auto', 'translate-y-0');
+        journeyBtn.classList.add('opacity-0', 'pointer-events-none', 'translate-y-12');
+      }
+
+      const q = document.getElementById('view-quiz'); 
+      q.style.opacity='1'; q.style.pointerEvents='auto'; q.style.zIndex='40'; 
+      renderQuiz();
+    }
+    
+    // ---- 分析中の演出 ----
+    //   5角形が揺れながら、香り→コク→甘み→酸味→苦味の順に1つずつ決まっていき、最後にタイプを発表
+    let analyzingTimers = [];
+    let analyzingFrame = null;
+    let analyzingActive = false;
+
+    function cancelAnalyzing() {
+      analyzingActive = false;
+      analyzingTimers.forEach(clearTimeout);
+      analyzingTimers = [];
+      if(analyzingFrame) cancelAnimationFrame(analyzingFrame);
+      analyzingFrame = null;
+    }
+
+    function showAnalyzingScreen() {
+      cancelAnalyzing();
+      analyzingActive = true;
+      const q = document.getElementById('view-quiz'); q.style.opacity='0'; q.style.pointerEvents='none'; q.style.zIndex='0';
+      const v = document.getElementById('view-analyzing'); v.style.opacity='1'; v.style.pointerEvents='auto'; v.style.zIndex='35';
+
+      const radar = document.getElementById('analyzing-radar');
+      const step = document.getElementById('analyzing-step');
+      const bar = document.getElementById('analyzing-bar');
+      const reveal = document.getElementById('analyzing-reveal');
+      reveal.classList.add('opacity-0', 'scale-75');
+      document.getElementById('analyzing-bar-track').style.opacity = '1';
+      document.getElementById('analyzing-type').innerText = TASTE_TYPES[getTasteTypeKey(userProfile)].name;
+
+      const STEP_MS = 520;
+      const settled = {};
+      let highlight = null;
+      const start = performance.now();
+      const frame = now => {
+        const t = (now - start) / 1000;
+        const values = {};
+        TASTE_AXES.forEach((a, i) => {
+          // まだ決まっていない要素は、ゆらゆら揺れる
+          values[a.key] = settled[a.key] != null
+            ? settled[a.key]
+            : 50 + 35 * Math.sin(t * 7 + i * 1.7) * Math.cos(t * 3.1 + i);
+        });
+        renderRadarChart(radar, [{ values, fill: 'rgb(var(--accent) / 0.2)', stroke: 'rgb(var(--accent))' }], 230, { highlight });
+        analyzingFrame = requestAnimationFrame(frame);
+      };
+      analyzingFrame = requestAnimationFrame(frame);
+
+      TASTE_AXES.forEach((a, i) => {
+        analyzingTimers.push(setTimeout(() => {
+          highlight = a.key;
+          step.innerText = `${a.label}の好みを読み解いています…`;
+          bar.style.transition = `width ${STEP_MS}ms linear`;
+          bar.style.width = `${(i + 1) / TASTE_AXES.length * 100}%`;
+        }, 300 + i * STEP_MS));
+        analyzingTimers.push(setTimeout(() => { settled[a.key] = userProfile[a.key]; }, 300 + (i + 1) * STEP_MS - 120));
+      });
+      const doneAt = 300 + TASTE_AXES.length * STEP_MS;
+      analyzingTimers.push(setTimeout(() => {
+        highlight = null;
+        step.innerText = 'あなたにぴったりの一杯が見つかりました';
+        document.getElementById('analyzing-bar-track').style.opacity = '0';
+        reveal.classList.remove('opacity-0', 'scale-75');
+      }, doneAt));
+      analyzingTimers.push(setTimeout(finishAnalyzing, doneAt + 1500));
+    }
+
+    // 演出を終えて（またはタップでスキップして）おすすめ画面へ
+    function finishAnalyzing() {
+      if(!analyzingActive) return;
+      cancelAnalyzing();
+      document.getElementById('analyzing-bar').style.width = '0%';
+      document.getElementById('analyzing-radar')._radarValues = null;
+      showMapScreen();
+    }
+
+    // おすすめ一覧の画面（5角形で比べる）
+    // 「おすすめ」は相性の上位3つ。ほかのお酒は種類のボタンから選べる
+    const RECOMMEND_FILTER = 'おすすめ';
+    const RECOMMEND_COUNT = 3;
+    let currentCategoryFilter = RECOMMEND_FILTER;
+
+    function showMapScreen() {
+      ['view-quiz', 'view-analyzing'].forEach(id => {
+        const el = document.getElementById(id); el.style.opacity='0'; el.style.pointerEvents='none'; el.style.zIndex='0';
+      });
+      const m = document.getElementById('view-map'); m.style.opacity='1'; m.style.pointerEvents='auto'; m.style.zIndex='30';
+      document.getElementById('map-type-name').innerText = TASTE_TYPES[getTasteTypeKey(userProfile)].name;
+      document.getElementById('compare-radar')._radarValues = null; // チャートを中心から大きくする
+      renderCategoryFilter();
+      // 最初は一番相性のいいお酒を選んだ状態にする
+      const selected = DRINKS_DATABASE.find(d => d.id === selectedDrinkId) || (getRankedDrinks()[0] || {}).drink;
+      if(selected) selectDrink(selected);
+      document.getElementById('recommendation-list').scrollTop = 0;
+    }
+
+    function renderCategoryFilter() {
+      const box = document.getElementById('drink-filter');
+      const categories = [RECOMMEND_FILTER, ...new Set(DRINKS_DATABASE.map(d => d.category))];
+      box.innerHTML = '';
+      categories.forEach(cat => {
+        const btn = document.createElement('button');
+        const active = cat === currentCategoryFilter;
+        btn.className = `flex-shrink-0 h-8 px-3.5 rounded-full text-[13px] font-bold border transition ${active ? 'bg-accent border-accent text-white' : 'bg-surface border-line text-ink'}`;
+        btn.textContent = cat;
+        if(cat === RECOMMEND_FILTER) btn.insertAdjacentHTML('afterbegin', '<i class="fa-solid fa-star text-[11px] mr-1"></i>');
+        btn.onclick = () => {
+          currentCategoryFilter = cat;
+          renderCategoryFilter();
+          renderRecommendations();
+          document.getElementById('recommendation-list').scrollTop = 0;
+        };
+        box.appendChild(btn);
+      });
+    }
+
+    // 相性の高い順に一覧を表示（順位は全体での順位）
+    function renderRecommendations(){
+      const list = document.getElementById('recommendation-list');
+      list.innerHTML = '';
+      getRankedDrinks().forEach(({ drink, match }, index) => {
+        if(currentCategoryFilter === RECOMMEND_FILTER ? index >= RECOMMEND_COUNT : drink.category !== currentCategoryFilter) return;
+        const row = document.createElement('button');
+        row.id = `rec-card-${drink.id}`;
+        row.onclick = () => selectDrink(drink);
+        const selected = drink.id === selectedDrinkId;
+        if(index === 0) {
+          // 1位はひと回り大きく、BEST MATCH として目立たせる
+          row.className = `card w-full relative overflow-hidden text-left border-2 border-accent bg-accent/5 transition active:scale-[.99] ${selected ? 'ring-2 ring-accent ring-offset-2 ring-offset-paper' : ''}`;
+          row.innerHTML = `
+            <div class="absolute top-0 left-0 bg-accent text-white text-xs font-bold pl-3 pr-4 py-1 rounded-br-2xl"><i class="fa-solid fa-crown mr-1"></i>BEST MATCH</div>
+            <div class="flex items-center gap-3 px-3 pt-8 pb-3">
+              <div class="rec-image w-16 h-16 rounded-2xl bg-surface overflow-hidden flex-shrink-0"></div>
+              <div class="flex-1 min-w-0">
+                <p class="rec-name font-mincho font-extrabold text-lg text-ink leading-snug truncate"></p>
+                <p class="rec-meta text-xs text-muted truncate mt-0.5"></p>
+                <p class="rec-reason text-xs text-accent font-bold mt-1 line-clamp-2"></p>
+              </div>
+              <div class="text-right flex-shrink-0 font-mincho font-extrabold text-accent leading-none"><span class="text-[34px]">${match}</span><span class="text-sm">%</span></div>
+            </div>`;
+          row.querySelector('.rec-image').appendChild(createProductImage(drink, 'w-full h-full object-contain p-1'));
+          row.querySelector('.rec-name').textContent = drink.name;
+          row.querySelector('.rec-meta').textContent = `${drink.category}・${getOriginLabel(drink)}`;
+          row.querySelector('.rec-reason').textContent = getMatchReason(drink);
+          list.appendChild(row);
+          return;
+        }
+        row.className = `card w-full flex items-center gap-3 p-2.5 text-left transition active:scale-[.99] ${selected ? 'ring-2 ring-accent' : ''}`;
+        row.innerHTML = `
+          <span class="w-5 text-center font-mincho font-bold text-sm ${index < 3 ? 'text-accent' : 'text-muted'}">${index + 1}</span>
+          <div class="rec-image w-12 h-12 rounded-xl bg-paper overflow-hidden flex-shrink-0"></div>
+          <div class="flex-1 min-w-0">
+            <p class="rec-name font-mincho font-bold text-[15px] text-ink truncate"></p>
+            <p class="rec-meta text-xs text-muted truncate mt-0.5"></p>
+          </div>
+          <div class="rec-radar w-11 h-11 flex-shrink-0"></div>
+          <div class="w-12 text-right flex-shrink-0 font-mincho font-extrabold text-accent leading-none"><span class="text-xl">${match}</span><span class="text-xs">%</span></div>`;
+        row.querySelector('.rec-image').appendChild(createProductImage(drink, 'w-full h-full object-contain p-1'));
+        row.querySelector('.rec-name').textContent = drink.name;
+        row.querySelector('.rec-meta').textContent = `${drink.category}・${getOriginLabel(drink)}`;
+        renderRadarChart(row.querySelector('.rec-radar'), [
+          { values: getDrinkTaste(drink), fill: 'rgb(var(--accent) / 0.25)', stroke: 'rgb(var(--accent))' }
+        ], 44, { labels: false });
+        list.appendChild(row);
+      });
+    }
+
+    // 上の5角形に、選んだお酒とあなたの好みを重ねて表示
+    function updateCompare(drink) {
+      document.getElementById('compare-meta').innerText = `${drink.category}・${getOriginLabel(drink)}`;
+      document.getElementById('compare-name').innerText = drink.name;
+      document.getElementById('compare-match').innerText = getMatchPercent(drink);
+      animateRadarChart(document.getElementById('compare-radar'), [
+        { values: getDrinkTaste(drink), fill: 'rgb(var(--accent) / 0.2)', stroke: 'rgb(var(--accent))' },
+        { values: userProfile, fill: 'none', stroke: '#6B6560', dashed: true }
+      ], 200);
+    }
+
+    function selectDrink(drink){
+      selectedDrinkId = drink.id;
+      renderRecommendations();
+      updateCompare(drink);
+
+      const journeyBtn = document.getElementById('action-journey-container');
+      if (journeyBtn) {
+        journeyBtn.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-12');
+        journeyBtn.classList.add('opacity-100', 'pointer-events-auto', 'translate-y-0');
+      }
+    }
+
+    function renderTripPrefectures() {
+      document.getElementById('trip-prefectures').innerHTML = Object.entries(JAPAN_PREFECTURE_PATHS).map(([name, d]) =>
+        `<path d="${d}" data-pref="${name}" fill="#E6E0D4" stroke="#F7F5F0" stroke-width="1" vector-effect="non-scaling-stroke" style="transition: fill 0.6s"></path>`
+      ).join('');
+    }
+
+    const clamp01 = v => Math.max(0, Math.min(1, v));
+    const easeInOut = t => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    const lerp = (a, b, t) => a + (b - a) * t;
+
+    function cancelTrip() {
+      if(tripAnimationFrame) cancelAnimationFrame(tripAnimationFrame);
+      tripAnimationFrame = null;
+      tripTimers.forEach(clearTimeout);
+      tripTimers = [];
+    }
+
+    function startJourney() {
+      if(!selectedDrinkId) return;
+      const drink = DRINKS_DATABASE.find(d => d.id === selectedDrinkId);
+      if(!drink) return;
+      cancelTrip();
+
+      const map = document.getElementById('view-map');
+      const tripView = document.getElementById('view-trip');
+
+      map.style.opacity = '0';
+      map.style.pointerEvents = 'none';
+      map.style.zIndex = '0';
+
+      tripView.style.opacity = '1';
+      tripView.style.pointerEvents = 'auto';
+      tripView.style.zIndex = '50';
+
+      tripView.style.animation = 'none';
+      tripView.offsetHeight;
+      tripView.style.animation = 'expandCircle 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards';
+
+      // 表示内容をリセット
+      document.getElementById('trip-destination-label').innerText = `${getOriginLabel(drink)}へ`;
+      document.getElementById('trip-origin-label').innerText = STORE_CONFIG.tripOrigin.label;
+      document.getElementById('trip-arrival-name').innerText = drink.name;
+      document.getElementById('trip-arrival-maker').innerText = getMakerLine(drink);
+      const card = document.getElementById('trip-arrival-card');
+      const stamp = document.getElementById('trip-arrival-stamp');
+      const destMarker = document.getElementById('trip-dest-marker');
+      const plane = document.getElementById('trip-plane');
+      const originMarker = document.getElementById('trip-origin-marker');
+      const route = document.getElementById('trip-route');
+      card.classList.add('opacity-0', 'translate-y-8');
+      stamp.classList.add('opacity-0', 'scale-150');
+      destMarker.style.opacity = '0';
+      plane.style.opacity = '1';
+      document.querySelectorAll('#trip-prefectures path').forEach(p => p.style.fill = '');
+      const mapLayers = document.querySelectorAll('.trip-map-layer');
+      mapLayers.forEach(el => el.style.opacity = '1');
+
+      const domestic = isDomestic(drink);
+      // 海外のお酒は到着カードを画面の中央に出す
+      card.style.bottom = domestic ? '' : 'calc(50% - 60px)';
+      const destPref = domestic ? document.querySelector(`#trip-prefectures path[data-pref="${drink.origin.prefecture}"]`) : null;
+
+      // 出発地 → 目的地を結ぶ弧（2次ベジェ曲線）
+      const p0 = projectLatLon(STORE_CONFIG.tripOrigin.lat, STORE_CONFIG.tripOrigin.lon);
+      let p2;
+      if(domestic) {
+        p2 = projectLatLon(drink.origin.lat, drink.origin.lon);
+      } else {
+        // 海外：目的地の方角へ、日本の外まで飛んでいく
+        const hasCoords = drink.origin.lat != null && drink.origin.lon != null;
+        const bearing = hasCoords
+          ? bearingDeg(STORE_CONFIG.tripOrigin.lat, STORE_CONFIG.tripOrigin.lon, drink.origin.lat, drink.origin.lon)
+          : 300;
+        const rad = bearing * Math.PI / 180;
+        p2 = { x: p0.x + Math.sin(rad) * 1800, y: p0.y - Math.cos(rad) * 1800 };
+      }
+      const dx = p2.x - p0.x, dy = p2.y - p0.y;
+      const dist = Math.hypot(dx, dy) || 1;
+      let nx = -dy / dist, ny = dx / dist;
+      if(ny > 0) { nx = -nx; ny = -ny; } // 弧が北側にふくらむ向きにする
+      const bend = domestic ? Math.max(dist * 0.35, 40) : dist * 0.08;
+      const p1 = { x: (p0.x + p2.x) / 2 + nx * bend, y: (p0.y + p2.y) / 2 + ny * bend };
+      const bezier = t => ({
+        x: (1 - t) * (1 - t) * p0.x + 2 * (1 - t) * t * p1.x + t * t * p2.x,
+        y: (1 - t) * (1 - t) * p0.y + 2 * (1 - t) * t * p1.y + t * t * p2.y
+      });
+
+      // カメラ（画面の縦横比に合わせたviewBox）
+      //   国内：日本全体 → 航路全体 → 目的地へズーム
+      //   海外：日本全体から少しずつ引いていく
+      const svg = document.getElementById('trip-map');
+      const W = svg.clientWidth, H = svg.clientHeight, aspect = H / W;
+      const M = JAPAN_MAP_PROJECTION;
+      const fullW = Math.max(M.width, M.height / aspect) * 1.05;
+      const fullVB = { x: M.width / 2 - fullW / 2, y: M.height / 2 - fullW * aspect / 2, w: fullW, h: fullW * aspect };
+      const lerpVB = (a, b, t) => ({ x: lerp(a.x, b.x, t), y: lerp(a.y, b.y, t), w: lerp(a.w, b.w, t), h: lerp(a.h, b.h, t) });
+      let routeVB, zoomVB;
+      if(domestic) {
+        const minX = Math.min(p0.x, p1.x, p2.x), maxX = Math.max(p0.x, p1.x, p2.x);
+        const minY = Math.min(p0.y, p1.y, p2.y), maxY = Math.max(p0.y, p1.y, p2.y);
+        const routeW = Math.min(fullW, Math.max(600, (maxX - minX) * 1.8, (maxY - minY) * 1.8 / aspect));
+        routeVB = { x: (minX + maxX) / 2 - routeW / 2, y: (minY + maxY) / 2 - routeW * aspect / 2, w: routeW, h: routeW * aspect };
+        const zoomW = 480;
+        zoomVB = { x: p2.x - zoomW / 2, y: p2.y - zoomW * aspect * 0.4, w: zoomW, h: zoomW * aspect };
+      } else {
+        const farW = fullW * 1.25;
+        routeVB = { x: M.width / 2 - farW / 2, y: M.height / 2 - farW * aspect / 2, w: farW, h: farW * aspect };
+        zoomVB = routeVB;
+      }
+
+      // タイムライン（ミリ秒）
+      const T = domestic
+        ? { intro: 800, flyStart: 500, flyEnd: 2100, zoomEnd: 2900, finish: 4000 }
+        : { intro: 1900, flyStart: 400, flyEnd: 2600, cut: 1900, finish: 4000 };
+      const flyEase = domestic ? easeInOut : (t => t * t); // 海外は加速しながら飛び去る
+      const startTime = performance.now();
+
+      function frame(now) {
+        const t = now - startTime;
+        const fly = flyEase(clamp01((t - T.flyStart) / (T.flyEnd - T.flyStart)));
+        const vb = !domestic || t < T.flyEnd
+          ? lerpVB(fullVB, routeVB, easeInOut(clamp01(t / T.intro)))
+          : lerpVB(routeVB, zoomVB, easeInOut(clamp01((t - T.flyEnd) / (T.zoomEnd - T.flyEnd))));
+        svg.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
+        const place = (el, p) => {
+          el.style.left = `${(p.x - vb.x) / vb.w * W}px`;
+          el.style.top = `${(p.y - vb.y) / vb.h * H}px`;
+        };
+
+        // ここまで飛んだ部分の弧だけを描く
+        const c1 = { x: lerp(p0.x, p1.x, fly), y: lerp(p0.y, p1.y, fly) };
+        const cur = bezier(fly);
+        route.setAttribute('d', `M${p0.x},${p0.y} Q${c1.x},${c1.y} ${cur.x},${cur.y}`);
+
+        const tx = 2 * (1 - fly) * (p1.x - p0.x) + 2 * fly * (p2.x - p1.x);
+        const ty = 2 * (1 - fly) * (p1.y - p0.y) + 2 * fly * (p2.y - p1.y);
+        place(plane, cur);
+        plane.style.transform = `rotate(${Math.atan2(ty, tx) * 180 / Math.PI}deg)`;
+        place(originMarker, p0);
+        place(destMarker, p2);
+
+        const endAt = domestic ? T.zoomEnd : T.cut + 500;
+        if(t < endAt) tripAnimationFrame = requestAnimationFrame(frame);
+      }
+      tripAnimationFrame = requestAnimationFrame(frame);
+
+      if(domestic) {
+        tripTimers.push(setTimeout(() => {
+          plane.style.opacity = '0';
+          destMarker.style.opacity = '1';
+          if(destPref) destPref.style.fill = 'rgb(var(--accent))';
+        }, T.flyEnd));
+        tripTimers.push(setTimeout(() => card.classList.remove('opacity-0', 'translate-y-8'), T.flyEnd + 400));
+        tripTimers.push(setTimeout(() => stamp.classList.remove('opacity-0', 'scale-150'), T.flyEnd + 800));
+      } else {
+        // 日本を飛び出していく途中で、地図を消して到着カードへ切り替え
+        tripTimers.push(setTimeout(() => mapLayers.forEach(el => el.style.opacity = '0'), T.cut));
+        tripTimers.push(setTimeout(() => card.classList.remove('opacity-0', 'translate-y-8'), T.cut + 400));
+        tripTimers.push(setTimeout(() => stamp.classList.remove('opacity-0', 'scale-150'), T.cut + 800));
+      }
+      tripTimers.push(setTimeout(showStoryScreen, T.finish));
+    }
+
+    // 2地点間の方角（北=0°、東=90°）
+    function bearingDeg(lat1, lon1, lat2, lon2) {
+      const r = Math.PI / 180;
+      const y = Math.sin((lon2 - lon1) * r) * Math.cos(lat2 * r);
+      const x = Math.cos(lat1 * r) * Math.sin(lat2 * r) - Math.sin(lat1 * r) * Math.cos(lat2 * r) * Math.cos((lon2 - lon1) * r);
+      return Math.atan2(y, x) / r;
+    }
+
+    function skipTrip() {
+      showStoryScreen();
+    }
+
+    function showStoryScreen() {
+      cancelTrip();
+      const tripView = document.getElementById('view-trip');
+      tripView.style.opacity = '0';
+      tripView.style.pointerEvents = 'none';
+      setTimeout(() => {
+          tripView.style.zIndex = '0';
+      }, 700);
+
+      const drink = DRINKS_DATABASE.find(d => d.id === selectedDrinkId);
+      if(!drink) return;
+
+      document.getElementById('story-region-header-tag').innerText = getOriginLabel(drink);
+      document.getElementById('story-drink-title-main').innerText = drink.name;
+      document.getElementById('story-drink-maker-name').innerText = getMakerLine(drink);
+      renderStoryChips(drink);
+      renderStoryMatch(drink);
+      renderStoryDescription(drink);
+      renderLandMap(drink);
+      loadGallery(drink);
+      document.getElementById('story-scroll-area').scrollTop = 0;
+
+      // 商品写真のクロスフェードスライドショー（背景のぼかし写真も一緒に切り替え）
+      const slides = getProductSlides(drink);
+      currentSlideIndex = 0;
+      const img1 = document.getElementById('story-hero-dish-img-1');
+      const img2 = document.getElementById('story-hero-dish-img-2');
+      const heroBg = document.getElementById('story-hero-bg');
+      loadImage(img1, slides[0]);
+      loadImage(heroBg, slides[0]);
+      img1.style.opacity = 1;
+      img2.style.opacity = 0;
+
+      if(slideshowInterval) clearInterval(slideshowInterval);
+      if(slides.length > 1) {
+        slideshowInterval = setInterval(() => {
+          currentSlideIndex = (currentSlideIndex + 1) % slides.length;
+          const [show, hide] = img1.style.opacity == 1 ? [img2, img1] : [img1, img2];
+          loadImage(show, slides[currentSlideIndex]);
+          loadImage(heroBg, slides[currentSlideIndex]);
+          show.style.opacity = 1;
+          hide.style.opacity = 0;
+        }, 3000);
+      }
+
+      const storyView = document.getElementById('view-story');
+      storyView.style.opacity = '1';
+      storyView.style.pointerEvents = 'auto';
+      storyView.style.zIndex = '40';
+      
+      storyView.style.animation = 'none';
+      storyView.offsetHeight; 
+      storyView.style.animation = 'fadeInStory 1s cubic-bezier(0.25, 1, 0.5, 1) forwards';
+    }
+
+    // ヒーローのラベル（種類・度数）
+    function renderStoryChips(drink) {
+      const chips = [drink.category];
+      const abv = (drink.specs || []).find(s => /アルコール|度数|ABV/.test(s.label));
+      if(abv) chips.push(`${abv.value}`);
+      const box = document.getElementById('story-chips');
+      box.innerHTML = '';
+      chips.forEach(text => {
+        const el = document.createElement('span');
+        el.className = 'chip';
+        el.textContent = text;
+        box.appendChild(el);
+      });
+    }
+
+    // 相性とレーダーチャート（このお酒と、あなたの好み）
+    function renderStoryMatch(drink) {
+      document.getElementById('story-match').innerText = getMatchPercent(drink);
+      document.getElementById('story-match-reason').innerText = getMatchReason(drink);
+      const storyRadar = document.getElementById('story-taste-gauges');
+      storyRadar._radarValues = null;
+      animateRadarChart(storyRadar, [
+        { values: getDrinkTaste(drink), fill: 'rgb(var(--accent) / 0.2)', stroke: 'rgb(var(--accent))' },
+        { values: userProfile, fill: 'none', stroke: '#6B6560', dashed: true }
+      ]);
+    }
+
+    // 「お酒をめぐる環境」の地図（国内：県を光らせた地図／海外：国名カード）
+    function renderLandMap(drink) {
+      const box = document.getElementById('story-land-map');
+      const info = `<div class="px-4 py-3 flex items-center gap-2 text-sm border-t border-line">
+          <i class="fa-solid fa-location-dot text-accent"></i><span class="font-bold">${getOriginDetail(drink)}</span><span class="text-muted truncate">・${drink.maker}</span>
+        </div>`;
+      const prefPath = isDomestic(drink) && JAPAN_PREFECTURE_PATHS[drink.origin.prefecture];
+      if(!prefPath) {
+        box.innerHTML = `<div class="h-36 flex flex-col items-center justify-center gap-2 bg-accent/10">
+            <i class="fa-solid fa-earth-asia text-3xl text-accent"></i>
+            <span class="font-mincho font-extrabold text-2xl text-ink">${[drink.origin.country, drink.origin.area].filter(Boolean).join('・')}</span>
+          </div>` + info;
+        return;
+      }
+      const paths = Object.entries(JAPAN_PREFECTURE_PATHS).map(([name, d]) =>
+        `<path d="${d}" ${name === drink.origin.prefecture ? 'id="story-land-pref" style="fill: rgb(var(--accent))"' : 'fill="#E6E0D4"'} stroke="#F7F5F0" stroke-width="1" vector-effect="non-scaling-stroke"></path>`
+      ).join('');
+      box.innerHTML = `<svg id="story-land-svg" class="block w-full h-44 bg-paper" preserveAspectRatio="xMidYMid meet">${paths}<circle id="story-land-dot" fill="#fff" stroke="#1C1917" stroke-width="2" vector-effect="non-scaling-stroke"></circle></svg>` + info;
+
+      // 県が画面の中央に大きく入るように表示範囲を決める
+      const svg = document.getElementById('story-land-svg');
+      const bb = document.getElementById('story-land-pref').getBBox();
+      const aspect = (svg.clientHeight || 176) / (svg.clientWidth || 350);
+      const w = Math.max(bb.width, bb.height / aspect) * 2.4;
+      const h = w * aspect;
+      svg.setAttribute('viewBox', `${bb.x + bb.width / 2 - w / 2} ${bb.y + bb.height / 2 - h / 2} ${w} ${h}`);
+      const dot = document.getElementById('story-land-dot');
+      const p = projectLatLon(drink.origin.lat, drink.origin.lon);
+      dot.setAttribute('cx', p.x);
+      dot.setAttribute('cy', p.y);
+      dot.setAttribute('r', w / 45);
+    }
+
+    // 説明文・受賞歴・スペックを描画
+    function renderStoryDescription(drink) {
+      const container = document.getElementById('story-rich-description');
+      container.innerHTML = '';
+      (drink.description || []).forEach(text => {
+        const p = document.createElement('p');
+        p.className = 'whitespace-pre-line';
+        p.textContent = text;
+        container.appendChild(p);
+      });
+
+      const columns = [];
+      if(drink.awards && drink.awards.length) columns.push({ title: '受賞歴', lines: drink.awards });
+      if(drink.specs && drink.specs.length) columns.push({ title: 'スペック', lines: drink.specs.map(s => `${s.label}：${s.value}`) });
+      if(!columns.length) return;
+
+      const box = document.createElement('div');
+      box.className = 'card mt-5 p-4 space-y-4 text-[13px] text-ink';
+      columns.forEach(col => {
+        const colEl = document.createElement('div');
+        const title = document.createElement('p');
+        title.className = 'text-xs font-bold text-accent tracking-wider mb-2 pb-1.5 border-b border-line';
+        title.textContent = col.title;
+        const body = document.createElement('p');
+        body.className = 'leading-relaxed whitespace-pre-line text-ink/80';
+        body.textContent = col.lines.join('\n');
+        colEl.append(title, body);
+        box.appendChild(colEl);
+      });
+      container.appendChild(box);
+    }
+
+    // ---- 「お酒をめぐる環境」の写真 ----
+    // gallery の各項目は { url, caption } か { wiki: "記事名", caption } のどちらか。
+    // wiki を指定すると、次の順番で写真を探して自動で表示する（出典も自動で表示）。
+    //   1. Wikipedia の記事の代表写真
+    //   2. Wikimedia Commons で記事名を検索して見つかった写真
+    //   3. どちらもなければ、写真の代わりに文字のカードを表示
+    const wikiCache = {};
+    const commonsCache = {};
+    let galleryRequestId = 0;
+
+    function fetchJson(url) {
+      return fetch(url).then(r => r.ok ? r.json() : null).catch(() => null);
+    }
+    const stripHtml = html => (html || '').replace(/<[^>]*>/g, '').trim();
+
+    // 写真の作者・ライセンスを取得
+    async function fetchImageCredit(src) {
+      const match = src.match(/\/wikipedia\/(commons|ja)\/(?:thumb\/)?[0-9a-f]\/[0-9a-f]{2}\/([^/]+)/);
+      if(!match) return { author: '', license: '', href: '' };
+      const host = match[1] === 'commons' ? 'commons.wikimedia.org' : 'ja.wikipedia.org';
+      const file = 'File:' + decodeURIComponent(match[2]);
+      const meta = await fetchJson(`https://${host}/w/api.php?action=query&format=json&origin=*&prop=imageinfo&iiprop=extmetadata&titles=${encodeURIComponent(file)}`);
+      const pages = meta && meta.query && meta.query.pages;
+      const page = pages && Object.values(pages)[0];
+      const ext = page && page.imageinfo && page.imageinfo[0].extmetadata;
+      return {
+        author: ext ? stripHtml(ext.Artist && ext.Artist.value) : '',
+        license: ext ? stripHtml(ext.LicenseShortName && ext.LicenseShortName.value) : '',
+        href: `https://${host}/wiki/${encodeURIComponent(file)}`
+      };
+    }
+
+    // 1. Wikipedia の記事の要約（説明文と代表写真）
+    function fetchWikiSummary(title) {
+      if(!wikiCache[title]) {
+        wikiCache[title] = (async () => {
+          const data = await fetchJson(`https://ja.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
+          if(!data || data.type === 'disambiguation') return null;
+          const result = {
+            title: data.title,
+            extract: data.extract || '',
+            page: data.content_urls && data.content_urls.desktop ? data.content_urls.desktop.page : `https://ja.wikipedia.org/wiki/${encodeURIComponent(title)}`,
+            photo: null
+          };
+          if(data.thumbnail) {
+            const original = data.originalimage;
+            const image = original && original.width <= 1600
+              ? original.source
+              : data.thumbnail.source.replace(/\/\d+px-/, '/800px-');
+            result.photo = { image, ...(await fetchImageCredit((original || data.thumbnail).source)) };
+          }
+          return result;
+        })();
+      }
+      return wikiCache[title];
+    }
+
+    // 2. Wikimedia Commons で写真を検索（地図や図を避けるため JPEG の写真だけ）
+    function searchCommonsPhoto(keyword) {
+      if(!commonsCache[keyword]) {
+        commonsCache[keyword] = (async () => {
+          const data = await fetchJson(`https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrnamespace=6&gsrlimit=10&gsrsearch=${encodeURIComponent(keyword)}&prop=imageinfo&iiprop=url|mime|extmetadata&iiurlwidth=800`);
+          const pages = data && data.query && data.query.pages;
+          if(!pages) return null;
+          const hit = Object.values(pages)
+            .sort((a, b) => (a.index || 0) - (b.index || 0))
+            .map(p => p.imageinfo && p.imageinfo[0])
+            .find(info => info && info.mime === 'image/jpeg');
+          if(!hit) return null;
+          const ext = hit.extmetadata || {};
+          return {
+            image: hit.thumburl || hit.url,
+            author: stripHtml(ext.Artist && ext.Artist.value),
+            license: stripHtml(ext.LicenseShortName && ext.LicenseShortName.value),
+            href: hit.descriptionurl || ''
+          };
+        })();
+      }
+      return commonsCache[keyword];
+    }
+
+    // Wikimedia Commons のファイル名を指定した写真（作者・ライセンスも取得）
+    //   取得できなかったときも、写真とファイルのページへのリンクは表示する
+    function fetchCommonsFile(fileName) {
+      const name = fileName.replace(/^(File|ファイル):/, '');
+      const key = 'file:' + name;
+      if(!commonsCache[key]) {
+        commonsCache[key] = (async () => {
+          const title = 'File:' + name;
+          const data = await fetchJson(`https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=1000&titles=${encodeURIComponent(title)}`);
+          const pages = data && data.query && data.query.pages;
+          const info = pages && Object.values(pages)[0].imageinfo && Object.values(pages)[0].imageinfo[0];
+          const ext = (info && info.extmetadata) || {};
+          return {
+            image: info ? (info.thumburl || info.url) : `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(name)}?width=1000`,
+            author: stripHtml(ext.Artist && ext.Artist.value),
+            license: stripHtml(ext.LicenseShortName && ext.LicenseShortName.value),
+            href: (info && info.descriptionurl) || `https://commons.wikimedia.org/wiki/${encodeURIComponent(title)}`,
+            fileName: name
+          };
+        })();
+      }
+      return commonsCache[key];
+    }
+
+    async function resolveGalleryItem(item) {
+      if(!item.wiki && item.file) {
+        const photo = await fetchCommonsFile(item.file);
+        return { image: photo.image, title: item.title || '', caption: item.caption || '', source: null, photoCredit: photo };
+      }
+      if(!item.wiki) return { image: item.url, title: item.title || '', caption: item.caption || '', source: null, photoCredit: null };
+      const wiki = await fetchWikiSummary(item.wiki);
+      // 写真の優先順位：自分で用意した写真（url）→ 指定したファイル（file）→ 記事の代表写真 → Commonsで検索
+      const photo = item.url ? null
+        : item.file ? await fetchCommonsFile(item.file)
+        : ((wiki && wiki.photo) || await searchCommonsPhoto(item.wiki));
+      if(!wiki && !photo && !item.caption) return null;
+      const extract = wiki ? (wiki.extract.length > 110 ? wiki.extract.slice(0, 110) + '…' : wiki.extract) : '';
+      return {
+        image: item.url || (photo && photo.image) || null,
+        title: item.title || (wiki ? wiki.title : item.wiki),
+        caption: item.caption || extract,
+        source: wiki ? { label: `Wikipedia「${wiki.title}」`, href: wiki.page } : null,
+        photoCredit: photo
+      };
+    }
+
+    async function loadGallery(drink) {
+      const requestId = ++galleryRequestId;
+      const section = document.getElementById('story-gallery-section');
+      section.style.display = 'none';
+      currentGalleryData = [];
+      currentGalleryIndex = 0;
+      const items = await Promise.all((drink.gallery || []).map(resolveGalleryItem));
+      if(requestId !== galleryRequestId) return; // 途中で別のお酒が開かれた
+      currentGalleryData = items.filter(Boolean);
+      if(!currentGalleryData.length) return;
+      section.style.display = '';
+      const single = currentGalleryData.length < 2;
+      ['gallery-prev', 'gallery-next', 'gallery-indicators'].forEach(id => document.getElementById(id).style.display = single ? 'none' : '');
+      updateGallerySlide();
+    }
+
+    function updateGallerySlide() {
+      if (!currentGalleryData || currentGalleryData.length === 0) return;
+
+      const slide = currentGalleryData[currentGalleryIndex];
+      const imgEl = document.getElementById('gallery-slide-img');
+
+      const fallback = document.getElementById('gallery-slide-fallback');
+      imgEl.style.opacity = '0.4';
+      setTimeout(() => {
+        // 写真がなければ文字のカードを表示
+        const showFallback = () => {
+          imgEl.style.display = 'none';
+          fallback.style.display = 'flex';
+          document.getElementById('gallery-fallback-title').innerText = slide.title;
+        };
+        if(slide.image) {
+          imgEl.style.display = '';
+          fallback.style.display = 'none';
+          imgEl.onerror = () => { imgEl.onerror = null; showFallback(); };
+          imgEl.src = slide.image;
+        } else {
+          showFallback();
+        }
+        imgEl.style.opacity = '1';
+        document.getElementById('gallery-slide-title').innerText = slide.title;
+        document.getElementById('gallery-slide-title').style.display = slide.title ? '' : 'none';
+        document.getElementById('gallery-slide-caption').innerText = slide.caption;
+
+        // 出典（説明文の出典と、写真の作者・ライセンス）
+        const credit = document.getElementById('gallery-slide-credit');
+        credit.innerHTML = '';
+        const makeLink = (label, href) => {
+          const link = document.createElement('a');
+          link.href = href; link.target = '_blank'; link.rel = 'noopener'; link.className = 'underline';
+          link.textContent = label;
+          return link;
+        };
+        if(slide.source) {
+          const line = document.createElement('span');
+          line.className = 'block';
+          line.append('参考文献：', makeLink(slide.source.label, slide.source.href));
+          credit.appendChild(line);
+        }
+        if(slide.photoCredit && slide.image) {
+          const pc = slide.photoCredit;
+          const who = [pc.author, pc.license].filter(Boolean).join(' / ');
+          const label = who || (pc.fileName ? `Wikimedia Commons「${pc.fileName}」` : 'Wikimedia Commons');
+          const line = document.createElement('span');
+          line.className = 'block';
+          line.append('写真：', pc.href ? makeLink(label, pc.href) : label, who ? '（Wikimedia Commons）' : '');
+          credit.appendChild(line);
+        }
+      }, 150);
+
+      const indicatorsContainer = document.getElementById('gallery-indicators');
+      indicatorsContainer.innerHTML = '';
+      currentGalleryData.forEach((_, idx) => {
+        const dot = document.createElement('div');
+        dot.className = `h-1.5 rounded-full transition-all duration-300 shadow-sm ${idx === currentGalleryIndex ? 'bg-white w-4' : 'bg-white/60 w-1.5'}`;
+        indicatorsContainer.appendChild(dot);
+      });
+    }
+
+    function nextGallerySlide() {
+      if (!currentGalleryData || currentGalleryData.length === 0) return;
+      currentGalleryIndex = (currentGalleryIndex + 1) % currentGalleryData.length;
+      updateGallerySlide();
+    }
+
+    function prevGallerySlide() {
+      if (!currentGalleryData || currentGalleryData.length === 0) return;
+      currentGalleryIndex = (currentGalleryIndex - 1 + currentGalleryData.length) % currentGalleryData.length;
+      updateGallerySlide();
+    }
+
+    function backToFlavorMap() {
+      if(slideshowInterval) clearInterval(slideshowInterval);
+
+      const story = document.getElementById('view-story');
+      story.style.opacity = '0';
+      story.style.pointerEvents = 'none';
+      story.style.zIndex = '0';
+      
+      const map = document.getElementById('view-map');
+      map.style.opacity = '1';
+      map.style.pointerEvents = 'auto';
+      map.style.zIndex = '30';
+      
+      const selected = DRINKS_DATABASE.find(d => d.id === selectedDrinkId);
+      if(selected) selectDrink(selected);
+      maybeShowGuestbook(700);
+    }
+
+    // ---- 旅のノート（ひとことアンケート） ----
+    //   ストーリーを最後まで読んだとき、または一覧に戻ったときに、この端末で1回だけ表示
+    const GUESTBOOK_SEEN_KEY = 'sakejunrei.guestbookShown';
+    const GUESTBOOK_ENJOY_OPTIONS = [
+      { value: 'とても楽しかった', label: 'とても<br>楽しかった', icon: 'fa-face-laugh-beam' },
+      { value: '楽しかった',       label: '楽しかった',          icon: 'fa-face-smile' },
+      { value: 'ふつう',           label: 'ふつう',              icon: 'fa-face-meh' }
+    ];
+    let guestbookEnjoy = '';
+    let guestbookTimer = null;
+
+    function guestbookAlreadyShown() {
+      try { return localStorage.getItem(GUESTBOOK_SEEN_KEY) === '1'; } catch(e) { return false; }
+    }
+
+    function maybeShowGuestbook(delay) {
+      if(guestbookAlreadyShown() || guestbookTimer) return;
+      guestbookTimer = setTimeout(() => {
+        guestbookTimer = null;
+        if(guestbookAlreadyShown()) return;
+        try { localStorage.setItem(GUESTBOOK_SEEN_KEY, '1'); } catch(e) {}
+        openGuestbook();
+      }, delay);
+    }
+
+    function openGuestbook() {
+      guestbookEnjoy = '';
+      document.getElementById('guestbook-comment').value = '';
+      document.getElementById('guestbook-form').style.display = '';
+      document.getElementById('guestbook-thanks').style.display = 'none';
+      const box = document.getElementById('guestbook-enjoy');
+      box.innerHTML = '';
+      GUESTBOOK_ENJOY_OPTIONS.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'option-card';
+        btn.style.cssText = 'flex-direction: column; justify-content: center; text-align: center; gap: 6px; padding: 12px 6px; font-size: 13px;';
+        btn.innerHTML = `<i class="fa-solid ${opt.icon} text-2xl text-accent"></i><span class="leading-tight">${opt.label}</span>`;
+        btn.onclick = () => {
+          guestbookEnjoy = opt.value;
+          box.querySelectorAll('button').forEach(b => b.classList.toggle('is-selected', b === btn));
+          updateGuestbookButton();
+        };
+        box.appendChild(btn);
+      });
+      updateGuestbookButton();
+
+      const root = document.getElementById('guestbook');
+      root.classList.remove('hidden');
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        document.getElementById('guestbook-backdrop').classList.replace('opacity-0', 'opacity-100');
+        document.getElementById('guestbook-sheet').classList.replace('translate-y-full', 'translate-y-0');
+      }));
+    }
+
+    function closeGuestbook() {
+      document.getElementById('guestbook-backdrop').classList.replace('opacity-100', 'opacity-0');
+      document.getElementById('guestbook-sheet').classList.replace('translate-y-0', 'translate-y-full');
+      setTimeout(() => document.getElementById('guestbook').classList.add('hidden'), 500);
+    }
+
+    function updateGuestbookButton() {
+      const comment = document.getElementById('guestbook-comment').value.trim();
+      document.getElementById('guestbook-submit').disabled = !guestbookEnjoy && !comment;
+    }
+
+    // 端末のおおまかな種類（例：iPhone（iOS 17.5）・Safari）
+    function getDeviceInfo() {
+      const ua = navigator.userAgent;
+      let os = 'その他';
+      let m;
+      if(/iPad/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) os = 'iPad';
+      else if((m = ua.match(/iPhone OS (\d+)[_.](\d+)/))) os = `iPhone（iOS ${m[1]}.${m[2]}）`;
+      else if((m = ua.match(/Android (\d+(?:\.\d+)?)/))) os = `Android ${m[1]}`;
+      else if(/Windows/.test(ua)) os = 'Windows';
+      else if(/Macintosh/.test(ua)) os = 'Mac';
+      else if(/Linux/.test(ua)) os = 'Linux';
+      const browser = /Line\//.test(ua) ? 'LINE' : /Instagram/.test(ua) ? 'Instagram'
+        : /EdgA?\//.test(ua) ? 'Edge' : /CriOS|Chrome\//.test(ua) ? 'Chrome'
+        : /FxiOS|Firefox\//.test(ua) ? 'Firefox' : /Safari\//.test(ua) ? 'Safari' : 'その他';
+      return `${os}・${browser}`;
+    }
+
+    function submitGuestbook() {
+      const comment = document.getElementById('guestbook-comment').value.trim();
+      const cfg = STORE_CONFIG.guestbook || {};
+      const answer = { device: getDeviceInfo(), enjoy: guestbookEnjoy, comment };
+      if(cfg.sheetUrl) {
+        // スプレッドシート（Google Apps Script）に送信。送信結果は読めないので、送ったらそのままお礼を表示
+        fetch(cfg.sheetUrl, { method: 'POST', mode: 'no-cors', body: new URLSearchParams(answer) }).catch(() => {});
+      } else {
+        console.info('旅のノート（送信先が未設定のため保存されません）', answer);
+      }
+      document.getElementById('guestbook-form').style.display = 'none';
+      document.getElementById('guestbook-thanks').style.display = 'flex';
+    }
+
+    window.onload = () => { 
+      applyStoreConfig();
+      renderTripPrefectures();
+      // ストーリーを最後まで読んだら、旅のノートを出す
+      const storyScroll = document.getElementById('story-scroll-area');
+      storyScroll.addEventListener('scroll', () => {
+        const storyOpen = document.getElementById('view-story').style.pointerEvents === 'auto';
+        if(storyOpen && storyScroll.scrollTop + storyScroll.clientHeight >= storyScroll.scrollHeight - 40) maybeShowGuestbook(1200);
+      });
+      renderQuiz(); 
+    };
+  </script>
+</body>
+</html>
