@@ -867,6 +867,9 @@
   /* 飾り包丁の3つのラベルは、1行に */
   .mp-chips{ flex-wrap:nowrap; gap:5px; }
   .mp-chip{ white-space:nowrap; font-size:clamp(10.5px, 3.1vw, 12.5px); padding:2px clamp(5px, 1.8vw, 10px); }
+  /* 長い選択肢は、縦に並べて1行で読めるように */
+  .quiz-options.stack{ flex-direction:column; }
+  .quiz-options.stack .quiz-btn{ padding:12px 14px; }
 </style>
 </head>
 <body>
@@ -1190,7 +1193,7 @@ const fishList = [
       front: "アマエビは、大きくなると<br>性別が変わるって本当？",
       back: "本当です！<br>生まれた時はすべてオスで、数年（4〜6歳ごろ）たつとメスに性転換します。"
     },
-    trivia: "水揚げ後、少し時間がたつと、**自己消化でアミノ酸が増え**、より甘くなります。",
+    trivia: "水揚げ後、少し時間がたつと、\n**自己消化でアミノ酸が増え**、\nより甘くなります。",
     ownerNote: "",
   },
   {
@@ -1247,7 +1250,7 @@ const fishList = [
     interaction: {
       type: "flip",
       front: "「サバを読む」は、なぜサバなの？",
-      back: "傷みやすいサバを、市場で急いで数えて売ったため、数をごまかすことがあったから、と<b class='em'>言われています</b>。"
+      back: "傷みやすいサバを、市場で急いで数えて売ったため、<br>数をごまかすことがあったから、<span data-nb style='white-space:nowrap'>と<b class='em'>言われています</b>。</span>"
     },
     trivia: "傷みやすく**「サバの生き腐れ」**と言われるほど。そのため、酢で締めた**〆さば**が、定番の食べ方になりました。",
     ownerNote: "",
@@ -1315,7 +1318,7 @@ const fishList = [
     aboutTitle: "この一品のこと", btnLabel: "この一品の、こだわりを見る", menuTitle: "酢の物の、こだわり", sakeLabel: "この一品に、おすすめの日本酒",
     lead: "いろいろな具が入った、さっぱりとした酢の物。",
     about: [
-      { k: "特徴", v: "お店の**「謎の瓶」**に入った酢の物。酢は**自家製**です。" },
+      { k: "特徴", v: "お店の**「謎の瓶」**に入った酢の物。\n酢は**自家製**です。" },
       { k: "味わい", v: "酢がきつくなりすぎない、**やさしい味**。口の中がすっきりします。" }
     ],
     interaction: {
@@ -1424,7 +1427,7 @@ const menuList = [
       { h: "酢は、自家製", t: "味の決め手は、お店で仕込む**自家製の酢**です。" },
       { h: "具は、いろいろ", t: "**えび・たこ・きゅうり**に、**小肌**などの光りもの、わかめ…。**彩りよく**盛り合わせています。", chips: ["具は仕入れで変わります"] }
     ],
-    secret: "この酢に惚れて、**内緒で買っている**お客様もいるのだとか…。"
+    secret: "この酢に惚れて、\n**内緒で買っている**お客様も\nいるのだとか…。"
   },
   {
     id: "baini", img: "menu_baini.webp", name: "バイ貝の一味醤油煮", fish: ["baigai"],
@@ -1934,13 +1937,15 @@ function stopAquarium() {
 // 文章の中の **ことば** を、蛍光ペンのような強調にして表示する(HTMLは使わず、安全に組み立てる)
 function setRich(node, text){
   node.textContent = '';
-  String(text).split('**').forEach((seg, i) => {
-    if (!seg) return;
-    if (i % 2) { const b = document.createElement('b'); b.className = 'em'; b.textContent = seg; node.appendChild(b); }
-    else node.appendChild(document.createTextNode(seg));
+  String(text).split('\n').forEach((line, li) => {
+    if (li) node.appendChild(document.createElement('br'));
+    line.split('**').forEach((seg, i) => {
+      if (!seg) return;
+      if (i % 2) { const b = document.createElement('b'); b.className = 'em'; b.textContent = seg; node.appendChild(b); }
+      else node.appendChild(document.createTextNode(seg));
+    });
   });
-}
-function el(tag, cls, text){
+}function el(tag, cls, text){
   const e = document.createElement(tag);
   if (cls) e.className = cls;
   if (text != null) e.textContent = text;
@@ -1967,7 +1972,7 @@ function renderQuiz(f){
   box.appendChild(elH('h4', 'highlight-title', ico('spark') + 'クイズで学ぶ！'));
   box.appendChild(el('div', 'quiz-question', q.question));
 
-  const opts = el('div', 'quiz-options');
+  const opts = el('div', 'quiz-options' + (q.options.some(o => o.text.length > 10) ? ' stack' : ''));
   const result = el('div', 'quiz-result-box');
   result.setAttribute('aria-live', 'polite');
   const rTitle = el('div', 'quiz-result-title');
@@ -2761,7 +2766,7 @@ const PHRASE_SEL = '.story-lead, .about-v, .story-trivia p, .trivia-illustration
 const RE_NEXT_OK = /[\u4E00-\u9FFF\u3005\u30A0-\u30FF0-9A-Za-z]/;      // 漢字・々・カタカナ・数字・英字
 const PARTICLES = 'がはもにでとへやの';
 // 途中で切ると不自然になる語(この中の位置では折り返さない)
-const PROTECT = ['ようやく','ともに','ところ','ほとんど','やはり','やがて','やわらか','やさしい','とても','どうも','ありがと','ありがた','それでは','おいしい','どんどん','ねっとり','ほっこり','もちもち','ぷりぷり','ふっくら','とろける','なめらか','ください','ご了承','ご案内','ご注文','ご紹介','ご用意','ご覧','ございます','いただ','にんにく','どんな','そのとき','ひとこと','ひとつ','ふたつ','マリアナ諸島','イクチオトキシン','アスタキサンチン','ホッコクアカエビ','という','として','について','によって','による','ために','ような','ように','られる','される'];
+const PROTECT = ['ようやく','ともに','ところ','ほとんど','やはり','やがて','やわらか','やさしい','とても','どうも','ありがと','ありがた','それでは','おいしい','どんどん','ねっとり','ほっこり','もちもち','ぷりぷり','ふっくら','とろける','なめらか','酢の物','お刺身','ください','ご了承','ご案内','ご注文','ご紹介','ご用意','ご覧','ございます','いただ','にんにく','どんな','そのとき','ひとこと','ひとつ','ふたつ','マリアナ諸島','イクチオトキシン','アスタキサンチン','ホッコクアカエビ','という','として','について','によって','による','ために','ような','ように','られる','される'];
 const RE_HIRA = /[\u3041-\u309F]/, RE_KATA = /[\u30A1-\u30FA\u30FC]/, RE_KANJI = /[\u4E00-\u9FFF\u3005]/;
 function protectedAt(seg, i){                       // i と i+1 の間が、保護する語の内側かどうか
   for (const w of PROTECT) {
@@ -2805,7 +2810,7 @@ function splitJa(t){
     if (c === '「') depth++; else if (c === '」') depth = Math.max(0, depth - 1);
     if (n === undefined) break;
     if (depth > 0) continue;                                               // 「…」の内側では切らない
-    const brk = '、。，．！？'.includes(c) || c === 'を' || (PARTICLES.includes(c) && RE_NEXT_OK.test(n));
+    const brk = '、。，．！？'.includes(c) || c === 'を' || (PARTICLES.includes(c) && RE_NEXT_OK.test(n) && !(c === 'の' && 'そこあど'.includes(t[i - 1] || '')) && !protectedAt(t, i));
     if (brk && !'、。，．！？）」』】'.includes(n)) { parts.push(cur); cur = ''; }
   }
   if (cur) parts.push(cur);
@@ -2815,17 +2820,32 @@ const phraseDone = new WeakSet();
 function phraseNode(tn){
   if (phraseDone.has(tn)) return;
   phraseDone.add(tn);
-  const t = tn.nodeValue; if (!t || t.trim().length < 6) return;
+  let t = tn.nodeValue; if (!t) return;
+  t = t.replace(/([」）』】])(?=[はがをにでとのもへやか])/g, '$1' + WJ);
+  if (t !== tn.nodeValue) tn.nodeValue = t;
+  if (t.trim().length < 6) return;
   const parts = splitJa(t); if (parts.length < 2) return;
   const frag = document.createDocumentFragment();
   parts.forEach((p, i) => { const n = document.createTextNode(p); phraseDone.add(n); frag.appendChild(n); if (i < parts.length - 1) frag.appendChild(document.createElement('wbr')); });
   tn.parentNode.replaceChild(frag, tn);
 }
+const WJ = '\u2060';
+const CLOSERS = '」）』】', PART_CH = 'はがをにでとのもへやか';
 function emWbr(b){
-  const p = b.previousSibling;
-  if (!p || p.nodeType !== 3 || !p.nodeValue) return;
-  const ch = p.nodeValue.slice(-1);
-  if ('、。，．！？をがはもにでとへやの'.includes(ch)) b.parentNode.insertBefore(document.createElement('wbr'), b);
+  if (b.closest('[data-nb]')) return;                  // 「折り返さない」と指定された範囲では、何も入れない
+  const p = b.previousSibling, nx = b.nextSibling, t = b.textContent;
+  // 直前が助詞・句読点・ひらがなで、強調語が漢字・カタカナで始まるなら、その手前で折り返せる
+  if (p && p.nodeType === 3 && p.nodeValue) {
+    const ch = p.nodeValue.slice(-1);
+    const startsHard = RE_KANJI.test(t[0]) || RE_KATA.test(t[0]) || '「（'.includes(t[0]);
+    if ('、。，．！？'.includes(ch) || ((PARTICLES.includes(ch) || ch === 'を' || (RE_HIRA.test(ch) && !'おごみ'.includes(ch))) && startsHard))
+      b.parentNode.insertBefore(document.createElement('wbr'), b);
+  }
+  if (nx && nx.nodeType === 3 && nx.nodeValue) {
+    const last = t[t.length - 1], f = nx.nodeValue[0];
+    if (CLOSERS.includes(last) && PART_CH.includes(f)) nx.nodeValue = WJ + nx.nodeValue;        // 「…」の直後の助詞は離さない
+    else if (RE_HIRA.test(last) && (RE_KANJI.test(f) || RE_KATA.test(f))) b.parentNode.insertBefore(document.createElement('wbr'), nx);
+  }
 }
 function applyPhrase(){
   if (!PHRASE_ON) return;
