@@ -872,6 +872,8 @@
   .quiz-options.stack .quiz-btn{ padding:12px 14px; }
 
 .mp-text, .mp-head{ overflow-wrap:anywhere; min-width:0; }
+
+.menu-story p.mp-text.fit-lines{ white-space:nowrap; text-wrap:nowrap; width:0; min-width:100%; overflow:hidden; }
 </style>
 </head>
 <body>
@@ -982,7 +984,7 @@
     <section class="screen" data-screen="menu">
       <h2 class="title" style="line-height: 1.6; word-break: keep-all;" id="menuTitle"></h2>
 
-      <div class="menu-notice">※仕入れの都合により、<br>内容が変わったり、品切れとなる<br>場合がございます。<br>あらかじめご了承ください。</div>
+      <div class="menu-notice">※仕入れの都合により、内容が変わったり、<br>品切れとなる場合がございます。<br>あらかじめご了承ください。</div>
       <div id="menuScreenList"></div>
 
       <div class="btn-row" style="margin-top: 32px; flex-direction: column;">
@@ -1382,7 +1384,7 @@ const menuList = [
     points: [
       { h: "氷で、しっかり管理", t: "**鮮度を守る**ために、氷での管理を徹底しています。" },
       { h: "赤身には、飾り包丁", t: "一貫ずつ、丁寧に包丁を入れています。", chips: ["食感がよい", "醤油が絡む", "見た目が美しい"] },
-      { h: "香りと辛みを、ひと添え", t: "赤身には**柚子の皮**。\n大トロ・中トロには**茎ワサビ**を\n添えて、味のアクセントに。" }
+      { h: "香りと辛みを、ひと添え", t: "赤身には**柚子の皮**。\n大トロ・中トロには、\n**茎ワサビ**を添えて味のアクセントに。", fit: true }
     ]
   },
   {
@@ -2332,6 +2334,7 @@ function goToMenu(){
       const body = el('div', 'mp-body');
       body.appendChild(el('div', 'mp-head', p.h));
       const t = el('p', 'mp-text'); setRich(t, p.t); body.appendChild(t);
+      if (p.fit) { t.classList.add('fit-lines'); const fitL = () => { t.querySelectorAll('wbr').forEach(w => w.remove()); t.style.fontSize = ''; let fs = parseFloat(getComputedStyle(t).fontSize); if (!t.clientWidth) return; while (t.scrollWidth > t.clientWidth + 0.5 && fs > 11) { fs -= 0.25; t.style.fontSize = fs + 'px'; } }; if (window.ResizeObserver) new ResizeObserver(fitL).observe(t); }
       if (p.chips && p.chips.length) {
         const row = el('div', 'mp-chips');
         p.chips.forEach((c, k) => { const ch = el('span', 'mp-chip', c); ch.style.setProperty('--d', (base + 380 + k * 260) + 'ms'); row.appendChild(ch); });
@@ -2795,7 +2798,7 @@ const PHRASE_SEL = '.story-lead, .about-v, .story-trivia p, .trivia-illustration
 const RE_NEXT_OK = /[\u4E00-\u9FFF\u3005\u30A0-\u30FF0-9A-Za-z]/;      // 漢字・々・カタカナ・数字・英字
 const PARTICLES = 'がはもにでとへやの';
 // 途中で切ると不自然になる語(この中の位置では折り返さない)
-const PROTECT = ['ようやく','ともに','ところ','ほとんど','やはり','やがて','やわらか','やさしい','とても','どうも','ありがと','ありがた','それでは','おいしい','どんどん','ねっとり','ほっこり','もちもち','ぷりぷり','ふっくら','とろける','なめらか','酢の物','お刺身','ください','ご了承','ご案内','ご注文','ご紹介','ご用意','ご覧','ございます','いただ','にんにく','どんな','そのとき','ひとこと','ひとつ','ふたつ','マリアナ諸島','イクチオトキシン','アスタキサンチン','ホッコクアカエビ','という','として','について','によって','による','ために','ような','ように','られる','される'];
+const PROTECT = ['ようやく','ともに','ところ','ほとんど','やはり','やがて','やわらか','やさしい','とても','どうも','ありがと','ありがた','それでは','おいしい','どんどん','ねっとり','ほっこり','もちもち','ぷりぷり','ふっくら','とろける','なめらか','酢の物','お刺身','ください','ご了承','ご案内','ご注文','ご紹介','ご用意','ご覧','口の中','ございます','いただ','にんにく','どんな','そのとき','ひとこと','ひとつ','ふたつ','マリアナ諸島','イクチオトキシン','アスタキサンチン','ホッコクアカエビ','という','として','について','によって','による','ために','ような','ように','られる','される'];
 const RE_HIRA = /[\u3041-\u309F]/, RE_KATA = /[\u30A1-\u30FA\u30FC]/, RE_KANJI = /[\u4E00-\u9FFF\u3005]/;
 function protectedAt(seg, i){                       // i と i+1 の間が、保護する語の内側かどうか
   for (const w of PROTECT) {
