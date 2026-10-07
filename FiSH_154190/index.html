@@ -865,11 +865,13 @@
   .friend-label{ flex:0 0 100%; margin:0 0 -2px; }
   .friend-btn{ flex:0 1 42px; min-width:0; width:auto; height:auto; aspect-ratio:1/1; }
   /* 飾り包丁の3つのラベルは、1行に */
-  .mp-chips{ flex-wrap:nowrap; gap:5px; }
+  .mp-chips{ flex-wrap:wrap; gap:5px; }
   .mp-chip{ white-space:nowrap; font-size:clamp(10.5px, 3.1vw, 12.5px); padding:2px clamp(5px, 1.8vw, 10px); }
   /* 長い選択肢は、縦に並べて1行で読めるように */
   .quiz-options.stack{ flex-direction:column; }
   .quiz-options.stack .quiz-btn{ padding:12px 14px; }
+
+.mp-text, .mp-head{ overflow-wrap:anywhere; min-width:0; }
 </style>
 </head>
 <body>
@@ -1941,7 +1943,7 @@ function setRich(node, text){
     if (li) node.appendChild(document.createElement('br'));
     line.split(/(⟦[^⟧]*⟧)/).forEach(part => {
       const nb = /^⟦([^⟧]*)⟧$/.exec(part);
-      if (nb) { const s = document.createElement('span'); s.setAttribute('data-nb', ''); s.style.whiteSpace = 'nowrap'; s.textContent = nb[1]; node.appendChild(s); return; }
+      if (nb) { const s = document.createElement('span'); s.setAttribute('data-nb', ''); s.style.whiteSpace = 'nowrap'; s.textContent = nb[1]; node.appendChild(s); node.appendChild(document.createElement('wbr')); return; }
       part.split('**').forEach((seg, i) => {
         if (!seg) return;
         if (i % 2) { const b = document.createElement('b'); b.className = 'em'; b.textContent = seg; node.appendChild(b); }
