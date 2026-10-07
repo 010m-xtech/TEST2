@@ -1245,14 +1245,14 @@ const fishList = [
     about: [
       { k: "特徴", v: "**秋**に脂がのる青魚。**EPAやDHA**も豊富です。" },
       { k: "味わい", v: "しっとりとした脂の旨みと、青魚ならではの豊かな風味があります。" },
-      { k: "食べ方", v: "**塩焼き**や味噌煮で。**生姜**や**大根おろし**がよく合います。" }
+      { k: "食べ方", v: "**塩焼き**や味噌煮で。\n**生姜**や**大根おろし**を添えて。" }
     ],
     interaction: {
       type: "flip",
       front: "「サバを読む」は、なぜサバなの？",
-      back: "傷みやすいサバを、市場で急いで数えて売ったため、<br>数をごまかすことがあったから、<span data-nb style='white-space:nowrap'>と<b class='em'>言われています</b>。</span>"
+      back: "<span data-nb style='white-space:nowrap'>傷みやすいサバを、</span><br><span data-nb style='white-space:nowrap'>急いで数えて売ったため、</span><br><span data-nb style='white-space:nowrap'>数をごまかしたから、</span><br><span data-nb style='white-space:nowrap'>と<b class='em'>言われています</b>。</span>"
     },
-    trivia: "傷みやすく**「サバの生き腐れ」**と言われるほど。そのため、酢で締めた**〆さば**が、定番の食べ方になりました。",
+    trivia: "**「サバの生き腐れ」**と\n言われるほど、傷みやすい魚。\nそのため、酢で締めた\n**〆さば**が、定番になりました。",
     ownerNote: "",
   },
   {
@@ -1261,7 +1261,7 @@ const fishList = [
     about: [
       { k: "特徴", v: "**春**は産卵前で、桜の頃は**「桜鯛」**と呼ばれます。" },
       { k: "味わい", v: "上品な旨みとほのかな甘みがあり、噛むほどに味が出ます。" },
-      { k: "食べ方", v: "**刺身**はもちろん、塩焼きや**鯛めし**でも。皮に熱湯をかける**「松皮造り」**も定番です。" }
+      { k: "食べ方", v: "**刺身**はもちろん、\n塩焼きや**鯛めし**でも。\n皮に熱湯をかける\n**「松皮造り」**も定番です。" }
     ],
     interaction: {
       type: "quiz",
@@ -1379,7 +1379,7 @@ const menuList = [
     catch: "6種類を、一切れずつ。",
     points: [
       { h: "遠慮なく、食べ比べ", t: "いろいろな魚を、**気兼ねなく**楽しんでいただきたくて、一切れずつの盛り合わせにしました。" },
-      { h: "内容は、その日の仕入れ次第", t: "中トロ・まぐろ・甘えび・かんぱち・ひらめ・さば・真鯛などから、**その日のおいしいもの**をお出しします。" }
+      { h: "内容は、その日の仕入れ次第", t: "⟦中トロ・⟧⟦まぐろ・⟧⟦甘えび・⟧⟦かんぱち・⟧⟦ひらめ・⟧⟦さば・⟧⟦真鯛⟧などから、\n**その日のおいしいもの**を\nお出しします。" }
     ]
   },
   {
@@ -1939,10 +1939,14 @@ function setRich(node, text){
   node.textContent = '';
   String(text).split('\n').forEach((line, li) => {
     if (li) node.appendChild(document.createElement('br'));
-    line.split('**').forEach((seg, i) => {
-      if (!seg) return;
-      if (i % 2) { const b = document.createElement('b'); b.className = 'em'; b.textContent = seg; node.appendChild(b); }
-      else node.appendChild(document.createTextNode(seg));
+    line.split(/(⟦[^⟧]*⟧)/).forEach(part => {
+      const nb = /^⟦([^⟧]*)⟧$/.exec(part);
+      if (nb) { const s = document.createElement('span'); s.setAttribute('data-nb', ''); s.style.whiteSpace = 'nowrap'; s.textContent = nb[1]; node.appendChild(s); return; }
+      part.split('**').forEach((seg, i) => {
+        if (!seg) return;
+        if (i % 2) { const b = document.createElement('b'); b.className = 'em'; b.textContent = seg; node.appendChild(b); }
+        else node.appendChild(document.createTextNode(seg));
+      });
     });
   });
 }function el(tag, cls, text){
