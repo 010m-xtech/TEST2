@@ -874,6 +874,12 @@
 .mp-text, .mp-head{ overflow-wrap:anywhere; min-width:0; }
 
 .menu-story p.mp-text.fit-lines{ white-space:nowrap; text-wrap:nowrap; width:0; min-width:100%; overflow:hidden; }
+
+.menu-secret p.fit-lines{ white-space:nowrap; text-wrap:nowrap; width:0; min-width:100%; overflow:hidden; }
+
+.about-v.fit-lines{ white-space:nowrap; text-wrap:nowrap; width:0; min-width:100%; overflow:hidden; }
+
+#detailTrivia.fit-lines{ white-space:nowrap; text-wrap:nowrap; width:0; min-width:100%; overflow:hidden; }
 </style>
 </head>
 <body>
@@ -1207,9 +1213,9 @@ const fishList = [
     w: 100,
     lead: "ブリの仲間の、人気の高級魚。",
     about: [
-      { k: "特徴", v: "旬は**夏から秋**。刺身や寿司で、親しまれています。" },
+      { k: "特徴", fit: true, v: "旬は**夏から秋**。\n刺身や寿司で、親しまれています。" },
       { k: "味わい", v: "脂はほどよく、**コリッとした歯ごたえ**と、上品な旨みが楽しめます。" },
-      { k: "食べ方", v: "刺身が一番。**皮目を炙る**と、香ばしさが加わります。" }
+      { k: "食べ方", fit: true, v: "刺身が一番。\n**皮目を炙る**と、香ばしさが加わります。" }
     ],
     interaction: {
       type: "quiz",
@@ -1244,7 +1250,7 @@ const fishList = [
         </div>
       </div>`
     },
-    trivia: "生まれたては、目が両側。\n成長すると、**右目が**\n**左側へ**移ります。\n砂に潜るため、背中の色を\n周りに合わせて変えられます。",
+    triviaFit: true, trivia: "生まれたては、目が両側。\n成長すると**右目が左側へ**移ります。\n砂に潜るため、背中の色を\n周りに合わせて変えられます。",
     ownerNote: "",
   },
   {
@@ -1271,7 +1277,7 @@ const fishList = [
     about: [
       { k: "特徴", v: "**春**は産卵前で、桜の頃は**「桜鯛」**と呼ばれます。" },
       { k: "味わい", v: "上品な旨みとほのかな甘みがあり、噛むほどに味が出ます。" },
-      { k: "食べ方", v: "**刺身**はもちろん、\n塩焼きや**鯛めし**でも。\n皮に熱湯をかける\n**「松皮造り」**も定番です。" }
+      { k: "食べ方", fit: true, v: "**刺身**はもちろん、塩焼きや**鯛めし**でも。\n皮に熱湯をかける**「松皮造り」**も定番です。" }
     ],
     interaction: {
       type: "quiz",
@@ -1299,7 +1305,7 @@ const fishList = [
       front: "ウナギとアナゴ、<br>見分けるポイントは？",
       back: "体の側面に<b class='em'>白い点</b>が<br>並んでいるのが<b class='em'>アナゴ</b>。<br>ウナギには、<br>この点がありません。"
     },
-    trivia: "昼間は砂や岩の**穴にひそみ**、夜に活動します。「穴子」の名前も、ここから。",
+    triviaFit: true, trivia: "昼間は砂や岩の**穴にひそみ**、夜に活動します。\n**「穴子」**の名前もここから。",
     ownerNote: "",
   },
   {
@@ -1441,7 +1447,7 @@ const menuList = [
       { h: "酢は、自家製", t: "味の決め手は、お店で仕込む**自家製の酢**です。" },
       { h: "具は、いろいろ", t: "**えび・たこ・きゅうり**に、**小肌**などの光りもの、わかめ…。**彩りよく**盛り合わせています。", chips: ["具は仕入れで変わります"] }
     ],
-    secret: "この酢に惚れて、\n**内緒で買っている**お客様も\nいるのだとか…。"
+    secret: "この酢に惚れて、**内緒で買っている**\nお客様もいるのだとか…。", secretFit: true
   },
   {
     id: "baini", img: "menu_baini.webp", name: "バイ貝の一味醤油煮", fish: ["baigai"],
@@ -2218,7 +2224,7 @@ function selectFish(id){
   }
 
   // 2. 答え・豆知識
-  setRich(document.getElementById('detailTrivia'), f.trivia);
+  setRich(document.getElementById('detailTrivia'), f.trivia); if (f.triviaFit) setFitLines(document.getElementById('detailTrivia'));
   const illWrap = document.getElementById('detailIllWrap');
   const illImg = document.getElementById('detailIllImg');
   const illCaption = document.getElementById('detailIllCaption');
@@ -2253,7 +2259,7 @@ function selectFish(id){
   (f.about || []).forEach(r => {
     const row = document.createElement('div'); row.className = 'about-row';
     const k = document.createElement('div'); k.className = 'about-k'; k.textContent = r.k;
-    const v = document.createElement('p'); v.className = 'about-v'; setRich(v, r.v);
+    const v = document.createElement('p'); v.className = 'about-v'; setRich(v, r.v); if (r.fit) setFitLines(v);
     row.append(k, v); about.appendChild(row);
   });
   renderParts(f);
@@ -2294,6 +2300,11 @@ document.getElementById('detailIllImg').addEventListener('click', (e) => {
 });
 
 /* ============ メニュー・お酒 ============ */
+function setFitLines(t){          // 改行位置を固定し、はみ出すときだけ文字を小さくする
+  t.classList.add('fit-lines'); t.setAttribute('data-nb', '');
+  const fitL = () => { t.querySelectorAll('wbr').forEach(w => w.remove()); t.style.fontSize = ''; t.style.whiteSpace = ''; t.style.wordBreak = ''; let fs = parseFloat(getComputedStyle(t).fontSize); if (!t.clientWidth) return; while (t.scrollWidth > t.clientWidth + 0.5 && fs > 10) { fs -= 0.25; t.style.fontSize = fs + 'px'; } if (t.scrollWidth > t.clientWidth + 0.5) { t.style.fontSize = ''; t.style.whiteSpace = 'normal'; t.style.wordBreak = 'keep-all'; } };
+  if (window.ResizeObserver) new ResizeObserver(fitL).observe(t);
+}
 function goToMenu(){
   const f = fishById(currentFishId);
   if (!f) return;
@@ -2334,7 +2345,7 @@ function goToMenu(){
       const body = el('div', 'mp-body');
       body.appendChild(el('div', 'mp-head', p.h));
       const t = el('p', 'mp-text'); setRich(t, p.t); body.appendChild(t);
-      if (p.fit) { t.classList.add('fit-lines'); const fitL = () => { t.querySelectorAll('wbr').forEach(w => w.remove()); t.style.fontSize = ''; let fs = parseFloat(getComputedStyle(t).fontSize); if (!t.clientWidth) return; while (t.scrollWidth > t.clientWidth + 0.5 && fs > 11) { fs -= 0.25; t.style.fontSize = fs + 'px'; } }; if (window.ResizeObserver) new ResizeObserver(fitL).observe(t); }
+      if (p.fit) setFitLines(t);
       if (p.chips && p.chips.length) {
         const row = el('div', 'mp-chips');
         p.chips.forEach((c, k) => { const ch = el('span', 'mp-chip', c); ch.style.setProperty('--d', (base + 380 + k * 260) + 'ms'); row.appendChild(ch); });
@@ -2349,7 +2360,7 @@ function goToMenu(){
     if (m.secret) {
       const sec = el('div', 'menu-secret rv'); sec.style.setProperty('--d', (tail + 200) + 'ms');
       sec.appendChild(el('div', 'secret-label', 'ここだけの話'));
-      const para = el('p'); setRich(para, m.secret); sec.appendChild(para);
+      const para = el('p'); setRich(para, m.secret); sec.appendChild(para); if (m.secretFit) setFitLines(para);
       more.appendChild(sec);
     }
 
