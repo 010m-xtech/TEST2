@@ -38,8 +38,9 @@ service cloud.firestore {
     match /scores/{id} {
       allow read: if true;
       allow create: if signedIn()
-        && d().keys().hasOnly(['name','score','rings','scores','createdAt','hash','day','month','uid'])
-        && d().keys().hasAll(['name','score','rings','createdAt','day','month','uid'])
+        && d().keys().hasOnly(['name','score','rings','scores','createdAt','hash','day','month','uid','expireAt'])
+        && d().keys().hasAll(['name','score','rings','createdAt','day','month','uid','expireAt'])
+        && d().expireAt is timestamp && d().expireAt < request.time + duration.value(100, 'd')
         && d().uid == request.auth.uid
         && existsAfter(/databases/$(database)/documents/private/$(id))
         && d().name is string && d().name.size() >= 1 && d().name.size() <= 12
@@ -59,8 +60,9 @@ service cloud.firestore {
     // お店だけが見る控え(感想)。ページからは読めない・消せない
     match /private/{id} {
       allow create: if signedIn()
-        && d().keys().hasOnly(['memo','name','score','createdAt','uid'])
+        && d().keys().hasOnly(['memo','name','score','createdAt','uid','device'])
         && d().uid == request.auth.uid
+        && (!('device' in d()) || (d().device is string && d().device.size() <= 40))
         && d().memo is string && d().memo.size() <= 10
         && d().name is string && d().name.size() <= 12
         && d().score is int && d().createdAt is int;
@@ -71,7 +73,8 @@ service cloud.firestore {
     match /thumbs/{id} {
       allow read: if true;
       allow create: if signedIn()
-        && d().keys().hasOnly(['img','uid'])
+        && d().keys().hasOnly(['img','uid','expireAt'])
+        && d().expireAt is timestamp && d().expireAt < request.time + duration.value(100, 'd')
         && d().uid == request.auth.uid
         && d().img is string && d().img.size() < 40000
         && d().img.matches('^data:image/jpeg;base64,[A-Za-z0-9+/=]+$')
@@ -89,6 +92,51 @@ service cloud.firestore {
 
 1. 左のメニューの「セキュリティ」→「Authentication」を開き、「始める」を押します。
 2. 「ログイン方法」タブで **「匿名」** を選び、「有効にする」をオンにして「保存」を押します。
+
+## 3-3. 古い記録を自動で消す(任意・Firebase を軽くする)
+
+ランキングは「今日」と「今月」だけなので、古い記録は残しておく必要がありません。
+記録と写真には「消してよい日」(`expireAt`)が付いています。写真はその月が終わったら(翌月1日の朝5時)、記録はその1か月後です。
+Firebase に「この日を過ぎたら消す」設定(TTL)をすると、自動で消えて軽く保てます。感想の控え(`private`)は消えません。
+
+1. https://console.cloud.google.com/firestore/databases/-default-/ttl?project=happyringnagomu を開きます
+   (Firebase の「Firestore」画面から「Google Cloud コンソールで開く」→ 左メニュー「TTL」でも同じです)。
+2. 「ポリシーを作成」を押し、コレクション グループ `scores`、タイムスタンプ フィールド `expireAt` で作成します。
+3. もう1つ、コレクション グループ `thumbs`、フィールド `expireAt` で作成します。
+4. 無料プランのままで作れない場合は、作らなくても大丈夫です(1件 約5KB と軽いので、何年も持ちます)。
+
+## 3-4. 感想をスプレッドシートに送る(任意)
+
+日付・端末・ニックネーム・点数・感想が、Googleスプレッドシートに1時間ごとに自動で入ります。
+スプレッドシート側から Firebase を読みに行く仕組みなので、鍵を作ったりページに書いたりする必要はありません。
+**Firebase を作ったのと同じ Google アカウント**で作業してください。
+
+1. https://sheets.new で新しいスプレッドシートを作り、名前を付けます(例: `ハッピーリング記録`)。
+2. メニューの「拡張機能」→「Apps Script」を開きます。
+3. 左の歯車「プロジェクトの設定」で **「"appsscript.json" マニフェスト ファイルをエディタで表示する」** にチェックを入れます。
+4. 左の「エディタ」(`< >`)に戻り、`appsscript.json` を開いて、中身をすべて次に置き換えます。
+   ```
+   {
+     "timeZone": "Asia/Tokyo",
+     "runtimeVersion": "V8",
+     "exceptionLogging": "STACKDRIVER",
+     "oauthScopes": [
+       "https://www.googleapis.com/auth/datastore",
+       "https://www.googleapis.com/auth/spreadsheets.currentonly",
+       "https://www.googleapis.com/auth/script.external_request",
+       "https://www.googleapis.com/auth/script.scriptapp"
+     ]
+   }
+   ```
+5. `コード.gs` を開き、中身をすべて消して、`HRsaiten/spreadsheet.gs` の中身を貼り付けます。上の 💾(保存)を押します。
+6. 上の関数の選択で **`setup`** を選び、「▶ 実行」を押します。
+   「承認が必要です」→ 自分のアカウント →「詳細」→「(安全ではないページ)に移動」→「許可」と進みます(自分で作ったスクリプトなので大丈夫です)。
+7. スプレッドシートに「記録」シートができ、これまでの記録が入れば完了です。あとは1時間ごとに自動で増えます。
+   すぐ取り込みたいときは、関数 `importRecords` を選んで「▶ 実行」を押します。
+
+- 端末は「iPhone iOS 18.1 / LINE」のように、OS と開いたアプリまでです(機種名はスマホが教えてくれないことが多いです)。この設定より前の記録は「-」になります。
+- お客さんがランキングから記録を消しても、スプレッドシートと感想の控えには残ります。
+- 「Firebase の読み込みに失敗」と出たら、Firebase を作ったアカウントで開いているか確認してください。
 
 ## 4. アプリの設定をコピーする
 
