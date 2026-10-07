@@ -701,7 +701,7 @@ li.mine{background:#F7D37A1F; border-radius:12px}
       <label class="fld"><span>ニックネーム</span><input id="name" maxlength="12" placeholder="12文字まで" enterkeyhint="next"></label>
       <label class="fld"><span>ビールの感想<small>(10文字まで・なくてもOK)</small></span><input id="memo" maxlength="10" placeholder="例：美味しかった！！" enterkeyhint="done"></label>
       <p class="note" id="sheetNote"></p>
-      <p class="photo-note">記録した写真は、お店にも届きます(ランキングの表示と、採点の改善に使います)。</p>
+      <p class="photo-note" id="photoNote" hidden>記録した写真は、お店にも届きます(ランキングの表示と、採点の改善に使います)。</p>
       <button class="btn" id="save" type="submit">この名前で記録する</button>
       <button class="btn ghost" type="button" data-close="saveSheet">やめる</button>
     </form>
@@ -1184,7 +1184,9 @@ function makeThumb(c){
   const s = Math.max(w / c.width, h / c.height);
   const dw = c.width * s, dh = c.height * s;
   t.getContext("2d").drawImage(c, (w - dw) / 2, (h - dh) / 2, dw, dh);
-  return t.toDataURL("image/jpeg", .62);
+  // 細かい写真でも Firebase の上限(60,000文字)を超えないよう、超えたら画質を下げる
+  for (const q of [.62, .5, .4, .3]) { const u = t.toDataURL("image/jpeg", q); if (u.length < 50000) return u; }
+  return null;
 }
 // お店に届ける写真(長い辺 800px・1枚 約80KB)。スプレッドシートが取り込んだら Firebase から消える
 function makeStorePhoto(c){
@@ -1637,7 +1639,8 @@ function renderBoard(){
     who.append(sub);
     li.children[3].innerHTML = `${score}<small>点</small>`;
     li.classList.add("tap"); li.tabIndex = 0;
-    const open = () => openViewer(d.id, rank, v);
+    const myRank = rank; // その行の順位を覚えておく(rank は次の行で変わる)
+    const open = () => openViewer(d.id, myRank, v);
     li.addEventListener("click", e => { if (!e.target.closest(".del")) open(); });
     li.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target === li) { e.preventDefault(); open(); } });
     const mineRec = isFb ? (myUid && v.uid === myUid) : !db;
@@ -1720,7 +1723,7 @@ $("clearBtn").addEventListener("click", () => {
 });
 $("openSave").addEventListener("click", () => {
   if (savedId) { tab = "today"; document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-selected", String(x.dataset.k === "today"))); renderBoard(); show("rank"); return; }
-  $("sheetNote").textContent = ""; $("save").disabled = false;
+  $("sheetNote").textContent = ""; $("save").disabled = false; $("photoNote").hidden = !isFb;
   $("saveSheet").hidden = false;
   setTimeout(() => $("name").focus(), 250);
 });
@@ -2064,9 +2067,15 @@ function startRemoteBoards(store){
     snap => { boards[k] = snap.docs; boardError = ""; if (tab === k) renderBoard(); },
     e => { boards[k] = []; boardError = String((e && e.message) || "error"); if (tab === k) renderBoard(); }
   );
-  sub("today", col.where("day", "==", dayKey()));
-  sub("month", col.where("month", "==", monthKey()));
-  renderBoard();
+  let unsub = [], keys = "";
+  const watch = () => { // 朝5時や月が変わったら、新しい「今日」「今月」を読み直す(開きっぱなしの端末のため)
+    const k = dayKey() + "|" + monthKey(); if (k === keys) return; keys = k;
+    unsub.forEach(f => { try { f(); } catch (_) {} });
+    boards.today = boards.month = null;
+    unsub = [sub("today", col.where("day", "==", dayKey())), sub("month", col.where("month", "==", monthKey()))];
+    renderBoard();
+  };
+  watch(); setInterval(watch, 60e3);
   if (last) updateSaveButton();
 }
 function loadScript(src){ return new Promise((res, rej) => { const el = document.createElement("script"); el.src = src; el.onload = res; el.onerror = rej; document.head.append(el); }); }
