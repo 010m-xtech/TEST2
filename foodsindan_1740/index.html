@@ -252,7 +252,7 @@
                 </button>
 
                 <!-- その前に遊ぶ -->
-                <a href="../foodtower_1740/" class="menu-btn btn-ghost w-full rounded-lg flex items-center gap-4 px-4 py-3 mt-3 text-left" style="background: rgba(31,48,80,0.6);">
+                <a href="../foodtower_1740/" @click="logGameClick" class="menu-btn btn-ghost w-full rounded-lg flex items-center gap-4 px-4 py-3 mt-3 text-left" style="background: rgba(31,48,80,0.6);">
                     <span class="menu-icon" style="background: rgba(212,168,90,0.14);">
                         <!-- 積み上がったバーガー -->
                         <svg viewBox="0 0 48 48" class="w-11 h-11" aria-hidden="true">
@@ -749,6 +749,23 @@
                     }
                 };
 
+                // BURGER STACK ボタンのタップを記録（ページ移動しても届くよう sendBeacon を使用）
+                const logGameClick = () => {
+                    if (!GAS_URL) return;
+                    try {
+                        const params = new URLSearchParams({
+                            q1: '-', q2: '-', gender: '-', age: '-',
+                            type: 'burger_stack', result: 'burger_stack',
+                            category: 'BURGER STACK（ボタン押下）',
+                            event: 'game_click', ua: navigator.userAgent
+                        });
+                        const body = new Blob([params.toString()], { type: 'application/x-www-form-urlencoded' });
+                        if (!(navigator.sendBeacon && navigator.sendBeacon(GAS_URL, body))) {
+                            fetch(GAS_URL, { method: 'POST', mode: 'no-cors', keepalive: true, headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params.toString() });
+                        }
+                    } catch (error) {}
+                };
+
                 const sendToGoogleSheet = (q1, q2, type, category) => {
                     if (!GAS_URL) return;
                     try {
@@ -801,7 +818,7 @@
 
                 return {
                     step, currentQuestionIndex, currentQuestion, answersHistory, finalResult, bat, fireworkSpots,
-                    skipIntro, startQuiz, goBack, answerQuestion, startReveal, finishReveal, resetQuiz
+                    skipIntro, startQuiz, goBack, logGameClick, answerQuestion, startReveal, finishReveal, resetQuiz
                 };
             }
         }).mount('#app');
