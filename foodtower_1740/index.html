@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -356,6 +355,25 @@
             toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
         };
 
+        // ===== スプレッドシートへの記録（フード診断と同じGoogle Apps Script） =====
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbxR1aGoqqA31wemgAzYQQnZjlA9rGCn2hsDIp9zkU_U2mrKm8nGHV64me4j7cKJ8OhQ/exec';
+        const logResult = (cm, count) => {
+            if (!GAS_URL) return;
+            try {
+                const params = new URLSearchParams({
+                    q1: '-', q2: '-', gender: '-', age: '-',
+                    type: 'burger_stack', result: cm + 'cm',
+                    category: 'BURGER STACK（プレイ結果）',
+                    event: 'game_result', height: String(cm), count: String(count),
+                    ua: navigator.userAgent
+                });
+                const body = new Blob([params.toString()], { type: 'application/x-www-form-urlencoded' });
+                if (!(navigator.sendBeacon && navigator.sendBeacon(GAS_URL, body))) {
+                    fetch(GAS_URL, { method: 'POST', mode: 'no-cors', keepalive: true, headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params.toString() });
+                }
+            } catch (e) {}
+        };
+
         const gameOver = () => {
             state = 'over';
             // 落ちた具材を除いた高さで記録
@@ -374,6 +392,7 @@
             document.getElementById('resHeight').textContent = cm;
             document.getElementById('resCount').textContent = count;
             document.getElementById('resTitle').textContent = title;
+            logResult(cm, count);
             setTimeout(() => document.getElementById('overScreen').classList.remove('hidden'), 700);
         };
 
