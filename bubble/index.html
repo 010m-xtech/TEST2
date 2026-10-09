@@ -779,6 +779,38 @@
       color: #fff;
       text-shadow: 0 0 10px rgba(255, 220, 150, 0.9), 0 2px 6px rgba(0, 0, 0, 0.9);
     }
+
+    /* ========== オープニング：実写動画モード（intro1〜3.mp4 がある時） ========== */
+    .video-scrim { position: absolute; inset: 0; pointer-events: none; display: none; z-index: 5; }
+    .story-frame.has-video .video-scrim { display: block; }
+    /* 枠1：花火とジョッキはそのまま見せ、文字は下のテーブル部分に */
+    .frame-1 .video-scrim { background: linear-gradient(to top, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.45) 26%, rgba(0,0,0,0) 44%), linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0) 14%); }
+    .frame-1.has-video .story-copy-top { top: auto; bottom: calc(env(safe-area-inset-bottom) + 58px); }
+    /* 枠2：縦書きは左上の夜空に、ひとことは下に */
+    .frame-2 .video-scrim { background: linear-gradient(105deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.25) 30%, rgba(0,0,0,0) 48%), linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0) 22%); }
+    .frame-2.has-video .story-vertical-big { top: calc(env(safe-area-inset-top) + 70px); }
+    .frame-2.has-video .story-copy { bottom: calc(env(safe-area-inset-bottom) + 50px); }
+    /* 枠3：最初は上の空いている夜空に問いかけ → 花火が開くと消え、ジョッキの上に「何かが起こる！？」 */
+    .frame-3 .video-scrim { background: linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0) 14%), radial-gradient(ellipse 85% 14% at 50% 64%, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0) 100%); }
+    .frame-3.has-video .story-copy { top: 65.5%; bottom: auto; padding: 0 12px; }
+    .frame-3.has-video .story-num { display: none; }
+    .frame-3.has-video .story-line { display: inline-block; font-size: 19px; letter-spacing: 0.06em; line-height: 1.4; opacity: 0; }
+    .frame-3.has-video.active .story-line {
+      animation: storyFadeUp 0.5s cubic-bezier(0.2, 0.8, 0.3, 1) forwards, storyFadeOut 0.4s ease 1.7s forwards !important;
+      animation-delay: 0.05s, 1.7s !important;
+    }
+    .frame-3.has-video.active .story-line:nth-of-type(3) { animation-delay: 0.3s, 1.7s !important; }
+    .frame-3.has-video .s3-mystery {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: -6px;
+      margin: 0;
+      text-align: center;
+      font-size: 38px;
+    }
+    .frame-3.has-video.active .s3-mystery { animation: mysteryIn 0.6s cubic-bezier(0.2, 1.4, 0.4, 1) 2.1s forwards; }
+    @keyframes storyFadeOut { to { opacity: 0; transform: translateY(-8px); } }
   </style>
 </head>
 <body class="flex justify-center items-start h-screen overflow-hidden bg-black">
@@ -795,7 +827,8 @@
     <div id="storyIntro" class="absolute inset-0 z-[95] select-none" style="touch-action: manipulation;">
 
       <!-- 枠1：美味しいビールが届く -->
-      <div class="story-frame" data-video="intro1.mp4">
+      <div class="story-frame frame-1" data-video="intro1.mp4">
+        <div class="video-scrim"></div>
         <video class="story-video" muted playsinline preload="auto"></video>
         <div class="story-illust absolute inset-0">
           <div class="bar-bg"></div>
@@ -814,7 +847,8 @@
       </div>
 
       <!-- 枠2：写真を撮って一言そえる -->
-      <div class="story-frame" data-video="intro2.mp4">
+      <div class="story-frame frame-2" data-video="intro2.mp4">
+        <div class="video-scrim"></div>
         <video class="story-video" muted playsinline preload="auto"></video>
         <div class="story-illust absolute inset-0">
           <div class="bar-bg"></div>
@@ -840,7 +874,8 @@
       </div>
 
       <!-- 枠3：みなさんの写真が集まると、、、何かが起こる -->
-      <div class="story-frame" data-video="intro3.mp4">
+      <div class="story-frame frame-3" data-video="intro3.mp4">
+        <div class="video-scrim"></div>
         <video class="story-video" muted playsinline preload="auto"></video>
         <div class="story-illust absolute inset-0">
           <div class="bar-bg"></div>
@@ -1534,6 +1569,10 @@
       storyFrames.forEach(f => {
         const v = f.querySelector('.story-video');
         v.addEventListener('loadeddata', () => f.classList.add('has-video'), { once: true });
+        // 動画が終わったら次の枠へ
+        v.addEventListener('ended', () => {
+          if (storyActive && storyFrames[storyIndex] === f) showStoryFrame(storyIndex + 1);
+        });
         v.src = f.dataset.video;
       });
     }
@@ -1569,7 +1608,8 @@
     function sfxLoop(now) {
       if (!sfxRunning) return;
       // 隅でぽつぽつ上がる花火
-      if (now > sfxNext) {
+      const onVideo = storyIndex < 0 || storyFrames[storyIndex].classList.contains('has-video');
+      if (!onVideo && now > sfxNext) {
         sfxNext = now + 520 + Math.random() * 380;
         const left = Math.random() < 0.5;
         sfxBurst(sfxW * (left ? -0.04 + Math.random() * 0.28 : 0.76 + Math.random() * 0.28), sfxH * (0.03 + Math.random() * 0.26), 0.55 + Math.random() * 0.45);
@@ -1677,7 +1717,7 @@
       sfxTimers = [];
       if (i === 2) {
         // 写真が集まった瞬間、写真の大輪が咲く
-        sfxTimers.push(setTimeout(() => sfxPhotoBloom(sfxW * 0.5, sfxH * 0.33), 1850));
+        if (!frame.classList.contains('has-video')) sfxTimers.push(setTimeout(() => sfxPhotoBloom(sfxW * 0.5, sfxH * 0.33), 1850));
       }
       if (frame.classList.contains('has-video')) {
         const v = frame.querySelector('.story-video');
@@ -1690,12 +1730,20 @@
         fill.style.animationDuration = '';
         if (k < i) b.classList.add('done');
         if (k === i) {
-          fill.style.animationDuration = `${STORY_DURATIONS[k]}ms`;
+          fill.style.animationDuration = `${frameDuration(k)}ms`;
           void fill.offsetWidth;
           b.classList.add('running');
         }
       });
-      storyTimer = setTimeout(() => showStoryFrame(i + 1), STORY_DURATIONS[i]);
+      storyTimer = setTimeout(() => showStoryFrame(i + 1), frameDuration(i) + (frame.classList.contains('has-video') ? 400 : 0));
+    }
+
+    // 動画がある枠は動画の長さに合わせる（無ければイラストの長さ）
+    function frameDuration(i) {
+      const f = storyFrames[i];
+      const v = f.querySelector('.story-video');
+      if (f.classList.contains('has-video') && v.duration && isFinite(v.duration)) return Math.round(v.duration * 1000);
+      return STORY_DURATIONS[i];
     }
 
     function startStoryIntro(onEnd) {
@@ -1705,7 +1753,14 @@
       storyIntro.style.transition = '';
       storyIntro.style.opacity = '1';
       sfxStart();
-      showStoryFrame(0);
+      // 1本目の動画の読み込みを最大1.5秒だけ待ってから始める（間に合わなければイラストで開始）
+      const first = storyFrames[0];
+      const v = first.querySelector('.story-video');
+      if (first.classList.contains('has-video') || !v.getAttribute('src')) { showStoryFrame(0); return; }
+      let started = false;
+      const go = () => { if (!started && storyActive) { started = true; showStoryFrame(0); } };
+      v.addEventListener('loadeddata', () => setTimeout(go, 30), { once: true });
+      setTimeout(go, 1500);
     }
 
     function endStoryIntro() {
