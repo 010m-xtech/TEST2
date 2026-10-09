@@ -679,6 +679,33 @@
         let caughtFoods = {};
         let currentStream = null;
 
+        // ==========================================
+        // ログ記録用設定（おすすめ本ページと同じスプレッドシートに送信）
+        // ==========================================
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbzEYxfkiZ91fANnkb7I6wizqULB8QmhtPbrwpAdBgjCh0Guv_iQkkZeHWl7iiFpNyrh/exec";
+
+        function sendLog(eventType, target) {
+            if (!GAS_URL) return;
+            const data = {
+                eventType: eventType,
+                target: target,
+                userInfo: navigator.userAgent
+            };
+            try {
+                fetch(GAS_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    keepalive: true, // ページ移動直前でも送信を完了させる
+                    headers: { "Content-Type": "text/plain" },
+                    body: JSON.stringify(data)
+                }).catch(error => console.warn("ログ送信エラー(ネットワーク依存):", error));
+            } catch (e) {
+                console.warn("ログ送信処理エラー:", e);
+            }
+        }
+
+        sendLog("kaohame_open", "kaohame_page"); // カオハメを開いた
+
         function showNotification(msg) {
             const modal = document.getElementById('custom-modal');
             modal.innerText = msg;
@@ -752,6 +779,7 @@
                 
                 pCtx.drawImage(video, sx, sy, sw, sh, 0, 0, photoCanvas.width, photoCanvas.height);
             }
+            sendLog("kaohame_photo", video.videoWidth ? "camera" : "no_camera"); // 撮影した
             stopCamera();
 
             video.style.display = 'none';
@@ -912,6 +940,7 @@
             const bestFoodNameId = gameType + '-best-food-name';
 
             document.getElementById(scoreId).innerText = finalScore;
+            sendLog("kaohame_game_end", gameType + ":" + finalScore + "点"); // 最後まで遊んだ（スコア）
 
             let maxCount = 0;
             let mostCaughtIndex = -1;
@@ -988,6 +1017,7 @@
             catchScreen.appendChild(character);
             character.style.display = 'block';
             character.classList.add('playing-mode');
+            sendLog("kaohame_game_start", "catch"); // メニューキャッチ開始
             startCatchGame();
         });
 
@@ -1138,6 +1168,7 @@
         document.getElementById('btn-play-whack').addEventListener('click', () => {
             selectScreen.style.display = 'none';
             whackScreen.style.display = 'block';
+            sendLog("kaohame_game_start", "whack"); // モグラたたき開始
             startWhackGame();
         });
 
