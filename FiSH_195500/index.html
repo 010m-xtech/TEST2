@@ -483,6 +483,17 @@
   .talk-bubble.compact:focus-visible{ outline:2px solid var(--shu-pale); outline-offset:3px; }
   @media (max-width:340px){ .talk-bubble.compact{ font-size:13.5px; padding:12px 12px; } }          /* 画面が特に狭い機種では、吹き出しの文字を少し小さく(行の途中で折り返さないように) */
   .talk-bubble.skip .ch, .talk-bubble.skip .ch.wave, .talk-bubble.skip .talk-sub{ animation:none !important; opacity:1; transform:none; }
+  .insta-card{ display:flex; align-items:center; gap:14px; margin-top:26px; padding:14px 16px; border-radius:16px; text-decoration:none; color:var(--kinari);
+    background: rgba(242,238,227,0.08); border:1px solid rgba(242,238,227,0.28); -webkit-tap-highlight-color: transparent; }
+  .insta-card:active{ background: rgba(242,238,227,0.16); }
+  .insta-icon{ width:56px; height:56px; flex:none; border-radius:13px; display:block; }
+  .insta-text{ flex:1; min-width:0; display:flex; flex-direction:column; gap:4px; line-break:strict; }
+  .insta-l1{ font-size:16.5px; font-weight:700; line-height:1.5; }
+  .insta-l2{ font-size:14px; line-height:1.55; color: rgba(242,238,227,0.85); }
+  .insta-text .ph{ display:inline-block; }
+  .insta-arrow{ flex:none; font-size:26px; line-height:1; color: rgba(242,238,227,0.7); }
+  @media (max-width:340px){ .insta-card{ gap:10px; padding:12px; } .insta-icon{ width:48px; height:48px; } .insta-l1{ font-size:15px; } .insta-l2{ font-size:13px; } }
+  #farewellDone .btn-row{ margin-top:18px; }
   #surveyFoot.pop-in, #farewellForm.pop-in, #farewellDone.pop-in{ animation: fadeUp .45s ease both; }
   .note-input{
     display:block; width:100%; resize:vertical; min-height:112px;
@@ -497,6 +508,7 @@
   .talk-fish-wrap{ position:relative; z-index:2; }
   .talk-bubble{ z-index:1; }
   .talk-bubble.thanks{ font-size:clamp(13px, 3.9vw, 15.5px); }
+  @media (max-width:340px){ .talk-bubble.thanks{ font-size:12.5px; padding-left:12px; padding-right:12px; } }
   .talk-bubble.play{ animation: bubblePop .45s cubic-bezier(.22,.9,.3,1) .1s both; }   /* 文字が出はじめる(0.6秒)より前に、ふくらみきる */
   @keyframes bubblePop{ 0%{ transform:scale(.15); opacity:0; } 55%{ opacity:1; } 100%{ transform:scale(1); opacity:1; } }
 
@@ -898,6 +910,14 @@
       </div>
 
       <div id="farewellDone" hidden>
+        <a class="insta-card" id="instaLink" href="https://www.instagram.com/izakayakojiki?psln=czk4Zm1zdXo4a3Ux" target="_blank" rel="noopener">
+          <img class="insta-icon" src="instagram.webp" width="56" height="56" alt="Instagram">
+          <span class="insta-text">
+            <span class="insta-l1"><span class="ph">インスタグラムも</span><span class="ph">ぜひご覧ください！</span></span>
+            <span class="insta-l2"><span class="ph">おすすめや</span><span class="ph">お店の情報を</span><span class="ph">お届けしています！</span></span>
+          </span>
+          <span class="insta-arrow" aria-hidden="true">›</span>
+        </a>
         <div class="btn-row" style="flex-direction: column;">
           <button class="btn btn-primary" type="button" style="width:100%" onclick="goScreen('select')">最初の画面に戻る</button>
         </div>
@@ -1906,7 +1926,7 @@ function goToMenu(){
   // 料理のメニューは載せず、日本酒だけを紹介する
   document.getElementById('menuScreenList').innerHTML = sake ? sakeCardHtml(sake) : '';
   document.getElementById('finishButton').textContent =
-    (farewellDone && !surveyReview) ? '最初に戻る' : 'おしまいにする';
+    'おしまいにする';
   goScreen('menu');
 }
 
@@ -2190,6 +2210,7 @@ const FAREWELL_LINES = [
   { text: '料理やお酒、\nこのコンテンツなど、\nどんなことでも\n感想をいただけたら\n嬉しいです。', wave: 'どんなことでも', compactCls: 'thanks' }
 ];
 const FAREWELL_SENT = 'ありがとうございます。\n励みになります。\nこの後も、どうぞ\nお楽しみください。';
+const FAREWELL_REPEAT = 'ここまで、\nありがとうございます。\nこの後も、どうぞ\nお楽しみください。';
 const FAREWELL_SKIP = 'ありがとうございます。\nまたお待ちしています。\nこの後も、どうぞ\nお楽しみください。';
 let farewellDone = store.get('fish_farewell_done') === '1';          // 1端末1回: この端末で、すでに答えた(または「このまま終わる」を選んだ)か
 let farewellToken = 0, farewellTimer = null, farewellFinished = false;
@@ -2218,6 +2239,7 @@ function playFarewellIntro(){
   const token = ++farewellToken;
   if (farewellFinished) return;
   hideFarewellForm();
+  if (farewellDone && !surveyReview) { showFarewellRepeat(); return; }   // 答え済みの端末: ひとことは聞かず、お礼とインスタだけ
   farewellStageCtl.start(token);
 }
 function finishFarewell(kind){
@@ -2233,6 +2255,16 @@ function finishFarewell(kind){
   document.getElementById('header-back-btn').style.display = 'none';
   screenHistory = [];
 }
+function showFarewellRepeat(){
+  farewellFinished = true;
+  farewellStageCtl.hide();
+  farewellTalk.stop();
+  farewellTalk.img.classList.add('done');
+  farewellTalk.say(FAREWELL_REPEAT, { wave: '', cls: 'thanks' });
+  fwEl('farewellDone').hidden = false; fwEl('farewellDone').classList.add('pop-in');
+  document.getElementById('header-back-btn').style.display = 'none';
+  screenHistory = [];
+}
 function farewellSend(){
   const msg = fwEl('farewellText').value.trim();
   if (!msg) return;
@@ -2240,6 +2272,7 @@ function farewellSend(){
   finishFarewell('sent');
 }
 (function(){
+  fwEl('instaLink').addEventListener('click', () => { if (!surveyReview) sendLog('インスタ'); });   // 開いたことを記録(リンク自体は新しいタブで開く)
   fwEl('farewellText').addEventListener('input', () => { fwEl('farewellSend').disabled = !fwEl('farewellText').value.trim(); });
   fwEl('farewellSend').addEventListener('click', farewellSend);
   fwEl('farewellSkip').addEventListener('click', () => finishFarewell('skip'));
@@ -2277,7 +2310,6 @@ function openSurveyReview(){
 
 // 初回はアンケートへ。回答済みなら最初の画面へ戻る
 function handleFinishClick(){
-  if (farewellDone && !surveyReview) { goScreen('select'); return; }   // この端末では、すでに聞いたので、そのまま戻る
   resetFarewellUI();
   setFarewellFish(currentFishId || 'aji');                 // 最後にしゃべる魚は、いま見ていた魚
   goScreen('farewell');
