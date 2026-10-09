@@ -92,6 +92,553 @@
       -ms-overflow-style: none;
       scrollbar-width: none;
     }
+
+    /* ========== 思い出メーター ========== */
+    .meter-slot {
+      width: 38px;
+      height: 38px;
+      border-radius: 9999px;
+      border: 2px dashed rgba(255, 255, 255, 0.45);
+      background: rgba(0, 0, 0, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+      position: relative;
+    }
+    .meter-slot.filled {
+      border: 2px solid #fde68a;
+      box-shadow: 0 0 10px rgba(251, 191, 36, 0.65);
+      cursor: pointer;
+    }
+    .meter-slot img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: opacity 0.2s;
+    }
+    @keyframes slotPop {
+      0% { transform: scale(0.4); }
+      55% { transform: scale(1.35); }
+      100% { transform: scale(1); }
+    }
+    .slot-pop { animation: slotPop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    @keyframes meterReach {
+      0%, 100% { box-shadow: 0 0 0 1px rgba(253, 230, 138, 0.6), 0 0 14px rgba(251, 191, 36, 0.35); }
+      50% { box-shadow: 0 0 0 2px rgba(253, 230, 138, 1), 0 0 28px rgba(251, 191, 36, 0.85); }
+    }
+    .meter-reach { animation: meterReach 1.1s ease-in-out infinite; }
+    @keyframes glassShake {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-6deg); }
+      75% { transform: rotate(6deg); }
+    }
+    .glass-shake { animation: glassShake 0.5s ease-in-out 2; }
+
+    /* トースト通知 */
+    @keyframes toastIn {
+      0% { transform: translateY(-14px) scale(0.92); opacity: 0; }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    .toast-in { animation: toastIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+    /* 花火ショー */
+    #showOverlay {
+      background: radial-gradient(ellipse at 50% 110%, rgba(30, 27, 75, 0.85) 0%, rgba(5, 8, 22, 0.94) 60%, rgba(0, 0, 0, 0.97) 100%);
+    }
+    @keyframes headlineIn {
+      0% { transform: scale(0.3); opacity: 0; letter-spacing: 0.6em; }
+      60% { transform: scale(1.12); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; letter-spacing: 0.12em; }
+    }
+    .headline-in { animation: headlineIn 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.2) forwards; }
+    @keyframes headlineOut {
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(1.4); opacity: 0; }
+    }
+    .headline-out { animation: headlineOut 0.6s ease-in forwards; }
+    .show-headline {
+      text-shadow: 0 0 12px rgba(251, 191, 36, 0.9), 0 0 30px rgba(251, 146, 60, 0.6), 0 4px 10px rgba(0, 0, 0, 0.8);
+    }
+
+    /* ========== スマホ画面サイズ固定（iOSのツールバーも考慮） ========== */
+    @supports (height: 100dvh) {
+      body, #appContainer { height: 100dvh; }
+    }
+
+    /* ========== リアルなビールジョッキ（SVG） ========== */
+    .mug-svg .beer-level {
+      transition: transform 1s cubic-bezier(0.34, 1.4, 0.64, 1);
+    }
+    .mug-svg .droplets { opacity: 0.9; }
+
+    /* ========== オープニング（ストーリー形式・3枠） ========== */
+    #storyIntro { background: #0b0704; }
+    .story-bar {
+      flex: 1;
+      height: 3px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.28);
+      overflow: hidden;
+    }
+    .story-bar-fill {
+      width: 0%;
+      height: 100%;
+      background: #fff;
+      border-radius: 3px;
+    }
+    .story-bar.done .story-bar-fill { width: 100%; }
+    .story-bar.running .story-bar-fill { animation: storyBar linear forwards; }
+    @keyframes storyBar { from { width: 0%; } to { width: 100%; } }
+
+    .story-frame {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.35s ease;
+      overflow: hidden;
+    }
+    .story-frame.active { opacity: 1; visibility: visible; }
+    .story-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+    .story-frame.has-video .story-video { display: block; }
+    .story-frame.has-video .story-illust { display: none; }
+
+    /* 共通：バー店内のボケ背景 */
+    .bar-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 50% 35%, rgba(120, 66, 18, 0.55) 0%, rgba(30, 16, 6, 0.9) 55%, #0b0704 100%);
+    }
+    .bokeh {
+      position: absolute;
+      border-radius: 9999px;
+      filter: blur(6px);
+      mix-blend-mode: screen;
+      animation: bokehDrift 6s ease-in-out infinite alternate;
+    }
+    @keyframes bokehDrift {
+      from { transform: translate(0, 0) scale(1); }
+      to { transform: translate(12px, -10px) scale(1.12); }
+    }
+    .counter-top {
+      position: absolute;
+      left: -5%;
+      right: -5%;
+      bottom: 0;
+      height: 34%;
+      background:
+        linear-gradient(to bottom, rgba(255, 210, 150, 0.35) 0, rgba(255, 210, 150, 0) 6px),
+        repeating-linear-gradient(92deg, rgba(0, 0, 0, 0.12) 0 2px, rgba(0, 0, 0, 0) 2px 9px, rgba(255, 255, 255, 0.04) 9px 10px, rgba(0, 0, 0, 0) 10px 23px),
+        linear-gradient(to bottom, #6b3f1d 0%, #4a2a12 45%, #2a160a 100%);
+      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+    }
+    .story-copy {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: calc(env(safe-area-inset-bottom) + 64px);
+      padding: 0 24px;
+      text-align: center;
+      z-index: 5;
+    }
+    .story-step {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.35em;
+      color: #fcd34d;
+      border: 1px solid rgba(252, 211, 77, 0.6);
+      border-radius: 9999px;
+      padding: 3px 12px 3px 15px;
+      margin-bottom: 10px;
+      background: rgba(0, 0, 0, 0.35);
+    }
+    .story-title {
+      font-family: 'Shippori Mincho', serif;
+      font-weight: 800;
+      font-size: 25px;
+      line-height: 1.45;
+      color: #fff;
+      letter-spacing: 0.08em;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.85);
+    }
+    .story-sub {
+      margin-top: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(255, 245, 225, 0.85);
+      letter-spacing: 0.1em;
+      text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+    }
+    .story-frame .fade-up { opacity: 0; }
+    .story-frame.active .fade-up { animation: storyFadeUp 0.55s cubic-bezier(0.2, 0.8, 0.3, 1) forwards; }
+    @keyframes storyFadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 想いの縦書きコピー */
+    .story-vertical {
+      position: absolute;
+      top: calc(env(safe-area-inset-top) + 62px);
+      right: 22px;
+      writing-mode: vertical-rl;
+      font-family: 'Shippori Mincho', serif;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: 0.32em;
+      line-height: 2;
+      color: rgba(255, 248, 230, 0.92);
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
+      z-index: 4;
+    }
+
+    /* --- 枠1：ビールが届く --- */
+    .s1-mug {
+      position: absolute;
+      left: 50%;
+      bottom: 25%;
+      width: 46%;
+      max-width: 190px;
+      aspect-ratio: 110 / 130;
+      transform: translateX(160%);
+      filter: drop-shadow(0 18px 18px rgba(0, 0, 0, 0.55));
+    }
+    .story-frame.active .s1-mug { animation: mugSlideIn 0.8s cubic-bezier(0.2, 0.9, 0.25, 1.08) 0.1s forwards; }
+    @keyframes mugSlideIn {
+      0% { transform: translateX(160%) rotate(4deg); }
+      70% { transform: translateX(-54%) rotate(-2deg); }
+      100% { transform: translateX(-50%) rotate(0deg); }
+    }
+    .s1-coaster {
+      position: absolute;
+      left: 50%;
+      bottom: calc(25% - 10px);
+      width: 46%;
+      max-width: 190px;
+      height: 22px;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background: radial-gradient(ellipse, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0) 70%);
+    }
+    .s1-shine {
+      position: absolute;
+      left: 50%;
+      bottom: calc(25% + 34%);
+      width: 60px;
+      height: 60px;
+      margin-left: -64px;
+      opacity: 0;
+      background:
+        linear-gradient(90deg, transparent 47%, #fff 50%, transparent 53%),
+        linear-gradient(0deg, transparent 47%, #fff 50%, transparent 53%);
+      filter: drop-shadow(0 0 6px #fff);
+    }
+    .story-frame.active .s1-shine { animation: shine 0.7s ease-out 1.05s forwards; }
+    @keyframes shine {
+      0% { opacity: 0; transform: scale(0.2) rotate(0deg); }
+      40% { opacity: 1; transform: scale(1) rotate(45deg); }
+      100% { opacity: 0; transform: scale(0.6) rotate(90deg); }
+    }
+
+    /* --- 枠2：写真を撮って一言 --- */
+    .s2-phone {
+      position: absolute;
+      left: 50%;
+      top: 15%;
+      width: 58%;
+      max-width: 230px;
+      aspect-ratio: 9 / 17;
+      transform: translate(-50%, 40px) rotate(-4deg);
+      opacity: 0;
+      border-radius: 34px;
+      padding: 9px;
+      background: linear-gradient(145deg, #3a3a3e, #121214 40%, #2a2a2e);
+      box-shadow: 0 0 0 1.5px #55555c, 0 24px 40px rgba(0, 0, 0, 0.6), inset 0 0 2px rgba(255, 255, 255, 0.3);
+    }
+    .story-frame.active .s2-phone { animation: phoneIn 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.1) forwards; }
+    @keyframes phoneIn { to { transform: translate(-50%, 0) rotate(-4deg); opacity: 1; } }
+    .s2-screen {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 26px;
+      overflow: hidden;
+      background: radial-gradient(ellipse at 50% 40%, #7a4a1c 0%, #2b1709 70%);
+    }
+    .s2-notch {
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      width: 34%;
+      height: 16px;
+      transform: translateX(-50%);
+      border-radius: 10px;
+      background: #000;
+      z-index: 3;
+    }
+    .s2-viewmug {
+      position: absolute;
+      left: 50%;
+      top: 26%;
+      width: 56%;
+      aspect-ratio: 110 / 130;
+      transform: translateX(-50%);
+    }
+    .s2-guide {
+      position: absolute;
+      left: 50%;
+      top: 22%;
+      width: 78%;
+      aspect-ratio: 1;
+      transform: translateX(-50%);
+      border-radius: 9999px;
+      border: 2px dashed rgba(253, 230, 138, 0.9);
+      box-shadow: 0 0 0 999px rgba(0, 0, 0, 0.45);
+    }
+    .s2-shutter {
+      position: absolute;
+      left: 50%;
+      bottom: 6%;
+      width: 44px;
+      height: 44px;
+      transform: translateX(-50%);
+      border-radius: 9999px;
+      border: 3px solid #fff;
+      background: rgba(255, 255, 255, 0.85);
+      box-shadow: inset 0 0 0 3px #222;
+    }
+    .story-frame.active .s2-shutter { animation: shutterPress 0.25s ease 0.65s; }
+    @keyframes shutterPress { 50% { transform: translateX(-50%) scale(0.82); } }
+    .s2-flash {
+      position: absolute;
+      inset: 0;
+      background: #fff;
+      opacity: 0;
+      z-index: 4;
+    }
+    .story-frame.active .s2-flash { animation: s2flash 0.35s ease-out 0.75s; }
+    @keyframes s2flash { 0% { opacity: 0.95; } 100% { opacity: 0; } }
+    .s2-photo {
+      position: absolute;
+      left: 50%;
+      top: 30%;
+      width: 34%;
+      max-width: 140px;
+      aspect-ratio: 1;
+      border-radius: 9999px;
+      overflow: hidden;
+      opacity: 0;
+      transform: translate(-50%, 0) scale(0.4);
+      background: radial-gradient(ellipse at 50% 40%, #7a4a1c 0%, #2b1709 75%);
+      box-shadow: 0 0 0 3px #fde68a, 0 0 24px rgba(251, 191, 36, 0.8), 0 12px 24px rgba(0, 0, 0, 0.5);
+      z-index: 6;
+    }
+    .s2-photo .mini-mug {
+      position: absolute;
+      left: 50%;
+      top: 14%;
+      width: 62%;
+      aspect-ratio: 110 / 130;
+      transform: translateX(-50%);
+    }
+    .story-frame.active .s2-photo { animation: photoPop 0.6s cubic-bezier(0.3, 1.5, 0.5, 1) 0.95s forwards; }
+    @keyframes photoPop {
+      0% { opacity: 0; transform: translate(-50%, 40px) scale(0.4); }
+      100% { opacity: 1; transform: translate(10%, -70px) scale(1) rotate(6deg); }
+    }
+    .s2-caption {
+      position: absolute;
+      left: 50%;
+      top: calc(30% + 52px);
+      transform: translate(12%, 0) rotate(6deg);
+      opacity: 0;
+      z-index: 7;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      background: #fffbeb;
+      color: #78350f;
+      font-weight: 900;
+      font-size: 15px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+      white-space: nowrap;
+    }
+    .s2-caption .typing {
+      display: inline-block;
+      overflow: hidden;
+      vertical-align: bottom;
+      white-space: nowrap;
+      clip-path: inset(0 100% 0 0);
+    }
+    .story-frame.active .s2-caption { animation: captionIn 0.3s ease-out 1.3s forwards; }
+    .story-frame.active .s2-caption .typing { animation: typing 0.55s steps(5) 1.4s forwards; }
+    @keyframes captionIn { to { opacity: 1; } }
+    @keyframes typing { to { clip-path: inset(0 0 0 0); } }
+
+    /* --- 枠3：みんなの写真が集まると… --- */
+    .s3-mug {
+      position: absolute;
+      left: 50%;
+      bottom: 27%;
+      width: 40%;
+      max-width: 170px;
+      aspect-ratio: 110 / 130;
+      transform: translateX(-50%);
+      filter: drop-shadow(0 16px 18px rgba(0, 0, 0, 0.6));
+    }
+    .story-frame.active .s3-mug .beer-level { transition: none; animation: s3fill 1.7s ease-out forwards; }
+    @keyframes s3fill {
+      0%, 40% { transform: translateY(110px); }
+      48% { transform: translateY(90px); }
+      60% { transform: translateY(70px); }
+      72% { transform: translateY(51px); }
+      84% { transform: translateY(31px); }
+      96%, 100% { transform: translateY(9px); }
+    }
+    .story-frame.active .s3-mug { animation: s3shake 0.45s ease-in-out 1.75s 2; }
+    @keyframes s3shake {
+      0%, 100% { transform: translateX(-50%) rotate(0); }
+      25% { transform: translateX(-50%) rotate(-5deg); }
+      75% { transform: translateX(-50%) rotate(5deg); }
+    }
+    .s3-photo {
+      position: absolute;
+      width: 64px;
+      height: 64px;
+      border-radius: 9999px;
+      background-size: cover;
+      background-position: center;
+      box-shadow: 0 0 0 2.5px #fff, 0 0 14px rgba(251, 191, 36, 0.7), 0 8px 16px rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      z-index: 3;
+    }
+    .s3-photo span {
+      position: absolute;
+      left: 50%;
+      bottom: -9px;
+      transform: translateX(-50%);
+      font-size: 9px;
+      font-weight: 900;
+      color: #451a03;
+      background: #fde68a;
+      border-radius: 9999px;
+      padding: 1px 7px;
+      white-space: nowrap;
+    }
+    .story-frame.active .s3-photo { animation: s3fly 0.6s cubic-bezier(0.5, 0, 0.6, 1) forwards; }
+    @keyframes s3fly {
+      0% { opacity: 0; transform: translate(0, 0) scale(0.6); }
+      15% { opacity: 1; transform: translate(0, 0) scale(1); }
+      100% { opacity: 0.0; transform: translate(var(--tx), var(--ty)) scale(0.25); }
+    }
+    .s3-burst {
+      position: absolute;
+      left: 50%;
+      top: 34%;
+      width: 360px;
+      height: 360px;
+      margin: -180px 0 0 -180px;
+      border-radius: 9999px;
+      opacity: 0;
+      background:
+        radial-gradient(circle, rgba(255, 255, 255, 0.95) 0 3%, rgba(253, 230, 138, 0.6) 6%, rgba(251, 191, 36, 0) 22%),
+        repeating-conic-gradient(rgba(253, 230, 138, 0.9) 0deg 1.2deg, rgba(0, 0, 0, 0) 1.2deg 12deg);
+      -webkit-mask: radial-gradient(circle, #000 0 30%, rgba(0, 0, 0, 0.6) 45%, transparent 70%);
+      mask: radial-gradient(circle, #000 0 30%, rgba(0, 0, 0, 0.6) 45%, transparent 70%);
+      mix-blend-mode: screen;
+      z-index: 2;
+    }
+    .story-frame.active .s3-burst { animation: s3burst 1s cubic-bezier(0.1, 0.8, 0.3, 1) 1.85s forwards; }
+    @keyframes s3burst {
+      0% { opacity: 0; transform: scale(0.05) rotate(0deg); }
+      25% { opacity: 1; }
+      100% { opacity: 0.85; transform: scale(1) rotate(20deg); }
+    }
+    .s3-mystery {
+      opacity: 0;
+      font-family: 'Shippori Mincho', serif;
+      font-weight: 900;
+      font-size: 34px;
+      color: #fff;
+      letter-spacing: 0.06em;
+      text-shadow: 0 0 14px rgba(251, 191, 36, 0.95), 0 0 30px rgba(251, 146, 60, 0.7), 0 3px 10px rgba(0, 0, 0, 0.9);
+    }
+    .story-frame.active .s3-mystery { animation: mysteryIn 0.6s cubic-bezier(0.2, 1.4, 0.4, 1) 1.85s forwards; }
+    @keyframes mysteryIn {
+      0% { opacity: 0; transform: scale(2.2); filter: blur(8px); }
+      100% { opacity: 1; transform: scale(1); filter: blur(0); }
+    }
+    .story-frame.active .s3-dim { animation: s3dim 0.4s ease 1.7s forwards; }
+    @keyframes s3dim { to { background: rgba(3, 4, 18, 0.55); } }
+
+    /* 乾杯ボタン */
+    @keyframes cheerBump {
+      0% { transform: scale(1); }
+      40% { transform: scale(0.86) rotate(-6deg); }
+      100% { transform: scale(1); }
+    }
+    .cheer-bump { animation: cheerBump 0.18s ease-out; }
+
+    /* リーチ演出 */
+    @keyframes reachIn {
+      0% { transform: scale(0.3) rotate(-8deg); opacity: 0; }
+      60% { transform: scale(1.12) rotate(2deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0); opacity: 1; }
+    }
+    @keyframes reachShake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+    #reachBanner.show .reach-card { animation: reachIn 0.5s cubic-bezier(0.2, 1.3, 0.4, 1) forwards, reachShake 0.4s ease 0.55s 2; }
+    #reachBanner.show .reach-big { text-shadow: 0 0 16px rgba(251, 191, 36, 0.9), 0 0 36px rgba(251, 146, 60, 0.6); }
+
+    /* 確定演出のラベル */
+    #revealLabel { opacity: 0; transform: scale(0.4); }
+    #revealLabel.reveal-in { animation: revealIn 0.55s cubic-bezier(0.2, 1.5, 0.4, 1) forwards; }
+    @keyframes revealIn {
+      0% { opacity: 0; transform: scale(2.4); filter: blur(10px); }
+      100% { opacity: 1; transform: scale(1); filter: blur(0); }
+    }
+    .reveal-name {
+      white-space: pre-line;
+      font-family: 'Shippori Mincho', serif;
+      font-weight: 900;
+      font-size: 27px;
+      line-height: 1.25;
+      letter-spacing: 0.04em;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.6)) drop-shadow(0 2px 2px rgba(0, 0, 0, 0.8));
+    }
+    .reveal-willow { background-image: linear-gradient(180deg, #fffbe6 0%, #fde68a 35%, #d4a017 60%, #fff3b0 100%); }
+    .reveal-beer { background-image: linear-gradient(180deg, #fffef8 0%, #fde68a 30%, #f59e0b 65%, #b45309 100%); }
+    .reveal-rainbow {
+      background-image: linear-gradient(90deg, #ff4d4d, #ff9f1a, #ffe14d, #5cff8a, #4dc3ff, #7a5cff, #ff5cf0, #ff4d4d);
+      background-size: 200% 100%;
+      animation: rainbowShift 1.2s linear infinite;
+    }
+    @keyframes rainbowShift { from { background-position: 0% 0; } to { background-position: 200% 0; } }
+    .reveal-sub {
+      font-weight: 900;
+      font-size: 18px;
+      letter-spacing: 0.3em;
+      color: #fff;
+      text-shadow: 0 0 12px rgba(251, 191, 36, 0.95), 0 2px 6px rgba(0, 0, 0, 0.9);
+    }
   </style>
 </head>
 <body class="flex justify-center items-start h-screen overflow-hidden bg-black">
@@ -102,46 +649,88 @@
   <div id="appContainer" class="w-full max-w-[430px] h-full relative bg-black shadow-2xl flex flex-col overflow-hidden border-x border-white/10">
 
     <!-- ======================================================== -->
-    <!-- 0. イントロダクション演出（トップ移行前） -->
+    <!-- 0. オープニング（ストーリー形式：3枠・タップで次へ／スキップ可） -->
+    <!--    intro1.mp4〜intro3.mp4 を同じフォルダに置くと、その枠は実写動画に差し替わります -->
     <!-- ======================================================== -->
-    <div id="introOverlay" class="absolute inset-0 z-50 flex items-center justify-center transition-opacity duration-1000 opacity-100 pointer-events-none">
-      
-      <div id="introText" class="flex flex-col items-center justify-between h-full w-full py-8 px-5 opacity-0 scale-95 translate-y-4 transition-all duration-[2000ms] ease-out transform">
-        
-        <div class="w-full h-2"></div>
+    <div id="storyIntro" class="absolute inset-0 z-[95] select-none" style="touch-action: manipulation;">
 
-        <!-- 中央：縦書きメインメッセージ -->
-        <div class="flex flex-row-reverse items-center justify-center gap-6 sm:gap-8 my-auto">
-          <!-- 1行目（右端） -->
-          <h2 class="text-white font-serif-luxury text-[22px] sm:text-[24px] font-bold tracking-[0.4em] drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] opacity-90 whitespace-nowrap" style="writing-mode: vertical-rl;">
-            ～が届けたい
-          </h2>
-          
-          <!-- 区切り線 -->
-          <div class="w-[1.5px] h-[180px] sm:h-[220px] bg-gradient-to-b from-transparent via-white/90 to-transparent shadow-sm"></div>
-
-          <!-- 2行目（中央） -->
-          <h1 class="text-white font-serif-luxury text-[26px] sm:text-[28px] font-black tracking-[0.3em] drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] whitespace-nowrap" style="writing-mode: vertical-rl;">
-            『おいしさ』と
-          </h1>
-          
-          <!-- 区切り線 -->
-          <div class="w-[1.5px] h-[180px] sm:h-[220px] bg-gradient-to-b from-transparent via-white/90 to-transparent shadow-sm"></div>
-
-          <!-- 3行目（左端） -->
-          <h1 class="text-white font-serif-luxury text-[26px] sm:text-[28px] font-black tracking-[0.3em] drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] whitespace-nowrap" style="writing-mode: vertical-rl;">
-            『おもいで』
-          </h1>
+      <!-- 枠1：美味しいビールが届く -->
+      <div class="story-frame" data-video="intro1.mp4">
+        <video class="story-video" muted playsinline preload="auto"></video>
+        <div class="story-illust absolute inset-0">
+          <div class="bar-bg"></div>
+          <div class="bokeh-layer absolute inset-0"></div>
+          <div class="counter-top"></div>
+          <div class="s1-coaster"></div>
+          <div class="s1-mug mug-slot" data-level="0.92"></div>
+          <div class="s1-shine"></div>
         </div>
-
-        <!-- 下箇所：縦書きサブメッセージ（3行組・小さめ） -->
-        <div class="w-full flex justify-center pb-4">
-          <p class="text-white/80 font-serif-luxury text-[10.5px] sm:text-[11.5px] font-medium tracking-[0.2em] drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] leading-[1.9]" style="writing-mode: vertical-rl;">
-            泡にのった<br>こだわりメニューと今日の思い出を<br>お楽しみください
-          </p>
+        <p class="story-vertical fade-up" style="animation-delay: 0.5s;">～が届けたい<br>『おいしさ』と『おもいで』</p>
+        <div class="story-copy">
+          <span class="story-step fade-up" style="animation-delay: 0.15s;">STEP 1</span>
+          <h2 class="story-title fade-up" style="animation-delay: 0.25s;">美味しいビールが届く</h2>
+          <p class="story-sub fade-up" style="animation-delay: 0.4s;">まずは、こだわりの一杯で乾杯。</p>
         </div>
-        
       </div>
+
+      <!-- 枠2：写真を撮って一言そえる -->
+      <div class="story-frame" data-video="intro2.mp4">
+        <video class="story-video" muted playsinline preload="auto"></video>
+        <div class="story-illust absolute inset-0">
+          <div class="bar-bg"></div>
+          <div class="bokeh-layer absolute inset-0"></div>
+          <div class="counter-top"></div>
+          <div class="s2-phone">
+            <div class="s2-screen">
+              <div class="s2-notch"></div>
+              <div class="s2-viewmug mug-slot" data-level="0.92"></div>
+              <div class="s2-guide"></div>
+              <div class="s2-shutter"></div>
+              <div class="s2-flash"></div>
+            </div>
+          </div>
+          <div class="s2-photo"><div class="mini-mug mug-slot" data-level="0.92"></div></div>
+          <div class="s2-caption"><span class="typing">美味しい！</span></div>
+        </div>
+        <div class="story-copy">
+          <span class="story-step fade-up" style="animation-delay: 0.1s;">STEP 2</span>
+          <h2 class="story-title fade-up" style="animation-delay: 0.2s;">写真を撮って<br>一言そえる</h2>
+          <p class="story-sub fade-up" style="animation-delay: 0.35s;">ビールでも、仲間でも。今日の一枚を。</p>
+        </div>
+      </div>
+
+      <!-- 枠3：みなさんの写真が集まると、、、何かが起こる -->
+      <div class="story-frame" data-video="intro3.mp4">
+        <video class="story-video" muted playsinline preload="auto"></video>
+        <div class="story-illust absolute inset-0">
+          <div class="bar-bg" style="background: radial-gradient(ellipse at 50% 40%, rgba(70, 40, 90, 0.55) 0%, rgba(18, 12, 30, 0.95) 60%, #07050d 100%);"></div>
+          <div class="bokeh-layer absolute inset-0"></div>
+          <div class="counter-top"></div>
+          <div class="s3-dim absolute inset-0 z-[1]"></div>
+          <div class="s3-burst"></div>
+          <div class="s3-mug mug-slot" data-level="0"></div>
+          <div class="s3-photos absolute inset-0 z-[3]"></div>
+        </div>
+        <div class="story-copy">
+          <span class="story-step fade-up" style="animation-delay: 0.1s;">STEP 3</span>
+          <h2 class="story-title fade-up" style="animation-delay: 0.2s; font-size: 22px;">みなさんの写真が<br>集まると、、、</h2>
+          <p class="s3-mystery mt-1">何かが起こる！？</p>
+        </div>
+      </div>
+
+      <!-- 進行バー・スキップ -->
+      <div class="absolute top-0 inset-x-0 z-20 px-3" style="padding-top: calc(env(safe-area-inset-top) + 10px);">
+        <div class="flex gap-1.5">
+          <div class="story-bar"><div class="story-bar-fill"></div></div>
+          <div class="story-bar"><div class="story-bar-fill"></div></div>
+          <div class="story-bar"><div class="story-bar-fill"></div></div>
+        </div>
+        <div class="flex items-center justify-between mt-2.5">
+          <span class="text-[10px] font-black tracking-[0.3em] text-white/80">HOW TO PLAY</span>
+          <button id="storySkipBtn" class="px-3.5 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/40 text-white text-[11px] font-bold active:scale-95 transition">スキップ ›</button>
+        </div>
+      </div>
+      <p class="absolute inset-x-0 z-20 text-center text-[10px] text-white/55 font-bold tracking-widest" style="bottom: calc(env(safe-area-inset-bottom) + 22px);">タップで次へ</p>
     </div>
 
     <!-- 背景動画（haikei.mp4：ループ・無音・インライン再生・確実な再生保証） -->
@@ -164,6 +753,29 @@
 
     <!-- 浮遊する写真バブルの親レイヤー（スマホ枠内を安全に泳ぐ） -->
     <div id="fullPhotoBubblesContainer" class="absolute inset-0 pointer-events-none z-10 overflow-hidden transition-opacity duration-300"></div>
+
+    <!-- ======================================================== -->
+    <!-- 思い出メーター（全席共通・リアルタイム同期） -->
+    <!-- ======================================================== -->
+    <div id="memoryMeter" class="absolute top-3 left-1/2 -translate-x-1/2 w-[calc(100%-24px)] max-w-[400px] z-30 pointer-events-auto opacity-0 transition-opacity duration-1000">
+      <div id="meterPanel" class="flex items-center gap-3 px-3.5 py-2.5 rounded-2xl bg-black/45 backdrop-blur-md border border-white/25 shadow-xl">
+        <!-- ビールジョッキ型メーター -->
+        <div id="meterGlass" class="mug-slot relative shrink-0 w-[48px] h-[57px] -my-1" data-level="0" style="filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));"></div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-baseline justify-between mb-1.5">
+            <span class="text-[10px] font-black text-amber-200 tracking-widest">思い出メーター</span>
+            <span class="flex items-baseline gap-2">
+              <span class="text-[10px] font-bold text-white/90"><span id="meterCount" class="text-[15px] font-black text-white">0</span>/5</span>
+              <button onclick="replayStoryIntro()" class="self-center px-2 py-0.5 rounded-full border border-white/40 text-[9px] font-bold text-white/85 active:scale-95 transition">遊び方</button>
+            </span>
+          </div>
+          <!-- 写真が溜まっていくスロット -->
+          <div id="meterSlots" class="flex justify-between gap-1"></div>
+          <p id="meterHint" class="mt-1.5 text-[9.5px] font-bold text-white/85 tracking-wide truncate">最初の1枚で乾杯をはじめよう</p>
+        </div>
+      </div>
+    </div>
+
 
     <!-- ======================================================== -->
     <!-- 1. ファーストビュー -->
@@ -191,7 +803,7 @@
           <!-- カメラボタン（薄い黒掛け） -->
           <button id="openCameraBtn" class="flex-1 py-2.5 px-2 rounded-xl bg-black/40 hover:bg-black/50 backdrop-blur-md text-white font-bold text-[10px] shadow-md active:scale-95 transition border border-white/20 flex flex-col items-center justify-center gap-1 relative leading-tight">
             <i data-lucide="camera" class="w-4 h-4 text-white/90"></i>
-            <span class="tracking-wider text-center">写真を撮って<br>泡を浮かべる</span>
+            <span class="tracking-wider text-center">思い出を撮って<br>メーターに溜める</span>
             <span class="absolute -top-1 -right-1 bg-white text-gray-900 text-[8px] font-black px-1.5 py-0.5 rounded-full shadow-sm z-10">LIVE</span>
           </button>
 
@@ -227,12 +839,10 @@
 
     </div>
 
-  </div>
-
   <!-- ========================================================== -->
   <!-- リアルタイム外カメラ（リアカメラ）撮影ビューモーダル -->
   <!-- ========================================================== -->
-  <div id="liveCameraModal" class="fixed inset-0 z-50 bg-black/95 hidden flex-col items-center justify-between p-4 opacity-0 transition-opacity duration-300">
+  <div id="liveCameraModal" class="absolute inset-0 z-50 bg-black/95 hidden flex-col items-center justify-between p-4 opacity-0 transition-opacity duration-300">
     <div id="shutterFlash" class="absolute inset-0 bg-white pointer-events-none opacity-0 z-50"></div>
 
     <!-- カメラ上部バー -->
@@ -257,7 +867,7 @@
       <div class="absolute w-56 h-56 rounded-full border-4 border-white/90 shadow-[0_0_0_9999px_rgba(0,0,0,0.65)] pointer-events-none flex items-center justify-center">
         <div class="w-full h-full rounded-full border-2 border-dashed border-amber-300/80 animate-pulse"></div>
         <span class="absolute -bottom-8 text-[11px] font-bold text-amber-200 bg-black/60 px-3 py-1 rounded-full backdrop-blur-sm whitespace-nowrap">
-          ここが泡になります
+          ここが思い出の泡になります
         </span>
       </div>
       <canvas id="captureCanvas" class="hidden"></canvas>
@@ -276,14 +886,14 @@
 
         <div class="w-11 h-11"></div>
       </div>
-      <p class="text-[10.5px] text-white/75 font-medium mt-0.5">シャッターを押すと泡になって浮かびます</p>
+      <p class="text-[10.5px] text-white/75 font-medium mt-0.5">ビールや今日の思い出をパシャリ！</p>
     </div>
   </div>
 
   <!-- ========================================================== -->
   <!-- メニュー詳細モーダル（スマホ表示完全最適化：文字はみ出し防止・値段非表示） -->
   <!-- ========================================================== -->
-  <div id="productDetailModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+  <div id="productDetailModal" class="absolute inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
     
     <div class="relative w-full max-w-[350px] bg-[#fdfbf7] rounded-[24px] p-5 flex flex-col shadow-2xl overflow-hidden border border-white/30">
       
@@ -341,7 +951,7 @@
   <!-- ========================================================== -->
   <!-- 撮影した思い出写真ビューモーダル（写真＋一言メッセージ表示） -->
   <!-- ========================================================== -->
-  <div id="userPhotoModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+  <div id="userPhotoModal" class="absolute inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
     <div class="relative w-full max-w-[340px] flex flex-col items-center">
       
       <!-- 閉じるボタン -->
@@ -371,14 +981,20 @@
   <!-- ========================================================== -->
   <!-- 写真撮影後の確認モーダル（一言入力欄：10文字以内つき） -->
   <!-- ========================================================== -->
-  <div id="photoPreviewModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+  <div id="photoPreviewModal" class="absolute inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
     <div class="w-full max-w-[320px] bg-gradient-to-b from-gray-800 via-gray-900 to-black rounded-3xl p-5 border border-white/30 text-center flex flex-col items-center shadow-2xl text-white">
-      <h3 class="text-sm font-bold mb-1 font-serif-luxury tracking-wider">撮りたての泡を浮かべる</h3>
-      <p class="text-[10px] text-white/80 mb-3">この写真に一言を添えて泡を浮かべますか？</p>
+      <h3 class="text-sm font-bold mb-1 font-serif-luxury tracking-wider">思い出メーターに入れる</h3>
+      <p class="text-[10px] text-white/80 mb-3">一言を添えてね。5枚溜まると何かが起こる！</p>
 
       <!-- プレビュー枠 -->
-      <div class="w-32 h-32 rounded-full overflow-hidden border-3 border-amber-300 shadow-xl mb-3 relative bubble-frame-user">
+      <div class="w-36 h-36 rounded-full overflow-hidden border-3 border-amber-300 shadow-xl mb-3 relative bubble-frame-user">
         <img id="capturedImgPreview" src="" class="w-full h-full object-cover">
+      </div>
+      <!-- 加工の切り替え -->
+      <div class="flex gap-1.5 mb-3">
+        <button data-photo-filter="film-foam" class="px-2.5 py-1 rounded-full border border-white/30 text-[10px] font-bold transition">🍺 フィルム＋泡</button>
+        <button data-photo-filter="film" class="px-2.5 py-1 rounded-full border border-white/30 text-[10px] font-bold transition">🎞 フィルム</button>
+        <button data-photo-filter="none" class="px-2.5 py-1 rounded-full border border-white/30 text-[10px] font-bold transition">そのまま</button>
       </div>
 
       <!-- 一言入力欄（10文字以内） -->
@@ -391,22 +1007,63 @@
           type="text" 
           id="capturedCaptionInput" 
           maxlength="10" 
-          placeholder="例：乾杯！ / 最高の一杯" 
+          placeholder="例：美味しい！ / 楽しい！" 
           class="w-full px-3 py-2 rounded-xl bg-white/10 border border-white/30 text-white text-xs placeholder-white/40 focus:outline-none focus:border-amber-400 focus:bg-white/15 transition tracking-wider"
         >
       </div>
 
       <!-- 注意書き（赤色） -->
       <p class="text-[9px] text-red-400 font-bold mb-3.5 leading-snug px-1 text-center tracking-tight">
-        ※誹謗中傷のコメントやモラルのない写真はやめてください。
+        ※誹謗中傷のコメントやモラルのない写真はやめてください。<br>
+        <span class="text-white/55 font-medium">※写真と一言は、お店の思い出記録として保存される場合があります。</span>
       </p>
 
       <div class="flex gap-2.5 w-full">
         <button onclick="closeCaptureModal()" class="flex-1 py-2.5 rounded-full bg-white/20 hover:bg-white/30 text-white text-xs font-bold transition">撮り直す</button>
-        <button onclick="submitCapturedBubble()" class="flex-1 py-2.5 rounded-full bg-gradient-to-r from-amber-400 to-rose-400 text-black font-black text-xs shadow-md active:scale-95 transition">泡を流す！</button>
+        <button onclick="submitCapturedBubble()" class="flex-1 py-2.5 rounded-full bg-gradient-to-r from-amber-400 to-rose-400 text-black font-black text-xs shadow-md active:scale-95 transition">メーターに入れる！</button>
       </div>
     </div>
   </div>
+
+  <!-- ========================================================== -->
+  <!-- 5枚達成時の花火ショー（約15秒・全席同時） -->
+  <!-- ========================================================== -->
+  <div id="showOverlay" class="absolute inset-0 z-[80] hidden opacity-0 transition-opacity duration-700 overflow-hidden">
+    <canvas id="showTrailCanvas" class="absolute inset-0 w-full h-full"></canvas>
+    <canvas id="showCanvas" class="absolute inset-0 w-full h-full"></canvas>
+    <div class="absolute inset-x-0 top-[9%] flex flex-col items-center pointer-events-none px-4 text-center">
+      <p id="showHeadline" class="show-headline opacity-0 text-white font-serif-luxury font-black text-[24px] leading-tight whitespace-nowrap"></p>
+      <p id="showSub" class="mt-2 opacity-0 text-amber-100 font-bold text-[12px] tracking-widest transition-opacity duration-500"></p>
+    </div>
+    <!-- 確定演出のラベル -->
+    <div id="revealLabel" class="absolute inset-x-0 top-[60%] z-10 flex flex-col items-center pointer-events-none px-4 text-center">
+      <p id="revealSub" class="reveal-sub">確定！</p>
+      <p id="revealName" class="reveal-name mt-1"></p>
+    </div>
+    <!-- 乾杯ボタン（ショー中だけ表示・全席で連打数を共有） -->
+    <div id="cheerWrap" class="hidden absolute inset-x-0 z-10 flex flex-col items-center gap-1.5 pointer-events-none" style="bottom: calc(env(safe-area-inset-bottom) + 26px);">
+      <p id="cheerHint" class="text-[11px] font-black text-amber-100 tracking-wider drop-shadow">連打でフィナーレが豪華に！</p>
+      <button id="cheerBtn" class="pointer-events-auto w-[92px] h-[92px] rounded-full bg-gradient-to-b from-amber-300 to-amber-500 border-4 border-white/90 shadow-[0_0_24px_rgba(251,191,36,0.8)] flex flex-col items-center justify-center text-amber-950 font-black select-none touch-none">
+        <span class="text-[30px] leading-none">🍻</span>
+        <span class="text-[12px] mt-0.5">乾杯！</span>
+      </button>
+      <p class="text-[11px] font-black text-white">みんなの乾杯 <span id="cheerCount" class="text-amber-300 text-[15px]">0</span></p>
+    </div>
+  </div>
+
+  <!-- リーチ演出（あと1枚） -->
+  <div id="reachBanner" class="hidden absolute inset-0 z-[85] items-center justify-center pointer-events-none">
+    <div class="reach-card text-center px-7 py-5 rounded-3xl bg-black/70 backdrop-blur-md border-2 border-amber-300 shadow-[0_0_40px_rgba(251,191,36,0.6)]">
+      <p class="reach-big font-serif-luxury font-black text-[44px] leading-none text-amber-300">リーチ！</p>
+      <p id="reachSub" class="mt-2 text-white font-bold text-[13px] tracking-wider">あと1枚でショーが始まる！</p>
+      <p class="mt-1 text-amber-100/80 font-bold text-[11px]">何が出るかは…お楽しみ</p>
+    </div>
+  </div>
+
+  <!-- トースト通知（他の席から写真が届いた時など） -->
+  <div id="toastLayer" class="absolute top-[132px] inset-x-0 z-[90] flex flex-col items-center gap-2 pointer-events-none px-4"></div>
+
+  </div><!-- /appContainer -->
 
   <!-- ============================================== -->
   <!-- アプリケーション JavaScript（リアルタイム同期対応） -->
@@ -414,7 +1071,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, collection, doc, onSnapshot, runTransaction, writeBatch, getDocs, updateDoc, increment, Timestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // ==============================================
     // 0. クラウド保存＆リアルタイム同期の初期化
@@ -461,6 +1118,9 @@
         startCloudListener();
       } catch (err) {
         console.warn("Auth initialization failed:", err);
+        // クラウドに繋がらない時はこの端末だけでメーターを動かす
+        useLocalMeter = true;
+        renderMeter();
       }
     }
 
@@ -570,6 +1230,213 @@
     let userCapturedBubbleList = [];
     const MAX_ONSCREEN_BUBBLES = 10; // 画面内に同時に浮かぶ泡の数を常時「10個」に設定
     const MAX_USER_BUBBLES_ONSCREEN = 3; // 撮影写真は最大3個まで
+
+    // ==============================================
+    // 0. リアルなビールジョッキ（SVG）
+    // ==============================================
+    let mugUid = 0;
+    function beerMugSVG() {
+      const u = `mug${++mugUid}`;
+      const bubbles = Array.from({ length: 16 }, (_, i) => {
+        const x = 22 + ((i * 37) % 54);
+        const r = 0.7 + ((i * 13) % 10) / 10;
+        const dur = 1.3 + ((i * 7) % 10) / 8;
+        return `<circle cx="${x}" cy="120" r="${r}" fill="rgba(255,248,215,0.75)"><animate attributeName="cy" from="122" to="24" dur="${dur}s" begin="-${(i * 0.29) % dur}s" repeatCount="indefinite"/></circle>`;
+      }).join('');
+      const drops = Array.from({ length: 14 }, (_, i) => {
+        const x = 22 + ((i * 41) % 56);
+        const y = 34 + ((i * 29) % 76);
+        const s = 0.9 + ((i * 17) % 10) / 9;
+        return `<ellipse cx="${x}" cy="${y}" rx="${s}" ry="${s * 1.35}" fill="rgba(255,255,255,0.22)" stroke="rgba(255,255,255,0.45)" stroke-width="0.4"/><circle cx="${x - s * 0.35}" cy="${y - s * 0.5}" r="${s * 0.3}" fill="rgba(255,255,255,0.85)"/>`;
+      }).join('');
+      return `
+        <svg class="mug-svg w-full h-full overflow-visible" viewBox="0 0 110 130" aria-hidden="true">
+          <defs>
+            <linearGradient id="${u}-beer" x1="0" x2="1">
+              <stop offset="0" stop-color="#7a3d07"/><stop offset="0.22" stop-color="#d4860f"/>
+              <stop offset="0.5" stop-color="#f7b928"/><stop offset="0.78" stop-color="#d98c15"/><stop offset="1" stop-color="#6e3606"/>
+            </linearGradient>
+            <linearGradient id="${u}-beerv" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="rgba(255,240,180,0.45)"/><stop offset="0.35" stop-color="rgba(255,240,180,0)"/><stop offset="1" stop-color="rgba(60,20,0,0.45)"/>
+            </linearGradient>
+            <linearGradient id="${u}-glass" x1="0" x2="1">
+              <stop offset="0" stop-color="rgba(255,255,255,0.38)"/><stop offset="0.18" stop-color="rgba(255,255,255,0.07)"/>
+              <stop offset="0.55" stop-color="rgba(255,255,255,0.03)"/><stop offset="0.85" stop-color="rgba(255,255,255,0.14)"/><stop offset="1" stop-color="rgba(255,255,255,0.42)"/>
+            </linearGradient>
+            <radialGradient id="${u}-foam" cx="0.4" cy="0.25" r="0.9">
+              <stop offset="0" stop-color="#fffef8"/><stop offset="0.6" stop-color="#f8eed4"/><stop offset="1" stop-color="#e2cf9f"/>
+            </radialGradient>
+            <clipPath id="${u}-in"><path d="M19 13 H81 V111 Q81 121 71 121 H29 Q19 121 19 111 Z"/></clipPath>
+          </defs>
+          <path d="M83 36 h9 q13 0 13 15 v28 q0 15 -13 15 h-9" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="8" stroke-linecap="round"/>
+          <path d="M83 36 h9 q13 0 13 15 v28 q0 15 -13 15 h-9" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="2.5"/>
+          <g clip-path="url(#${u}-in)">
+            <g class="beer-level" style="transform: translateY(110px)">
+              <rect x="10" y="19" width="80" height="112" fill="url(#${u}-beer)"/>
+              <rect x="10" y="19" width="80" height="112" fill="url(#${u}-beerv)"/>
+              ${bubbles}
+              <rect x="10" y="12" width="80" height="12" fill="url(#${u}-foam)"/>
+              <path d="M10 15 q5 -9 11 -5 q6 -8 13 -3 q7 -7 13 -2 q7 -8 14 -1 q6 -6 12 1 q5 -4 9 1 V20 H10 Z" fill="url(#${u}-foam)"/>
+              <path d="M10 24 q8 3 16 0 q8 3 16 0 q8 3 16 0 q8 3 16 0 q8 3 16 0" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1.2"/>
+            </g>
+          </g>
+          <path d="M17 11 H83 V111 Q83 123 71 123 H29 Q17 123 17 111 Z" fill="url(#${u}-glass)" stroke="rgba(255,255,255,0.8)" stroke-width="2"/>
+          <rect x="18" y="114" width="64" height="8" rx="4" fill="rgba(255,255,255,0.16)"/>
+          <rect x="23" y="18" width="5" height="88" rx="2.5" fill="rgba(255,255,255,0.42)"/>
+          <rect x="73" y="22" width="2.4" height="70" rx="1.2" fill="rgba(255,255,255,0.25)"/>
+          <g class="droplets">${drops}</g>
+        </svg>`;
+    }
+
+    // level: 0（空）〜1（満杯）
+    function setMugLevel(el, level) {
+      const g = el && el.querySelector('.beer-level');
+      if (g) g.style.transform = `translateY(${110 * (1 - Math.max(0, Math.min(1, level)))}px)`;
+    }
+
+    function mountMugs(root = document) {
+      root.querySelectorAll('.mug-slot').forEach(el => {
+        if (el.dataset.mounted) return;
+        el.dataset.mounted = '1';
+        el.innerHTML = beerMugSVG();
+        setMugLevel(el, parseFloat(el.dataset.level || '0'));
+      });
+    }
+
+    // ==============================================
+    // 0.5 オープニング（ストーリー形式）
+    // ==============================================
+    const STORY_DURATIONS = [2200, 2200, 2800]; // 各枠の長さ(ms)
+    const storyIntro = document.getElementById('storyIntro');
+    const storyFrames = [...storyIntro.querySelectorAll('.story-frame')];
+    const storyBars = [...storyIntro.querySelectorAll('.story-bar')];
+    let storyIndex = -1;
+    let storyTimer = null;
+    let storyActive = false;
+    let onStoryEnd = null;
+
+    function buildStoryDecor() {
+      // 店内の暖かい光のボケ
+      const warm = ['rgba(255,190,90,0.55)', 'rgba(255,150,60,0.45)', 'rgba(255,230,160,0.5)', 'rgba(255,120,70,0.35)'];
+      storyIntro.querySelectorAll('.bokeh-layer').forEach((layer, li) => {
+        for (let i = 0; i < 11; i++) {
+          const b = document.createElement('div');
+          b.className = 'bokeh';
+          const size = 18 + ((i * 23 + li * 7) % 46);
+          b.style.cssText = `width:${size}px;height:${size}px;left:${(i * 37 + li * 13) % 96}%;top:${(i * 19 + li * 11) % 58}%;background:${warm[i % warm.length]};animation-delay:-${i * 0.7}s;`;
+          layer.appendChild(b);
+        }
+      });
+      // 枠3：各席から飛んでくる写真（お店のメニュー写真を利用）
+      const photosLayer = storyIntro.querySelector('.s3-photos');
+      const seats = [
+        { label: 'A席', left: 6, top: 18 }, { label: 'B席', left: 72, top: 14 },
+        { label: 'C席', left: 4, top: 46 }, { label: 'D席', left: 76, top: 44 }, { label: 'E席', left: 40, top: 9 }
+      ];
+      seats.forEach((s, i) => {
+        const p = document.createElement('div');
+        p.className = 's3-photo';
+        p.style.left = `${s.left}%`;
+        p.style.top = `${s.top}%`;
+        p.style.backgroundImage = `url('${bubbleInitialList[i % bubbleInitialList.length].img}')`;
+        p.style.animationDelay = `${0.15 + i * 0.2}s`;
+        p.innerHTML = `<span>${s.label}</span>`;
+        photosLayer.appendChild(p);
+      });
+      // 実写動画があれば差し替え（無ければイラストのまま）
+      storyFrames.forEach(f => {
+        const v = f.querySelector('.story-video');
+        v.addEventListener('loadeddata', () => f.classList.add('has-video'), { once: true });
+        v.src = f.dataset.video;
+      });
+    }
+
+    function aimStoryPhotos() {
+      const frame = storyFrames[2];
+      const mug = frame.querySelector('.s3-mug').getBoundingClientRect();
+      const tx0 = mug.left + mug.width / 2;
+      const ty0 = mug.top + mug.height * 0.3;
+      frame.querySelectorAll('.s3-photo').forEach(p => {
+        const r = p.getBoundingClientRect();
+        p.style.setProperty('--tx', `${tx0 - (r.left + r.width / 2)}px`);
+        p.style.setProperty('--ty', `${ty0 - (r.top + r.height / 2)}px`);
+      });
+    }
+
+    function showStoryFrame(i) {
+      clearTimeout(storyTimer);
+      if (i >= storyFrames.length) { endStoryIntro(); return; }
+      if (i < 0) i = 0;
+      storyIndex = i;
+      storyFrames.forEach((f, k) => {
+        f.classList.remove('active');
+        const v = f.querySelector('.story-video');
+        if (k !== i && f.classList.contains('has-video')) v.pause();
+      });
+      void storyIntro.offsetWidth; // アニメーションを頭から再生し直す
+      const frame = storyFrames[i];
+      frame.classList.add('active');
+      if (i === 2) aimStoryPhotos();
+      if (frame.classList.contains('has-video')) {
+        const v = frame.querySelector('.story-video');
+        v.currentTime = 0;
+        v.play().catch(() => {});
+      }
+      storyBars.forEach((b, k) => {
+        b.classList.remove('running', 'done');
+        const fill = b.querySelector('.story-bar-fill');
+        fill.style.animationDuration = '';
+        if (k < i) b.classList.add('done');
+        if (k === i) {
+          fill.style.animationDuration = `${STORY_DURATIONS[k]}ms`;
+          void fill.offsetWidth;
+          b.classList.add('running');
+        }
+      });
+      storyTimer = setTimeout(() => showStoryFrame(i + 1), STORY_DURATIONS[i]);
+    }
+
+    function startStoryIntro(onEnd) {
+      onStoryEnd = onEnd || null;
+      storyActive = true;
+      storyIntro.classList.remove('hidden');
+      storyIntro.style.transition = '';
+      storyIntro.style.opacity = '1';
+      showStoryFrame(0);
+    }
+
+    function endStoryIntro() {
+      if (!storyActive) return;
+      storyActive = false;
+      clearTimeout(storyTimer);
+      storyIntro.style.transition = 'opacity 0.6s ease';
+      storyIntro.style.opacity = '0';
+      setTimeout(() => {
+        storyIntro.classList.add('hidden');
+        storyFrames.forEach(f => {
+          f.classList.remove('active');
+          f.querySelector('.story-video').pause();
+        });
+      }, 600);
+      const cb = onStoryEnd;
+      onStoryEnd = null;
+      if (cb) cb();
+    }
+
+    storyIntro.addEventListener('click', (e) => {
+      if (!storyActive || e.target.closest('#storySkipBtn')) return;
+      initAudio();
+      const rect = storyIntro.getBoundingClientRect();
+      // 左1/3タップで前の枠、それ以外は次の枠
+      if (e.clientX - rect.left < rect.width / 3) showStoryFrame(storyIndex - 1);
+      else showStoryFrame(storyIndex + 1);
+    });
+    document.getElementById('storySkipBtn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      initAudio();
+      endStoryIntro();
+    });
+    window.replayStoryIntro = () => startStoryIntro();
 
     // ==============================================
     // 2. 音響効果（Web Audio API）
@@ -1441,14 +2308,15 @@
     function openUserPhotoModal(bubbleData) {
       initAudio();
       playPopSound();
-
       userModalPhotoImg.src = bubbleData.img;
       userModalCaptionText.textContent = bubbleData.caption ? `「${bubbleData.caption}」` : '「今日の思い出」';
 
-      const isMine = (currentUser && bubbleData.userId === currentUser.uid) || bubbleData.isLocalAuthor === true;
-      if (isMine) {
+      // 自分の写真で、まだ花火前のラウンドのものだけ消せる
+      const isMine = currentUserId() === bubbleData.userId;
+      const canDelete = isMine && bubbleData.round === meterState.round && meterState.count < METER_GOAL;
+      if (canDelete) {
         deleteUserBubbleBtn.classList.remove('hidden');
-        deleteUserBubbleBtn.onclick = () => deleteUserBubble(bubbleData.menuId);
+        deleteUserBubbleBtn.onclick = () => deleteMemory(bubbleData.menuId);
       } else {
         deleteUserBubbleBtn.classList.add('hidden');
       }
@@ -1473,98 +2341,164 @@
     window.openUserPhotoModal = openUserPhotoModal;
     window.closeUserPhotoModal = closeUserPhotoModal;
 
-    async function deleteUserBubble(bubbleId) {
-      if (isCloudReady && db) {
-        try {
-          const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'bubbles', bubbleId);
-          await deleteDoc(docRef);
-        } catch (err) {
-          console.warn("Cloud delete failed:", err);
-        }
-      }
-
-      userCapturedBubbleList = userCapturedBubbleList.filter(u => u.menuId !== bubbleId);
-
-      for (let i = floatingBubbles.length - 1; i >= 0; i--) {
-        const b = floatingBubbles[i];
-        if (b.data.menuId === bubbleId) {
-          b.destroy();
-          floatingBubbles.splice(i, 1);
-        }
-      }
-
-      closeUserPhotoModal();
-    }
-    window.deleteUserBubble = deleteUserBubble;
-
     // ==============================================
-    // 7.5 他のお客さんとのリアルタイム同期リスナー
+    // 7.5 思い出メーター（全席共通・Firestoreでリアルタイム同期）
+    // ----------------------------------------------
+    // ・meter/state ドキュメント … { round, count, showStartAt, totalShows, updatedAt }
+    // ・memories コレクション   … { round, img, caption, userId, timestamp }
+    // 投稿はトランザクションで count を+1するので、同時投稿でも5枚を超えない。
+    // 5枚目で showStartAt が入り、全員の画面で花火ショーが始まる。
+    // ショーが終わったら round を進め、そのラウンドの写真を全削除する。
     // ==============================================
-    function startCloudListener() {
-      if (!isCloudReady || !db) return;
+    const METER_GOAL = 5;
+    const SHOW_DURATION = 18800; // 確定演出 3.8秒 ＋ 本編 15秒
+    const SHOW_LEAD_MS = 1600;                 // 5枚目が飛んでいく演出を見せてから開始
+    const MEMORY_TTL_MS = 3 * 60 * 60 * 1000;  // 写真データの保険の有効期限（Firestore の TTL 設定で自動削除）
 
-      const bubblesCol = collection(db, 'artifacts', appId, 'public', 'data', 'bubbles');
+    // スプレッドシート連携：Apps Script をウェブアプリとして公開した URL を貼る（空なら送らない）
+    // 設定方法は bubble/sheet-apps-script.gs の先頭を参照
+    const SHEET_WEBHOOK_URL = '';
+    const SHEET_SECRET = 'kanpai-memories';   // Apps Script 側と同じ合言葉にする
+    const STALE_RESET_MS = 6 * 60 * 60 * 1000; // 6時間放置されたメーターはリセット（翌日に持ち越さない）
 
-      onSnapshot(bubblesCol, (snapshot) => {
-        const now = Date.now();
-        const TWO_HOURS = 2 * 60 * 60 * 1000;
-        const validList = [];
+    const stateDocRef = () => doc(db, 'artifacts', appId, 'public', 'data', 'meter', 'state');
+    const memoriesColRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'memories');
 
-        snapshot.forEach((docSnap) => {
-          const data = docSnap.data();
-          if (now - (data.timestamp || 0) < TWO_HOURS) {
-            validList.push({
-              id: docSnap.id,
-              ...data
-            });
-          } else {
-            deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'bubbles', docSnap.id)).catch(() => {});
-          }
-        });
+    let meterState = { round: 1, count: 0, showStartAt: 0, totalShows: 0, updatedAt: 0 };
+    let allMemories = [];
+    let knownMemoryIds = null;      // 初回スナップショットでは通知を出さない
+    let pendingFlightIds = new Set(); // メーターへ飛行中の写真
+    let isShowPlaying = false;
+    let lastPlayedShowKey = null;
+    let finishingRound = 0;
+    let useLocalMeter = !isCloudReady;
+    const localUserId = 'local_' + Math.random().toString(36).slice(2, 8);
 
-        updateCloudBubbles(validList);
-      }, (error) => {
-        console.warn("Cloud bubbles snapshot error:", error);
-      });
+    function currentUserId() {
+      return currentUser ? currentUser.uid : localUserId;
     }
 
-    function updateCloudBubbles(cloudItems) {
-      const previousIds = new Set(userCapturedBubbleList.map(b => b.menuId));
-      userCapturedBubbleList = cloudItems.map(item => ({
-        menuId: item.id,
-        img: item.img,
-        caption: item.caption || '',
-        isUser: true,
-        userId: item.userId,
-        timestamp: item.timestamp
-      }));
+    function memoriesOfRound(round) {
+      return allMemories
+        .filter(m => m.round === round)
+        .sort((a, b) => a.timestamp - b.timestamp)
+        .slice(0, METER_GOAL);
+    }
 
-      cloudItems.forEach(item => {
-        if (!previousIds.has(item.id)) {
-          const bubbleData = {
-            menuId: item.id,
-            img: item.img,
-            caption: item.caption || '',
-            isUser: true,
-            userId: item.userId,
-            timestamp: item.timestamp
-          };
-          
-          const currentUsersOnscreen = floatingBubbles.filter(b => b.isUser && !b.isDead).length;
-          if (currentUsersOnscreen < MAX_USER_BUBBLES_ONSCREEN) {
-            // 上限に達していたら一番古い泡のDOMを確実に破棄
-            if (floatingBubbles.length >= MAX_ONSCREEN_BUBBLES) {
-              const old = floatingBubbles.shift();
-              if (old) old.destroy();
-            }
-            const newBubble = new FreePhotoBubble(bubbleData, null, true);
-            floatingBubbles.push(newBubble);
-          }
+    function toBubbleData(m) {
+      return { menuId: m.id, img: m.img, caption: m.caption || '', isUser: true, userId: m.userId, round: m.round, timestamp: m.timestamp };
+    }
+
+    // ---------- メーター描画 ----------
+    const meterSlotsEl = document.getElementById('meterSlots');
+    const meterCountEl = document.getElementById('meterCount');
+    const meterHintEl = document.getElementById('meterHint');
+    const meterPanelEl = document.getElementById('meterPanel');
+    const meterGlassEl = document.getElementById('meterGlass');
+
+    function renderMeter(popId = null) {
+      const list = memoriesOfRound(meterState.round);
+      const n = list.length;
+
+      meterSlotsEl.innerHTML = '';
+      for (let i = 0; i < METER_GOAL; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'meter-slot';
+        const m = list[i];
+        if (m) {
+          slot.classList.add('filled');
+          slot.dataset.id = m.id;
+          const img = document.createElement('img');
+          img.src = m.img;
+          if (pendingFlightIds.has(m.id)) img.style.opacity = '0';
+          slot.appendChild(img);
+          slot.addEventListener('click', () => openUserPhotoModal(toBubbleData(m)));
+          if (popId === m.id) slot.classList.add('slot-pop');
+        } else {
+          slot.innerHTML = `<span class="text-[13px] opacity-40">🍺</span>`;
         }
-      });
+        meterSlotsEl.appendChild(slot);
+      }
 
-      // 削除された泡のクリーンアップ
-      const activeIds = new Set(cloudItems.map(item => item.id));
+      meterCountEl.textContent = n;
+      setMugLevel(meterGlassEl, (n / METER_GOAL) * 0.92);
+      meterPanelEl.classList.toggle('meter-reach', n === METER_GOAL - 1);
+
+      const nextShow = (meterState.totalShows || 0) + 1;
+      if (n >= METER_GOAL) {
+        meterHintEl.textContent = `🎉 満タン！本日${nextShow}発目のショー開始！`;
+      } else if (n === METER_GOAL - 1) {
+        meterHintEl.textContent = `🔥 リーチ！あと1枚で本日${nextShow}発目！`;
+      } else if (n === 0) {
+        meterHintEl.textContent = `最初の1枚で乾杯！ 次は本日${nextShow}発目…何が出る？`;
+      } else {
+        meterHintEl.textContent = `あと${METER_GOAL - n}枚で本日${nextShow}発目！何が出る？`;
+      }
+    }
+
+    // ---------- トースト ----------
+    function showToast(html, ms = 2600) {
+      const layer = document.getElementById('toastLayer');
+      const el = document.createElement('div');
+      el.className = 'toast-in px-4 py-2 rounded-full bg-black/75 backdrop-blur-md border border-amber-300/60 text-white text-[11.5px] font-bold shadow-xl flex items-center gap-2 max-w-full';
+      el.innerHTML = html;
+      layer.appendChild(el);
+      setTimeout(() => {
+        el.style.transition = 'opacity 0.4s, transform 0.4s';
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(-10px)';
+        setTimeout(() => el.remove(), 450);
+      }, ms);
+      while (layer.children.length > 3) layer.firstChild.remove();
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    // ---------- 新しい写真がメーターへ飛んでいく演出 ----------
+    function flyIntoMeter(m) {
+      pendingFlightIds.add(m.id);
+      renderMeter();
+      const target = meterSlotsEl.querySelector(`[data-id="${m.id}"]`);
+      const land = () => {
+        pendingFlightIds.delete(m.id);
+        renderMeter(m.id);
+        playPopSound();
+        meterGlassEl.classList.remove('glass-shake');
+        void meterGlassEl.offsetWidth;
+        meterGlassEl.classList.add('glass-shake');
+      };
+      if (!target || !target.animate) { land(); return; }
+
+      const rect = target.getBoundingClientRect();
+      const startSize = 120;
+      const cr = appContainer.getBoundingClientRect();
+      const startX = cr.left + cr.width / 2 - startSize / 2;
+      const startY = cr.top + cr.height * 0.62;
+      const flyer = document.createElement('div');
+      flyer.className = 'fixed rounded-full overflow-hidden bubble-frame-user z-[75] pointer-events-none';
+      flyer.style.cssText = `left:0;top:0;width:${startSize}px;height:${startSize}px;`;
+      flyer.innerHTML = `<img src="${m.img}" class="w-full h-full object-cover">`;
+      document.body.appendChild(flyer);
+
+      const scale = rect.width / startSize;
+      const midX = startX + (rect.left - startX) * 0.35 + 40;
+      const midY = startY - 140;
+      const anim = flyer.animate([
+        { transform: `translate(${startX}px, ${startY + 80}px) scale(0.2)`, opacity: 0 },
+        { transform: `translate(${startX}px, ${startY}px) scale(1)`, opacity: 1, offset: 0.25 },
+        { transform: `translate(${midX}px, ${midY}px) scale(0.75)`, opacity: 1, offset: 0.6 },
+        { transform: `translate(${rect.left - startSize * (1 - scale) / 2}px, ${rect.top - startSize * (1 - scale) / 2}px) scale(${scale})`, opacity: 1 }
+      ], { duration: 1300, easing: 'cubic-bezier(0.45, 0, 0.25, 1)', fill: 'forwards' });
+      anim.onfinish = () => { flyer.remove(); land(); };
+    }
+
+    // ---------- 浮遊する写真バブルと同期 ----------
+    function syncFloatingUserBubbles() {
+      const current = memoriesOfRound(meterState.round);
+      userCapturedBubbleList = current.map(toBubbleData);
+      const activeIds = new Set(current.map(m => m.id));
       for (let i = floatingBubbles.length - 1; i >= 0; i--) {
         const b = floatingBubbles[i];
         if (b.isUser && !activeIds.has(b.data.menuId)) {
@@ -1574,16 +2508,1634 @@
       }
     }
 
-    function checkExpiredBubbles() {
+    function spawnUserBubbleNow(m) {
+      if (floatingBubbles.length >= MAX_ONSCREEN_BUBBLES) {
+        const idx = floatingBubbles.findIndex(b => !b.isUser);
+        const old = floatingBubbles.splice(idx >= 0 ? idx : 0, 1)[0];
+        if (old) old.destroy();
+      }
+      floatingBubbles.push(new FreePhotoBubble(toBubbleData(m), null, true));
+    }
+
+    // 前のラウンドの写真が取り残されていたら消す（放置リセット時など）
+    let orphanCleanupBusy = false;
+    async function cleanupOrphanMemories() {
+      if (useLocalMeter || orphanCleanupBusy || isShowPlaying) return;
+      const targets = allMemories.filter(m => m.round < meterState.round);
+      if (!targets.length) return;
+      orphanCleanupBusy = true;
+      try {
+        const batch = writeBatch(db);
+        targets.slice(0, 400).forEach(m => batch.delete(doc(memoriesColRef(), m.id)));
+        await batch.commit();
+      } catch (e) {}
+      orphanCleanupBusy = false;
+    }
+
+    // ---------- 受信処理 ----------
+    function handleMemories(list) {
+      allMemories = list;
+      const isFirst = knownMemoryIds === null;
+      const newcomers = isFirst ? [] : list.filter(m => !knownMemoryIds.has(m.id));
+      knownMemoryIds = new Set(list.map(m => m.id));
+
+      syncFloatingUserBubbles();
+      renderMeter();
+      cleanupOrphanMemories();
+
+      newcomers
+        .filter(m => m.round === meterState.round)
+        .sort((a, b) => a.timestamp - b.timestamp)
+        .forEach((m, i) => {
+          setTimeout(() => {
+            flyIntoMeter(m);
+            spawnUserBubbleNow(m);
+            const n = memoriesOfRound(meterState.round).length;
+            const rank = memoriesOfRound(meterState.round).findIndex(x => x.id === m.id) + 1;
+            const mine = m.userId === currentUserId();
+            if (mine && rank === METER_GOAL) {
+              showToast(`<span>👑</span><span class="truncate">ラストの1枚！あなたがMVP！</span>`, 3200);
+            } else {
+              const who = mine ? 'あなたの一枚' : 'ほかの席から';
+              const cap = m.caption ? `「${escapeHtml(m.caption)}」` : '思い出';
+              showToast(`<span>🍺</span><span class="truncate">${who} ${cap} が届いた！</span><span class="text-amber-300 shrink-0">${Math.min(n, METER_GOAL)}/${METER_GOAL}</span>`);
+            }
+          }, i * 500);
+        });
+
+      // あと1枚になった瞬間、全員の画面で「リーチ！」
+      const nNow = memoriesOfRound(meterState.round).length;
+      if (!isFirst && lastSeenCount < METER_GOAL - 1 && nNow === METER_GOAL - 1) {
+        setTimeout(triggerReach, newcomers.length * 500 + 1400);
+      }
+      lastSeenCount = nNow;
+    }
+
+    let lastSeenCount = 0;
+    function triggerReach() {
+      if (isShowPlaying || memoriesOfRound(meterState.round).length !== METER_GOAL - 1) return;
+      const banner = document.getElementById('reachBanner');
+      document.getElementById('reachSub').textContent = `あと1枚で本日${(meterState.totalShows || 0) + 1}発目のショー！`;
+      banner.classList.remove('hidden', 'show');
+      banner.classList.add('flex');
+      void banner.offsetWidth;
+      banner.classList.add('show');
+      buzz([90, 60, 90, 60, 160]);
+      playChime();
+      playCrackle(8);
+      setTimeout(() => {
+        banner.classList.remove('show', 'flex');
+        banner.classList.add('hidden');
+      }, 2600);
+    }
+
+    function handleState(s) {
+      const prevRound = meterState.round;
+      meterState = { round: 1, count: 0, showStartAt: 0, totalShows: 0, updatedAt: 0, cheers: 0, showTheme: '', upgraded: false, ...(s || {}) };
+      if (prevRound !== meterState.round) syncFloatingUserBubbles();
+      if (isShowPlaying) renderCheers();
+      renderMeter();
+      checkShowTrigger();
+      checkStaleMeter();
+      cleanupOrphanMemories();
+    }
+
+    function checkShowTrigger() {
+      const s = meterState;
+      if (s.count < METER_GOAL || !s.showStartAt) return;
+      const key = `${s.round}_${s.showStartAt}`;
+      if (key === lastPlayedShowKey) return;
+      const elapsed = Date.now() - s.showStartAt;
+      if (elapsed < SHOW_DURATION) {
+        // ショー開始前〜進行中：全員で見る（途中参加でも頭から再生）
+        lastPlayedShowKey = key;
+        startFireworkShow(s.round, Math.max(0, Math.min(SHOW_LEAD_MS, -elapsed)));
+      } else if (elapsed > SHOW_DURATION + 8000 && !isShowPlaying) {
+        // 誰も見届けずに終わったラウンド → 片付け
+        lastPlayedShowKey = key;
+        finishRound(s.round, true);
+      }
+    }
+
+    function checkStaleMeter() {
+      const s = meterState;
+      if (s.count > 0 && s.count < METER_GOAL && s.updatedAt && Date.now() - s.updatedAt > STALE_RESET_MS) {
+        finishRound(s.round, false);
+      }
+    }
+    setInterval(() => { checkShowTrigger(); checkStaleMeter(); }, 5000);
+
+    // ---------- Firestore リスナー ----------
+    function startCloudListener() {
+      if (!isCloudReady || !db) return;
+      onSnapshot(stateDocRef(), (snap) => {
+        handleState(snap.exists() ? snap.data() : null);
+      }, (error) => {
+        console.warn('Meter state snapshot error:', error);
+        useLocalMeter = true;
+      });
+      onSnapshot(memoriesColRef(), (snapshot) => {
+        const list = [];
+        snapshot.forEach((d) => list.push({ id: d.id, ...d.data() }));
+        handleMemories(list);
+      }, (error) => {
+        console.warn('Memories snapshot error:', error);
+      });
+      cleanupLegacyBubbles();
+    }
+
+    // 旧バージョン（bubbles コレクション）の写真が残っていたら片付ける
+    async function cleanupLegacyBubbles() {
+      try {
+        const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'bubbles'));
+        if (snap.empty) return;
+        const batch = writeBatch(db);
+        snap.forEach(d => batch.delete(d.ref));
+        await batch.commit();
+      } catch (e) {}
+    }
+
+    // ---------- 投稿 ----------
+    // 戻り値: 'ok' | 'full' | 'error'
+    async function postMemory(img, caption) {
       const now = Date.now();
-      const TWO_HOURS = 2 * 60 * 60 * 1000;
-      for (let i = userCapturedBubbleList.length - 1; i >= 0; i--) {
-        if (now - userCapturedBubbleList[i].timestamp > TWO_HOURS) {
-          deleteUserBubble(userCapturedBubbleList[i].menuId);
+      const id = `memory_${now}_${Math.random().toString(36).slice(2, 8)}`;
+      const userId = currentUserId();
+
+      if (useLocalMeter) {
+        if (meterState.count >= METER_GOAL) return 'full';
+        const count = meterState.count + 1;
+        const round = meterState.round;
+        if (knownMemoryIds === null) knownMemoryIds = new Set(allMemories.map(m => m.id));
+        handleMemories([...allMemories, { id, round, img, caption, userId, timestamp: now }]);
+        handleState({ ...meterState, count, updatedAt: now, showStartAt: count >= METER_GOAL ? now + SHOW_LEAD_MS : 0, showTheme: count >= METER_GOAL ? pickShowTheme() : '', upgraded: false, cheers: 0 });
+        return 'ok';
+      }
+
+      try {
+        return await runTransaction(db, async (tx) => {
+          const snap = await tx.get(stateDocRef());
+          const s = snap.exists() ? snap.data() : {};
+          let round = s.round || 1;
+          let count = s.count || 0;
+          let totalShows = s.totalShows || 0;
+          // 6時間以上放置されていたら新しいメーターとして始める
+          if (count < METER_GOAL && s.updatedAt && now - s.updatedAt > STALE_RESET_MS) {
+            round += 1;
+            count = 0;
+          }
+          if (count >= METER_GOAL) return 'full';
+          const newCount = count + 1;
+          tx.set(doc(memoriesColRef(), id), {
+            round, img, caption, userId, timestamp: now,
+            // 演出後に消し損ねても、Firestore の TTL で自動削除されるように
+            expireAt: Timestamp.fromMillis(now + MEMORY_TTL_MS)
+          });
+          tx.set(stateDocRef(), {
+            round,
+            count: newCount,
+            totalShows,
+            updatedAt: now,
+            showStartAt: newCount >= METER_GOAL ? now + SHOW_LEAD_MS : 0,
+            // 5枚目の瞬間に演出を決める（3種類を同じ確率で）→ 全席で同じ演出になる
+            showTheme: newCount >= METER_GOAL ? pickShowTheme() : '',
+            upgraded: false,
+            cheers: 0
+          });
+          return 'ok';
+        });
+      } catch (err) {
+        console.warn('Post memory failed:', err);
+        return 'error';
+      }
+    }
+
+    // ---------- 自分の写真の削除（花火前のみ） ----------
+    async function deleteMemory(id) {
+      const m = allMemories.find(x => x.id === id);
+      if (!m) { closeUserPhotoModal(); return; }
+
+      if (useLocalMeter) {
+        handleMemories(allMemories.filter(x => x.id !== id));
+        handleState({ ...meterState, count: Math.max(0, meterState.count - 1), updatedAt: Date.now() });
+        closeUserPhotoModal();
+        return;
+      }
+
+      try {
+        const result = await runTransaction(db, async (tx) => {
+          const snap = await tx.get(stateDocRef());
+          const s = snap.exists() ? snap.data() : {};
+          if ((s.round || 1) !== m.round || (s.count || 0) >= METER_GOAL) return 'locked';
+          tx.delete(doc(memoriesColRef(), id));
+          tx.set(stateDocRef(), { ...s, count: Math.max(0, (s.count || 0) - 1), updatedAt: Date.now() });
+          return 'ok';
+        });
+        if (result === 'locked') showToast('🎆 花火の準備中なので消せません');
+      } catch (err) {
+        console.warn('Delete memory failed:', err);
+      }
+      closeUserPhotoModal();
+    }
+    window.deleteMemory = deleteMemory;
+
+    // ---------- ラウンド終了：次のメーターへ進めて写真を全部消す ----------
+    async function finishRound(round, completedShow) {
+      if (finishingRound >= round) return;
+      finishingRound = round;
+
+      if (useLocalMeter) {
+        handleMemories(allMemories.filter(m => m.round > round));
+        handleState({ round: round + 1, count: 0, showStartAt: 0, totalShows: (meterState.totalShows || 0) + (completedShow ? 1 : 0), updatedAt: Date.now() });
+        return;
+      }
+
+      try {
+        await runTransaction(db, async (tx) => {
+          const snap = await tx.get(stateDocRef());
+          const s = snap.exists() ? snap.data() : {};
+          if ((s.round || 1) !== round) return; // 他の端末がすでに進めた
+          tx.set(stateDocRef(), {
+            round: round + 1,
+            count: 0,
+            showStartAt: 0,
+            totalShows: (s.totalShows || 0) + (completedShow ? 1 : 0),
+            updatedAt: Date.now()
+          });
+        });
+      } catch (err) {
+        console.warn('Finish round failed:', err);
+        finishingRound = 0;
+        return;
+      }
+
+      // 写真データを全削除（複数端末で実行されても問題なし）
+      const targets = allMemories.filter(m => m.round <= round);
+      for (let i = 0; i < targets.length; i += 400) {
+        const batch = writeBatch(db);
+        targets.slice(i, i + 400).forEach(m => batch.delete(doc(memoriesColRef(), m.id)));
+        try { await batch.commit(); } catch (e) { console.warn('Delete memories failed:', e); }
+      }
+    }
+
+    // ==============================================
+    // 7.8 花火ショー（5枚達成で約15秒・全席同時）
+    // ----------------------------------------------
+    //  0.0s  「思い出メーター満タン！」＋ 金色の泡が湧き上がる
+    //  2.0s〜 1枚ずつ打ち上げ → 花火の真ん中に写真が咲き、〇の写真が花びらのように弾ける
+    //  9.8s〜 スターマイン ＆ しだれ柳のフィナーレ
+    // 11.8s〜 「KANPAI!」全員の写真が輪になって回り、泡になって弾けて終了
+    // ==============================================
+    const showOverlay = document.getElementById('showOverlay');
+    const showCanvas = document.getElementById('showCanvas');
+    const showTrailCanvas = document.getElementById('showTrailCanvas');
+    const sctx = showCanvas.getContext('2d');
+    const tctx = showTrailCanvas.getContext('2d');
+    const showHeadline = document.getElementById('showHeadline');
+    const showSub = document.getElementById('showSub');
+
+    const SHOW_COLORS = ['#fde68a', '#fbbf24', '#f59e0b', '#ffffff', '#fca5a5', '#f472b6', '#67e8f9', '#a78bfa', '#86efac'];
+    let SW = 0, SH = 0;
+    let showNow = 0;
+    let showParticles = [];
+    let showRockets = [];
+    let showBursts = [];
+    let showRings = [];
+    let showBubbles = [];
+    let finaleRing = null;
+
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+    const rand = (a, b) => a + Math.random() * (b - a);
+    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const easeOutCubic = (t) => 1 - Math.pow(1 - Math.min(1, Math.max(0, t)), 3);
+    const easeOutBack = (t) => {
+      t = Math.min(1, Math.max(0, t));
+      const c1 = 1.70158, c3 = c1 + 1;
+      return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+    };
+
+    function resizeShowCanvas() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      SW = appContainer.clientWidth;
+      SH = appContainer.clientHeight;
+      [[showCanvas, sctx], [showTrailCanvas, tctx]].forEach(([c, cx]) => {
+        c.width = SW * dpr;
+        c.height = SH * dpr;
+        cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      });
+    }
+
+    // ---------- 花火の効果音（Web Audio で合成） ----------
+    let noiseBuffer = null;
+    function getNoiseBuffer() {
+      if (!noiseBuffer) {
+        const len = Math.floor(audioCtx.sampleRate * 1.5);
+        noiseBuffer = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+        const data = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+      }
+      return noiseBuffer;
+    }
+
+    function playBoom(strength = 1) {
+      if (!isSoundOn) return;
+      try {
+        initAudio();
+        const now = audioCtx.currentTime;
+        const src = audioCtx.createBufferSource();
+        src.buffer = getNoiseBuffer();
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(1200, now);
+        filter.frequency.exponentialRampToValueAtTime(120, now + 1.0);
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.55 * strength, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+        src.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
+        src.start(now); src.stop(now + 1.3);
+
+        const osc = audioCtx.createOscillator();
+        const og = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(110, now);
+        osc.frequency.exponentialRampToValueAtTime(38, now + 0.4);
+        og.gain.setValueAtTime(0.5 * strength, now);
+        og.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+        osc.connect(og); og.connect(audioCtx.destination);
+        osc.start(now); osc.stop(now + 0.5);
+      } catch (e) {}
+    }
+
+    function playWhistle(duration = 0.85) {
+      if (!isSoundOn) return;
+      try {
+        initAudio();
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(rand(500, 700), now);
+        osc.frequency.exponentialRampToValueAtTime(rand(1600, 2200), now + duration);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.05, now + 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(now); osc.stop(now + duration);
+      } catch (e) {}
+    }
+
+    function playCrackle(count = 14) {
+      if (!isSoundOn) return;
+      try {
+        initAudio();
+        const base = audioCtx.currentTime + 0.25;
+        for (let i = 0; i < count; i++) {
+          const t = base + Math.random() * 1.1;
+          const src = audioCtx.createBufferSource();
+          src.buffer = getNoiseBuffer();
+          const hp = audioCtx.createBiquadFilter();
+          hp.type = 'highpass';
+          hp.frequency.value = 2800;
+          const g = audioCtx.createGain();
+          g.gain.setValueAtTime(0.09, t);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+          src.connect(hp); hp.connect(g); g.connect(audioCtx.destination);
+          src.start(t, Math.random()); src.stop(t + 0.05);
+        }
+      } catch (e) {}
+    }
+
+    function playChime() {
+      if (!isSoundOn) return;
+      try {
+        initAudio();
+        const now = audioCtx.currentTime;
+        [784, 988, 1175, 1568].forEach((f, i) => {
+          const osc = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.value = f;
+          g.gain.setValueAtTime(0.0001, now + i * 0.09);
+          g.gain.exponentialRampToValueAtTime(0.16, now + i * 0.09 + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.09 + 0.7);
+          osc.connect(g); g.connect(audioCtx.destination);
+          osc.start(now + i * 0.09); osc.stop(now + i * 0.09 + 0.75);
+        });
+      } catch (e) {}
+    }
+
+    function buzz(ms) {
+      try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) {}
+    }
+
+    // ---------- パーティクル類 ----------
+    class ShowParticle {
+      constructor(x, y, vx, vy, color, o = {}) {
+        this.x = x; this.y = y; this.vx = vx; this.vy = vy;
+        this.color = color;
+        this.life = 1;
+        this.decay = o.decay ?? rand(0.010, 0.017);
+        this.gravity = o.gravity ?? 0.045;
+        this.friction = o.friction ?? 0.955;
+        this.size = o.size ?? rand(1.5, 2.6);
+        this.twinkle = o.twinkle ?? false;
+      }
+      update() {
+        this.vx *= this.friction;
+        this.vy *= this.friction;
+        this.vy += this.gravity;
+        this.x += this.vx;
+        this.y += this.vy;
+        this.life -= this.decay;
+      }
+      draw(c) {
+        if (this.life <= 0) return;
+        if (this.twinkle && Math.random() < 0.3) return;
+        c.globalAlpha = Math.max(0, Math.min(1, this.life * 1.3));
+        c.fillStyle = this.color;
+        c.beginPath();
+        c.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        c.fill();
+      }
+    }
+
+    function burstParticles(x, y, o = {}) {
+      const count = o.count ?? 90;
+      const colors = o.colors ?? [pick(SHOW_COLORS), pick(SHOW_COLORS), '#ffffff'];
+      const power = o.power ?? 1;
+      const ring = o.ring ?? Math.random() < 0.4; // 菊（輪）型 or 牡丹（ランダム）型
+      for (let i = 0; i < count; i++) {
+        const ang = (i / count) * Math.PI * 2 + rand(-0.05, 0.05);
+        const sp = (ring ? rand(5.2, 5.8) : rand(1.5, 6.2)) * power;
+        showParticles.push(new ShowParticle(x, y, Math.cos(ang) * sp, Math.sin(ang) * sp, pick(colors), o.particle || {}));
+      }
+    }
+
+    function willowBurst(x, y) {
+      for (let i = 0; i < 110; i++) {
+        const ang = Math.random() * Math.PI * 2;
+        const sp = rand(2.5, 5.5);
+        showParticles.push(new ShowParticle(x, y, Math.cos(ang) * sp, Math.sin(ang) * sp - 1, pick(['#fde68a', '#fbbf24', '#fcd34d']), {
+          decay: rand(0.005, 0.008), gravity: 0.028, friction: 0.965, size: rand(1.2, 1.9), twinkle: true
+        }));
+      }
+    }
+
+    function launchRocket(tx, ty, onBurst, dur = 850) {
+      playWhistle(dur / 1000);
+      showRockets.push({ x0: tx + rand(-40, 40), y0: SH + 10, tx, ty, born: showNow, dur, onBurst });
+    }
+
+    function updateRockets() {
+      for (let i = showRockets.length - 1; i >= 0; i--) {
+        const r = showRockets[i];
+        const t = (showNow - r.born) / r.dur;
+        const p = easeOutCubic(t);
+        const x = r.x0 + (r.tx - r.x0) * p;
+        const y = r.y0 + (r.ty - r.y0) * p;
+        tctx.globalAlpha = 1;
+        tctx.fillStyle = '#fff7d6';
+        tctx.beginPath();
+        tctx.arc(x, y, 2.6, 0, Math.PI * 2);
+        tctx.fill();
+        if (Math.random() < 0.7) {
+          showParticles.push(new ShowParticle(x, y, rand(-0.4, 0.4), rand(0.4, 1.2), '#fbbf24', { decay: 0.05, gravity: 0.02, size: 1.3 }));
+        }
+        if (t >= 1) {
+          showRockets.splice(i, 1);
+          r.onBurst(r.tx, r.ty);
         }
       }
     }
-    setInterval(checkExpiredBubbles, 60000);
+
+    // ---------- 写真を円で描く ----------
+    function drawCirclePhoto(c, img, x, y, r, alpha = 1, glow = 0) {
+      if (r <= 0.5 || alpha <= 0) return;
+      c.save();
+      c.globalAlpha = Math.min(1, alpha);
+      if (glow) {
+        c.shadowColor = 'rgba(251, 191, 36, 0.95)';
+        c.shadowBlur = glow;
+        c.beginPath();
+        c.arc(x, y, r + 3, 0, Math.PI * 2);
+        c.fillStyle = '#fde68a';
+        c.fill();
+        c.shadowBlur = 0;
+      }
+      c.beginPath();
+      c.arc(x, y, r, 0, Math.PI * 2);
+      c.save();
+      c.clip();
+      c.drawImage(img, x - r, y - r, r * 2, r * 2);
+      c.restore();
+      c.lineWidth = Math.max(1.5, r * 0.06);
+      c.strokeStyle = 'rgba(255, 255, 255, 0.95)';
+      c.stroke();
+      c.beginPath();
+      c.ellipse(x - r * 0.45, y - r * 0.5, r * 0.2, r * 0.09, -Math.PI / 4, 0, Math.PI * 2);
+      c.fillStyle = 'rgba(255, 255, 255, 0.75)';
+      c.fill();
+      c.restore();
+    }
+
+    function drawCaptionPill(c, text, x, y, alpha) {
+      if (!text || alpha <= 0) return;
+      c.save();
+      c.globalAlpha = Math.min(1, alpha);
+      c.font = "900 15px 'Zen Maru Gothic', sans-serif";
+      const label = `「${text}」`;
+      const w = c.measureText(label).width + 26;
+      const h = 30;
+      c.fillStyle = 'rgba(0, 0, 0, 0.6)';
+      c.strokeStyle = 'rgba(253, 230, 138, 0.9)';
+      c.lineWidth = 1.5;
+      c.beginPath();
+      if (c.roundRect) c.roundRect(x - w / 2, y - h / 2, w, h, h / 2); else c.rect(x - w / 2, y - h / 2, w, h);
+      c.fill();
+      c.stroke();
+      c.fillStyle = '#fef3c7';
+      c.textAlign = 'center';
+      c.textBaseline = 'middle';
+      c.fillText(label, x, y + 1);
+      c.restore();
+    }
+
+    // 花火の中心に写真が咲き、小さな〇写真が花びらのように弾ける
+    class PhotoBurst {
+      constructor(item, x, y, r, o = {}) {
+        this.item = item;
+        this.skipIntro = !!o.skipIntro;
+        this.x = x; this.y = y; this.r = r;
+        this.born = showNow;
+        this.popAt = 1550;
+        this.petals = 10;
+        this.rot = Math.random() * Math.PI;
+        this.popped = false;
+        this.done = false;
+      }
+      draw() {
+        const a = showNow - this.born;
+        const img = this.item.img;
+
+        // 花びら（〇の写真が広がって消える）
+        if (a < 1700) {
+          const p = easeOutCubic(a / 950);
+          const dist = this.r * (0.5 + 2.1 * p);
+          const pr = this.r * 0.25 * (0.5 + 0.5 * p);
+          const alpha = a < 850 ? 1 : Math.max(0, 1 - (a - 850) / 850);
+          for (let k = 0; k < this.petals; k++) {
+            const ang = this.rot + (k / this.petals) * Math.PI * 2 + p * 0.5;
+            drawCirclePhoto(sctx, img, this.x + Math.cos(ang) * dist, this.y + Math.sin(ang) * dist + p * p * 14, pr, alpha);
+          }
+        }
+
+        // 中心の写真
+        let scale = 1, alpha = 1;
+        if (a < 520) {
+          scale = this.skipIntro ? 1 : easeOutBack(a / 520);
+        } else if (a < this.popAt) {
+          scale = 1 + Math.sin((a - 520) / 260) * 0.025;
+        } else {
+          const q = (a - this.popAt) / 320;
+          scale = 1 + q * 0.55;
+          alpha = 1 - q;
+          if (!this.popped) {
+            this.popped = true;
+            showRings.push({ x: this.x, y: this.y, r: this.r, alpha: 1 });
+            burstParticles(this.x, this.y, { count: 40, colors: ['#ffffff', '#fde68a'], power: 0.8, ring: true, particle: { decay: 0.03 } });
+            playPopSound();
+          }
+        }
+        drawCirclePhoto(sctx, img, this.x, this.y, this.r * scale, alpha, 26);
+        drawCaptionPill(sctx, this.item.caption, this.x, this.y + this.r * scale + 24, alpha);
+        if (a > this.popAt + 320) this.done = true;
+      }
+    }
+
+    // ==============================================
+    // 7.9 ショー本体：王冠ポンの確定演出 → 3種類の本編
+    // ----------------------------------------------
+    //  ・5枚目が保存された瞬間に、3種類から同じ確率（1/3ずつ）で決定してDBに記録
+    //    → 全席で同じ演出が流れる
+    //  ・確定演出（約3.8秒）：中央の王冠が回って震え、ポンッと抜けた光の色で演出が決まる
+    //      金＝黄金の大輪しだれ柳 / 琥珀＝ビア・フォール / 虹＝虹のスターマイン
+    //  ・確定演出中に全席で乾杯ボタンを連打すると、金・琥珀が「虹」に昇格することがある
+    // ==============================================
+    const SHOW_THEMES = {
+      willow: { key: 'willow', color: '#fbbf24', glow: 'rgba(251, 191, 36, 0.95)', capLabel: '金', name: '黄金の大輪しだれ柳', emoji: '✨', bg: 'radial-gradient(ellipse at 50% 0%, rgba(70, 48, 10, 0.9) 0%, rgba(10, 7, 3, 0.96) 60%, #000 100%)' },
+      beer: { key: 'beer', color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.95)', capLabel: '琥珀', name: 'ビア・フォール', emoji: '🍺', bg: 'radial-gradient(ellipse at 50% 100%, rgba(120, 60, 8, 0.9) 0%, rgba(40, 18, 4, 0.96) 60%, rgba(10, 5, 0, 0.98) 100%)' },
+      rainbow: { key: 'rainbow', color: '#ffffff', glow: 'rgba(255, 255, 255, 0.95)', capLabel: '虹', name: '虹のスターマイン', revealName: 'PREMIUM\n虹のスターマイン', emoji: '🌈', bg: 'radial-gradient(ellipse at 50% 40%, rgba(40, 20, 80, 0.9) 0%, rgba(8, 6, 25, 0.96) 60%, #000 100%)' }
+    };
+    const SHOW_THEME_KEYS = ['willow', 'beer', 'rainbow'];
+    const REVEAL_MS = 3800;          // 確定演出の長さ
+    const REVEAL_POP_AT = 2700;      // 王冠が抜ける瞬間
+    const UPGRADE_DEADLINE = 2400;   // この時点までの乾杯数で昇格が決まる
+    const UPGRADE_CHEERS = 15;       // 昇格に必要な乾杯数（全席合計）
+    const RAINBOW = ['#ff4d4d', '#ff9f1a', '#ffe14d', '#5cff8a', '#4dc3ff', '#7a5cff', '#ff5cf0'];
+    const CONFETTI_COLORS = ['#fde047', '#f472b6', '#60a5fa', '#34d399', '#fb923c', '#ffffff', '#c084fc', '#f87171'];
+
+    // URLに ?show=willow / beer / rainbow を付けると、その演出を確認できる（スタッフ確認用）
+    const PREVIEW_THEME = (() => {
+      const v = new URLSearchParams(location.search).get('show');
+      return SHOW_THEMES[v] ? v : null;
+    })();
+    function pickShowTheme() {
+      return PREVIEW_THEME || SHOW_THEME_KEYS[Math.floor(Math.random() * SHOW_THEME_KEYS.length)];
+    }
+
+    // 全席で同じ揺れ方になるよう、ショー開始時刻から決まる乱数
+    function seededRandom(seed) {
+      let a = (seed >>> 0) || 1;
+      return () => {
+        a |= 0; a = (a + 0x6D2B79F5) | 0;
+        let t = Math.imul(a ^ (a >>> 15), 1 | a);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    let showTheme = SHOW_THEMES.willow;
+    let showUpgraded = false;
+    let beerLevel = 0, beerTarget = 0;
+    let beerBubbles = [];
+    let beerPour = null;
+    let clinkAnim = null;
+    let confetti = [];
+    let goldRainUntil = 0;
+    let reveal = null;
+    let photoFlowers = [];
+
+    function rainbowBurst(x, y, count = 120, power = 1.2) {
+      for (let i = 0; i < count; i++) {
+        const ang = (i / count) * Math.PI * 2;
+        const sp = rand(5.0, 5.8) * power;
+        const col = RAINBOW[Math.floor((i / count) * RAINBOW.length)];
+        showParticles.push(new ShowParticle(x, y, Math.cos(ang) * sp, Math.sin(ang) * sp, col, { size: rand(1.7, 2.6) }));
+      }
+      for (let i = 0; i < 50; i++) {
+        const ang = (i / 50) * Math.PI * 2;
+        const sp = rand(2.4, 2.8) * power;
+        showParticles.push(new ShowParticle(x, y, Math.cos(ang) * sp, Math.sin(ang) * sp, '#ffffff', { size: 1.6, decay: 0.02 }));
+      }
+    }
+
+    function themedBurst(x, y, power = 1) {
+      if (showTheme.key === 'willow') {
+        willowBurst(x, y);
+        burstParticles(x, y, { count: 40, colors: ['#fff7d6', '#fde68a'], power: 0.9 * power, ring: true, particle: { decay: 0.02 } });
+      } else if (showTheme.key === 'rainbow') rainbowBurst(x, y, 110, power);
+      else burstParticles(x, y, { count: 110, power: 1.25 * power });
+    }
+
+    function firePhotoRocket(item, tx, ty, r, o = {}) {
+      const rr = r || Math.min(SW, 430) * 0.155;
+      launchRocket(tx, ty, (x, y) => {
+        playBoom(1);
+        playCrackle();
+        buzz(40);
+        themedBurst(x, y);
+        const pb = new PhotoBurst(item, x, y, rr);
+        if (o.popAt) pb.popAt = o.popAt;
+        showBursts.push(pb);
+      }, o.dur);
+    }
+
+    function firePlainRocket(tx, ty, o = {}) {
+      launchRocket(tx, ty, (x, y) => {
+        playBoom(o.strength ?? 0.7);
+        if (o.willow) willowBurst(x, y);
+        else if (o.rainbow) rainbowBurst(x, y, o.count ?? 90, o.power ?? 1);
+        else burstParticles(x, y, { count: o.count ?? 80, power: o.power ?? 1 });
+      }, o.dur ?? rand(700, 950));
+    }
+
+    // ---------- 確定演出：王冠ポン ----------
+    function playRattle(intensity = 1) {
+      if (!isSoundOn) return;
+      try {
+        initAudio();
+        const base = audioCtx.currentTime;
+        for (let i = 0; i < 6; i++) {
+          const t = base + i * 0.055;
+          const src = audioCtx.createBufferSource();
+          src.buffer = getNoiseBuffer();
+          const bp = audioCtx.createBiquadFilter();
+          bp.type = 'bandpass';
+          bp.frequency.value = 1800 + Math.random() * 1400;
+          bp.Q.value = 6;
+          const g = audioCtx.createGain();
+          g.gain.setValueAtTime(0.16 * intensity, t);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+          src.connect(bp); bp.connect(g); g.connect(audioCtx.destination);
+          src.start(t, Math.random()); src.stop(t + 0.05);
+        }
+      } catch (e) {}
+    }
+
+    function playFanfare(rainbow = false) {
+      if (!isSoundOn) return;
+      try {
+        initAudio();
+        const now = audioCtx.currentTime;
+        const notes = rainbow ? [523, 659, 784, 1047, 1319, 1568, 2093] : [523, 659, 784, 1047];
+        notes.forEach((f, i) => {
+          const osc = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.value = f;
+          const lp = audioCtx.createBiquadFilter();
+          lp.type = 'lowpass';
+          lp.frequency.value = 2600;
+          const t = now + i * 0.07;
+          g.gain.setValueAtTime(0.0001, t);
+          g.gain.exponentialRampToValueAtTime(0.09, t + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + 0.9);
+          osc.connect(lp); lp.connect(g); g.connect(audioCtx.destination);
+          osc.start(t); osc.stop(t + 0.95);
+        });
+      } catch (e) {}
+    }
+
+    // 段階（疑似連）：虹は必ず3段階、金・琥珀は1〜3段階のどれか
+    function buildRevealPlan(themeKey, seed) {
+      const rnd = seededRandom(seed);
+      const stages = themeKey === 'rainbow' ? 3 : (1 + Math.floor(rnd() * 3));
+      const plans = {
+        1: [[700, 2600]],
+        2: [[650, 1450], [1850, 2600]],
+        3: [[600, 1150], [1300, 1850], [2000, 2620]]
+      };
+      // 段階ごとの王冠の光（だんだん熱くなる）
+      const glows = ['rgba(255,255,255,0.8)', 'rgba(248,113,113,0.95)', 'rgba(251,191,36,1)'];
+      return { stages: plans[stages], glows };
+    }
+
+    function drawBottleCap(x, y, R, rot, glow, glowSize) {
+      sctx.save();
+      sctx.translate(x, y);
+      sctx.rotate(rot);
+      if (glowSize > 0) {
+        sctx.shadowColor = glow;
+        sctx.shadowBlur = glowSize;
+      }
+      // ギザギザの縁
+      const teeth = 21;
+      sctx.beginPath();
+      for (let i = 0; i <= teeth * 2; i++) {
+        const a = (i / (teeth * 2)) * Math.PI * 2;
+        const rr = i % 2 === 0 ? R : R * 0.9;
+        const px = Math.cos(a) * rr, py = Math.sin(a) * rr;
+        i === 0 ? sctx.moveTo(px, py) : sctx.lineTo(px, py);
+      }
+      sctx.closePath();
+      const edge = sctx.createLinearGradient(-R, -R, R, R);
+      edge.addColorStop(0, '#fff6cc');
+      edge.addColorStop(0.35, '#e0b02a');
+      edge.addColorStop(0.6, '#8a5b05');
+      edge.addColorStop(0.85, '#f3cf62');
+      edge.addColorStop(1, '#a8740c');
+      sctx.fillStyle = edge;
+      sctx.fill();
+      sctx.shadowBlur = 0;
+      // 天面
+      const top = sctx.createRadialGradient(-R * 0.3, -R * 0.35, R * 0.05, 0, 0, R * 0.8);
+      top.addColorStop(0, '#fffbe6');
+      top.addColorStop(0.45, '#f2c94c');
+      top.addColorStop(1, '#a87410');
+      sctx.fillStyle = top;
+      sctx.beginPath();
+      sctx.arc(0, 0, R * 0.76, 0, Math.PI * 2);
+      sctx.fill();
+      sctx.strokeStyle = 'rgba(120, 70, 0, 0.6)';
+      sctx.lineWidth = R * 0.03;
+      sctx.beginPath();
+      sctx.arc(0, 0, R * 0.62, 0, Math.PI * 2);
+      sctx.stroke();
+      // 刻印
+      sctx.fillStyle = '#7a4b05';
+      sctx.textAlign = 'center';
+      sctx.textBaseline = 'middle';
+      sctx.font = `900 ${Math.round(R * 0.42)}px 'Shippori Mincho', serif`;
+      sctx.fillText('乾杯', 0, R * 0.02);
+      sctx.font = `900 ${Math.round(R * 0.13)}px sans-serif`;
+      sctx.fillText('★ MEMORIES ★', 0, R * 0.42);
+      // ハイライト
+      sctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+      sctx.beginPath();
+      sctx.ellipse(-R * 0.32, -R * 0.4, R * 0.22, R * 0.08, -Math.PI / 4, 0, Math.PI * 2);
+      sctx.fill();
+      sctx.restore();
+    }
+
+    function shakeOverlay(ms, amp) {
+      const end = performance.now() + ms;
+      const step = () => {
+        if (performance.now() > end) { showOverlay.style.transform = ''; return; }
+        showOverlay.style.transform = `translate(${rand(-amp, amp)}px, ${rand(-amp, amp)}px)`;
+        requestAnimationFrame(step);
+      };
+      step();
+    }
+
+    const revealLabel = document.getElementById('revealLabel');
+    const revealName = document.getElementById('revealName');
+    const revealSub = document.getElementById('revealSub');
+    function showRevealLabel(theme, upgraded) {
+      revealName.textContent = theme.revealName || theme.name;
+      revealName.className = `reveal-name reveal-${theme.key}`;
+      revealSub.textContent = upgraded ? '昇格！！ 確定！！' : (theme.key === 'rainbow' ? 'プレミア確定！！' : '確定！');
+      revealLabel.classList.remove('reveal-in');
+      void revealLabel.offsetWidth;
+      revealLabel.classList.add('reveal-in');
+    }
+    function hideRevealLabel() {
+      revealLabel.classList.remove('reveal-in');
+    }
+
+    // 毎フレームの描画（確定演出）
+    function drawReveal() {
+      if (!reveal || showNow > REVEAL_MS + 400) return;
+      const a = showNow;
+      const cx = SW / 2, cy = SH * 0.42;
+      const R = Math.min(SW, 430) * 0.2;
+
+      // 光の帯（抜けた後）
+      if (a >= REVEAL_POP_AT) {
+        const q = (a - REVEAL_POP_AT) / 1000;
+        const isRainbow = reveal.finalKey === 'rainbow' && (!reveal.upgraded || a >= REVEAL_POP_AT + 450);
+        sctx.save();
+        sctx.translate(cx, cy);
+        sctx.rotate(a / 900);
+        const rays = 24;
+        for (let i = 0; i < rays; i++) {
+          sctx.rotate((Math.PI * 2) / rays);
+          sctx.fillStyle = isRainbow ? RAINBOW[i % RAINBOW.length] : (reveal.firstColor);
+          sctx.globalAlpha = Math.max(0, 0.55 - q * 0.25);
+          sctx.beginPath();
+          sctx.moveTo(0, 0);
+          sctx.lineTo(Math.max(SW, SH), -18);
+          sctx.lineTo(Math.max(SW, SH), 18);
+          sctx.closePath();
+          sctx.fill();
+        }
+        sctx.restore();
+        // 白い閃光
+        if (a < REVEAL_POP_AT + 260) {
+          sctx.fillStyle = `rgba(255,255,255,${0.9 * (1 - (a - REVEAL_POP_AT) / 260)})`;
+          sctx.fillRect(0, 0, SW, SH);
+        }
+        // 虹：画面に走るヒビ
+        if (isRainbow && reveal.cracks) {
+          const ca = Math.max(0, 1 - (a - reveal.rainbowAt) / 900);
+          sctx.save();
+          sctx.globalAlpha = ca;
+          sctx.strokeStyle = '#ffffff';
+          sctx.lineWidth = 2.5;
+          sctx.shadowColor = '#fff';
+          sctx.shadowBlur = 12;
+          reveal.cracks.forEach(path => {
+            sctx.beginPath();
+            path.forEach(([px, py], i) => i === 0 ? sctx.moveTo(px, py) : sctx.lineTo(px, py));
+            sctx.stroke();
+          });
+          sctx.restore();
+        }
+      }
+
+      // 王冠
+      if (a < REVEAL_POP_AT + 700) {
+        let x = cx, y = cy, rot = a / 300, scale = 1, glow = 'rgba(255,255,255,0.6)', glowSize = 18;
+        if (a < 500) {
+          const p = easeOutBack(a / 500);
+          scale = p;
+          rot = (1 - p) * -6;
+        } else if (a < REVEAL_POP_AT) {
+          rot = Math.sin(a / 220) * 0.1;
+          const stage = reveal.plan.stages.findIndex(([s, e]) => a >= s && a < e);
+          if (stage >= 0) {
+            const [s, e] = reveal.plan.stages[stage];
+            const k = (a - s) / (e - s);
+            const amp = (3 + stage * 4) * (0.5 + k);
+            x += rand(-amp, amp);
+            y += rand(-amp, amp);
+            rot += rand(-0.15, 0.15) * (1 + stage);
+            glow = reveal.plan.glows[Math.min(stage, 2)];
+            glowSize = 20 + stage * 18 + k * 20;
+            if (!reveal.stageHits[stage]) {
+              reveal.stageHits[stage] = true;
+              buzz(40 + stage * 40);
+              setRevealText(stage);
+            }
+            if (Math.random() < 0.25) playRattle(0.6 + stage * 0.3);
+          } else {
+            // 段階の合間：一瞬止まる（フェイント）
+            scale = 1 - 0.03 * Math.sin(a / 60);
+          }
+        } else {
+          // ポンッ！ 王冠が回転しながら飛んでいく
+          const q = (a - REVEAL_POP_AT) / 700;
+          y = cy - q * q * SH * 0.9;
+          rot = q * 14;
+          scale = 1 + q * 0.4;
+          glow = reveal.firstColor;
+          glowSize = 40;
+        }
+        drawBottleCap(x, y, R * scale, rot, glow, glowSize);
+      }
+    }
+
+    const revealTexts = ['ん…？', 'まだだ…！', 'キタ…！！'];
+    function setRevealText(stage) {
+      const total = reveal.plan.stages.length;
+      // 最後の段階は必ず「キタ…！！」
+      const text = stage === total - 1 ? revealTexts[2] : revealTexts[Math.min(stage, 1)];
+      showHeadline.textContent = text;
+      showHeadline.classList.remove('headline-in', 'headline-out');
+      void showHeadline.offsetWidth;
+      showHeadline.classList.add('headline-in');
+    }
+
+    function buildCracks() {
+      const cx = SW / 2, cy = SH * 0.42;
+      return Array.from({ length: 7 }, (_, i) => {
+        const ang = (i / 7) * Math.PI * 2 + rand(-0.2, 0.2);
+        const pts = [[cx, cy]];
+        let px = cx, py = cy;
+        for (let k = 0; k < 7; k++) {
+          const len = rand(40, 90);
+          const a2 = ang + rand(-0.5, 0.5);
+          px += Math.cos(a2) * len;
+          py += Math.sin(a2) * len;
+          pts.push([px, py]);
+        }
+        return pts;
+      });
+    }
+
+    function revealPop() {
+      const first = SHOW_THEMES[reveal.baseKey];
+      playPopSound();
+      playBoom(1.3);
+      buzz([60, 40, 120]);
+      shakeOverlay(350, 8);
+      const cx = SW / 2, cy = SH * 0.42;
+      if (reveal.baseKey === 'rainbow') {
+        rainbowBurst(cx, cy, 160, 1.4);
+      } else {
+        burstParticles(cx, cy, { count: 140, colors: [first.color, '#ffffff', '#fde68a'], power: 1.4, ring: true });
+      }
+      showOverlay.style.background = first.bg;
+      showRevealLabel(first, false);
+      playFanfare(reveal.baseKey === 'rainbow');
+      if (reveal.baseKey === 'rainbow') { reveal.rainbowAt = showNow; reveal.cracks = buildCracks(); playCrackle(20); }
+    }
+
+    function revealUpgrade() {
+      // 乾杯の力で虹に昇格！
+      reveal.rainbowAt = showNow;
+      reveal.cracks = buildCracks();
+      showTheme = SHOW_THEMES.rainbow;
+      showOverlay.style.background = SHOW_THEMES.rainbow.bg;
+      rainbowBurst(SW / 2, SH * 0.42, 180, 1.5);
+      shakeOverlay(500, 12);
+      buzz([80, 40, 80, 40, 200]);
+      playBoom(1.4);
+      playCrackle(24);
+      playFanfare(true);
+      showRevealLabel(SHOW_THEMES.rainbow, true);
+    }
+
+    // ---------- 黄金の大輪しだれ柳 ----------
+    function goldRain() {
+      if (showTheme.key !== 'willow' || showNow > goldRainUntil) return;
+      for (let k = 0; k < 6; k++) {
+        showParticles.push(new ShowParticle(rand(0, SW), rand(-10, SH * 0.15), rand(-0.3, 0.3), rand(0.4, 1.4), pick(['#fde68a', '#fbbf24', '#fff7d6']), {
+          decay: rand(0.004, 0.007), gravity: 0.02, friction: 0.99, size: rand(1.1, 1.8), twinkle: true
+        }));
+      }
+    }
+
+    // ---------- ビア・フォール ----------
+    class PhotoRise {
+      constructor(item, x) {
+        this.item = item;
+        this.x = x;
+        this.r = Math.min(SW, 430) * 0.15;
+        this.born = showNow;
+        this.done = false;
+        this.wob = Math.random() * 6;
+      }
+      draw() {
+        const a = showNow - this.born;
+        const surfaceY = SH * (1 - beerLevel);
+        const ty = surfaceY - this.r * 1.6;
+        const p = easeOutCubic(a / 1000);
+        const y = SH + this.r + (ty - SH - this.r) * p;
+        const x = this.x + Math.sin(this.wob + a / 160) * 10 * (1 - p);
+        drawCirclePhoto(sctx, this.item.img, x, y, this.r * (0.6 + 0.4 * p), 1, 14);
+        if (a >= 1000) {
+          this.done = true;
+          playBoom(0.45);
+          playPopSound();
+          buzz(30);
+          for (let i = 0; i < 70; i++) {
+            showParticles.push(new ShowParticle(x + rand(-this.r, this.r) * 0.6, y, rand(-3.2, 3.2), rand(-8, -2.5), pick(['#ffffff', '#fffbeb', '#fde68a']), { gravity: 0.2, friction: 0.98, decay: rand(0.012, 0.02), size: rand(1.8, 3.6) }));
+          }
+          showBursts.push(new PhotoBurst(this.item, x, y, this.r, { skipIntro: true }));
+        }
+      }
+    }
+
+    function drawBeerSea() {
+      if (showTheme.key !== 'beer') return;
+      beerLevel += (beerTarget - beerLevel) * 0.05;
+      const surfaceY = SH * (1 - beerLevel);
+      const t = showNow / 1000;
+      const wave = (x) => surfaceY + Math.sin(x / 38 + t * 2.4) * 5 + Math.sin(x / 17 - t * 3.1) * 2.5;
+
+      // 上から流れ落ちるビールの滝
+      if (beerPour && showNow < beerPour.until) {
+        const w = beerPour.width * (0.85 + Math.sin(showNow / 70) * 0.15);
+        const px = SW / 2 + Math.sin(showNow / 400) * 8;
+        const pg = sctx.createLinearGradient(px - w, 0, px + w, 0);
+        pg.addColorStop(0, 'rgba(180, 90, 10, 0.85)');
+        pg.addColorStop(0.35, 'rgba(252, 196, 60, 0.95)');
+        pg.addColorStop(0.5, 'rgba(255, 236, 160, 0.95)');
+        pg.addColorStop(0.65, 'rgba(240, 160, 30, 0.95)');
+        pg.addColorStop(1, 'rgba(160, 80, 8, 0.85)');
+        sctx.fillStyle = pg;
+        sctx.beginPath();
+        sctx.moveTo(px - w * 0.6, 0);
+        for (let y = 0; y <= surfaceY; y += 20) sctx.lineTo(px - w * (0.6 + 0.4 * y / SH) + Math.sin(y / 30 + t * 9) * 3, y);
+        for (let y = surfaceY; y >= 0; y -= 20) sctx.lineTo(px + w * (0.6 + 0.4 * y / SH) + Math.sin(y / 27 - t * 8) * 3, y);
+        sctx.closePath();
+        sctx.fill();
+        // 着水のしぶき
+        for (let k = 0; k < 4; k++) {
+          showParticles.push(new ShowParticle(px + rand(-w, w), surfaceY, rand(-3, 3), rand(-6, -2), pick(['#ffffff', '#fff7d6']), { gravity: 0.22, decay: 0.03, size: rand(1.5, 3) }));
+        }
+      }
+
+      if (surfaceY > SH + 30) return;
+      const g = sctx.createLinearGradient(0, surfaceY, 0, SH);
+      g.addColorStop(0, 'rgba(252, 196, 60, 0.95)');
+      g.addColorStop(0.4, 'rgba(226, 140, 20, 0.95)');
+      g.addColorStop(1, 'rgba(120, 58, 6, 0.97)');
+      sctx.fillStyle = g;
+      sctx.beginPath();
+      sctx.moveTo(0, SH);
+      for (let x = 0; x <= SW; x += 8) sctx.lineTo(x, wave(x));
+      sctx.lineTo(SW, SH);
+      sctx.closePath();
+      sctx.fill();
+
+      for (let k = 0; k < 3; k++) beerBubbles.push({ x: rand(0, SW), y: SH + 5, r: rand(1, 3.2), vy: rand(1.2, 3.2), wob: rand(0, 6) });
+      sctx.fillStyle = 'rgba(255, 248, 215, 0.75)';
+      for (let i = beerBubbles.length - 1; i >= 0; i--) {
+        const b = beerBubbles[i];
+        b.y -= b.vy;
+        b.wob += 0.1;
+        if (b.y < wave(b.x) + 10) { beerBubbles.splice(i, 1); continue; }
+        sctx.beginPath();
+        sctx.arc(b.x + Math.sin(b.wob) * 1.5, b.y, b.r, 0, Math.PI * 2);
+        sctx.fill();
+      }
+
+      const foamH = 26;
+      const fg = sctx.createLinearGradient(0, surfaceY - foamH, 0, surfaceY + 8);
+      fg.addColorStop(0, '#fffef8');
+      fg.addColorStop(0.7, '#f6ead0');
+      fg.addColorStop(1, 'rgba(240, 220, 170, 0)');
+      sctx.fillStyle = fg;
+      sctx.beginPath();
+      sctx.moveTo(0, wave(0) + 8);
+      for (let x = 0; x <= SW; x += 14) {
+        sctx.quadraticCurveTo(x + 7, wave(x) - foamH - Math.sin(x * 1.7 + t * 2) * 5, x + 14, wave(x + 14) - foamH + 6);
+      }
+      sctx.lineTo(SW, wave(SW) + 8);
+      sctx.closePath();
+      sctx.fill();
+    }
+
+    // 最後にジョッキ同士で乾杯
+    function drawClink() {
+      if (!clinkAnim) return;
+      const a = showNow - clinkAnim.born;
+      if (a > 1300) { clinkAnim = null; return; }
+      const size = Math.min(SW, 430) * 0.32;
+      const meet = 450;
+      const p = Math.min(1, a / meet);
+      const off = (1 - easeOutCubic(p)) * SW * 0.6 + size * 0.42;
+      const tilt = 0.35 * (a < meet ? 1 : Math.max(0, 1 - (a - meet) / 300) * 0.5 + 0.5);
+      const cy = SH * 0.38;
+      sctx.save();
+      sctx.globalAlpha = a > 1000 ? Math.max(0, 1 - (a - 1000) / 300) : 1;
+      sctx.font = `${Math.round(size)}px sans-serif`;
+      sctx.textAlign = 'center';
+      sctx.textBaseline = 'middle';
+      sctx.save(); sctx.translate(SW / 2 - off, cy); sctx.rotate(tilt); sctx.fillText('🍺', 0, 0); sctx.restore();
+      sctx.save(); sctx.translate(SW / 2 + off, cy); sctx.scale(-1, 1); sctx.rotate(tilt); sctx.fillText('🍺', 0, 0); sctx.restore();
+      sctx.restore();
+      if (a >= meet && !clinkAnim.hit) {
+        clinkAnim.hit = true;
+        playClink();
+        playBoom(0.8);
+        buzz([50, 30, 50]);
+        burstParticles(SW / 2, cy - size * 0.3, { count: 90, colors: ['#ffffff', '#fde68a', '#fbbf24'], power: 1.1, ring: true });
+        for (let k = 0; k < 60; k++) {
+          showParticles.push(new ShowParticle(SW / 2 + rand(-20, 20), cy - size * 0.35, rand(-4, 4), rand(-7, -2), pick(['#ffffff', '#fffbeb']), { gravity: 0.22, decay: 0.015, size: rand(2, 3.5) }));
+        }
+      }
+    }
+
+    // ---------- 虹：写真で作った巨大花火 ----------
+    class PhotoFlower {
+      constructor(items, x, y) {
+        this.items = items;
+        this.x = x; this.y = y;
+        this.born = showNow;
+        this.done = false;
+        this.rings = [
+          { n: 10, dist: Math.min(SW, SH) * 0.2, r: Math.min(SW, 430) * 0.05 },
+          { n: 16, dist: Math.min(SW, SH) * 0.36, r: Math.min(SW, 430) * 0.045 },
+          { n: 22, dist: Math.min(SW, SH) * 0.5, r: Math.min(SW, 430) * 0.04 }
+        ];
+      }
+      draw() {
+        const a = showNow - this.born;
+        if (a > 1900) { this.done = true; return; }
+        const p = easeOutCubic(a / 900);
+        const alpha = a < 1200 ? 1 : Math.max(0, 1 - (a - 1200) / 700);
+        const fall = a > 1100 ? Math.pow((a - 1100) / 1000, 2) * 30 : 0;
+        let idx = 0;
+        this.rings.forEach((ring, ri) => {
+          for (let k = 0; k < ring.n; k++) {
+            const ang = (k / ring.n) * Math.PI * 2 + ri * 0.2 + a / 3000;
+            const d = ring.dist * p;
+            const item = this.items[idx++ % this.items.length];
+            const x = this.x + Math.cos(ang) * d;
+            const y = this.y + Math.sin(ang) * d + fall;
+            // 虹色の縁
+            sctx.save();
+            sctx.globalAlpha = alpha;
+            sctx.fillStyle = RAINBOW[(k + ri * 2) % RAINBOW.length];
+            sctx.beginPath();
+            sctx.arc(x, y, ring.r + 3, 0, Math.PI * 2);
+            sctx.fill();
+            sctx.restore();
+            drawCirclePhoto(sctx, item.img, x, y, ring.r, alpha);
+          }
+        });
+      }
+    }
+
+    function spawnConfetti(x, y, count, spread = Math.PI * 2, dir = -Math.PI / 2, power = 1) {
+      for (let i = 0; i < count; i++) {
+        const ang = dir + rand(-spread / 2, spread / 2);
+        const sp = rand(3, 10) * power;
+        confetti.push({
+          x, y, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp,
+          rot: rand(0, Math.PI * 2), vr: rand(-0.3, 0.3),
+          w: rand(5, 9), h: rand(8, 14), color: pick(CONFETTI_COLORS), sway: rand(0, 6)
+        });
+      }
+      if (confetti.length > 900) confetti.splice(0, confetti.length - 900);
+    }
+
+    function drawConfetti() {
+      for (let i = confetti.length - 1; i >= 0; i--) {
+        const c = confetti[i];
+        c.vx *= 0.975;
+        c.vy = c.vy * 0.975 + 0.16;
+        if (c.vy > 2.6) c.vy = 2.6;
+        c.sway += 0.08;
+        c.x += c.vx + Math.sin(c.sway) * 0.8;
+        c.y += c.vy;
+        c.rot += c.vr;
+        if (c.y > SH + 20) { confetti.splice(i, 1); continue; }
+        sctx.save();
+        sctx.translate(c.x, c.y);
+        sctx.rotate(c.rot);
+        sctx.scale(1, Math.abs(Math.cos(c.sway * 1.3)) * 0.8 + 0.2);
+        sctx.fillStyle = c.color;
+        sctx.fillRect(-c.w / 2, -c.h / 2, c.w, c.h);
+        sctx.restore();
+      }
+    }
+
+    // ---------- 乾杯ボタン（全席で連打数を共有） ----------
+    const cheerBtn = document.getElementById('cheerBtn');
+    const cheerCountEl = document.getElementById('cheerCount');
+    const cheerWrap = document.getElementById('cheerWrap');
+    const cheerHint = document.getElementById('cheerHint');
+    let pendingCheers = 0;
+    let cheerFlushTimer = null;
+
+    function totalCheers() {
+      return (meterState.cheers || 0) + pendingCheers;
+    }
+    function renderCheers() {
+      cheerCountEl.textContent = totalCheers();
+    }
+    function playClink() {
+      if (!isSoundOn) return;
+      try {
+        initAudio();
+        const now = audioCtx.currentTime;
+        [2350, 3520, 5100].forEach((f, i) => {
+          const osc = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = f * rand(0.98, 1.02);
+          g.gain.setValueAtTime(0.12 / (i + 1), now);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+          osc.connect(g); g.connect(audioCtx.destination);
+          osc.start(now); osc.stop(now + 0.4);
+        });
+      } catch (e) {}
+    }
+    function inUpgradeWindow() {
+      return reveal && showNow < UPGRADE_DEADLINE;
+    }
+    async function flushCheers() {
+      cheerFlushTimer = null;
+      const n = pendingCheers;
+      if (!n) return;
+      // 昇格ライン到達を全席に知らせる
+      const reachUpgrade = inUpgradeWindow() && reveal.baseKey !== 'rainbow' && !meterState.upgraded && totalCheers() >= UPGRADE_CHEERS;
+      if (useLocalMeter) {
+        meterState.cheers = (meterState.cheers || 0) + n;
+        if (reachUpgrade) meterState.upgraded = true;
+        pendingCheers = 0;
+        renderCheers();
+        return;
+      }
+      try {
+        pendingCheers -= n;
+        meterState.cheers = (meterState.cheers || 0) + n; // スナップショット到着までの仮反映
+        const upd = { cheers: increment(n) };
+        if (reachUpgrade) { upd.upgraded = true; meterState.upgraded = true; }
+        await updateDoc(stateDocRef(), upd);
+      } catch (e) {}
+    }
+    cheerBtn.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      pendingCheers++;
+      renderCheers();
+      playClink();
+      cheerBtn.classList.remove('cheer-bump');
+      void cheerBtn.offsetWidth;
+      cheerBtn.classList.add('cheer-bump');
+      const x = rand(SW * 0.15, SW * 0.85), y = rand(SH * 0.15, SH * 0.5);
+      if (showTheme.key === 'beer') spawnConfetti(x, y, 10, Math.PI * 2, 0, 0.5);
+      else burstParticles(x, y, { count: 18, power: 0.5, colors: showTheme.key === 'rainbow' ? RAINBOW : ['#fde68a', '#fbbf24', '#ffffff'], particle: { decay: 0.03 } });
+      // 確定演出中は早めに送る（昇格判定に間に合わせる）
+      if (!cheerFlushTimer) cheerFlushTimer = setTimeout(flushCheers, inUpgradeWindow() ? 250 : 700);
+    });
+    function cheerBoost() {
+      return Math.min(30, Math.floor(totalCheers() / 3));
+    }
+
+    // ---------- 見出しテキスト ----------
+    function setHeadline(text, sub = '') {
+      showHeadline.textContent = text;
+      showHeadline.classList.remove('headline-in', 'headline-out');
+      void showHeadline.offsetWidth;
+      showHeadline.classList.add('headline-in');
+      showSub.textContent = sub;
+      showSub.style.opacity = sub ? '1' : '0';
+    }
+    function hideHeadline() {
+      showHeadline.classList.remove('headline-in');
+      showHeadline.classList.add('headline-out');
+      showSub.style.opacity = '0';
+    }
+
+    // ---------- タイムライン ----------
+    function buildShowTimeline(items, info) {
+      const ev = [];
+      const at = (t, fn) => ev.push({ at: t, fn, done: false });
+      const O = REVEAL_MS; // 本編はここから
+
+      // ===== 確定演出：王冠ポン =====
+      at(0, () => {
+        playBoom(0.9);
+        buzz([30, 60, 30]);
+        showSub.textContent = '思い出メーター満タン！';
+        showSub.style.opacity = '1';
+      });
+      at(300, () => {
+        cheerHint.textContent = '連打で…昇格のチャンス！？';
+        cheerWrap.classList.remove('hidden');
+      });
+      at(UPGRADE_DEADLINE + 100, () => {
+        // ここで昇格が決まる（全席の乾杯数の合計）
+        reveal.upgraded = reveal.baseKey !== 'rainbow' && (meterState.upgraded || (useLocalMeter && totalCheers() >= UPGRADE_CHEERS));
+        reveal.finalKey = reveal.upgraded ? 'rainbow' : reveal.baseKey;
+        cheerWrap.classList.add('hidden');
+      });
+      at(REVEAL_POP_AT, () => { hideHeadline(); revealPop(); });
+      at(REVEAL_POP_AT + 450, () => { if (reveal.upgraded) revealUpgrade(); });
+      at(REVEAL_MS + 700, hideRevealLabel);
+
+      // ===== 本編 =====
+      at(O, () => {
+        showTheme = SHOW_THEMES[reveal.finalKey];
+        setHeadline(`${showTheme.emoji} ${showTheme.name}`, `本日${info.showNo}発目`);
+        if (showTheme.key === 'beer') { beerTarget = 0.34; beerPour = { until: O + 1900, width: Math.min(SW, 430) * 0.09 }; }
+        if (showTheme.key === 'willow') goldRainUntil = O + 1500;
+        cheerHint.textContent = '連打でフィナーレが豪華に！';
+      });
+      at(O + 1700, hideHeadline);
+      at(O + 1900, () => cheerWrap.classList.remove('hidden'));
+
+      const spots = [[0.28, 0.34], [0.72, 0.46], [0.3, 0.56], [0.7, 0.32], [0.5, 0.45]];
+      items.forEach((item, i) => {
+        const t = O + 2000 + i * 1450;
+        at(t, () => {
+          if (showTheme.key === 'beer') showBursts.push(new PhotoRise(item, SW * [0.3, 0.7, 0.4, 0.62, 0.5][i % 5]));
+          else { const [sx, sy] = spots[i % spots.length]; firePhotoRocket(item, SW * sx, SH * sy); }
+        });
+      });
+      // 合間の添え演出
+      [2700, 4150, 5600, 7050, 8500].forEach((t, i) => {
+        at(O + t, () => {
+          const side = SW * (i % 2 === 0 ? rand(0.12, 0.25) : rand(0.75, 0.88));
+          if (showTheme.key === 'willow') firePlainRocket(side, SH * rand(0.12, 0.22), { willow: true, strength: 0.5 });
+          if (showTheme.key === 'rainbow') {
+            firePlainRocket(side, SH * rand(0.16, 0.28), { rainbow: true, count: 70, power: 0.8, strength: 0.5 });
+            setTimeout(() => firePlainRocket(SW - side, SH * rand(0.16, 0.28), { rainbow: true, count: 70, power: 0.8, strength: 0.5 }), 300);
+          }
+          if (showTheme.key === 'beer') spawnConfetti(side, SH * 0.1, 20, Math.PI * 0.6, Math.PI / 2, 0.3);
+        });
+      });
+
+      // ===== フィナーレ（乾杯の数で豪華に） =====
+      at(O + 9800, () => {
+        const boost = cheerBoost();
+        setHeadline('フィナーレ！', totalCheers() ? `みんなの乾杯 ×${totalCheers()}` : '');
+        if (showTheme.key === 'willow') {
+          // 5枚同時の大輪 → 黄金のカーテン
+          const pr = Math.min(SW, 430) * 0.12;
+          items.forEach((item, k) => {
+            const ang = -Math.PI / 2 + (k / Math.max(1, items.length)) * Math.PI * 2;
+            firePhotoRocket(item, SW / 2 + Math.cos(ang) * SW * 0.28, SH * 0.36 + Math.sin(ang) * SH * 0.14, pr, { dur: 600, popAt: 950 });
+          });
+          setTimeout(() => { goldRainUntil = showNow + 1800; }, 900);
+          const n = 4 + Math.floor(boost / 2);
+          for (let i = 0; i < n; i++) {
+            setTimeout(() => firePlainRocket(SW * (0.1 + 0.8 * ((i * 0.618) % 1)), SH * rand(0.08, 0.22), { willow: true, strength: 0.9, dur: rand(550, 750) }), 700 + i * (1100 / n));
+          }
+        } else if (showTheme.key === 'rainbow') {
+          const n = 14 + boost;
+          for (let i = 0; i < n; i++) {
+            setTimeout(() => firePlainRocket(SW * rand(0.08, 0.92), SH * rand(0.12, 0.45), { rainbow: true, count: 80, power: rand(0.8, 1.2), dur: rand(450, 700), strength: 0.55 }), i * (1100 / n));
+          }
+          setTimeout(() => {
+            playBoom(1.5);
+            playCrackle(24);
+            buzz([80, 40, 160]);
+            shakeOverlay(400, 8);
+            rainbowBurst(SW / 2, SH * 0.4, 200, 1.6);
+            if (items.length) photoFlowers.push(new PhotoFlower(items, SW / 2, SH * 0.4));
+          }, 700);
+        } else if (showTheme.key === 'beer') {
+          beerTarget = 1.08;
+          beerPour = { until: O + 11300, width: Math.min(SW, 430) * 0.16 };
+          for (let i = 0; i < 8; i++) {
+            setTimeout(() => {
+              playBoom(0.35);
+              for (let k = 0; k < 16 + boost; k++) {
+                showParticles.push(new ShowParticle(rand(0, SW), SH * rand(0.05, 0.4), rand(-3, 3), rand(-5, -1), pick(['#ffffff', '#fffbeb', '#fde68a']), { gravity: 0.15, decay: 0.012, size: rand(2, 4) }));
+              }
+            }, i * 150);
+          }
+          setTimeout(() => { clinkAnim = { born: showNow }; spawnConfetti(SW / 2, SH * 0.38, 60 + boost * 6, Math.PI * 2, 0, 1.2); }, 500);
+        }
+      });
+      at(O + 10900, () => hideHeadline());
+      at(O + 11400, () => cheerWrap.classList.add('hidden'));
+      at(O + 11500, () => { if (showTheme.key === 'beer') beerTarget = -0.1; });
+
+      // ===== KANPAI! 全員の写真の輪（中央はラストの1枚＝MVP） =====
+      at(O + 11800, () => {
+        const mvpLine = info.mvp ? (info.mvp.isMe ? '👑 あなたがMVP！ラストの1枚ありがとう！' : '👑 MVPはラストの1枚を撮ってくれた人！') : 'みんなの思い出、ありがとう！';
+        setHeadline('KANPAI!', mvpLine);
+        playChime();
+        buzz([40, 40, 80]);
+        if (items.length) finaleRing = { items, mvp: info.mvp ? info.mvp.item : null, born: showNow };
+      });
+      at(O + 14100, () => { showSub.textContent = '次は何が出るかな？ また乾杯しよう！'; showSub.style.opacity = '1'; });
+      at(O + 14300, () => showOverlay.classList.add('opacity-0'));
+      return ev;
+    }
+
+    function drawFinaleRing() {
+      if (!finaleRing) return;
+      const a = showNow - finaleRing.born;
+      const around = finaleRing.items.filter(it => it !== finaleRing.mvp);
+      const n = around.length;
+      const cx = SW / 2;
+      const cy = SH * 0.55;
+      const R = Math.min(SW, SH) * 0.3;
+      const pr = Math.min(SW, 430) * 0.11;
+      const popStart = 1800;
+
+      const centerPopAt = popStart + n * 140 + 100;
+      if (a < centerPopAt + 250) {
+        let cs = easeOutBack(a / 700), calpha = 1;
+        if (a > centerPopAt) { const q = (a - centerPopAt) / 250; cs = 1 + q * 0.6; calpha = 1 - q; }
+        if (finaleRing.mvp) {
+          const cr = pr * 1.45 * cs;
+          drawCirclePhoto(sctx, finaleRing.mvp.img, cx, cy, cr, calpha, 34);
+          sctx.save();
+          sctx.globalAlpha = calpha;
+          sctx.textAlign = 'center';
+          sctx.textBaseline = 'middle';
+          sctx.font = `${Math.round(pr * 0.9)}px sans-serif`;
+          sctx.fillText('👑', cx, cy - cr - pr * 0.35 + Math.sin(a / 200) * 3);
+          sctx.restore();
+          drawCaptionPill(sctx, `MVP ${finaleRing.mvp.caption || 'ラストの1枚'}`, cx, cy + cr + 22, calpha);
+        } else {
+          sctx.save();
+          sctx.globalAlpha = Math.min(1, a / 400) * calpha;
+          sctx.font = `${Math.round(pr * 1.4)}px sans-serif`;
+          sctx.textAlign = 'center';
+          sctx.textBaseline = 'middle';
+          sctx.fillText('🍻', cx, cy);
+          sctx.restore();
+        }
+        if (a > centerPopAt && !finaleRing._centerPopped) {
+          finaleRing._centerPopped = true;
+          showRings.push({ x: cx, y: cy, r: pr * 1.4, alpha: 1 });
+          burstParticles(cx, cy, { count: 60, colors: showTheme.key === 'rainbow' ? RAINBOW : ['#ffffff', '#fde68a', '#fbbf24'], power: 1, ring: true, particle: { decay: 0.025 } });
+          playPopSound();
+        }
+      }
+
+      around.forEach((item, k) => {
+        const popAt = popStart + k * 140;
+        if (a > popAt + 250) return;
+        const ang = -Math.PI / 2 + (k / Math.max(1, n)) * Math.PI * 2 + a * 0.0007;
+        const s = easeOutBack((a - k * 90) / 600);
+        let x = cx + Math.cos(ang) * R * s;
+        let y = cy + Math.sin(ang) * R * s;
+        let alpha = 1, scale = s;
+        if (a > popStart - 400) y -= (a - (popStart - 400)) * 0.06;
+        if (a > popAt) {
+          const q = (a - popAt) / 250;
+          scale = 1 + q * 0.6;
+          alpha = 1 - q;
+          if (!item._ringPopped) {
+            item._ringPopped = true;
+            showRings.push({ x, y, r: pr, alpha: 1 });
+            burstParticles(x, y, { count: 30, colors: ['#ffffff', '#fde68a', '#fbbf24'], power: 0.7, particle: { decay: 0.03 } });
+            playPopSound();
+          }
+        }
+        drawCirclePhoto(sctx, item.img, x, y, pr * Math.max(0, scale), alpha, 18);
+      });
+    }
+
+    function runShow(items, info) {
+      return new Promise((resolve) => {
+        const events = buildShowTimeline(items, info);
+        const t0 = performance.now();
+        let finished = false;
+        const finish = () => { if (!finished) { finished = true; resolve(); } };
+        setTimeout(finish, SHOW_DURATION + 1500);
+
+        function frame(now) {
+          if (finished) return;
+          showNow = now - t0;
+          for (const e of events) {
+            if (!e.done && showNow >= e.at) { e.done = true; e.fn(); }
+          }
+
+          // 残像レイヤー（火花の尾を引く）
+          tctx.globalCompositeOperation = 'destination-out';
+          tctx.globalAlpha = 1;
+          tctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+          tctx.fillRect(0, 0, SW, SH);
+          tctx.globalCompositeOperation = 'lighter';
+          goldRain();
+          updateRockets();
+          for (let i = showParticles.length - 1; i >= 0; i--) {
+            const p = showParticles[i];
+            p.update();
+            p.draw(tctx);
+            if (p.life <= 0) showParticles.splice(i, 1);
+          }
+          tctx.globalCompositeOperation = 'source-over';
+          tctx.globalAlpha = 1;
+
+          // 写真・泡レイヤー
+          sctx.clearRect(0, 0, SW, SH);
+          drawBeerSea();
+          drawReveal();
+          for (let i = showRings.length - 1; i >= 0; i--) {
+            const r = showRings[i];
+            r.r += 4;
+            r.alpha -= 0.05;
+            if (r.alpha <= 0) { showRings.splice(i, 1); continue; }
+            sctx.strokeStyle = `rgba(255, 255, 255, ${r.alpha})`;
+            sctx.lineWidth = 2.5;
+            sctx.beginPath();
+            sctx.arc(r.x, r.y, r.r, 0, Math.PI * 2);
+            sctx.stroke();
+          }
+          for (let i = showBursts.length - 1; i >= 0; i--) {
+            showBursts[i].draw();
+            if (showBursts[i].done) showBursts.splice(i, 1);
+          }
+          for (let i = photoFlowers.length - 1; i >= 0; i--) {
+            photoFlowers[i].draw();
+            if (photoFlowers[i].done) photoFlowers.splice(i, 1);
+          }
+          drawClink();
+          drawConfetti();
+          drawFinaleRing();
+
+          if (showNow >= SHOW_DURATION) finish();
+          else requestAnimationFrame(frame);
+        }
+        requestAnimationFrame(frame);
+      });
+    }
+
+    function loadImage(src) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = src;
+      });
+    }
+
+    async function startFireworkShow(round, delayMs) {
+      if (isShowPlaying) return;
+      isShowPlaying = true;
+      if (storyActive) endStoryIntro();
+      const showNo = (meterState.totalShows || 0) + 1;
+      const baseKey = PREVIEW_THEME || (SHOW_THEMES[meterState.showTheme] ? meterState.showTheme : pickShowTheme());
+      const seed = meterState.showStartAt || Date.now();
+      await sleep(delayMs);
+
+      // 5枚目のスナップショットが届くのを少しだけ待つ
+      let photos = memoriesOfRound(round);
+      for (let i = 0; i < 10 && photos.length < METER_GOAL; i++) {
+        await sleep(150);
+        photos = memoriesOfRound(round);
+      }
+      const loaded = await Promise.all(photos.map(m =>
+        loadImage(m.img).then(img => ({ img, caption: m.caption || '', userId: m.userId })).catch(() => null)
+      ));
+      const items = loaded.filter(Boolean);
+      // ラストの1枚を撮った人がMVP
+      const last = photos.length >= METER_GOAL ? loaded[photos.length - 1] : null;
+      const mvp = last ? { item: last, isMe: last.userId === currentUserId() } : null;
+
+      reveal = {
+        baseKey,
+        finalKey: baseKey,
+        upgraded: false,
+        plan: buildRevealPlan(baseKey, seed),
+        stageHits: [],
+        firstColor: SHOW_THEMES[baseKey].glow,
+        cracks: null,
+        rainbowAt: 0
+      };
+      showTheme = SHOW_THEMES[baseKey];
+      showOverlay.style.background = '';
+      showParticles = []; showRockets = []; showBursts = []; showRings = []; showBubbles = [];
+      beerBubbles = []; confetti = []; photoFlowers = [];
+      beerLevel = 0; beerTarget = 0; beerPour = null; clinkAnim = null; goldRainUntil = 0;
+      finaleRing = null;
+      pendingCheers = 0;
+      renderCheers();
+      cheerWrap.classList.add('hidden');
+      resizeShowCanvas();
+      tctx.clearRect(0, 0, SW, SH);
+      sctx.clearRect(0, 0, SW, SH);
+      showOverlay.classList.remove('hidden');
+      requestAnimationFrame(() => showOverlay.classList.remove('opacity-0'));
+
+      await runShow(items, { showNo, mvp });
+
+      cheerWrap.classList.add('hidden');
+      hideRevealLabel();
+      showOverlay.classList.add('opacity-0');
+      showOverlay.style.transform = '';
+      await sleep(700);
+      showOverlay.classList.add('hidden');
+      showHeadline.classList.remove('headline-in', 'headline-out');
+      showSub.style.opacity = '0';
+      reveal = null;
+      isShowPlaying = false;
+
+      finishRound(round, true);
+    }
 
     // ==============================================
     // 8. 外カメラ起動・シャッター撮影・一言入力
@@ -1654,6 +4206,154 @@
       startCamera(currentFacingMode);
     }
 
+    // ==============================================
+    // 8.5 写真の加工（フィルム風の色味＋ビールの泡）
+    // ==============================================
+    let currentPhotoFilter = 'film-foam';
+    const filterChips = document.querySelectorAll('[data-photo-filter]');
+
+    function filmGrade(x, size) {
+      const d = x.getImageData(0, 0, size, size);
+      const p = d.data;
+      for (let i = 0; i < p.length; i += 4) {
+        let r = p[i], g = p[i + 1], b = p[i + 2];
+        // 彩度を少し落とす
+        const l = 0.299 * r + 0.587 * g + 0.114 * b;
+        r = l + (r - l) * 0.86; g = l + (g - l) * 0.86; b = l + (b - l) * 0.86;
+        // ゆるいS字カーブ（コントラスト）
+        r = 255 * (0.5 - 0.5 * Math.cos(Math.PI * r / 255)) * 0.35 + r * 0.65;
+        g = 255 * (0.5 - 0.5 * Math.cos(Math.PI * g / 255)) * 0.35 + g * 0.65;
+        b = 255 * (0.5 - 0.5 * Math.cos(Math.PI * b / 255)) * 0.35 + b * 0.65;
+        // 暖色寄り＆黒を少し浮かせる（フィルムの褪せ感）
+        r = r * 0.9 + 24; g = g * 0.88 + 17; b = b * 0.78 + 20;
+        // 粒子感
+        const n = (Math.random() - 0.5) * 14;
+        p[i] = r + n; p[i + 1] = g + n; p[i + 2] = b + n;
+      }
+      x.putImageData(d, 0, 0);
+      // 周辺減光
+      const v = x.createRadialGradient(size / 2, size / 2, size * 0.3, size / 2, size / 2, size * 0.72);
+      v.addColorStop(0, 'rgba(0, 0, 0, 0)');
+      v.addColorStop(1, 'rgba(40, 18, 0, 0.5)');
+      x.fillStyle = v;
+      x.fillRect(0, 0, size, size);
+      // 光漏れ
+      x.globalCompositeOperation = 'screen';
+      const leak = x.createRadialGradient(size * 0.92, size * 0.1, 0, size * 0.92, size * 0.1, size * 0.55);
+      leak.addColorStop(0, 'rgba(255, 140, 50, 0.55)');
+      leak.addColorStop(1, 'rgba(255, 140, 50, 0)');
+      x.fillStyle = leak;
+      x.fillRect(0, 0, size, size);
+      x.globalCompositeOperation = 'source-over';
+    }
+
+    function drawFoamOverlay(x, size) {
+      // 上側にクリーミーな泡の層（丸く切り抜かれても見える位置）
+      const base = size * 0.17;
+      const fg = x.createLinearGradient(0, 0, 0, base + 20);
+      fg.addColorStop(0, '#fffef9');
+      fg.addColorStop(0.75, '#f7ecd2');
+      fg.addColorStop(1, '#ead8ac');
+      x.fillStyle = fg;
+      x.beginPath();
+      x.moveTo(0, 0);
+      x.lineTo(size, 0);
+      x.lineTo(size, base);
+      const bumps = 9;
+      for (let k = bumps; k >= 0; k--) {
+        const bx = (k / bumps) * size;
+        x.quadraticCurveTo(bx + size / bumps / 2, base + 14 + (k % 2) * 8, bx, base + (k % 3) * 4);
+      }
+      x.closePath();
+      x.shadowColor = 'rgba(80, 40, 0, 0.35)';
+      x.shadowBlur = 8;
+      x.shadowOffsetY = 3;
+      x.fill();
+      x.shadowColor = 'transparent';
+      x.shadowBlur = 0;
+      x.shadowOffsetY = 0;
+      // 泡のきめ
+      for (let i = 0; i < 70; i++) {
+        const fx = Math.random() * size, fy = Math.random() * base;
+        x.beginPath();
+        x.arc(fx, fy, Math.random() * 4 + 1.5, 0, Math.PI * 2);
+        x.strokeStyle = 'rgba(200, 170, 110, 0.35)';
+        x.lineWidth = 0.8;
+        x.stroke();
+      }
+      // 垂れる泡
+      [0.3, 0.55, 0.74].forEach((fx, i) => {
+        const dx = size * fx, len = 18 + i * 9;
+        x.fillStyle = '#f9f0da';
+        x.beginPath();
+        x.moveTo(dx - 7, base + 6);
+        x.quadraticCurveTo(dx - 6, base + len, dx, base + len + 5);
+        x.quadraticCurveTo(dx + 6, base + len, dx + 7, base + 6);
+        x.closePath();
+        x.fill();
+      });
+      // 写真の上を昇る炭酸の泡
+      for (let i = 0; i < 22; i++) {
+        const side = i % 2 === 0;
+        const bx = side ? size * (0.12 + Math.random() * 0.16) : size * (0.72 + Math.random() * 0.16);
+        const by = size * (0.3 + Math.random() * 0.55);
+        const br = Math.random() * 5 + 2;
+        x.beginPath();
+        x.arc(bx, by, br, 0, Math.PI * 2);
+        x.fillStyle = 'rgba(255, 255, 255, 0.12)';
+        x.fill();
+        x.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+        x.lineWidth = 1;
+        x.stroke();
+        x.beginPath();
+        x.arc(bx - br * 0.35, by - br * 0.35, br * 0.28, 0, Math.PI * 2);
+        x.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        x.fill();
+      }
+    }
+
+    function drawDateStamp(x, size) {
+      const d = new Date();
+      const text = `'${String(d.getFullYear()).slice(2)} ${d.getMonth() + 1} ${d.getDate()}`;
+      x.save();
+      x.font = `bold ${Math.round(size * 0.055)}px 'Courier New', monospace`;
+      x.textAlign = 'center';
+      x.fillStyle = '#ff9a2e';
+      x.shadowColor = 'rgba(255, 120, 20, 0.9)';
+      x.shadowBlur = 6;
+      x.fillText(text, size / 2, size * 0.86);
+      x.restore();
+    }
+
+    function renderFilteredPhoto(mode) {
+      const size = captureCanvas.width || 400;
+      const c = document.createElement('canvas');
+      c.width = c.height = size;
+      const x = c.getContext('2d', { willReadFrequently: true });
+      x.drawImage(captureCanvas, 0, 0);
+      if (mode !== 'none') filmGrade(x, size);
+      if (mode === 'film-foam') drawFoamOverlay(x, size);
+      if (mode !== 'none') drawDateStamp(x, size);
+      return c.toDataURL('image/jpeg', 0.78);
+    }
+
+    function refreshPhotoPreview() {
+      currentCapturedPhotoData = renderFilteredPhoto(currentPhotoFilter);
+      capturedImgPreview.src = currentCapturedPhotoData;
+      filterChips.forEach(ch => {
+        const on = ch.dataset.photoFilter === currentPhotoFilter;
+        ch.classList.toggle('bg-amber-400', on);
+        ch.classList.toggle('text-black', on);
+        ch.classList.toggle('border-amber-300', on);
+        ch.classList.toggle('bg-white/10', !on);
+        ch.classList.toggle('text-white', !on);
+      });
+    }
+    filterChips.forEach(ch => ch.addEventListener('click', () => {
+      currentPhotoFilter = ch.dataset.photoFilter;
+      refreshPhotoPreview();
+    }));
+
     function takePhoto() {
       if (!cameraVideo.videoWidth) return;
 
@@ -1678,12 +4378,11 @@
 
       cCtx.drawImage(video, startX, startY, minDim, minDim, 0, 0, 400, 400);
 
-      currentCapturedPhotoData = captureCanvas.toDataURL('image/jpeg', 0.72);
 
       closeLiveCamera();
 
       setTimeout(() => {
-        capturedImgPreview.src = currentCapturedPhotoData;
+        refreshPhotoPreview();
         capturedCaptionInput.value = '';
         captionCharCount.textContent = '0/10';
         photoPreviewModal.classList.remove('hidden');
@@ -1710,10 +4409,9 @@
             captureCanvas.height = 400;
             const cCtx = captureCanvas.getContext('2d');
             cCtx.drawImage(tempImg, startX, startY, minDim, minDim, 0, 0, 400, 400);
-            currentCapturedPhotoData = captureCanvas.toDataURL('image/jpeg', 0.72);
 
             closeLiveCamera();
-            capturedImgPreview.src = currentCapturedPhotoData;
+            refreshPhotoPreview();
             capturedCaptionInput.value = '';
             captionCharCount.textContent = '0/10';
             photoPreviewModal.classList.remove('hidden');
@@ -1740,56 +4438,45 @@
       cameraFallbackInput.value = '';
     }
 
+    // スプレッドシートへ一言と写真を送る（失敗してもアプリの動きには影響しない）
+    function sendToSheet(img, caption) {
+      if (!SHEET_WEBHOOK_URL) return;
+      try {
+        fetch(SHEET_WEBHOOK_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ secret: SHEET_SECRET, caption, img, timestamp: Date.now(), showNo: (meterState.totalShows || 0) + 1 })
+        }).catch(() => {});
+      } catch (e) {}
+    }
+
+    let isSubmitting = false;
     async function submitCapturedBubble() {
-      const timestamp = Date.now();
-      const uniqueId = `bubble_${timestamp}_${Math.random().toString(36).substr(2, 6)}`;
+      if (isSubmitting || !currentCapturedPhotoData) return;
+      isSubmitting = true;
       const captionText = (capturedCaptionInput.value || '').trim().slice(0, 10);
 
-      if (isCloudReady && db && !currentUser) {
+      if (isCloudReady && db && !currentUser && !useLocalMeter) {
         try {
           const cred = await signInAnonymously(auth);
           currentUser = cred.user;
         } catch (e) {}
       }
 
-      const myUserId = currentUser ? currentUser.uid : 'local_user';
+      const result = await postMemory(currentCapturedPhotoData, captionText);
+      if (result === 'ok') sendToSheet(currentCapturedPhotoData, captionText);
+      isSubmitting = false;
 
-      const bubbleDoc = {
-        userId: myUserId,
-        img: currentCapturedPhotoData,
-        caption: captionText,
-        timestamp: timestamp
-      };
-
-      if (isCloudReady && db) {
-        try {
-          const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'bubbles', uniqueId);
-          await setDoc(docRef, bubbleDoc);
-        } catch (err) {
-          console.warn("Cloud save failed, using local mode:", err);
-        }
+      if (result === 'full') {
+        // 花火の演出中：モーダルは閉じずに、終わってからもう一度押してもらう
+        showToast('🎆 いま花火の真っ最中！終わったらもう一度「メーターに入れる」を押してね', 3500);
+        return;
       }
-
-      const userBubbleData = {
-        menuId: uniqueId,
-        img: currentCapturedPhotoData,
-        caption: captionText,
-        isUser: true,
-        userId: myUserId,
-        isLocalAuthor: true,
-        timestamp: timestamp
-      };
-
-      userCapturedBubbleList.unshift(userBubbleData);
-
-      // 【修正の核心】上限に達した場合、配列から外すだけでなくDOMも即座に完全破棄する！
-      if (floatingBubbles.length >= MAX_ONSCREEN_BUBBLES) {
-        const old = floatingBubbles.shift();
-        if (old) old.destroy();
+      if (result === 'error') {
+        showToast('⚠️ 送信できませんでした。電波の良い場所でもう一度お試しください', 3500);
+        return;
       }
-
-      const newBubble = new FreePhotoBubble(userBubbleData, null, true);
-      floatingBubbles.push(newBubble);
 
       closeCaptureModal();
       playPopSound();
@@ -1835,34 +4522,21 @@
       initAmbientBubbles();
       animate();
       ensureVideoPlayback();
+      renderMeter();
       initAuth();
 
-      const introOverlay = document.getElementById('introOverlay');
-      const introText = document.getElementById('introText');
+      mountMugs();
+      buildStoryDecor();
+      renderMeter();
+
+      // オープニング（3枠）→ 終わったらトップ画面を表示
       const uiElements = document.getElementById('uiElements');
-
-      setTimeout(() => {
-        introText.classList.remove('opacity-0', 'scale-95', 'translate-y-4');
-        introText.classList.add('opacity-100', 'scale-100', 'translate-y-0');
+      startStoryIntro(() => {
         startIntroBubbleSpawning();
-      }, 400);
-
-      setTimeout(() => {
-        introText.classList.remove('opacity-100', 'scale-100', 'translate-y-0');
-        introText.classList.add('opacity-0', 'scale-105', '-translate-y-2');
-      }, 3500);
-
-      setTimeout(() => {
-        introOverlay.classList.remove('opacity-100');
-        introOverlay.classList.add('opacity-0');
-
         uiElements.classList.remove('opacity-0');
         uiElements.classList.add('opacity-100');
-        
-        setTimeout(() => {
-          introOverlay.classList.add('hidden');
-        }, 1000);
-      }, 4500);
+        document.getElementById('memoryMeter').classList.remove('opacity-0');
+      });
     });
   </script>
 </body>
