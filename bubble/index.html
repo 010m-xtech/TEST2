@@ -691,7 +691,7 @@
     }
     .story-note {
       margin-top: 12px;
-      font-size: 11.5px;
+      font-size: 14px;
       font-weight: 700;
       letter-spacing: 0.14em;
       color: rgba(255, 240, 215, 0.82);
@@ -702,16 +702,20 @@
     .story-vertical-big {
       top: calc(env(safe-area-inset-top) + 74px);
       right: auto;
-      left: 22px;
-      font-size: 23px;
+      left: 20px;
+      font-size: 29px;
       font-weight: 800;
       letter-spacing: 0.22em;
       line-height: 1.75;
     }
+    .story-vertical-f1 { font-size: 27px; line-height: 1.6; }
+    #storyIntro .frame-1 .s1-mug { left: 60%; }
+    #storyIntro .frame-1 .s1-coaster { left: 60%; }
     #storyIntro .s2-phone { left: 60%; }
     #storyIntro .s2-photo, #storyIntro .s2-caption { left: 56%; }
     #storyIntro .s3-mug { bottom: 31%; width: 36%; }
-    #storyIntro .s3-mystery { font-size: 36px; }
+    #storyIntro .s3-mystery { font-size: 40px; white-space: nowrap; }
+    #storyIntro .frame-3 .story-line { font-size: 26px; }
 
     /* ========== ショー：夜空・星・会場のシルエット ========== */
     #showOverlay::before {
@@ -786,17 +790,16 @@
     .video-scrim { position: absolute; inset: 0; pointer-events: none; display: none; z-index: 5; }
     .story-frame.has-video .video-scrim { display: block; }
     /* 枠1：花火とジョッキはそのまま見せ、文字は下のテーブル部分に */
-    .frame-1 .video-scrim { background: linear-gradient(to top, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.45) 26%, rgba(0,0,0,0) 44%), linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0) 14%); }
-    .frame-1.has-video .story-copy-top { top: auto; bottom: calc(env(safe-area-inset-bottom) + 58px); }
+    .frame-1 .video-scrim { background: linear-gradient(100deg, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.3) 28%, rgba(0,0,0,0) 46%), linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0) 18%); }
     /* 枠2：縦書きは左上の夜空に、ひとことは下に */
     .frame-2 .video-scrim { background: linear-gradient(105deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.25) 30%, rgba(0,0,0,0) 48%), linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0) 22%); }
     .frame-2.has-video .story-vertical-big { top: calc(env(safe-area-inset-top) + 70px); }
     .frame-2.has-video .story-copy { bottom: calc(env(safe-area-inset-bottom) + 50px); }
     /* 枠3：最初は上の空いている夜空に問いかけ → 花火が開くと消え、ジョッキの上に「何かが起こる！？」 */
     .frame-3 .video-scrim { background: linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0) 14%), radial-gradient(ellipse 85% 14% at 50% 64%, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0) 100%); }
-    .frame-3.has-video .story-copy { top: 65.5%; bottom: auto; padding: 0 12px; }
+    .frame-3.has-video .story-copy { top: 63.5%; bottom: auto; padding: 0 10px; }
     .frame-3.has-video .story-num { display: none; }
-    .frame-3.has-video .story-line { display: inline-block; font-size: 19px; letter-spacing: 0.06em; line-height: 1.4; opacity: 0; }
+    .frame-3.has-video .story-line { display: inline-block; font-size: 23px; letter-spacing: 0.04em; line-height: 1.45; opacity: 0; }
     .frame-3.has-video.active .story-line {
       animation: storyFadeUp 0.5s cubic-bezier(0.2, 0.8, 0.3, 1) forwards, storyFadeOut 0.4s ease 1.7s forwards !important;
       animation-delay: 0.05s, 1.7s !important;
@@ -809,10 +812,361 @@
       top: -6px;
       margin: 0;
       text-align: center;
-      font-size: 38px;
+      font-size: 46px;
     }
     .frame-3.has-video.active .s3-mystery { animation: mysteryIn 0.6s cubic-bezier(0.2, 1.4, 0.4, 1) 2.1s forwards; }
     @keyframes storyFadeOut { to { opacity: 0; transform: translateY(-8px); } }
+
+    /* ========== メイン画面：提灯が灯る夜空 ========== */
+    .night-sky {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 50% 112%, rgba(110, 64, 24, 0.45) 0%, rgba(6, 9, 26, 0) 50%),
+        linear-gradient(180deg, #01020a 0%, #060b20 48%, #111737 100%);
+    }
+    .night-sky::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0.85;
+      background-image:
+        radial-gradient(1.2px 1.2px at 8% 26%, #fff 50%, transparent 51%),
+        radial-gradient(1px 1px at 22% 38%, #fff 50%, transparent 51%),
+        radial-gradient(1.4px 1.4px at 37% 31%, #fff 50%, transparent 51%),
+        radial-gradient(1px 1px at 51% 44%, #fff 50%, transparent 51%),
+        radial-gradient(1.2px 1.2px at 66% 29%, #fff 50%, transparent 51%),
+        radial-gradient(1px 1px at 79% 41%, #fff 50%, transparent 51%),
+        radial-gradient(1.4px 1.4px at 91% 33%, #fff 50%, transparent 51%),
+        radial-gradient(1px 1px at 14% 52%, #fff 50%, transparent 51%),
+        radial-gradient(1px 1px at 44% 56%, #fff 50%, transparent 51%),
+        radial-gradient(1.2px 1.2px at 72% 54%, #fff 50%, transparent 51%),
+        radial-gradient(1px 1px at 95% 60%, #fff 50%, transparent 51%),
+        radial-gradient(1px 1px at 30% 62%, #fff 50%, transparent 51%);
+      animation: starTwinkle 3.2s ease-in-out infinite alternate;
+    }
+    .main-scene {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 34%;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* 提灯メーター */
+    .lantern-panel {
+      background: linear-gradient(180deg, rgba(3, 5, 16, 0.82) 0%, rgba(3, 5, 16, 0.35) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
+    }
+    .lantern-string { position: relative; height: 108px; margin-top: 4px; }
+    .lantern-rope { position: absolute; left: 0; right: 0; top: 0; width: 100%; height: 22px; overflow: visible; }
+    .lantern-row {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      justify-items: center;
+    }
+    .lantern {
+      position: relative;
+      width: 52px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transform-origin: 50% 0;
+      animation: lanternSway 3.4s ease-in-out infinite alternate;
+    }
+    .lantern::before { content: ''; width: 1px; height: 7px; background: rgba(255, 230, 190, 0.6); }
+    .lantern-cap, .lantern-foot {
+      width: 26px;
+      height: 6px;
+      border-radius: 2px;
+      background: linear-gradient(#3a2614, #1c1108);
+      border: 1px solid rgba(255, 200, 120, 0.3);
+    }
+    .lantern-body {
+      position: relative;
+      width: 50px;
+      height: 60px;
+      border-radius: 46% / 40%;
+      background:
+        repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 8px),
+        radial-gradient(ellipse at 50% 45%, rgba(110, 58, 30, 0.55), rgba(32, 15, 8, 0.9));
+      border: 1px solid rgba(255, 190, 120, 0.22);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: box-shadow 0.6s ease, background 0.6s ease, border-color 0.6s ease;
+    }
+    .lantern-window {
+      width: 36px;
+      height: 36px;
+      border-radius: 9999px;
+      overflow: hidden;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px dashed rgba(255, 220, 170, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 900;
+      color: rgba(255, 220, 170, 0.45);
+    }
+    .lantern-window img { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.3s; }
+    .lantern-tassel { width: 2px; height: 11px; background: linear-gradient(#e2502e, rgba(226, 80, 46, 0)); }
+    .lantern.lit { cursor: pointer; }
+    .lantern.lit .lantern-body {
+      background:
+        repeating-linear-gradient(to bottom, rgba(140, 30, 0, 0.16) 0 1px, transparent 1px 8px),
+        radial-gradient(ellipse at 50% 45%, #fff0c2 0%, #ffad4d 42%, #d9381e 100%);
+      border-color: rgba(255, 225, 170, 0.85);
+      box-shadow: 0 0 16px rgba(255, 150, 60, 0.85), 0 0 42px rgba(255, 120, 40, 0.45);
+    }
+    .lantern.lit .lantern-window { border: 2px solid rgba(255, 250, 235, 0.95); }
+    @keyframes lanternSway {
+      from { transform: rotate(-2.2deg); }
+      to { transform: rotate(2.2deg); }
+    }
+    .meter-reach .lantern:not(.lit) .lantern-body { animation: lanternBlink 0.9s ease-in-out infinite; }
+    @keyframes lanternBlink {
+      0%, 100% { box-shadow: 0 0 0 rgba(255, 150, 60, 0); }
+      50% { box-shadow: 0 0 18px rgba(255, 150, 60, 0.7); border-color: rgba(255, 210, 150, 0.7); }
+    }
+    #meterPanel.meter-reach { animation: none; }
+
+    /* 本日のおすすめカード */
+    .menu-card {
+      flex-shrink: 0;
+      width: 138px;
+      scroll-snap-align: start;
+      border-radius: 16px;
+      overflow: hidden;
+      background: rgba(8, 11, 30, 0.82);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+      text-align: left;
+    }
+    .menu-card img { width: 100%; height: 92px; object-fit: cover; display: block; }
+    .cta-camera {
+      width: 100%;
+      padding: 13px 12px 11px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #ffd27a 0%, #f59e0b 55%, #e2622e 100%);
+      color: #2a1203;
+      box-shadow: 0 0 0 1px rgba(255, 240, 210, 0.6) inset, 0 10px 28px rgba(245, 158, 11, 0.45);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    /* ========== メイン画面：リアルさの追加 ========== */
+    /* 花火が開いた瞬間に夜空が明るくなる */
+    #mainSkyFlash {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0;
+      z-index: 1;
+      background: radial-gradient(circle at var(--fx, 50%) var(--fy, 35%), rgba(255, 214, 160, 0.32) 0%, rgba(255, 190, 130, 0.1) 32%, rgba(0, 0, 0, 0) 60%);
+      mix-blend-mode: screen;
+    }
+    /* 地平線のもや（会場の明かりが空を照らす） */
+    .horizon-haze {
+      position: absolute;
+      left: -10%;
+      right: -10%;
+      bottom: 22%;
+      height: 26%;
+      pointer-events: none;
+      z-index: 1;
+      background: radial-gradient(ellipse 60% 55% at 50% 100%, rgba(255, 160, 80, 0.28) 0%, rgba(255, 120, 60, 0.1) 45%, rgba(0, 0, 0, 0) 75%);
+      filter: blur(6px);
+    }
+    /* 周辺減光とフィルムの粒子感 */
+    .main-vignette {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 3;
+      background: radial-gradient(ellipse 85% 75% at 50% 45%, rgba(0, 0, 0, 0) 55%, rgba(0, 0, 0, 0.55) 100%);
+    }
+    .film-grain {
+      position: absolute;
+      inset: -50%;
+      pointer-events: none;
+      z-index: 4;
+      opacity: 0.07;
+      mix-blend-mode: overlay;
+      animation: grainShift 0.9s steps(6) infinite;
+    }
+    @keyframes grainShift {
+      0% { transform: translate(0, 0); }
+      20% { transform: translate(-6%, 4%); }
+      40% { transform: translate(5%, -3%); }
+      60% { transform: translate(-3%, -6%); }
+      80% { transform: translate(6%, 5%); }
+      100% { transform: translate(0, 0); }
+    }
+    .city-light { animation: cityTwinkle 2.4s ease-in-out infinite alternate; }
+    @keyframes cityTwinkle { from { opacity: 0.35; } to { opacity: 1; } }
+
+    /* 提灯：和紙の質感・丸み・ろうそくの揺らぎ・まわりに広がる灯り */
+    .lantern-body {
+      background:
+        linear-gradient(90deg, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0) 28%, rgba(255, 255, 255, 0.04) 50%, rgba(0, 0, 0, 0) 72%, rgba(0, 0, 0, 0.45) 100%),
+        repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.07) 0 1px, transparent 1px 7px),
+        radial-gradient(ellipse at 50% 45%, rgba(110, 58, 30, 0.6), rgba(30, 14, 7, 0.92)) !important;
+    }
+    .lantern.lit .lantern-body {
+      background:
+        linear-gradient(90deg, rgba(120, 20, 0, 0.45) 0%, rgba(0, 0, 0, 0) 30%, rgba(255, 255, 255, 0.12) 50%, rgba(0, 0, 0, 0) 70%, rgba(120, 20, 0, 0.45) 100%),
+        repeating-linear-gradient(to bottom, rgba(140, 30, 0, 0.18) 0 1px, transparent 1px 7px),
+        radial-gradient(ellipse at 50% 45%, #fff3cc 0%, #ffb257 40%, #d9381e 100%) !important;
+      animation: lanternFlicker 2.6s ease-in-out infinite;
+    }
+    @keyframes lanternFlicker {
+      0%, 100% { filter: brightness(1); box-shadow: 0 0 16px rgba(255, 150, 60, 0.85), 0 0 42px rgba(255, 120, 40, 0.45); }
+      23% { filter: brightness(0.9); box-shadow: 0 0 12px rgba(255, 150, 60, 0.7), 0 0 34px rgba(255, 120, 40, 0.35); }
+      47% { filter: brightness(1.06); box-shadow: 0 0 20px rgba(255, 160, 70, 0.95), 0 0 50px rgba(255, 130, 50, 0.5); }
+      71% { filter: brightness(0.95); }
+    }
+    .lantern.lit::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 18px;
+      width: 130px;
+      height: 130px;
+      margin-left: -65px;
+      border-radius: 9999px;
+      background: radial-gradient(circle, rgba(255, 160, 70, 0.28) 0%, rgba(255, 130, 50, 0.1) 40%, rgba(0, 0, 0, 0) 70%);
+      pointer-events: none;
+      z-index: -1;
+    }
+    .lantern-cap, .lantern-foot { background: linear-gradient(#4a3018, #1a1007) !important; box-shadow: inset 0 1px 0 rgba(255, 220, 160, 0.25); }
+
+    /* 本日のおすすめ：右から左へ流れる */
+    #menuCarousel {
+      overflow: hidden;
+      -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 6%, #000 94%, transparent 100%);
+      mask-image: linear-gradient(90deg, transparent 0, #000 6%, #000 94%, transparent 100%);
+    }
+    .marquee-track {
+      display: flex;
+      gap: 10px;
+      width: max-content;
+      animation: menuMarquee linear infinite;
+    }
+    .marquee-track.paused { animation-play-state: paused; }
+    @keyframes menuMarquee {
+      from { transform: translateX(0); }
+      to { transform: translateX(calc(-50% - 5px)); }
+    }
+    .menu-card {
+      display: block;
+      background: linear-gradient(180deg, rgba(20, 22, 44, 0.9), rgba(6, 8, 22, 0.94)) !important;
+      border: 1px solid rgba(247, 195, 95, 0.28) !important;
+      box-shadow: 0 12px 26px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+    }
+    .menu-card-photo { position: relative; display: block; overflow: hidden; }
+    .menu-card-photo::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0) 55%, rgba(6, 8, 22, 0.75) 100%);
+    }
+    .menu-card-tag {
+      display: inline-block;
+      font-size: 8.5px;
+      font-weight: 900;
+      color: #f7c35f;
+      border: 1px solid rgba(247, 195, 95, 0.6);
+      border-radius: 9999px;
+      padding: 0 6px;
+      margin-bottom: 3px;
+      letter-spacing: 0.06em;
+    }
+
+    /* メインボタン：金属の光沢がすっと流れる */
+    .cta-camera {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(180deg, rgba(22, 24, 48, 0.94) 0%, rgba(8, 9, 24, 0.97) 100%) !important;
+      color: #f5d38a !important;
+      border: 1px solid rgba(247, 195, 95, 0.6);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 12px 28px rgba(0, 0, 0, 0.55), 0 0 26px rgba(247, 195, 95, 0.12) !important;
+      padding: 14px 12px 12px !important;
+      gap: 4px !important;
+    }
+    .cta-camera::before {
+      content: '';
+      position: absolute;
+      inset: 4px;
+      border-radius: 14px;
+      border: 1px solid rgba(247, 195, 95, 0.18);
+      pointer-events: none;
+    }
+    .btn-chic {
+      background: linear-gradient(180deg, rgba(30, 30, 56, 0.95), rgba(10, 10, 26, 0.98));
+      color: #f5d38a;
+      border: 1px solid rgba(247, 195, 95, 0.7);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+    }
+    .toast-dot { width: 6px; height: 6px; border-radius: 9999px; background: #f7c35f; box-shadow: 0 0 8px rgba(247, 195, 95, 0.9); flex-shrink: 0; }
+    .cta-camera::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 40%;
+      left: -60%;
+      background: linear-gradient(100deg, rgba(255, 230, 170, 0) 0%, rgba(255, 230, 170, 0.16) 50%, rgba(255, 230, 170, 0) 100%);
+      animation: ctaSheen 5s ease-in-out infinite;
+    }
+    @keyframes ctaSheen {
+      0%, 55% { left: -60%; }
+      85%, 100% { left: 130%; }
+    }
+
+    /* 投稿した写真が夜空に開く演出 */
+    .memory-flyer {
+      border: 2px solid rgba(255, 244, 214, 0.95);
+      box-shadow: 0 0 0 1px rgba(247, 195, 95, 0.6), 0 0 26px rgba(255, 190, 110, 0.75), 0 10px 24px rgba(0, 0, 0, 0.5);
+    }
+    .memory-bloom { animation: bloomIn 0.55s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+    .memory-bloom-out { animation: bloomOut 0.3s ease-in forwards; }
+    @keyframes bloomIn { from { opacity: 0; transform: translateX(-50%) scale(0.3); } to { opacity: 1; transform: translateX(-50%) scale(1); } }
+    @keyframes bloomOut { to { opacity: 0; transform: translateX(-50%) scale(0.85); } }
+    .memory-caption {
+      margin-top: 12px;
+      font-family: 'Shippori Mincho', serif;
+      font-weight: 700;
+      font-size: 19px;
+      letter-spacing: 0.1em;
+      color: #fff;
+      text-shadow: 0 0 12px rgba(255, 200, 120, 0.9), 0 2px 8px rgba(0, 0, 0, 0.9);
+      white-space: nowrap;
+    }
+    .memory-label {
+      margin-top: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      color: rgba(255, 236, 200, 0.85);
+      text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+      white-space: nowrap;
+    }
+    /* 提灯が灯った瞬間の光 */
+    .lantern.lit.flare .lantern-body { animation: lanternFlare 1.2s ease-out; }
+    @keyframes lanternFlare {
+      0% { filter: brightness(2.2); box-shadow: 0 0 40px rgba(255, 220, 150, 1), 0 0 90px rgba(255, 170, 80, 0.9); }
+      100% { filter: brightness(1); box-shadow: 0 0 16px rgba(255, 150, 60, 0.85), 0 0 42px rgba(255, 120, 40, 0.45); }
+    }
   </style>
 </head>
 <body class="flex justify-center items-start h-screen overflow-hidden bg-black">
@@ -840,11 +1194,9 @@
           <div class="s1-mug mug-slot" data-level="0.92"></div>
           <div class="s1-shine"></div>
         </div>
-        <div class="story-copy-top">
+        <p class="story-vertical story-vertical-big story-vertical-f1 fade-up" style="animation-delay: 0.15s;"><span class="story-accent">『おいしさ』</span>と<br><span class="story-accent">『おもいで』</span>を、<br>教えてください。</p>
+        <div class="story-copy">
           <p class="story-num fade-up" style="animation-delay: 0.05s;">01 / 03</p>
-          <p class="story-line fade-up" style="animation-delay: 0.2s;">美味しいビールが、</p>
-          <p class="story-line fade-up" style="animation-delay: 0.5s;">届きました。</p>
-          <p class="story-note fade-up" style="animation-delay: 0.9s;">～が届けたい『おいしさ』と『おもいで』</p>
         </div>
       </div>
 
@@ -913,47 +1265,86 @@
       <p class="absolute inset-x-0 z-20 text-center text-[10px] text-white/55 font-bold tracking-widest" style="bottom: calc(env(safe-area-inset-bottom) + 22px);">タップで次へ</p>
     </div>
 
-    <!-- 背景動画（haikei.mp4：ループ・無音・インライン再生・確実な再生保証） -->
-    <video
-      id="bgVideo"
-      autoplay
-      loop
-      muted
-      playsinline
-      webkit-playsinline
-      preload="auto"
-      class="absolute inset-0 w-full h-full object-cover pointer-events-none z-0"
-    >
-      <source src="haikei.mp4" type="video/mp4">
-      <source src="./haikei.mp4" type="video/mp4">
-    </video>
+    <!-- 背景：オープニング・ショーと同じ夜空（旧：ビールの泡の動画） -->
+    <div class="night-sky z-0"></div>
+    <div id="mainSkyFlash"></div>
+    <div class="horizon-haze"></div>
+    <video id="bgVideo" muted playsinline preload="none" class="hidden"></video>
 
     <!-- 背景のブクブク気泡＆花火演出 Canvas（スマホ幅・高さに自動同期） -->
-    <canvas id="ambientBubbleCanvas" class="absolute inset-0 w-full h-full pointer-events-none z-1"></canvas>
+    <canvas id="ambientBubbleCanvas" class="absolute inset-0 w-full h-full pointer-events-none" style="z-index: 1;"></canvas>
+
+    <!-- 花火大会の会場（山・提灯・ジョッキを掲げる人たち） -->
+    <div class="main-scene">
+      <svg viewBox="0 0 390 300" preserveAspectRatio="xMidYMax slice" class="w-full h-full" aria-hidden="true">
+        <defs>
+          <linearGradient id="mainGround" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#1b1430"/><stop offset="1" stop-color="#05040a"/>
+          </linearGradient>
+          <radialGradient id="mainGlow">
+            <stop offset="0" stop-color="#ffd38a" stop-opacity="0.95"/><stop offset="1" stop-color="#ff9a3c" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <path d="M0 150 L40 110 L75 130 L120 85 L165 125 L205 95 L250 128 L295 90 L340 120 L390 100 L390 300 L0 300 Z" fill="#141a38"/>
+        <path d="M0 175 L55 150 L100 168 L150 142 L210 170 L260 150 L320 172 L390 155 L390 300 L0 300 Z" fill="#0d1129"/>
+        <g aria-hidden="true"><circle class="city-light" cx="126.3" cy="172.4" r="0.6" fill="#ffd9a0" style="animation-delay:-1.97s"/><circle class="city-light" cx="36.7" cy="184.9" r="0.7" fill="#ffd9a0" style="animation-delay:-0.21s"/><circle class="city-light" cx="163.1" cy="175.0" r="1.1" fill="#ffd9a0" style="animation-delay:-1.98s"/><circle class="city-light" cx="48.3" cy="174.5" r="0.6" fill="#fff4dc" style="animation-delay:-0.12s"/><circle class="city-light" cx="86.2" cy="184.1" r="0.7" fill="#ffc070" style="animation-delay:-1.01s"/><circle class="city-light" cx="210.9" cy="184.6" r="0.7" fill="#ffd9a0" style="animation-delay:-1.40s"/><circle class="city-light" cx="249.2" cy="178.8" r="0.6" fill="#ffd9a0" style="animation-delay:-1.49s"/><circle class="city-light" cx="193.6" cy="183.4" r="0.9" fill="#fff4dc" style="animation-delay:-1.41s"/><circle class="city-light" cx="176.7" cy="176.7" r="0.7" fill="#ffe9c4" style="animation-delay:-0.20s"/><circle class="city-light" cx="117.1" cy="182.4" r="0.9" fill="#fff4dc" style="animation-delay:-0.69s"/><circle class="city-light" cx="382.3" cy="171.4" r="1.1" fill="#ffe9c4" style="animation-delay:-1.82s"/><circle class="city-light" cx="59.3" cy="182.2" r="0.6" fill="#ffd9a0" style="animation-delay:-1.83s"/><circle class="city-light" cx="223.5" cy="193.4" r="0.9" fill="#ffc070" style="animation-delay:-1.67s"/><circle class="city-light" cx="231.8" cy="184.8" r="1.1" fill="#ffd9a0" style="animation-delay:-2.02s"/><circle class="city-light" cx="368.4" cy="181.7" r="0.6" fill="#ffd9a0" style="animation-delay:-1.75s"/><circle class="city-light" cx="120.7" cy="184.8" r="1.1" fill="#ffc070" style="animation-delay:-1.72s"/><circle class="city-light" cx="345.9" cy="178.1" r="1.1" fill="#ffc070" style="animation-delay:-0.40s"/><circle class="city-light" cx="45.7" cy="169.7" r="0.9" fill="#ffe9c4" style="animation-delay:-1.77s"/><circle class="city-light" cx="155.2" cy="194.6" r="1.1" fill="#ffd9a0" style="animation-delay:-0.40s"/><circle class="city-light" cx="156.6" cy="176.1" r="0.7" fill="#fff4dc" style="animation-delay:-2.07s"/><circle class="city-light" cx="108.6" cy="180.0" r="0.9" fill="#fff4dc" style="animation-delay:-2.30s"/><circle class="city-light" cx="58.9" cy="173.1" r="0.7" fill="#ffe9c4" style="animation-delay:-0.03s"/><circle class="city-light" cx="324.1" cy="173.3" r="0.9" fill="#ffd9a0" style="animation-delay:-0.35s"/><circle class="city-light" cx="208.5" cy="185.7" r="0.9" fill="#ffe9c4" style="animation-delay:-1.66s"/><circle class="city-light" cx="201.0" cy="185.9" r="0.6" fill="#fff4dc" style="animation-delay:-2.16s"/><circle class="city-light" cx="304.2" cy="193.4" r="1.1" fill="#fff4dc" style="animation-delay:-0.96s"/><circle class="city-light" cx="40.4" cy="186.4" r="0.6" fill="#ffe9c4" style="animation-delay:-0.16s"/><circle class="city-light" cx="81.4" cy="172.7" r="0.9" fill="#ffd9a0" style="animation-delay:-0.25s"/><circle class="city-light" cx="221.0" cy="183.6" r="0.9" fill="#ffd9a0" style="animation-delay:-0.17s"/><circle class="city-light" cx="81.1" cy="178.9" r="0.9" fill="#ffc070" style="animation-delay:-1.45s"/><circle class="city-light" cx="184.9" cy="171.3" r="1.1" fill="#fff4dc" style="animation-delay:-1.15s"/><circle class="city-light" cx="121.6" cy="172.2" r="0.9" fill="#ffc070" style="animation-delay:-1.15s"/><circle class="city-light" cx="269.9" cy="183.0" r="0.7" fill="#ffc070" style="animation-delay:-0.35s"/><circle class="city-light" cx="211.8" cy="168.8" r="0.9" fill="#ffd9a0" style="animation-delay:-1.67s"/><circle class="city-light" cx="101.8" cy="178.6" r="0.7" fill="#ffc070" style="animation-delay:-1.85s"/><circle class="city-light" cx="207.7" cy="190.6" r="0.9" fill="#ffe9c4" style="animation-delay:-1.47s"/><circle class="city-light" cx="307.5" cy="190.0" r="0.7" fill="#ffe9c4" style="animation-delay:-1.96s"/><circle class="city-light" cx="288.6" cy="174.6" r="1.1" fill="#ffc070" style="animation-delay:-1.75s"/><circle class="city-light" cx="385.9" cy="190.9" r="1.1" fill="#ffc070" style="animation-delay:-0.46s"/><circle class="city-light" cx="236.0" cy="178.0" r="0.9" fill="#ffc070" style="animation-delay:-0.19s"/><circle class="city-light" cx="39.8" cy="181.6" r="0.9" fill="#ffe9c4" style="animation-delay:-1.16s"/><circle class="city-light" cx="384.2" cy="185.7" r="0.6" fill="#fff4dc" style="animation-delay:-2.18s"/><circle class="city-light" cx="134.2" cy="186.7" r="0.6" fill="#fff4dc" style="animation-delay:-1.88s"/><circle class="city-light" cx="292.6" cy="181.9" r="0.7" fill="#fff4dc" style="animation-delay:-1.89s"/><circle class="city-light" cx="129.7" cy="191.2" r="1.1" fill="#fff4dc" style="animation-delay:-0.96s"/><circle class="city-light" cx="369.3" cy="189.0" r="0.7" fill="#ffe9c4" style="animation-delay:-0.07s"/><circle class="city-light" cx="230.4" cy="181.5" r="0.7" fill="#fff4dc" style="animation-delay:-1.58s"/><circle class="city-light" cx="136.7" cy="183.9" r="0.7" fill="#ffd9a0" style="animation-delay:-0.03s"/><circle class="city-light" cx="378.6" cy="186.8" r="0.7" fill="#fff4dc" style="animation-delay:-2.37s"/><circle class="city-light" cx="76.0" cy="193.3" r="0.6" fill="#ffc070" style="animation-delay:-0.51s"/><circle class="city-light" cx="195.5" cy="190.1" r="0.9" fill="#ffc070" style="animation-delay:-1.31s"/><circle class="city-light" cx="325.3" cy="169.8" r="0.9" fill="#fff4dc" style="animation-delay:-1.59s"/><circle class="city-light" cx="317.9" cy="183.0" r="0.7" fill="#ffe9c4" style="animation-delay:-1.26s"/><circle class="city-light" cx="7.3" cy="180.8" r="0.7" fill="#ffd9a0" style="animation-delay:-1.86s"/><circle class="city-light" cx="58.4" cy="172.1" r="0.6" fill="#ffd9a0" style="animation-delay:-0.78s"/><circle class="city-light" cx="202.2" cy="184.1" r="0.6" fill="#ffd9a0" style="animation-delay:-0.60s"/><circle class="city-light" cx="108.0" cy="190.4" r="1.1" fill="#ffd9a0" style="animation-delay:-1.82s"/><circle class="city-light" cx="355.9" cy="180.9" r="0.7" fill="#ffc070" style="animation-delay:-1.09s"/><circle class="city-light" cx="208.0" cy="181.9" r="0.7" fill="#ffc070" style="animation-delay:-2.21s"/><circle class="city-light" cx="348.2" cy="173.9" r="1.1" fill="#ffe9c4" style="animation-delay:-1.00s"/><circle class="city-light" cx="153.0" cy="177.2" r="0.7" fill="#fff4dc" style="animation-delay:-0.18s"/><circle class="city-light" cx="261.1" cy="190.7" r="0.7" fill="#ffc070" style="animation-delay:-0.34s"/><circle class="city-light" cx="344.3" cy="196.1" r="0.7" fill="#ffd9a0" style="animation-delay:-0.96s"/><circle class="city-light" cx="190.0" cy="196.7" r="0.7" fill="#ffe9c4" style="animation-delay:-1.70s"/><circle class="city-light" cx="387.7" cy="179.7" r="1.1" fill="#ffe9c4" style="animation-delay:-0.86s"/><circle class="city-light" cx="36.0" cy="178.6" r="0.9" fill="#fff4dc" style="animation-delay:-1.06s"/><circle class="city-light" cx="7.1" cy="177.6" r="0.9" fill="#ffd9a0" style="animation-delay:-0.27s"/><circle class="city-light" cx="358.2" cy="174.6" r="0.6" fill="#ffd9a0" style="animation-delay:-0.64s"/><circle class="city-light" cx="15.4" cy="190.6" r="0.9" fill="#ffe9c4" style="animation-delay:-1.97s"/><circle class="city-light" cx="331.3" cy="187.6" r="0.9" fill="#fff4dc" style="animation-delay:-0.36s"/></g>
+        <rect x="0" y="198" width="390" height="102" fill="url(#mainGround)"/>
+        <path d="M-10 192 Q 95 172 195 186 T 400 182" fill="none" stroke="rgba(255,220,170,0.5)" stroke-width="1"/>
+        <g class="lanterns">
+          <circle cx="20" cy="189" r="9" fill="url(#mainGlow)"/><circle cx="20" cy="189" r="2.4" fill="#ffd38a"/>
+          <circle cx="62" cy="183" r="9" fill="url(#mainGlow)"/><circle cx="62" cy="183" r="2.4" fill="#ffd38a"/>
+          <circle cx="104" cy="179" r="9" fill="url(#mainGlow)"/><circle cx="104" cy="179" r="2.4" fill="#ffb86a"/>
+          <circle cx="146" cy="180" r="9" fill="url(#mainGlow)"/><circle cx="146" cy="180" r="2.4" fill="#ffd38a"/>
+          <circle cx="188" cy="185" r="9" fill="url(#mainGlow)"/><circle cx="188" cy="185" r="2.4" fill="#ffd38a"/>
+          <circle cx="230" cy="186" r="9" fill="url(#mainGlow)"/><circle cx="230" cy="186" r="2.4" fill="#ffb86a"/>
+          <circle cx="272" cy="184" r="9" fill="url(#mainGlow)"/><circle cx="272" cy="184" r="2.4" fill="#ffd38a"/>
+          <circle cx="314" cy="183" r="9" fill="url(#mainGlow)"/><circle cx="314" cy="183" r="2.4" fill="#ffd38a"/>
+          <circle cx="356" cy="183" r="9" fill="url(#mainGlow)"/><circle cx="356" cy="183" r="2.4" fill="#ffb86a"/>
+        </g>
+        <!-- ジョッキを掲げて見上げる人たち -->
+        <g fill="#030308">
+          <path d="M14 300 v-46 q0-14 13-16 q-9-4-9-14 a10 10 0 0 1 20 0 q0 10-9 14 q13 2 13 16 v46 z"/>
+          <path d="M60 300 v-54 q0-16 15-18 q-10-5-10-16 a11 11 0 0 1 22 0 q0 11-10 16 q15 2 15 18 v54 z"/>
+          <path d="M98 238 l10-34 l7 2 l-8 34 z"/><rect x="104" y="192" width="11" height="14" rx="2"/>
+          <path d="M118 300 v-40 q0-12 11-14 q-8-3-8-12 a9 9 0 0 1 18 0 q0 9-8 12 q11 2 11 14 v40 z"/>
+          <path d="M170 300 v-58 q0-17 16-19 q-11-5-11-17 a12 12 0 0 1 24 0 q0 12-11 17 q16 2 16 19 v58 z"/>
+          <path d="M214 240 l-8-36 l7-2 l9 36 z"/><rect x="200" y="194" width="11" height="14" rx="2"/>
+          <path d="M232 300 v-44 q0-13 12-15 q-8-4-8-13 a10 10 0 0 1 20 0 q0 9-8 13 q12 2 12 15 v44 z"/>
+          <path d="M282 300 v-52 q0-15 14-17 q-9-5-9-15 a11 11 0 0 1 22 0 q0 10-9 15 q14 2 14 17 v52 z"/>
+          <path d="M330 300 v-42 q0-13 12-15 q-8-4-8-13 a10 10 0 0 1 20 0 q0 9-8 13 q12 2 12 15 v42 z"/>
+          <path d="M366 238 l-6-30 l7-1 l6 30 z"/><rect x="356" y="198" width="11" height="13" rx="2"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="main-vignette"></div>
+    <div class="film-grain" id="filmGrain"></div>
 
     <!-- 浮遊する写真バブルの親レイヤー（スマホ枠内を安全に泳ぐ） -->
     <div id="fullPhotoBubblesContainer" class="absolute inset-0 pointer-events-none z-10 overflow-hidden transition-opacity duration-300"></div>
 
     <!-- ======================================================== -->
-    <!-- 思い出メーター（全席共通・リアルタイム同期） -->
+    <!-- 思い出メーター＝提灯（全席共通・リアルタイム同期） -->
     <!-- ======================================================== -->
-    <div id="memoryMeter" class="absolute top-3 left-1/2 -translate-x-1/2 w-[calc(100%-24px)] max-w-[400px] z-30 pointer-events-auto opacity-0 transition-opacity duration-1000">
-      <div id="meterPanel" class="flex items-center gap-3 px-3.5 py-2.5 rounded-2xl bg-black/45 backdrop-blur-md border border-white/25 shadow-xl">
-        <!-- ビールジョッキ型メーター -->
-        <div id="meterGlass" class="mug-slot relative shrink-0 w-[48px] h-[57px] -my-1" data-level="0" style="filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));"></div>
-        <div class="flex-1 min-w-0">
-          <div class="flex items-baseline justify-between mb-1.5">
-            <span class="text-[10px] font-black text-amber-200 tracking-widest">思い出メーター</span>
-            <span class="flex items-baseline gap-2">
-              <span class="text-[10px] font-bold text-white/90"><span id="meterCount" class="text-[15px] font-black text-white">0</span>/5</span>
-              <button onclick="replayStoryIntro()" class="self-center px-2 py-0.5 rounded-full border border-white/40 text-[9px] font-bold text-white/85 active:scale-95 transition">遊び方</button>
-            </span>
-          </div>
-          <!-- 写真が溜まっていくスロット -->
-          <div id="meterSlots" class="flex justify-between gap-1"></div>
-          <p id="meterHint" class="mt-1.5 text-[9.5px] font-bold text-white/85 tracking-wide truncate">最初の1枚で乾杯をはじめよう</p>
+    <div id="memoryMeter" class="absolute top-0 inset-x-0 z-30 pointer-events-auto opacity-0 transition-opacity duration-1000" style="padding-top: calc(env(safe-area-inset-top) + 8px);">
+      <div id="meterPanel" class="lantern-panel mx-3 px-3 pt-2.5 pb-2.5 rounded-2xl">
+        <div class="flex items-center justify-between px-1">
+          <span class="text-[11.5px] font-black text-amber-200 tracking-[0.25em] font-serif-luxury">思い出の提灯</span>
+          <span class="flex items-center gap-2">
+            <span class="text-[10px] font-bold text-white/85"><span id="meterCount" class="text-[16px] font-black text-white">0</span>/5 灯</span>
+            <button onclick="replayStoryIntro()" class="px-2 py-0.5 rounded-full border border-white/40 text-[9.5px] font-bold text-white/85 active:scale-95 transition">遊び方</button>
+          </span>
         </div>
+        <div class="lantern-string">
+          <svg class="lantern-rope" viewBox="0 0 100 22" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M-2 1 Q50 26 102 1" fill="none" stroke="rgba(255,225,180,0.55)" stroke-width="0.6" vector-effect="non-scaling-stroke"/>
+          </svg>
+          <div id="meterSlots" class="lantern-row"></div>
+        </div>
+        <p id="meterHint" class="text-center text-[11px] font-bold text-white/90 tracking-wide truncate">最初の1枚で、1つめの提灯が灯ります</p>
       </div>
+      <!-- 旧ジョッキ表示（内部処理用・非表示） -->
+      <div id="meterGlass" class="mug-slot hidden" data-level="0"></div>
     </div>
 
 
@@ -962,33 +1353,27 @@
     <!-- ======================================================== -->
     <section class="w-full h-full flex flex-col justify-end items-center px-4 py-5 relative z-20 pointer-events-none">
 
-      <!-- 下部アクションボタン群（1画面完結型）※最初は非表示 -->
-      <div id="uiElements" class="w-full flex flex-col gap-3 pb-6 relative z-30 pointer-events-auto opacity-0 transition-opacity duration-1000">
-        
-        <!-- 泡タップの直感ヒントバナー -->
-        <div class="self-center mb-1 px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/40 text-[11px] font-bold text-white flex items-center gap-2 shadow-sm animate-pulse">
-          <span class="w-2 h-2 rounded-full bg-amber-300 animate-ping"></span>
-          泡をタッチして遊んでね
+      <!-- 下部：本日のおすすめ＋思い出を撮るボタン ※最初は非表示 -->
+      <div id="uiElements" class="w-full flex flex-col gap-3 pb-3 relative z-30 pointer-events-auto opacity-0 transition-opacity duration-1000">
+
+        <div class="self-center px-4 py-1.5 rounded-full bg-black/35 backdrop-blur-md border border-white/20 text-[11px] font-bold text-white/90 flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-300 animate-ping"></span>
+          夜空にふれると、花火が上がります
         </div>
 
-        <!-- 2列に並んだアクションボタン -->
-        <div class="flex w-full max-w-[320px] mx-auto gap-2.5">
-          
-          <!-- おすすめメニューボタン（薄い黒掛け） -->
-          <button onclick="openMenuList()" class="flex-1 py-2.5 px-2 rounded-xl bg-black/40 hover:bg-black/50 backdrop-blur-md text-white font-bold text-[10px] shadow-md active:scale-95 transition border border-white/20 flex flex-col items-center justify-center gap-1">
-            <i data-lucide="book-open" class="w-4 h-4 text-white/90"></i>
-            <span class="tracking-wider">おすすめメニュー</span>
-          </button>
-
-          <!-- カメラボタン（薄い黒掛け） -->
-          <button id="openCameraBtn" class="flex-1 py-2.5 px-2 rounded-xl bg-black/40 hover:bg-black/50 backdrop-blur-md text-white font-bold text-[10px] shadow-md active:scale-95 transition border border-white/20 flex flex-col items-center justify-center gap-1 relative leading-tight">
-            <i data-lucide="camera" class="w-4 h-4 text-white/90"></i>
-            <span class="tracking-wider text-center">思い出を撮って<br>メーターに溜める</span>
-            <span class="absolute -top-1 -right-1 bg-white text-gray-900 text-[8px] font-black px-1.5 py-0.5 rounded-full shadow-sm z-10">LIVE</span>
-          </button>
-
+        <div class="w-full">
+          <div class="flex items-baseline justify-between px-1 mb-2">
+            <span class="text-[12px] font-black tracking-[0.3em] text-amber-200 font-serif-luxury">本日のおすすめ</span>
+            <button onclick="openMenuList()" class="text-[11px] font-bold text-white/70 active:opacity-60">すべて見る ›</button>
+          </div>
+          <div id="menuCarousel" class="-mx-4 pb-1"></div>
         </div>
-        
+
+        <button id="openCameraBtn" class="cta-camera active:scale-[0.98] transition">
+          <span class="flex items-center gap-2 font-serif-luxury text-[16px] font-bold tracking-[0.16em]"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h1.7l1.3-2h7l1.3 2h1.7A2.5 2.5 0 0 1 21 8.5v9A2.5 2.5 0 0 1 18.5 20h-13A2.5 2.5 0 0 1 3 17.5z"/><circle cx="12" cy="13" r="3.8"/></svg>美味しいビールや、思い出を撮る</span>
+          <span class="text-[10.5px] font-medium tracking-[0.12em] text-white/65">一枚撮るごとに、提灯がひとつ灯ります</span>
+        </button>
+
         <input type="file" id="cameraFallbackInput" accept="image/*" capture="environment" class="hidden">
       </div>
 
@@ -997,7 +1382,7 @@
     <!-- ======================================================== -->
     <!-- 2. おすすめメニュー一覧モーダル画面（お店のメニューのみ掲載） -->
     <!-- ======================================================== -->
-    <div id="menuListModal" class="absolute inset-0 z-40 bg-black/30 backdrop-blur-[2px] hidden flex-col opacity-0 transition-opacity duration-300">
+    <div id="menuListModal" class="absolute inset-0 z-40 bg-[#03050f]/85 backdrop-blur-md hidden flex-col opacity-0 transition-opacity duration-300">
       
       <!-- ヘッダー (閉じるボタン) -->
       <div class="w-full flex items-center justify-between p-4 pb-2 z-10">
@@ -1012,7 +1397,7 @@
 
       <!-- メニューリスト (内部スクロール) -->
       <div class="flex-1 overflow-y-auto w-full no-scrollbar">
-        <div id="menuListContainer" class="flex flex-wrap justify-center gap-x-5 gap-y-12 pb-24 pt-4 px-2 relative">
+        <div id="menuListContainer" class="grid grid-cols-2 gap-3 pb-24 pt-2 px-4 relative">
           <!-- JavaScriptで動的生成されます -->
         </div>
       </div>
@@ -1032,7 +1417,7 @@
       </button>
       <div class="text-center">
         <span class="text-xs font-bold text-white/90 tracking-widest uppercase">REAR CAMERA</span>
-        <p class="text-[10px] text-amber-200">丸い中に収めてください</p>
+        <p class="text-[10px] text-amber-200">丸の中に、ビールや思い出を</p>
       </div>
       <button onclick="toggleCameraFacing()" class="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center active:scale-90 transition">
         <i data-lucide="refresh-cw" class="w-4 h-4"></i>
@@ -1047,7 +1432,7 @@
       <div class="absolute w-56 h-56 rounded-full border-4 border-white/90 shadow-[0_0_0_9999px_rgba(0,0,0,0.65)] pointer-events-none flex items-center justify-center">
         <div class="w-full h-full rounded-full border-2 border-dashed border-amber-300/80 animate-pulse"></div>
         <span class="absolute -bottom-8 text-[11px] font-bold text-amber-200 bg-black/60 px-3 py-1 rounded-full backdrop-blur-sm whitespace-nowrap">
-          ここが思い出の泡になります
+          この丸が、提灯に灯ります
         </span>
       </div>
       <canvas id="captureCanvas" class="hidden"></canvas>
@@ -1066,7 +1451,7 @@
 
         <div class="w-11 h-11"></div>
       </div>
-      <p class="text-[10.5px] text-white/75 font-medium mt-0.5">ビールや今日の思い出をパシャリ！</p>
+      <p class="text-[10.5px] text-white/75 font-medium mt-0.5">美味しいビールや、今日の思い出を一枚。</p>
     </div>
   </div>
 
@@ -1163,19 +1548,14 @@
   <!-- ========================================================== -->
   <div id="photoPreviewModal" class="absolute inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
     <div class="w-full max-w-[320px] bg-gradient-to-b from-gray-800 via-gray-900 to-black rounded-3xl p-5 border border-white/30 text-center flex flex-col items-center shadow-2xl text-white">
-      <h3 class="text-sm font-bold mb-1 font-serif-luxury tracking-wider">思い出メーターに入れる</h3>
-      <p class="text-[10px] text-white/80 mb-3">一言を添えてね。5枚溜まると何かが起こる！</p>
+      <h3 class="text-[15px] font-bold mb-1 font-serif-luxury tracking-[0.14em]">この一枚を、提灯に灯す</h3>
+      <p class="text-[10.5px] text-white/75 mb-3 tracking-wide">ひとことを添えてください。5つ灯ると、夜空に何かが起こります。</p>
 
       <!-- プレビュー枠 -->
       <div class="w-36 h-36 rounded-full overflow-hidden border-3 border-amber-300 shadow-xl mb-3 relative bubble-frame-user">
         <img id="capturedImgPreview" src="" class="w-full h-full object-cover">
       </div>
-      <!-- 加工の切り替え -->
-      <div class="flex gap-1.5 mb-3">
-        <button data-photo-filter="film-foam" class="px-2.5 py-1 rounded-full border border-white/30 text-[10px] font-bold transition">🍺 フィルム＋泡</button>
-        <button data-photo-filter="film" class="px-2.5 py-1 rounded-full border border-white/30 text-[10px] font-bold transition">🎞 フィルム</button>
-        <button data-photo-filter="none" class="px-2.5 py-1 rounded-full border border-white/30 text-[10px] font-bold transition">そのまま</button>
-      </div>
+
 
       <!-- 一言入力欄（10文字以内） -->
       <div class="w-full mb-3 text-left">
@@ -1199,8 +1579,8 @@
       </p>
 
       <div class="flex gap-2.5 w-full">
-        <button onclick="closeCaptureModal()" class="flex-1 py-2.5 rounded-full bg-white/20 hover:bg-white/30 text-white text-xs font-bold transition">撮り直す</button>
-        <button onclick="submitCapturedBubble()" class="flex-1 py-2.5 rounded-full bg-gradient-to-r from-amber-400 to-rose-400 text-black font-black text-xs shadow-md active:scale-95 transition">メーターに入れる！</button>
+        <button onclick="closeCaptureModal()" class="flex-1 py-2.5 rounded-full border border-white/30 text-white/85 text-xs font-bold tracking-wider transition active:scale-95">撮り直す</button>
+        <button onclick="submitCapturedBubble()" class="btn-chic flex-1 py-2.5 rounded-full text-xs font-bold tracking-[0.14em] active:scale-95 transition">提灯に灯す</button>
       </div>
     </div>
   </div>
@@ -1268,9 +1648,9 @@
     <!-- 乾杯ボタン（ショー中だけ表示・全席で連打数を共有） -->
     <div id="cheerWrap" class="hidden absolute inset-x-0 z-10 flex flex-col items-center gap-1.5 pointer-events-none" style="bottom: calc(env(safe-area-inset-bottom) + 26px);">
       <p id="cheerHint" class="text-[11px] font-black text-amber-100 tracking-wider drop-shadow">連打でフィナーレが豪華に！</p>
-      <button id="cheerBtn" class="pointer-events-auto w-[92px] h-[92px] rounded-full bg-gradient-to-b from-amber-300 to-amber-500 border-4 border-white/90 shadow-[0_0_24px_rgba(251,191,36,0.8)] flex flex-col items-center justify-center text-amber-950 font-black select-none touch-none">
-        <span class="text-[30px] leading-none">🍻</span>
-        <span class="text-[12px] mt-0.5">乾杯！</span>
+      <button id="cheerBtn" class="pointer-events-auto w-[92px] h-[92px] rounded-full btn-chic shadow-[0_0_24px_rgba(247,195,95,0.35)] flex flex-col items-center justify-center select-none touch-none" style="border-width: 1.5px;">
+        <span class="font-serif-luxury text-[24px] leading-none font-black tracking-[0.1em]">乾杯</span>
+        <span class="text-[9px] mt-1 tracking-[0.3em] font-bold">KANPAI</span>
       </button>
       <p class="text-[11px] font-black text-white">みんなの乾杯 <span id="cheerCount" class="text-amber-300 text-[15px]">0</span></p>
     </div>
@@ -1286,7 +1666,7 @@
   </div>
 
   <!-- トースト通知（他の席から写真が届いた時など） -->
-  <div id="toastLayer" class="absolute top-[132px] inset-x-0 z-[90] flex flex-col items-center gap-2 pointer-events-none px-4"></div>
+  <div id="toastLayer" class="absolute top-[186px] inset-x-0 z-[90] flex flex-col items-center gap-2 pointer-events-none px-4"></div>
 
   </div><!-- /appContainer -->
 
@@ -2129,15 +2509,189 @@
       }
     }
 
+    // ---------- メイン画面の夜空の花火（本物の花火に近い打ち上げ・種類・光） ----------
+    const MAIN_FW_COLORS = ['#ffffff', '#fff1c9', '#f7c35f', '#ffb067', '#ff7aa8', '#ff4f6d', '#7ef0c5', '#8fd3ff', '#c6a8ff'];
+    const MAIN_FW_KINDS = ['kiku', 'kiku', 'botan', 'yanagi', 'senrin', 'kamuro'];
+    let mainFw = [];
+    let mainRockets = [];
+    let nextMainFwAt = 0;
+    let mainFwQuality = 1, mainLastNow = 0, mainAvgDt = 16; // カクつく端末では自動で量を減らす
+    const skyFlashEl = document.getElementById('mainSkyFlash');
+    const fwPick = (a) => a[Math.floor(Math.random() * a.length)];
+
+    function mainFlash(x, y, k) {
+      if (!skyFlashEl) return;
+      skyFlashEl.style.setProperty('--fx', `${(x / Math.max(1, width)) * 100}%`);
+      skyFlashEl.style.setProperty('--fy', `${(y / Math.max(1, height)) * 100}%`);
+      skyFlashEl.style.transition = 'none';
+      skyFlashEl.style.opacity = String(Math.min(0.9, k));
+      void skyFlashEl.offsetWidth;
+      skyFlashEl.style.transition = 'opacity 0.9s ease-out';
+      skyFlashEl.style.opacity = '0';
+    }
+
+    function addFwParticle(x, y, vx, vy, c, o = {}) {
+      if (mainFw.length > 4000) return;
+      mainFw.push({
+        x, y, px: x, py: y, vx, vy, c, c2: o.c2 || null,
+        life: 1, decay: o.decay ?? (0.011 + Math.random() * 0.008),
+        g: o.g ?? 0.03, f: o.f ?? 0.955, w: o.w ?? 1.4, dot: !!o.dot, glitter: !!o.glitter
+      });
+    }
+
+    // 種類：菊（光の線が広がる）／牡丹（点）／柳（金が垂れる）／千輪（小花がたくさん）／冠（金が長く残る）
+    function mainBurst(x, y, scale = 1, withSound = false, kind = fwPick(MAIN_FW_KINDS)) {
+      const c1 = fwPick(MAIN_FW_COLORS), c2 = fwPick(MAIN_FW_COLORS);
+      const n = Math.round(70 * scale);
+      if (kind === 'senrin') {
+        for (let k = 0; k < 6; k++) {
+          setTimeout(() => mainBurst(x + (Math.random() - 0.5) * 90 * scale, y + (Math.random() - 0.5) * 70 * scale, 0.35 * scale, false, Math.random() < 0.5 ? 'kiku' : 'botan'), 80 + k * 70);
+        }
+        mainFlash(x, y, 0.25 * scale);
+        if (withSound) playFireworkSound();
+        return;
+      }
+      for (let i = 0; i < n; i++) {
+        const a = (i / n) * Math.PI * 2 + (Math.random() - 0.5) * 0.05;
+        if (kind === 'yanagi' || kind === 'kamuro') {
+          const sp = (1.6 + Math.random() * 1.6) * scale;
+          addFwParticle(x, y, Math.cos(a) * sp, Math.sin(a) * sp - 0.6, kind === 'kamuro' ? '#ffd27a' : '#f7c35f', {
+            decay: 0.0055 + Math.random() * 0.003, g: 0.022, f: 0.972, w: 1.1, glitter: true
+          });
+        } else if (kind === 'botan') {
+          const sp = (2.4 + Math.random() * 0.5) * scale;
+          addFwParticle(x, y, Math.cos(a) * sp, Math.sin(a) * sp, i % 2 ? c1 : c2, { dot: true, w: 1.8, decay: 0.014 + Math.random() * 0.006 });
+        } else {
+          // 菊：外側の光の線＋内側の芯（途中で色が変わる）
+          const sp = (2.5 + Math.random() * 0.45) * scale;
+          addFwParticle(x, y, Math.cos(a) * sp, Math.sin(a) * sp, c1, { c2, glitter: Math.random() < 0.25 });
+          if (i % 3 === 0) addFwParticle(x, y, Math.cos(a) * sp * 0.5, Math.sin(a) * sp * 0.5, '#ffffff', { decay: 0.024, w: 1.1 });
+        }
+      }
+      mainFlash(x, y, (kind === 'yanagi' || kind === 'kamuro' ? 0.35 : 0.45) * scale);
+      if (withSound) playFireworkSound();
+    }
+
+    function mainLaunch(x, y, scale, kind) {
+      mainRockets.push({ x0: x + (Math.random() - 0.5) * 30, y0: height * 0.74, x, y, t0: performance.now(), dur: 800 + Math.random() * 450, scale, kind });
+    }
+
+    function drawMainFireworks(now) {
+      if (mainLastNow) {
+        mainAvgDt = mainAvgDt * 0.93 + (now - mainLastNow) * 0.07;
+        if (mainAvgDt > 28 && mainFwQuality > 0.5) mainFwQuality -= 0.005;
+        else if (mainAvgDt < 19 && mainFwQuality < 1) mainFwQuality += 0.002;
+      }
+      mainLastNow = now;
+      // 何もしていない時も、夜空のあちこちで打ち上がる
+      if (!isShowPlaying && !storyActive && now > nextMainFwAt) {
+        nextMainFwAt = now + 260 + Math.random() * 300;
+        const volley = Math.random() < 0.45 ? 2 + Math.floor(Math.random() * 3) : 1;
+        for (let k = 0; k < volley; k++) {
+          setTimeout(() => mainLaunch(width * (-0.02 + Math.random() * 1.04), height * (0.22 + Math.random() * 0.3), (0.55 + Math.random() * 0.65) * mainFwQuality, fwPick(MAIN_FW_KINDS)), k * 120);
+        }
+      }
+      ctx.lineCap = 'round';
+      ctx.globalCompositeOperation = 'lighter';
+      // 打ち上げ（光の筋を残しながら昇る）
+      for (let i = mainRockets.length - 1; i >= 0; i--) {
+        const r = mainRockets[i];
+        const t = Math.min(1, (now - r.t0) / r.dur);
+        const e = 1 - Math.pow(1 - t, 2.2);
+        const x = r.x0 + (r.x - r.x0) * e + Math.sin(t * 9) * 1.5, y = r.y0 + (r.y - r.y0) * e;
+        ctx.globalAlpha = 0.9 * (1 - t * 0.4);
+        ctx.fillStyle = '#fff2cf';
+        ctx.beginPath();
+        ctx.arc(x, y, 1.6, 0, Math.PI * 2);
+        ctx.fill();
+        if (Math.random() < 0.6) addFwParticle(x, y + 2, (Math.random() - 0.5) * 0.4, 0.4 + Math.random() * 0.6, '#ffcf7a', { dot: true, w: 1, decay: 0.05, g: 0.02 });
+        if (t >= 1) { mainRockets.splice(i, 1); mainBurst(r.x, r.y, r.scale, false, r.kind); }
+      }
+      for (let i = mainFw.length - 1; i >= 0; i--) {
+        const p = mainFw[i];
+        p.px = p.x; p.py = p.y;
+        p.vx *= p.f; p.vy = p.vy * p.f + p.g;
+        p.x += p.vx; p.y += p.vy;
+        p.life -= p.decay;
+        if (p.life <= 0) { mainFw.splice(i, 1); continue; }
+        // 消える直前はチカチカ瞬く
+        if (p.glitter && p.life < 0.35 && Math.random() < 0.45) continue;
+        ctx.globalAlpha = Math.min(1, p.life * 1.4);
+        const col = p.c2 && p.life < 0.5 ? p.c2 : p.c;
+        if (p.dot) {
+          ctx.fillStyle = col;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.w, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.strokeStyle = col;
+          ctx.lineWidth = p.w;
+          ctx.beginPath();
+          ctx.moveTo(p.px, p.py);
+          ctx.lineTo(p.x, p.y);
+          ctx.stroke();
+        }
+      }
+      ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation = 'source-over';
+    }
+
+    // ---------- 本日のおすすめ：右から左へ自動で流れる ----------
+    function renderMenuCarousel() {
+      const wrap = document.getElementById('menuCarousel');
+      wrap.innerHTML = '';
+      const track = document.createElement('div');
+      track.className = 'marquee-track';
+      const makeCard = (item) => {
+        const card = document.createElement('button');
+        card.className = 'menu-card';
+        const shortTitle = item.title.split('（')[0];
+        card.innerHTML = `
+          <span class="menu-card-photo"><img src="${item.mainImg}" alt="${shortTitle}" loading="lazy"></span>
+          <span class="block px-2.5 pt-2 pb-2.5">
+            <span class="menu-card-tag">${item.tag}</span>
+            <span class="block text-[12px] font-bold text-white leading-snug truncate font-serif-luxury">${shortTitle}</span>
+            <span class="block text-[9.5px] text-white/60 truncate mt-0.5">${item.curvedTop || ''}</span>
+          </span>`;
+        card.addEventListener('click', () => openProductModalById(item.id));
+        return card;
+      };
+      // 途切れずに流れるよう2周分並べる
+      [...menuData, ...menuData].forEach(item => track.appendChild(makeCard(item)));
+      // 品数に合わせて速さを決める（1品あたり約3.2秒で流れる）
+      track.style.animationDuration = `${Math.max(12, menuData.length * 3.2)}s`;
+      wrap.appendChild(track);
+      // 触っている間は止まり、離すと少しして再開
+      let resumeTimer = null;
+      const pause = () => { clearTimeout(resumeTimer); track.classList.add('paused'); };
+      const resume = () => { clearTimeout(resumeTimer); resumeTimer = setTimeout(() => track.classList.remove('paused'), 1500); };
+      wrap.addEventListener('pointerdown', pause);
+      wrap.addEventListener('pointerup', resume);
+      wrap.addEventListener('pointercancel', resume);
+      wrap.addEventListener('pointerleave', resume);
+    }
+
+    // フィルムの粒子感（小さなノイズ画像を作って敷く）
+    function makeFilmGrain() {
+      try {
+        const c = document.createElement('canvas');
+        c.width = c.height = 140;
+        const x = c.getContext('2d');
+        const d = x.createImageData(140, 140);
+        for (let i = 0; i < d.data.length; i += 4) {
+          const v = Math.random() * 255;
+          d.data[i] = d.data[i + 1] = d.data[i + 2] = v;
+          d.data[i + 3] = 255;
+        }
+        x.putImageData(d, 0, 0);
+        document.getElementById('filmGrain').style.backgroundImage = `url(${c.toDataURL()})`;
+      } catch (e) {}
+    }
+
     function initAmbientBubbles() {
       ringBubbles = [];
       ambientBubbles = [];
-      for (let i = 0; i < 16; i++) {
-        ringBubbles.push(new RingBubble(false));
-      }
-      for (let i = 0; i < 45; i++) {
-        ambientBubbles.push(new AmbientBubble(true));
-      }
+      // 夜空の背景にしたため、立ち上るビールの泡は使わない
     }
 
     function spawnTouchSparkles(x, y) {
@@ -2156,10 +2710,18 @@
 
     window.addEventListener('pointerdown', (e) => {
       if (e.target && e.target.closest('.pointer-events-auto')) return;
-      
+      if (storyActive || isShowPlaying) return;
+
       const rect = appContainer.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
       const clickY = e.clientY - rect.top;
+
+      // 夜空をタップした所に花火が上がる
+      if (clickX >= 0 && clickX <= rect.width && clickY >= 0 && clickY <= rect.height * 0.78) {
+        initAudio();
+        mainBurst(clickX, clickY, 0.9 + Math.random() * 0.3, true);
+        return;
+      }
 
       if (clickX >= 0 && clickX <= rect.width && clickY >= 0 && clickY <= rect.height) {
         let hitRing = null;
@@ -2482,6 +3044,7 @@
 
     // 都度都度ランダムに1個ずつ泡を補充
     function spawnSingleBubble(isSurge = false) {
+      return; // メイン画面は夜空＋提灯のため、泡は浮かべない
       if (floatingBubbles.length >= MAX_ONSCREEN_BUBBLES || isSpawnPending) return;
 
       const currentUserBubblesCount = floatingBubbles.filter(b => b.isUser && !b.isDead).length;
@@ -2505,6 +3068,7 @@
 
     // 初期化：ポツリポツリと自然なランダムタイミングで10個が湧き上がる
     function startIntroBubbleSpawning() {
+      return; // メイン画面は夜空＋提灯のため、泡は浮かべない
       // 既存要素をクリーンアップ
       floatingBubbles.forEach(b => b.destroy());
       photoContainer.innerHTML = '';
@@ -2534,36 +3098,19 @@
       const container = document.getElementById('menuListContainer');
       container.innerHTML = '';
 
-      menuData.forEach((item, index) => {
-        const card = document.createElement('div');
-        const isOdd = index % 2 !== 0;
-        const mtClass = isOdd ? 'mt-12' : 'mt-0';
-        const delay = (index * 0.4) % 2.5;
-
-        card.className = `group cursor-pointer flex flex-col items-center w-[40%] max-w-[130px] animate-float-menu transition active:scale-95 ${mtClass}`;
-        card.style.animationDelay = `${delay}s`;
+      // お品書き風のカード（2列）
+      menuData.forEach((item) => {
+        const card = document.createElement('button');
+        card.className = 'menu-card w-full active:scale-[0.97] transition';
         card.onclick = () => openProductModalById(item.id);
-
         const shortTitle = item.title.split('（')[0];
-        const fontSizeClass = shortTitle.length > 8 ? 'text-[9.5px]' : 'text-[10.5px]';
-
         card.innerHTML = `
-          <!-- 丸いメニュー写真 -->
-          <div class="relative w-full aspect-square rounded-full overflow-hidden border-[3px] border-white/90 bubble-frame-subtle shadow-xl shrink-0">
-            <img src="${item.mainImg}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-            <div class="absolute inset-0 rounded-full border border-white/40 pointer-events-none"></div>
-            <div class="absolute top-2 left-2.5 w-4 h-2 rounded-full bg-white/80 transform -rotate-45 pointer-events-none shadow-sm"></div>
-            <div class="absolute bottom-2 right-3 w-1.5 h-1.5 rounded-full bg-white/60 pointer-events-none"></div>
-          </div>
-
-          <!-- メニュー名 -->
-          <div class="mt-2.5 text-center px-1 relative z-10 w-full flex justify-center">
-            <span class="${fontSizeClass} font-bold text-white bg-black/65 backdrop-blur-md px-2.5 py-1 rounded-full whitespace-nowrap shadow-md max-w-full truncate border border-white/20">
-              ${shortTitle}
-            </span>
-          </div>
-        `;
-
+          <img src="${item.mainImg}" alt="${shortTitle}" loading="lazy" style="height: 110px;">
+          <div class="px-2.5 pt-2 pb-2.5">
+            <span class="inline-block text-[8.5px] font-black text-amber-950 bg-amber-300 rounded-full px-1.5 py-0.5 mb-1">${item.tag}</span>
+            <p class="text-[12.5px] font-bold text-white leading-snug font-serif-luxury">${shortTitle}</p>
+            <p class="text-[10px] text-white/60 mt-0.5 leading-snug">${item.curvedTop || ''}</p>
+          </div>`;
         container.appendChild(card);
       });
 
@@ -2602,18 +3149,13 @@
     // ==============================================
     // 6. アニメーションメインループ（確実なDOM破棄と補充）
     // ==============================================
-    function animate() {
-      ctx.clearRect(0, 0, width, height);
-
-      for (let i = 0; i < ringBubbles.length; i++) {
-        ringBubbles[i].update();
-        ringBubbles[i].draw();
-      }
-
-      for (let i = 0; i < ambientBubbles.length; i++) {
-        ambientBubbles[i].update();
-        ambientBubbles[i].draw();
-      }
+    function animate(now = performance.now()) {
+      // 残像を少しずつ消して、花火の光が線になって尾を引くように
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.16)';
+      ctx.fillRect(0, 0, width, height);
+      ctx.globalCompositeOperation = 'source-over';
+      drawMainFireworks(now);
 
       for (let i = shockwaves.length - 1; i >= 0; i--) {
         shockwaves[i].update();
@@ -2820,24 +3362,23 @@
       const list = memoriesOfRound(meterState.round);
       const n = list.length;
 
+      // 5つの提灯。写真が届くと、その写真が入って灯る
+      const SAG = [5, 10, 12, 10, 5];
       meterSlotsEl.innerHTML = '';
       for (let i = 0; i < METER_GOAL; i++) {
-        const slot = document.createElement('div');
-        slot.className = 'meter-slot';
         const m = list[i];
+        const el = document.createElement('div');
+        const flying = m && pendingFlightIds.has(m.id);
+        el.className = 'lantern' + (m && !flying ? ' lit' : '');
+        el.style.marginTop = `${SAG[i]}px`;
+        el.style.animationDelay = `-${i * 0.7}s`;
+        el.innerHTML = `<span class="lantern-cap"></span><span class="lantern-body"><span class="lantern-window">${m ? `<img src="${m.img}" alt=""${flying ? ' style="opacity:0"' : ''}>` : i + 1}</span></span><span class="lantern-foot"></span><span class="lantern-tassel"></span>`;
         if (m) {
-          slot.classList.add('filled');
-          slot.dataset.id = m.id;
-          const img = document.createElement('img');
-          img.src = m.img;
-          if (pendingFlightIds.has(m.id)) img.style.opacity = '0';
-          slot.appendChild(img);
-          slot.addEventListener('click', () => openUserPhotoModal(toBubbleData(m)));
-          if (popId === m.id) slot.classList.add('slot-pop');
-        } else {
-          slot.innerHTML = `<span class="text-[13px] opacity-40">🍺</span>`;
+          el.dataset.id = m.id;
+          el.addEventListener('click', () => openUserPhotoModal(toBubbleData(m)));
+          if (popId === m.id) el.classList.add('slot-pop', 'flare');
         }
-        meterSlotsEl.appendChild(slot);
+        meterSlotsEl.appendChild(el);
       }
 
       meterCountEl.textContent = n;
@@ -2846,13 +3387,13 @@
 
       const nextShow = (meterState.totalShows || 0) + 1;
       if (n >= METER_GOAL) {
-        meterHintEl.textContent = `🎉 満タン！本日${nextShow}発目のショー開始！`;
+        meterHintEl.textContent = `5つ灯りました。本日${nextShow}発目のショーが始まります`;
       } else if (n === METER_GOAL - 1) {
-        meterHintEl.textContent = `🔥 リーチ！あと1枚で本日${nextShow}発目！`;
+        meterHintEl.textContent = `リーチ。あと1つ灯ると、本日${nextShow}発目`;
       } else if (n === 0) {
-        meterHintEl.textContent = `最初の1枚で乾杯！ 次は本日${nextShow}発目…何が出る？`;
+        meterHintEl.textContent = `最初の1枚で、1つめの提灯が灯ります`;
       } else {
-        meterHintEl.textContent = `あと${METER_GOAL - n}枚で本日${nextShow}発目！何が出る？`;
+        meterHintEl.textContent = `あと${METER_GOAL - n}つ灯ると、本日${nextShow}発目…何が出る？`;
       }
     }
 
@@ -2877,27 +3418,25 @@
     }
 
     // ---------- 新しい写真がメーターへ飛んでいく演出 ----------
-    function flyIntoMeter(m) {
+    function flyIntoMeter(m, opts = {}) {
       pendingFlightIds.add(m.id);
       renderMeter();
-      const target = meterSlotsEl.querySelector(`[data-id="${m.id}"]`);
+      const target = meterSlotsEl.querySelector(`[data-id="${m.id}"] .lantern-window`) || meterSlotsEl.querySelector(`[data-id="${m.id}"]`);
       const land = () => {
         pendingFlightIds.delete(m.id);
         renderMeter(m.id);
         playPopSound();
-        meterGlassEl.classList.remove('glass-shake');
-        void meterGlassEl.offsetWidth;
-        meterGlassEl.classList.add('glass-shake');
+        if (opts.onLand) opts.onLand();
       };
       if (!target || !target.animate) { land(); return; }
 
       const rect = target.getBoundingClientRect();
-      const startSize = 120;
+      const startSize = opts.size || 120;
       const cr = appContainer.getBoundingClientRect();
-      const startX = cr.left + cr.width / 2 - startSize / 2;
-      const startY = cr.top + cr.height * 0.62;
+      const startX = (opts.cx ?? (cr.left + cr.width / 2)) - startSize / 2;
+      const startY = (opts.cy ?? (cr.top + cr.height * 0.62)) - (opts.cy ? startSize / 2 : 0);
       const flyer = document.createElement('div');
-      flyer.className = 'fixed rounded-full overflow-hidden bubble-frame-user z-[75] pointer-events-none';
+      flyer.className = 'fixed rounded-full overflow-hidden memory-flyer z-[75] pointer-events-none';
       flyer.style.cssText = `left:0;top:0;width:${startSize}px;height:${startSize}px;`;
       flyer.innerHTML = `<img src="${m.img}" class="w-full h-full object-cover">`;
       document.body.appendChild(flyer);
@@ -2906,12 +3445,69 @@
       const midX = startX + (rect.left - startX) * 0.35 + 40;
       const midY = startY - 140;
       const anim = flyer.animate([
-        { transform: `translate(${startX}px, ${startY + 80}px) scale(0.2)`, opacity: 0 },
+        opts.cy ? { transform: `translate(${startX}px, ${startY}px) scale(1)`, opacity: 1 } : { transform: `translate(${startX}px, ${startY + 80}px) scale(0.2)`, opacity: 0 },
         { transform: `translate(${startX}px, ${startY}px) scale(1)`, opacity: 1, offset: 0.25 },
         { transform: `translate(${midX}px, ${midY}px) scale(0.75)`, opacity: 1, offset: 0.6 },
         { transform: `translate(${rect.left - startSize * (1 - scale) / 2}px, ${rect.top - startSize * (1 - scale) / 2}px) scale(${scale})`, opacity: 1 }
       ], { duration: 1300, easing: 'cubic-bezier(0.45, 0, 0.25, 1)', fill: 'forwards' });
       anim.onfinish = () => { flyer.remove(); land(); };
+    }
+
+    // ---------- 投稿した写真が「夜空に打ち上がって → 提灯に灯る」演出 ----------
+    // 自分の写真：画面下から花火のように昇り、夜空で開いてひとことを表示 → 提灯へ飛んで灯る
+    // ほかの席の写真：夜空でふわっと開いてから提灯へ
+    function launchMemory(m, mine, rank) {
+      const cr = appContainer.getBoundingClientRect();
+      const apexX = cr.left + cr.width / 2;
+      const apexY = cr.top + cr.height * 0.42;
+      const size = 128;
+      pendingFlightIds.add(m.id);
+      renderMeter();
+
+      const bloomAt = mine ? 950 : 0;
+      if (mine) {
+        // 下から昇る小さな写真＋光の筋
+        const rocket = document.createElement('div');
+        rocket.className = 'fixed rounded-full overflow-hidden memory-flyer z-[75] pointer-events-none';
+        rocket.style.cssText = `left:0;top:0;width:56px;height:56px;`;
+        rocket.innerHTML = `<img src="${m.img}" class="w-full h-full object-cover">`;
+        document.body.appendChild(rocket);
+        const sy = cr.top + cr.height * 0.86;
+        rocket.animate([
+          { transform: `translate(${apexX - 28}px, ${sy}px) scale(0.6)`, opacity: 0.2 },
+          { transform: `translate(${apexX - 28}px, ${apexY - 28}px) scale(1)`, opacity: 1 }
+        ], { duration: bloomAt, easing: 'cubic-bezier(0.2, 0.7, 0.3, 1)', fill: 'forwards' }).onfinish = () => rocket.remove();
+        mainRockets.push({ x0: apexX - cr.left, y0: sy - cr.top + 28, x: apexX - cr.left, y: apexY - cr.top, t0: performance.now(), dur: bloomAt, scale: 0.01, kind: 'botan' });
+        try { initAudio(); playWhistle(bloomAt / 1000); } catch (e) {}
+      }
+
+      setTimeout(() => {
+        // 夜空で開く：大きな花火＋写真が咲く＋ひとこと
+        mainBurst(apexX - cr.left, apexY - cr.top, mine ? 1.5 : 1.1, true, 'kiku');
+        if (mine) setTimeout(() => mainBurst(apexX - cr.left + 70, apexY - cr.top - 50, 0.7, false, 'botan'), 180);
+        if (mine) try { playChime(); } catch (e) {}
+        const bloom = document.createElement('div');
+        bloom.className = 'fixed z-[76] pointer-events-none flex flex-col items-center memory-bloom';
+        bloom.style.cssText = `left:${apexX}px;top:${apexY - size / 2}px;transform:translateX(-50%);`;
+        bloom.innerHTML = `
+          <div class="memory-flyer rounded-full overflow-hidden" style="width:${size}px;height:${size}px;"><img src="${m.img}" class="w-full h-full object-cover"></div>
+          ${m.caption ? `<p class="memory-caption">「${escapeHtml(m.caption)}」</p>` : ''}
+          <p class="memory-label">${mine ? 'あなたの一枚が、夜空に上がりました' : 'ほかの席から、思い出が届きました'}</p>`;
+        document.body.appendChild(bloom);
+        setTimeout(() => {
+          bloom.classList.add('memory-bloom-out');
+          setTimeout(() => bloom.remove(), 300);
+          pendingFlightIds.delete(m.id);
+          flyIntoMeter(m, {
+            cx: apexX, cy: apexY, size,
+            onLand: () => {
+              try { playChime(); } catch (e) {}
+              const n = Math.min(memoriesOfRound(meterState.round).length, METER_GOAL);
+              showToast(`<span class="toast-dot"></span><span class="truncate">${mine ? 'あなたの思い出が、提灯に灯りました' : 'ほかの席の思い出が、提灯に灯りました'}</span><span class="text-amber-300 shrink-0">${n}/${METER_GOAL}</span>`);
+            }
+          });
+        }, mine ? 1400 : 1100);
+      }, bloomAt);
     }
 
     // ---------- 浮遊する写真バブルと同期 ----------
@@ -2929,6 +3525,7 @@
     }
 
     function spawnUserBubbleNow(m) {
+      return; // 写真は泡ではなく提灯に灯る
       if (floatingBubbles.length >= MAX_ONSCREEN_BUBBLES) {
         const idx = floatingBubbles.findIndex(b => !b.isUser);
         const old = floatingBubbles.splice(idx >= 0 ? idx : 0, 1)[0];
@@ -2968,19 +3565,16 @@
         .sort((a, b) => a.timestamp - b.timestamp)
         .forEach((m, i) => {
           setTimeout(() => {
-            flyIntoMeter(m);
-            spawnUserBubbleNow(m);
-            const n = memoriesOfRound(meterState.round).length;
             const rank = memoriesOfRound(meterState.round).findIndex(x => x.id === m.id) + 1;
             const mine = m.userId === currentUserId();
-            if (mine && rank === METER_GOAL) {
-              showToast(`<span>👑</span><span class="truncate">ラストの1枚！あなたがMVP！</span>`, 3200);
+            if (rank === METER_GOAL) {
+              // 5枚目はすぐにショーが始まるので、短い演出で提灯へ
+              flyIntoMeter(m);
+              if (mine) showToast(`<span class="toast-dot"></span><span class="truncate">最後の一枚をありがとう。あなたがMVPです</span>`, 3200);
             } else {
-              const who = mine ? 'あなたの一枚' : 'ほかの席から';
-              const cap = m.caption ? `「${escapeHtml(m.caption)}」` : '思い出';
-              showToast(`<span>🍺</span><span class="truncate">${who} ${cap} が届いた！</span><span class="text-amber-300 shrink-0">${Math.min(n, METER_GOAL)}/${METER_GOAL}</span>`);
+              launchMemory(m, mine, rank);
             }
-          }, i * 500);
+          }, i * 900);
         });
 
       // あと1枚になった瞬間、全員の画面で「リーチ！」
@@ -3151,7 +3745,7 @@
           tx.set(stateDocRef(), { ...s, count: Math.max(0, (s.count || 0) - 1), updatedAt: Date.now() });
           return 'ok';
         });
-        if (result === 'locked') showToast('🎆 花火の準備中なので消せません');
+        if (result === 'locked') showToast('花火の準備中のため、いまは消せません');
       } catch (err) {
         console.warn('Delete memory failed:', err);
       }
@@ -4120,6 +4714,35 @@
       sctx.fill();
     }
 
+    // 王冠（MVP）を線と面で描く
+    function drawCrown(c, x, y, w) {
+      const h = w * 0.62;
+      c.save();
+      c.translate(x, y);
+      const g = c.createLinearGradient(0, -h / 2, 0, h / 2);
+      g.addColorStop(0, '#fff3c4'); g.addColorStop(0.5, '#f2c14e'); g.addColorStop(1, '#a8740c');
+      c.fillStyle = g;
+      c.shadowColor = 'rgba(255, 210, 120, 0.9)';
+      c.shadowBlur = 12;
+      c.beginPath();
+      c.moveTo(-w / 2, h / 2);
+      c.lineTo(-w / 2, -h * 0.15);
+      c.lineTo(-w * 0.25, h * 0.1);
+      c.lineTo(0, -h / 2);
+      c.lineTo(w * 0.25, h * 0.1);
+      c.lineTo(w / 2, -h * 0.15);
+      c.lineTo(w / 2, h / 2);
+      c.closePath();
+      c.fill();
+      c.shadowBlur = 0;
+      c.fillStyle = '#fffbe6';
+      [[-w / 2, -h * 0.15], [0, -h / 2], [w / 2, -h * 0.15]].forEach(([px, py]) => { c.beginPath(); c.arc(px, py, w * 0.07, 0, Math.PI * 2); c.fill(); });
+      c.restore();
+    }
+    // 乾杯用のジョッキ画像（画面のジョッキと同じ絵柄）
+    const mugImage = new Image();
+    mugImage.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(beerMugSVG().replace('translateY(110px)', 'translateY(9px)').replace('class="mug-svg w-full h-full overflow-visible"', 'xmlns="http://www.w3.org/2000/svg" width="220" height="260"'));
+
     // 最後にジョッキ同士で乾杯
     function drawClink() {
       if (!clinkAnim) return;
@@ -4136,8 +4759,11 @@
       sctx.font = `${Math.round(size)}px sans-serif`;
       sctx.textAlign = 'center';
       sctx.textBaseline = 'middle';
-      sctx.save(); sctx.translate(SW / 2 - off, cy); sctx.rotate(tilt); sctx.fillText('🍺', 0, 0); sctx.restore();
-      sctx.save(); sctx.translate(SW / 2 + off, cy); sctx.scale(-1, 1); sctx.rotate(tilt); sctx.fillText('🍺', 0, 0); sctx.restore();
+      const mw = size * 0.85, mh = size;
+      if (mugImage.complete && mugImage.naturalWidth) {
+        sctx.save(); sctx.translate(SW / 2 - off, cy); sctx.rotate(tilt); sctx.drawImage(mugImage, -mw / 2, -mh / 2, mw, mh); sctx.restore();
+        sctx.save(); sctx.translate(SW / 2 + off, cy); sctx.scale(-1, 1); sctx.rotate(tilt); sctx.drawImage(mugImage, -mw / 2, -mh / 2, mw, mh); sctx.restore();
+      }
       sctx.restore();
       if (a >= meet && !clinkAnim.hit) {
         clinkAnim.hit = true;
@@ -4346,7 +4972,7 @@
       // ===== 本編 =====
       at(O, () => {
         showTheme = SHOW_THEMES[reveal.finalKey];
-        setHeadline(`${showTheme.emoji} ${showTheme.name}`, `本日${info.showNo}発目`);
+        setHeadline(showTheme.name, `本日${info.showNo}発目`);
         if (showTheme.key === 'beer') { beerTarget = 0.34; beerPour = { until: O + 1900, width: Math.min(SW, 430) * 0.09 }; }
         if (showTheme.key === 'willow') goldRainUntil = O + 1500;
         cheerHint.textContent = '連打でフィナーレが豪華に！';
@@ -4435,7 +5061,7 @@
 
       // ===== KANPAI! 全員の写真の輪（中央はラストの1枚＝MVP） =====
       at(O + 11800, () => {
-        const mvpLine = info.mvp ? (info.mvp.isMe ? '👑 あなたがMVP！ラストの1枚ありがとう！' : '👑 MVPはラストの1枚を撮ってくれた人！') : 'みんなの思い出、ありがとう！';
+        const mvpLine = info.mvp ? (info.mvp.isMe ? 'MVPは、最後の一枚を撮ったあなたです' : 'MVPは、最後の一枚を撮ってくれた方です') : 'みんなの思い出、ありがとう';
         setHeadline('KANPAI!', mvpLine);
         playChime();
         buzz([40, 40, 80]);
@@ -4497,16 +5123,13 @@
           sctx.textAlign = 'center';
           sctx.textBaseline = 'middle';
           sctx.font = `${Math.round(pr * 0.9)}px sans-serif`;
-          sctx.fillText('👑', cx, cy - cr - pr * 0.35 + Math.sin(a / 200) * 3);
+          drawCrown(sctx, cx, cy - cr - pr * 0.42 + Math.sin(a / 200) * 3, pr * 0.95);
           sctx.restore();
           drawCaptionPill(sctx, `MVP ${finaleRing.mvp.caption || 'ラストの1枚'}`, cx, cy + cr + 22, calpha);
         } else {
           sctx.save();
           sctx.globalAlpha = Math.min(1, a / 400) * calpha;
-          sctx.font = `${Math.round(pr * 1.4)}px sans-serif`;
-          sctx.textAlign = 'center';
-          sctx.textBaseline = 'middle';
-          sctx.fillText('🍻', cx, cy);
+          drawBottleCap(cx, cy, pr * 1.1, a / 900, 'rgba(255,220,150,0.8)', 24);
           sctx.restore();
         }
         if (a > centerPopAt && !finaleRing._centerPopped) {
@@ -4871,7 +5494,7 @@
     // ==============================================
     // 8.5 写真の加工（フィルム風の色味＋ビールの泡）
     // ==============================================
-    let currentPhotoFilter = 'film-foam';
+    let currentPhotoFilter = 'none'; // 加工なし（撮ったままの写真）
     const filterChips = document.querySelectorAll('[data-photo-filter]');
 
     function filmGrade(x, size) {
@@ -5132,11 +5755,11 @@
 
       if (result === 'full') {
         // 花火の演出中：モーダルは閉じずに、終わってからもう一度押してもらう
-        showToast('🎆 いま花火の真っ最中！終わったらもう一度「メーターに入れる」を押してね', 3500);
+        showToast('いま花火の真っ最中です。終わったら、もう一度「提灯に灯す」を押してください', 3500);
         return;
       }
       if (result === 'error') {
-        showToast('⚠️ 送信できませんでした。電波の良い場所でもう一度お試しください', 3500);
+        showToast('送信できませんでした。電波の良い場所で、もう一度お試しください', 3500);
         return;
       }
 
@@ -5152,6 +5775,7 @@
     window.submitCapturedBubble = submitCapturedBubble;
 
     function ensureVideoPlayback() {
+      return; // 背景は夜空（CSS）になったため、背景動画は使わない
       const bgVideo = document.getElementById('bgVideo');
       if (!bgVideo) return;
 
@@ -5180,6 +5804,8 @@
       lucide.createIcons();
       resizeCanvas();
       renderMenuList();
+      renderMenuCarousel();
+      makeFilmGrain();
 
       initAmbientBubbles();
       animate();
