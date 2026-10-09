@@ -377,7 +377,7 @@
             top: 0; left: 0; width: 100%; height: 100%;
             z-index: 0;
             pointer-events: none;
-            background-image: url('gaikan.png');
+            background-image: url('gaikan.webp');
             background-size: cover;
             background-position: center bottom;
             background-repeat: no-repeat;
@@ -578,7 +578,7 @@
         
         <button id="btn-play-catch" class="btn game-btn">
             <div class="game-btn-img-wrap">
-                <img src="kyachi.png" alt="メニューキャッチ" class="game-btn-img" onerror="this.outerHTML='<div style=\'font-size:3rem;\'>🍎</div>'">
+                <img src="kyachi.webp" alt="メニューキャッチ" class="game-btn-img" onerror="this.outerHTML='<div style=\'font-size:3rem;\'>🍎</div>'">
             </div>
             <div class="game-btn-text-wrap">
                 <div class="game-btn-title">メニューキャッチ</div>
@@ -588,7 +588,7 @@
         
         <button id="btn-play-whack" class="btn game-btn whack">
             <div class="game-btn-img-wrap">
-                <img src="mogura.png" alt="モグラたたき" class="game-btn-img" onerror="this.outerHTML='<div style=\'font-size:3rem;\'>🐹</div>'">
+                <img src="mogura.webp" alt="モグラたたき" class="game-btn-img" onerror="this.outerHTML='<div style=\'font-size:3rem;\'>🐹</div>'">
             </div>
             <div class="game-btn-text-wrap">
                 <div class="game-btn-title">モグラたたき</div>
@@ -671,9 +671,9 @@
 
         // 指定メニュー3種
         const goodFoods = [
-            { name: "牛すじ", emoji: "🍲", src: "gyuusuji.png" },
-            { name: "碧南焼きそば", emoji: "🍜", src: "hekinanyakisoba.png" },
-            { name: "お好み焼き", emoji: "🥞", src: "okonomi.png" }
+            { name: "牛すじ", emoji: "🍲", src: "gyuusuji.webp" },
+            { name: "碧南焼きそば", emoji: "🍜", src: "hekinanyakisoba.webp" },
+            { name: "お好み焼き", emoji: "🥞", src: "okonomi.webp" }
         ];
 
         let caughtFoods = {};
@@ -686,11 +686,29 @@
             setTimeout(() => { modal.style.display = 'none'; }, 3000);
         }
 
-        function startCamera() {
+        function stopCamera() {
             if (currentStream) {
                 currentStream.getTracks().forEach(track => track.stop());
                 currentStream = null;
             }
+            video.srcObject = null;
+        }
+
+        // 写真を縦横比を保ったまま中央トリミング(object-fit: cover相当)で描画
+        function drawPhotoCover(ctx, dx, dy, dw, dh) {
+            const srcW = photoCanvas.width;
+            const srcH = photoCanvas.height;
+            if (!srcW || !srcH) return;
+            const scale = Math.max(dw / srcW, dh / srcH);
+            const sw = dw / scale;
+            const sh = dh / scale;
+            const sx = (srcW - sw) / 2;
+            const sy = (srcH - sh) / 2;
+            ctx.drawImage(photoCanvas, sx, sy, sw, sh, dx, dy, dw, dh);
+        }
+
+        function startCamera() {
+            stopCamera();
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                 createMockPhoto();
                 return;
@@ -734,7 +752,8 @@
                 
                 pCtx.drawImage(video, sx, sy, sw, sh, 0, 0, photoCanvas.width, photoCanvas.height);
             }
-            
+            stopCamera();
+
             video.style.display = 'none';
             photoCanvas.style.display = 'block';
             uiShooting.style.display = 'none';
@@ -860,8 +879,13 @@
             clearInterval(catchSpawnerId);
             clearInterval(whackTimerId);
             clearTimeout(whackSpawnerId);
-            whackHoles.forEach(h => clearTimeout(h.timeoutId));
-            
+            whackHoles.forEach(h => {
+                clearTimeout(h.timeoutId);
+                h.isActive = false;
+                h.charMole.classList.add('hidden');
+                h.foodMole.classList.add('hidden');
+            });
+
             fallingItems.forEach(item => {
                 if (item.element && item.element.parentNode) {
                     item.element.remove();
@@ -941,9 +965,10 @@
             ctx.beginPath();
             ctx.ellipse(faceX + faceW/2, faceY + faceH/2, faceW/2, faceH/2, 0, 0, 2 * Math.PI);
             ctx.clip();
-            if (photoCanvas.width > 0) {
-                ctx.drawImage(photoCanvas, 0, 0, photoCanvas.width, photoCanvas.height, faceX, faceY, faceW, faceH);
-            }
+            // 撮影画面と同じく左右反転して描画
+            ctx.translate(faceX * 2 + faceW, 0);
+            ctx.scale(-1, 1);
+            drawPhotoCover(ctx, faceX, faceY, faceW, faceH);
             ctx.restore();
             
             ctx.drawImage(drawCanvas, 0, 0, targetCanvas.width, targetCanvas.height);
@@ -1135,7 +1160,7 @@
                     <div class="mole character-mole hidden">
                         <canvas class="clone-drawing" width="300" height="420"></canvas>
                         <div class="clone-face-frame">
-                            <canvas class="clone-photo" width="300" height="420"></canvas>
+                            <canvas class="clone-photo" width="240" height="320"></canvas>
                         </div>
                     </div>
                     <div class="mole food-mole hidden"></div>
@@ -1145,9 +1170,7 @@
                 const cloneDraw = holeDiv.querySelector('.clone-drawing');
                 const clonePhoto = holeDiv.querySelector('.clone-photo');
                 cloneDraw.getContext('2d').drawImage(drawCanvas, 0, 0);
-                if (photoCanvas.width > 0) {
-                    clonePhoto.getContext('2d').drawImage(photoCanvas, 0, 0, clonePhoto.width, clonePhoto.height);
-                }
+                drawPhotoCover(clonePhoto.getContext('2d'), 0, 0, clonePhoto.width, clonePhoto.height);
 
                 const charMole = holeDiv.querySelector('.character-mole');
                 const foodMole = holeDiv.querySelector('.food-mole');
