@@ -207,10 +207,12 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      display: none;
+      opacity: 0;
+      transition: opacity 0.35s ease;
     }
-    .story-frame.has-video .story-video { display: block; }
-    .story-frame.has-video .story-illust { display: none; }
+    .story-illust { transition: opacity 0.35s ease; }
+    .story-frame.has-video .story-video { opacity: 1; }
+    .story-frame.has-video .story-illust { opacity: 0; }
 
     /* 共通：バー店内のボケ背景 */
     .bar-bg {
@@ -829,7 +831,7 @@
       <!-- 枠1：美味しいビールが届く -->
       <div class="story-frame frame-1" data-video="intro1.mp4">
         <div class="video-scrim"></div>
-        <video class="story-video" muted playsinline preload="auto"></video>
+        <video class="story-video" muted playsinline webkit-playsinline preload="auto"></video>
         <div class="story-illust absolute inset-0">
           <div class="bar-bg"></div>
           <div class="bokeh-layer absolute inset-0"></div>
@@ -849,7 +851,7 @@
       <!-- 枠2：写真を撮って一言そえる -->
       <div class="story-frame frame-2" data-video="intro2.mp4">
         <div class="video-scrim"></div>
-        <video class="story-video" muted playsinline preload="auto"></video>
+        <video class="story-video" muted playsinline webkit-playsinline preload="auto"></video>
         <div class="story-illust absolute inset-0">
           <div class="bar-bg"></div>
           <div class="bokeh-layer absolute inset-0"></div>
@@ -876,7 +878,7 @@
       <!-- 枠3：みなさんの写真が集まると、、、何かが起こる -->
       <div class="story-frame frame-3" data-video="intro3.mp4">
         <div class="video-scrim"></div>
-        <video class="story-video" muted playsinline preload="auto"></video>
+        <video class="story-video" muted playsinline webkit-playsinline preload="auto"></video>
         <div class="story-illust absolute inset-0">
           <div class="bar-bg"></div>
           <div class="bokeh-layer absolute inset-0"></div>
@@ -1566,14 +1568,33 @@
         photosLayer.appendChild(p);
       });
       // 実写動画があれば差し替え（無ければイラストのまま）
-      storyFrames.forEach(f => {
+      // iPhone は再生するまで動画を読み込まないため、「再生が始まった」時点で動画に切り替える
+      storyFrames.forEach((f, k) => {
         const v = f.querySelector('.story-video');
-        v.addEventListener('loadeddata', () => f.classList.add('has-video'), { once: true });
+        v.muted = true;
+        v.defaultMuted = true;
+        v.playsInline = true;
+        f.dataset.vstate = 'unknown';
+        v.addEventListener('playing', () => {
+          if (f.dataset.vstate === 'error') return;
+          f.dataset.vstate = 'ok';
+          f.classList.add('has-video');
+          // 再生が始まった枠は、動画の残り時間に合わせて進行バーとタイマーを付け直す
+          if (storyActive && storyFrames[storyIndex] === f) syncFrameToVideo(k);
+          else if (!f.classList.contains('active')) { try { v.pause(); v.currentTime = 0; } catch (e) {} }
+          // 1本目が流れ始めたら、2・3本目も裏で読み込んでおく（iPhone対策）
+          if (k === 0) warmUpStoryVideos();
+        });
+        v.addEventListener('error', () => {
+          f.dataset.vstate = 'error';
+          f.classList.remove('has-video');
+        });
         // 動画が終わったら次の枠へ
         v.addEventListener('ended', () => {
           if (storyActive && storyFrames[storyIndex] === f) showStoryFrame(storyIndex + 1);
         });
         v.src = f.dataset.video;
+        try { v.load(); } catch (e) {}
       });
     }
 
@@ -1719,30 +1740,67 @@
         // 写真が集まった瞬間、写真の大輪が咲く
         if (!frame.classList.contains('has-video')) sfxTimers.push(setTimeout(() => sfxPhotoBloom(sfxW * 0.5, sfxH * 0.33), 1850));
       }
-      if (frame.classList.contains('has-video')) {
-        const v = frame.querySelector('.story-video');
-        v.currentTime = 0;
-        v.play().catch(() => {});
+      const v = frame.querySelector('.story-video');
+      if (frame.dataset.vstate !== 'error') {
+        try { v.currentTime = 0; } catch (e) {}
+        const p = v.play();
+        if (p && p.catch) p.catch(() => {
+          // 省電力モードなどで再生できない時はイラストのまま進める
+          if (storyFrames[storyIndex] !== frame) return;
+          frame.dataset.vstate = 'error';
+          frame.classList.remove('has-video');
+          setStoryBar(i, STORY_DURATIONS[i]);
+          clearTimeout(storyTimer);
+          storyTimer = setTimeout(() => showStoryFrame(i + 1), STORY_DURATIONS[i]);
+        });
       }
       storyBars.forEach((b, k) => {
         b.classList.remove('running', 'done');
-        const fill = b.querySelector('.story-bar-fill');
-        fill.style.animationDuration = '';
+        b.querySelector('.story-bar-fill').style.animationDuration = '';
         if (k < i) b.classList.add('done');
-        if (k === i) {
-          fill.style.animationDuration = `${frameDuration(k)}ms`;
-          void fill.offsetWidth;
-          b.classList.add('running');
-        }
       });
-      storyTimer = setTimeout(() => showStoryFrame(i + 1), frameDuration(i) + (frame.classList.contains('has-video') ? 400 : 0));
+      setStoryBar(i, frameDuration(i));
+      // 動画がありそうな枠は「動画が終わったら次へ」。念のための保険タイマーは長めに
+      const mayHaveVideo = frame.dataset.vstate !== 'error';
+      storyTimer = setTimeout(() => showStoryFrame(i + 1), mayHaveVideo ? Math.max(frameDuration(i), 6500) + 600 : frameDuration(i));
+    }
+
+    let storyVideosWarmed = false;
+    function warmUpStoryVideos() {
+      if (storyVideosWarmed) return;
+      storyVideosWarmed = true;
+      storyFrames.slice(1).forEach(f => {
+        if (f.dataset.vstate === 'error' || f.classList.contains('active')) return;
+        const v = f.querySelector('.story-video');
+        const p = v.play();
+        if (p && p.catch) p.catch(() => {});
+      });
+    }
+
+    function setStoryBar(i, ms) {
+      const b = storyBars[i];
+      const fill = b.querySelector('.story-bar-fill');
+      b.classList.remove('running');
+      fill.style.animationDuration = `${ms}ms`;
+      void fill.offsetWidth;
+      b.classList.add('running');
+    }
+
+    // 動画の再生が始まったら、残り時間に合わせて進行バーとタイマーを付け直す
+    function syncFrameToVideo(i) {
+      const v = storyFrames[i].querySelector('.story-video');
+      if (!v.duration || !isFinite(v.duration)) return;
+      const remain = Math.max(300, (v.duration - (v.currentTime || 0)) * 1000);
+      setStoryBar(i, remain);
+      clearTimeout(storyTimer);
+      storyTimer = setTimeout(() => showStoryFrame(i + 1), remain + 600);
     }
 
     // 動画がある枠は動画の長さに合わせる（無ければイラストの長さ）
     function frameDuration(i) {
       const f = storyFrames[i];
       const v = f.querySelector('.story-video');
-      if (f.classList.contains('has-video') && v.duration && isFinite(v.duration)) return Math.round(v.duration * 1000);
+      if (f.dataset.vstate !== 'error' && v.duration && isFinite(v.duration)) return Math.round(v.duration * 1000);
       return STORY_DURATIONS[i];
     }
 
@@ -1756,10 +1814,13 @@
       // 1本目の動画の読み込みを最大1.5秒だけ待ってから始める（間に合わなければイラストで開始）
       const first = storyFrames[0];
       const v = first.querySelector('.story-video');
-      if (first.classList.contains('has-video') || !v.getAttribute('src')) { showStoryFrame(0); return; }
+      if (first.dataset.vstate === 'ok' || first.dataset.vstate === 'error' || !v.getAttribute('src')) { showStoryFrame(0); return; }
       let started = false;
       const go = () => { if (!started && storyActive) { started = true; showStoryFrame(0); } };
-      v.addEventListener('loadeddata', () => setTimeout(go, 30), { once: true });
+      v.addEventListener('playing', go, { once: true });
+      v.addEventListener('error', go, { once: true });
+      const p = v.play();
+      if (p && p.catch) p.catch(go);
       setTimeout(go, 1500);
     }
 
