@@ -779,6 +779,86 @@
       filter: drop-shadow(0 0 10px rgba(255, 200, 120, 0.45)) drop-shadow(0 6px 10px rgba(0, 0, 0, 0.5));
     }
     #showOverlay .sky-truck { z-index: 3; }
+    .sky-truck.honk { animation: truckHonk 0.5s ease-out; }
+    @keyframes truckHonk {
+      0% { scale: 1; }
+      30% { scale: 1.12 0.9; }
+      60% { scale: 0.95 1.08; }
+      100% { scale: 1; }
+    }
+    .truck-say {
+      position: absolute;
+      left: 0;
+      top: 0;
+      z-index: 4;
+      pointer-events: none;
+      white-space: nowrap;
+      padding: 5px 11px 6px;
+      border-radius: 9999px;
+      background: rgba(255, 251, 238, 0.96);
+      color: #3a2208;
+      font-family: 'Zen Maru Gothic', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      box-shadow: 0 0 16px rgba(255, 210, 122, 0.55), 0 4px 10px rgba(0, 0, 0, 0.4);
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+    .truck-say::after {
+      content: '';
+      position: absolute;
+      left: 22px;
+      bottom: -5px;
+      border: 5px solid transparent;
+      border-bottom: 0;
+      border-top-color: rgba(255, 251, 238, 0.96);
+    }
+    .truck-say.show { opacity: 1; }
+    #showOverlay .truck-say { z-index: 5; }
+
+    /* 季節の夜空 */
+    #seasonCanvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+    .season-moon {
+      position: absolute;
+      top: 17%;
+      right: 12%;
+      width: 46px;
+      height: 46px;
+      border-radius: 9999px;
+      display: none;
+      background: radial-gradient(circle at 38% 36%, #fffaf0 0%, #ffe9b8 55%, #f5cf86 100%);
+      box-shadow: 0 0 26px 6px rgba(255, 226, 160, 0.4), 0 0 80px 24px rgba(255, 210, 130, 0.14);
+      opacity: 0.9;
+    }
+    .season-moon::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: radial-gradient(circle at 62% 60%, rgba(190, 150, 90, 0.28) 0 12%, transparent 13%), radial-gradient(circle at 34% 66%, rgba(190, 150, 90, 0.2) 0 8%, transparent 9%);
+    }
+    [data-season="autumn"] .season-moon { display: block; }
+    .season-tag {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      color: rgba(255, 236, 200, 0.75);
+      margin-left: 6px;
+    }
+
+    /* リーチ：提灯が揺れて、撮影ボタンが呼びかける */
+    .meter-reach .lantern { animation: lanternReach 0.7s ease-in-out infinite alternate; }
+    @keyframes lanternReach {
+      from { transform: rotate(-7deg); }
+      to { transform: rotate(7deg); }
+    }
+    .meter-reach.reach-shake .lantern-row { animation: reachShake 0.4s ease 2; }
+    .cta-camera.reach-call { animation: ctaCall 1.4s ease-in-out infinite; }
+    @keyframes ctaCall {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(247, 195, 95, 0.0), 0 10px 26px rgba(0, 0, 0, 0.45); }
+      50% { box-shadow: 0 0 0 3px rgba(247, 195, 95, 0.55), 0 0 28px rgba(247, 195, 95, 0.45); }
+    }
     #launchHint .ring {
       width: 74px;
       height: 74px;
@@ -1307,11 +1387,14 @@
     <!-- 背景：オープニング・ショーと同じ夜空（旧：ビールの泡の動画） -->
     <div class="night-sky z-0"></div>
     <div id="mainSkyFlash"></div>
+    <div class="season-moon" aria-hidden="true"></div>
     <div class="horizon-haze"></div>
     <video id="bgVideo" muted playsinline preload="none" class="hidden"></video>
 
     <!-- 背景のブクブク気泡＆花火演出 Canvas（スマホ幅・高さに自動同期） -->
     <canvas id="ambientBubbleCanvas" class="absolute inset-0 w-full h-full pointer-events-none" style="z-index: 1;"></canvas>
+    <!-- 季節の夜空（春：桜／夏：蛍／秋：紅葉／冬：雪） -->
+    <canvas id="seasonCanvas"></canvas>
 
     <!-- 花火大会の会場（山・提灯・ジョッキを掲げる人たち） -->
     <div class="main-scene">
@@ -1368,7 +1451,7 @@
     <div id="memoryMeter" class="absolute top-0 inset-x-0 z-30 pointer-events-auto opacity-0 transition-opacity duration-1000" style="padding-top: calc(env(safe-area-inset-top) + 8px);">
       <div id="meterPanel" class="lantern-panel mx-3 px-3 pt-1.5 pb-1.5 rounded-xl">
         <div class="flex items-center justify-between px-1">
-          <span class="text-[10.5px] font-black text-amber-200 tracking-[0.22em] font-serif-luxury">思い出の提灯</span>
+          <span class="text-[10.5px] font-black text-amber-200 tracking-[0.22em] font-serif-luxury">思い出の提灯<span id="seasonTag" class="season-tag"></span></span>
           <span class="flex items-center gap-2">
             <span class="text-[9.5px] font-bold text-white/85"><span id="meterCount" class="text-[13px] font-black text-white">0</span>/5 灯</span>
             <button onclick="replayStoryIntro()" class="px-1.5 py-[1px] rounded-full border border-white/40 text-[9px] font-bold text-white/85 active:scale-95 transition">遊び方</button>
@@ -1415,7 +1498,7 @@
 
         <button id="openCameraBtn" class="cta-camera active:scale-[0.98] transition">
           <span class="flex items-center gap-2 font-serif-luxury text-[16px] font-bold tracking-[0.16em]"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h1.7l1.3-2h7l1.3 2h1.7A2.5 2.5 0 0 1 21 8.5v9A2.5 2.5 0 0 1 18.5 20h-13A2.5 2.5 0 0 1 3 17.5z"/><circle cx="12" cy="13" r="3.8"/></svg>美味しいビールや、思い出を撮る</span>
-          <span class="text-[10.5px] font-medium tracking-[0.12em] text-white/65">一枚撮るごとに、提灯がひとつ灯ります</span>
+          <span id="ctaSub" class="text-[10.5px] font-medium tracking-[0.12em] text-white/65">一枚撮るごとに、提灯がひとつ灯ります</span>
         </button>
 
         <input type="file" id="cameraFallbackInput" accept="image/*" capture="environment" class="hidden">
@@ -1703,9 +1786,10 @@
   <!-- リーチ演出（あと1枚） -->
   <div id="reachBanner" class="hidden absolute inset-0 z-[85] items-center justify-center pointer-events-none">
     <div class="reach-card text-center px-7 py-5 rounded-3xl bg-black/70 backdrop-blur-md border-2 border-amber-300 shadow-[0_0_40px_rgba(251,191,36,0.6)]">
-      <p class="reach-big font-serif-luxury font-black text-[44px] leading-none text-amber-300">リーチ！</p>
-      <p id="reachSub" class="mt-2 text-white font-bold text-[13px] tracking-wider">あと1枚でショーが始まる！</p>
-      <p class="mt-1 text-amber-100/80 font-bold text-[11px]">何が出るかは…お楽しみ</p>
+      <p class="text-amber-200/90 font-bold text-[11px] tracking-[0.4em] mb-1.5">リーチ</p>
+      <p class="reach-big font-serif-luxury font-black text-[44px] leading-none text-amber-300">あと1枚！</p>
+      <p id="reachSub" class="mt-2 text-white font-bold text-[13px] tracking-wider">あと1枚で、ショーが始まります</p>
+      <p class="mt-1 text-amber-100/80 font-bold text-[11px]">ほかの席のみなさんも、ぜひ一枚</p>
     </div>
   </div>
 
@@ -2568,13 +2652,148 @@
       return pts;
     }
 
+    // ---------- 季節の形の花火（春：桜／夏：星／秋：紅葉／冬：雪の結晶） ----------
+    function polarShape(n, rFn, col, rot = -Math.PI / 2) {
+      const pts = [];
+      for (let i = 0; i < n; i++) { const a = (i / n) * Math.PI * 2; const r = rFn(a); pts.push([Math.cos(a + rot) * r, Math.sin(a + rot) * r, typeof col === 'function' ? col(i) : col]); }
+      return pts;
+    }
+    function sakuraShapePoints() {
+      // 5枚の花びら（先に小さな切れ込み）＋黄色い芯
+      const pts = polarShape(90, a => { const c = Math.abs(Math.cos(a * 2.5)); return 0.48 * (0.42 + 0.58 * Math.pow(c, 0.6)) - 0.07 * Math.pow(c, 40); }, i => i % 3 ? '#ffb7d3' : '#ffe3ee');
+      for (let i = 0; i < 10; i++) { const a = i / 10 * Math.PI * 2; pts.push([Math.cos(a) * 0.09, Math.sin(a) * 0.09, '#fff1a8']); }
+      return pts;
+    }
+    function starShapePoints() {
+      const pts = [];
+      const v = [];
+      for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5; const r = i % 2 ? 0.2 : 0.5; v.push([Math.cos(a) * r, Math.sin(a) * r]); }
+      for (let i = 0; i < 10; i++) {
+        const [x1, y1] = v[i], [x2, y2] = v[(i + 1) % 10];
+        for (let k = 0; k < 8; k++) { const t = k / 8; pts.push([x1 + (x2 - x1) * t, y1 + (y2 - y1) * t, i % 2 ? '#8fd3ff' : '#fff1c9']); }
+      }
+      return pts;
+    }
+    function momijiShapePoints() {
+      // 5つにとがった紅葉＋軸
+      const pts = polarShape(130, a => (0.13 + 0.37 * Math.pow(Math.abs(Math.cos(a * 2.5)), 2.2) + 0.03 * Math.abs(Math.sin(a * 15))) * (0.78 + 0.22 * Math.cos(a)), i => i % 4 ? '#ff5a3c' : '#ffb067');
+      // 葉脈（芯から5つの先へ）と軸
+      for (let lobe = 0; lobe < 5; lobe++) { const a = -Math.PI / 2 + lobe * Math.PI * 2 / 5; const len = 0.4 * (0.78 + 0.22 * Math.cos(lobe * Math.PI * 2 / 5)); for (let k = 1; k <= 5; k++) pts.push([Math.cos(a) * len * k / 6, Math.sin(a) * len * k / 6, '#ffd27a']); }
+      for (let i = 0; i < 7; i++) pts.push([0.01 * i, 0.12 + i * 0.04, '#ffb067']);
+      return pts;
+    }
+    function yukiShapePoints() {
+      // 6本の腕と小枝の雪の結晶
+      const pts = [];
+      for (let arm = 0; arm < 6; arm++) {
+        const a = arm * Math.PI / 3 - Math.PI / 2;
+        for (let k = 1; k <= 10; k++) { const r = k * 0.05; pts.push([Math.cos(a) * r, Math.sin(a) * r, k % 3 ? '#e8f4ff' : '#ffffff']); }
+        [-0.7, 0.7].forEach(off => { for (let k = 1; k <= 4; k++) { const bx = Math.cos(a) * 0.28, by = Math.sin(a) * 0.28; pts.push([bx + Math.cos(a + off) * k * 0.035, by + Math.sin(a + off) * k * 0.035, '#bfe3ff']); } });
+      }
+      return pts;
+    }
+    const SHAPE_POINTS = { beer: beerShapePoints, sakura: sakuraShapePoints, hoshi: starShapePoints, momiji: momijiShapePoints, yuki: yukiShapePoints };
+
+    const SEASONS = {
+      spring: { tag: '春・夜桜', kind: 'sakura', ambient: 'petal', colors: ['#ffffff', '#ffe3ee', '#ffb7d3', '#ff8fb8', '#fff1c9', '#f7c35f', '#c6a8ff', '#ffd1e3'] },
+      summer: { tag: '夏・夏祭り', kind: 'hoshi', ambient: 'firefly', colors: ['#ffffff', '#fff1c9', '#f7c35f', '#ffb067', '#ff7aa8', '#ff4f6d', '#7ef0c5', '#8fd3ff', '#c6a8ff'] },
+      autumn: { tag: '秋・月見', kind: 'momiji', ambient: 'leaf', colors: ['#ffffff', '#fff1c9', '#ffd27a', '#f7c35f', '#ffb067', '#ff7a3c', '#ff4f3d', '#e8a0ff'] },
+      winter: { tag: '冬・雪見', kind: 'yuki', ambient: 'snow', colors: ['#ffffff', '#e8f4ff', '#bfe3ff', '#8fd3ff', '#c6a8ff', '#fff1c9', '#f7c35f'] }
+    };
+    function pickSeason() {
+      const q = new URLSearchParams(location.search).get('season');
+      if (SEASONS[q]) return q;
+      const m = new Date().getMonth() + 1;
+      return m >= 3 && m <= 5 ? 'spring' : m >= 6 && m <= 8 ? 'summer' : m >= 9 && m <= 11 ? 'autumn' : 'winter';
+    }
+    const SEASON_KEY = pickSeason();
+    const SEASON = SEASONS[SEASON_KEY];
+    appContainer.dataset.season = SEASON_KEY;
+    { const tagEl = document.getElementById('seasonTag'); if (tagEl) tagEl.textContent = SEASON.tag; }
+
+    // 季節の夜空：舞い落ちる桜・飛ぶ蛍・散る紅葉・降る雪
+    const seasonCanvas = document.getElementById('seasonCanvas');
+    const seasonCtx = seasonCanvas.getContext('2d');
+    let seasonBits = [];
+    function resizeSeasonCanvas() {
+      seasonCanvas.width = appContainer.clientWidth;
+      seasonCanvas.height = appContainer.clientHeight;
+    }
+    function newSeasonBit(initial) {
+      const W = seasonCanvas.width, H = seasonCanvas.height;
+      const t = SEASON.ambient;
+      if (t === 'firefly') return { x: Math.random() * W, y: H * (0.45 + Math.random() * 0.35), vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.2, ph: Math.random() * 6.28, s: 1.2 + Math.random() * 1.3 };
+      const s = t === 'snow' ? 0.8 + Math.random() * 2.2 : t === 'leaf' ? 4 + Math.random() * 3 : 3 + Math.random() * 2.5;
+      return {
+        x: Math.random() * W, y: initial ? Math.random() * H : -12,
+        vy: t === 'snow' ? 0.25 + s * 0.18 : 0.35 + Math.random() * 0.45,
+        vx: t === 'snow' ? (Math.random() - 0.5) * 0.2 : -0.15 - Math.random() * 0.35,
+        ph: Math.random() * 6.28, rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.05, s,
+        c: t === 'leaf' ? ['#d9482b', '#e8742f', '#c93a2a', '#f0a03c'][Math.floor(Math.random() * 4)] : t === 'petal' ? ['#ffc8dc', '#ffdbe8', '#ffb3cf'][Math.floor(Math.random() * 3)] : '#ffffff'
+      };
+    }
+    function drawLeaf(x, y, s, rot, c) {
+      seasonCtx.save(); seasonCtx.translate(x, y); seasonCtx.rotate(rot); seasonCtx.fillStyle = c;
+      seasonCtx.beginPath();
+      for (let i = 0; i <= 20; i++) { const a = i / 20 * Math.PI * 2 - Math.PI / 2; const r = s * (0.35 + 0.65 * Math.pow(Math.abs(Math.cos(a * 2.5)), 2)); i ? seasonCtx.lineTo(Math.cos(a) * r, Math.sin(a) * r) : seasonCtx.moveTo(Math.cos(a) * r, Math.sin(a) * r); }
+      seasonCtx.fill(); seasonCtx.restore();
+    }
+    function drawSeason(now) {
+      const W = seasonCanvas.width, H = seasonCanvas.height;
+      seasonCtx.clearRect(0, 0, W, H);
+      if (storyActive || isShowPlaying) return;
+      const t = SEASON.ambient;
+      const want = Math.round((t === 'snow' ? 46 : t === 'firefly' ? 16 : t === 'leaf' ? 14 : 22) * mainFwQuality);
+      while (seasonBits.length < want) seasonBits.push(newSeasonBit(seasonBits.length < want / 2));
+      if (seasonBits.length > want) seasonBits.length = want;
+      for (let i = 0; i < seasonBits.length; i++) {
+        const b = seasonBits[i];
+        b.ph += 0.02;
+        if (t === 'firefly') {
+          b.vx += (Math.random() - 0.5) * 0.04; b.vy += (Math.random() - 0.5) * 0.04;
+          b.vx *= 0.98; b.vy *= 0.98;
+          b.x += b.vx; b.y += b.vy;
+          if (b.x < -10 || b.x > W + 10 || b.y < H * 0.35 || b.y > H * 0.85) { seasonBits[i] = newSeasonBit(true); continue; }
+          const glow = Math.max(0, Math.sin(b.ph * 1.6));
+          seasonCtx.globalAlpha = 0.15 + glow * 0.75;
+          const g = seasonCtx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.s * 5);
+          g.addColorStop(0, 'rgba(230, 255, 160, 1)'); g.addColorStop(0.3, 'rgba(190, 240, 110, 0.5)'); g.addColorStop(1, 'rgba(150, 220, 90, 0)');
+          seasonCtx.fillStyle = g;
+          seasonCtx.beginPath(); seasonCtx.arc(b.x, b.y, b.s * 5, 0, Math.PI * 2); seasonCtx.fill();
+          continue;
+        }
+        b.x += b.vx + Math.sin(b.ph) * (t === 'snow' ? 0.25 : 0.6);
+        b.y += b.vy;
+        b.rot += b.vr;
+        if (b.y > H + 12 || b.x < -20) { seasonBits[i] = newSeasonBit(false); continue; }
+        seasonCtx.globalAlpha = t === 'snow' ? 0.35 + b.s * 0.18 : 0.75;
+        if (t === 'snow') {
+          seasonCtx.fillStyle = b.c;
+          seasonCtx.beginPath(); seasonCtx.arc(b.x, b.y, b.s, 0, Math.PI * 2); seasonCtx.fill();
+        } else if (t === 'leaf') {
+          drawLeaf(b.x, b.y, b.s, b.rot, b.c);
+        } else {
+          // 桜の花びら（ひらひら裏返る）
+          seasonCtx.save(); seasonCtx.translate(b.x, b.y); seasonCtx.rotate(b.rot); seasonCtx.scale(1, 0.35 + Math.abs(Math.sin(b.ph * 1.3)) * 0.65);
+          seasonCtx.fillStyle = b.c;
+          seasonCtx.beginPath(); seasonCtx.ellipse(0, 0, b.s, b.s * 0.62, 0, 0, Math.PI * 2); seasonCtx.fill();
+          seasonCtx.restore();
+        }
+      }
+      seasonCtx.globalAlpha = 1;
+    }
+    window.addEventListener('resize', resizeSeasonCanvas);
+    resizeSeasonCanvas();
+
     // ---------- 夜空をかけるビールのトラック（共通） ----------
     const TRUCK_SRC = 'truck.webp';
+    const TRUCK_SRC_RIGHT = 'truck-right.webp'; // 右向き（荷台の文字は読める向きのまま）
+    [TRUCK_SRC, TRUCK_SRC_RIGHT].forEach(u => { const im = new Image(); im.src = u; });
     const TRUCK_RATIO = 178 / 430;
     class SkyTruck {
-      constructor(container, cw, y, w, dur) {
+      constructor(container, cw, y, w, dur, dir = Math.random() < 0.5 ? -1 : 1) {
         this.el = document.createElement('img');
-        this.el.src = TRUCK_SRC;
+        this.el.src = dir > 0 ? TRUCK_SRC_RIGHT : TRUCK_SRC;
         this.el.alt = '';
         this.el.className = 'sky-truck';
         this.el.style.width = `${w}px`;
@@ -2582,23 +2801,79 @@
         this.cw = cw; this.y = y; this.w = w; this.h = w * TRUCK_RATIO;
         this.t0 = performance.now(); this.dur = dur;
         this.done = false;
+        this.container = container;
+        this.sayEl = null; this.sayUntil = 0;
+        this.dir = dir; // -1：右から左へ／1：左から右へ
       }
-      // 右から左へ、ふわっと上下しながら夜空を走る。戻り値は荷台うしろ（光の尾を出す位置）
+      // タップされたら、ひとこと吹き出し
+      say(text) {
+        if (!this.sayEl) {
+          this.sayEl = document.createElement('div');
+          this.sayEl.className = 'truck-say';
+          this.container.appendChild(this.sayEl);
+        }
+        this.sayEl.textContent = text;
+        this.sayEl.classList.add('show');
+        this.sayUntil = performance.now() + 2200;
+        this.el.classList.remove('honk');
+        void this.el.offsetWidth;
+        this.el.classList.add('honk');
+      }
+      hit(clientX, clientY) {
+        const r = this.el.getBoundingClientRect();
+        return clientX >= r.left - 14 && clientX <= r.right + 14 && clientY >= r.top - 14 && clientY <= r.bottom + 14;
+      }
+      // 左右どちらかの画面の外から、ふわっと上下しながら夜空を走る。戻り値は荷台うしろ（光の尾を出す位置）
       update(now) {
         const p = (now - this.t0) / this.dur;
         if (p >= 1) { this.remove(); return null; }
-        const x = this.cw + 20 - (this.cw + this.w + 60) * p;
+        const travel = this.cw + this.w + 60;
+        const x = this.dir < 0 ? this.cw + 20 - travel * p : -this.w - 40 + travel * p;
         const y = this.y + Math.sin(p * Math.PI * 3) * 8 - p * 18;
-        const tilt = -3 + Math.sin(p * Math.PI * 6) * 1.5;
+        const tilt = (-3 + Math.sin(p * Math.PI * 6) * 1.5) * -this.dir;
         this.el.style.transform = `translate(${x}px, ${y}px) rotate(${tilt}deg)`;
-        return { x: x + this.w * 0.97, y: y + this.h * 0.62 };
+        if (this.sayEl) {
+          const sw = this.sayEl.offsetWidth;
+          const sx = Math.max(6, Math.min(this.cw - sw - 6, x + this.w * 0.08));
+          this.sayEl.style.transform = `translate(${sx}px, ${y - 30}px)`;
+          if (now > this.sayUntil) this.sayEl.classList.remove('show');
+        }
+        return { x: this.dir < 0 ? x + this.w * 0.97 : x + this.w * 0.03, y: y + this.h * 0.62 };
       }
-      remove() { this.done = true; if (this.el.parentNode) this.el.remove(); }
+      remove() { this.done = true; if (this.el.parentNode) this.el.remove(); if (this.sayEl) this.sayEl.remove(); }
+    }
+
+    const TRUCK_LINES = ['速達生ビール、配達中！', '新鮮なビールを、飲んでね！', 'できたての一杯、お届け中', 'キンキンに冷えてます！', '今夜もおつかれさまです！'];
+    let truckLineIdx = 0;
+    // トラックをタップ：ひとこと＋クラクション＋泡のしぶき
+    function tapTruck(t, spray) {
+      t.say(TRUCK_LINES[truckLineIdx++ % TRUCK_LINES.length]);
+      playTruckHorn();
+      const r = t.el.getBoundingClientRect(), c = t.container.getBoundingClientRect();
+      spray(r.left - c.left + r.width * 0.5, r.top - c.top + r.height * 0.3);
+    }
+    function playTruckHorn() {
+      if (!audioCtx) return;
+      try {
+        const now = audioCtx.currentTime;
+        [[0, 0.11], [0.16, 0.3]].forEach(([st, len]) => {
+          [415, 523].forEach(f => {
+            const osc = audioCtx.createOscillator(), g = audioCtx.createGain();
+            osc.type = 'square'; osc.frequency.value = f;
+            g.gain.setValueAtTime(0.0001, now + st);
+            g.gain.exponentialRampToValueAtTime(0.05, now + st + 0.015);
+            g.gain.setValueAtTime(0.05, now + st + len - 0.04);
+            g.gain.exponentialRampToValueAtTime(0.0001, now + st + len);
+            osc.connect(g); g.connect(audioCtx.destination);
+            osc.start(now + st); osc.stop(now + st + len + 0.02);
+          });
+        });
+      } catch (e) {}
     }
 
     // ---------- メイン画面の夜空の花火（本物の花火に近い打ち上げ・種類・光） ----------
-    const MAIN_FW_COLORS = ['#ffffff', '#fff1c9', '#f7c35f', '#ffb067', '#ff7aa8', '#ff4f6d', '#7ef0c5', '#8fd3ff', '#c6a8ff'];
-    const MAIN_FW_KINDS = ['kiku', 'kiku', 'botan', 'yanagi', 'senrin', 'kamuro', 'beer'];
+    const MAIN_FW_COLORS = SEASON.colors;
+    const MAIN_FW_KINDS = ['kiku', 'kiku', 'botan', 'yanagi', 'senrin', 'kamuro', 'beer', SEASON.kind];
     let mainFw = [];
     let mainRockets = [];
     let nextMainFwAt = 0;
@@ -2630,10 +2905,10 @@
     function mainBurst(x, y, scale = 1, withSound = false, kind = fwPick(MAIN_FW_KINDS)) {
       const c1 = fwPick(MAIN_FW_COLORS), c2 = fwPick(MAIN_FW_COLORS);
       const n = Math.round(70 * scale);
-      if (kind === 'beer') {
-        // ジョッキの形に開く（泡は白、ジョッキは金色）
-        const size = 120 * scale;
-        beerShapePoints().forEach(([px, py, col]) => {
+      if (SHAPE_POINTS[kind]) {
+        // 形に開く（ジョッキ・桜・星・紅葉・雪の結晶）
+        const size = (kind === 'beer' ? 120 : 112) * scale;
+        SHAPE_POINTS[kind]().forEach(([px, py, col]) => {
           for (let k = 0; k < 2; k++) {
             const dx = px * size + (Math.random() - 0.5) * 3, dy = py * size + (Math.random() - 0.5) * 3;
             addFwParticle(x, y, dx * 0.07, dy * 0.07, col, { f: 0.93, g: 0.004, decay: 0.0075 + Math.random() * 0.003, w: 2.3, glitter: true });
@@ -2682,9 +2957,10 @@
     function updateMainTrucks(now) {
       if (!nextTruckAt) nextTruckAt = now + 5000;
       if (!isShowPlaying && !storyActive && now > nextTruckAt) {
-        nextTruckAt = now + 14000 + Math.random() * 8000;
-        const w = Math.min(width, 430) * 0.42;
-        mainTrucks.push(new SkyTruck(appContainer, width, height * (0.2 + Math.random() * 0.16), w, 7000 + Math.random() * 1500));
+        nextTruckAt = now + 9000 + Math.random() * 12000;
+        const w = Math.min(width, 430) * 0.32;
+        // 提灯の下〜ボタンの上のあいだの、どこかの高さをランダムに
+        mainTrucks.push(new SkyTruck(appContainer, width, height * (0.17 + Math.random() * 0.45), w, 6500 + Math.random() * 2000));
       }
       for (let i = mainTrucks.length - 1; i >= 0; i--) {
         const t = mainTrucks[i];
@@ -2849,6 +3125,16 @@
       const rect = appContainer.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
       const clickY = e.clientY - rect.top;
+
+      // トラックをタップすると、ひとこと
+      const tappedTruck = mainTrucks.find(t => !t.done && t.hit(e.clientX, e.clientY));
+      if (tappedTruck) {
+        initAudio();
+        tapTruck(tappedTruck, (x, y) => {
+          for (let k = 0; k < 26; k++) addFwParticle(x, y, (Math.random() - 0.5) * 3, -Math.random() * 2.6, Math.random() < 0.5 ? '#fffbe6' : '#ffd27a', { dot: true, w: 1.2 + Math.random(), decay: 0.02, g: 0.05, f: 0.97 });
+        });
+        return;
+      }
 
       // 夜空をタップした所に花火が上がる
       if (clickX >= 0 && clickX <= rect.width && clickY >= 0 && clickY <= rect.height * 0.78) {
@@ -3290,6 +3576,7 @@
       ctx.fillRect(0, 0, width, height);
       ctx.globalCompositeOperation = 'source-over';
       drawMainFireworks(now);
+      drawSeason(now);
 
       for (let i = shockwaves.length - 1; i >= 0; i--) {
         shockwaves[i].update();
@@ -3517,7 +3804,12 @@
 
       meterCountEl.textContent = n;
       setMugLevel(meterGlassEl, (n / METER_GOAL) * 0.92);
-      meterPanelEl.classList.toggle('meter-reach', n === METER_GOAL - 1);
+      const reach = n === METER_GOAL - 1;
+      meterPanelEl.classList.toggle('meter-reach', reach);
+      const ctaBtn = document.getElementById('openCameraBtn');
+      const ctaSub = document.getElementById('ctaSub');
+      if (ctaBtn) ctaBtn.classList.toggle('reach-call', reach);
+      if (ctaSub) ctaSub.textContent = reach ? `あと1枚で、本日${(meterState.totalShows || 0) + 1}発目のショー` : '一枚撮るごとに、提灯がひとつ灯ります';
 
       const nextShow = (meterState.totalShows || 0) + 1;
       if (n >= METER_GOAL) {
@@ -3723,7 +4015,10 @@
     function triggerReach() {
       if (isShowPlaying || memoriesOfRound(meterState.round).length !== METER_GOAL - 1) return;
       const banner = document.getElementById('reachBanner');
-      document.getElementById('reachSub').textContent = `あと1枚で本日${(meterState.totalShows || 0) + 1}発目のショー！`;
+      document.getElementById('reachSub').textContent = `あと1枚で、本日${(meterState.totalShows || 0) + 1}発目のショー`;
+      meterPanelEl.classList.remove('reach-shake');
+      void meterPanelEl.offsetWidth;
+      meterPanelEl.classList.add('reach-shake');
       banner.classList.remove('hidden', 'show');
       banner.classList.add('flex');
       void banner.offsetWidth;
@@ -4389,8 +4684,8 @@
       }
     }
 
-    function beerBurst(x, y, size) {
-      beerShapePoints().forEach(([px, py, col]) => {
+    function beerBurst(x, y, size, kind = 'beer') {
+      SHAPE_POINTS[kind]().forEach(([px, py, col]) => {
         for (let k = 0; k < 2; k++) {
           const dx = px * size + rand(-2, 2), dy = py * size + rand(-2, 2);
           showParticles.push(new ShowParticle(x, y, dx * 0.07, dy * 0.07, col, { friction: 0.93, gravity: 0.004, decay: rand(0.007, 0.01), size: 2.6, twinkle: false }));
@@ -4398,13 +4693,13 @@
       });
       flashSky(x, y, 0.6);
     }
-    function fireBeerRocket(tx, ty, size, quiet = false) {
-      launchRocket(tx, ty, (x, y) => { playBoom(quiet ? 0.35 : 0.9); beerBurst(x, y, size); }, rand(650, 850), quiet);
+    function fireBeerRocket(tx, ty, size, quiet = false, kind = 'beer') {
+      launchRocket(tx, ty, (x, y) => { playBoom(quiet ? 0.35 : 0.9); beerBurst(x, y, size, kind); }, rand(650, 850), quiet);
     }
 
     let showTrucks = [];
-    function spawnShowTruck(yRatio, dur = 6500) {
-      showTrucks.push(new SkyTruck(showOverlay, SW, SH * yRatio, Math.min(SW, 430) * 0.46, dur));
+    function spawnShowTruck(dur = 6500) {
+      showTrucks.push(new SkyTruck(showOverlay, SW, SH * rand(0.06, 0.55), Math.min(SW, 430) * 0.36, dur));
     }
     function updateShowTrucks() {
       const now = performance.now();
@@ -5143,8 +5438,11 @@
       });
       at(O + 1700, hideHeadline);
       // ビールのトラックが夜空をかける ＋ ジョッキの花火
-      at(O + 4800, () => spawnShowTruck(0.16));
+      at(O + 4800, () => spawnShowTruck());
       at(O + 8900, () => fireBeerRocket(SW * 0.5, SH * 0.16, Math.min(SW, 430) * 0.42));
+      // 季節の形の花火（春：桜／夏：星／秋：紅葉／冬：雪の結晶）
+      at(O + 6300, () => fireBeerRocket(SW * 0.28, SH * 0.2, Math.min(SW, 430) * 0.34, false, SEASON.kind));
+      at(O + 7000, () => fireBeerRocket(SW * 0.72, SH * 0.25, Math.min(SW, 430) * 0.34, true, SEASON.kind));
       at(O + 1900, () => cheerWrap.classList.remove('hidden'));
 
       const spots = [[0.28, 0.34], [0.72, 0.46], [0.3, 0.56], [0.7, 0.32], [0.5, 0.45]];
@@ -5176,7 +5474,7 @@
       });
 
       // ===== フィナーレ（乾杯の数で豪華に） =====
-      at(O + 10200, () => spawnShowTruck(0.1, 5200));
+      at(O + 10200, () => spawnShowTruck(5200));
       at(O + 11100, () => fireBeerRocket(SW * 0.5, SH * 0.2, Math.min(SW, 430) * 0.5));
       at(O + 9800, () => {
         const boost = cheerBoost();
@@ -5406,7 +5704,16 @@
 
     // タップで打ち上げ（画面のどこをタップしてもOK）
     showOverlay.addEventListener('pointerdown', (e) => {
-      if (launch.state !== 'wait' || e.target.closest('#cheerBtn')) return;
+      if (e.target.closest('#cheerBtn')) return;
+      const tappedTruck = showTrucks.find(t => !t.done && t.hit(e.clientX, e.clientY));
+      if (tappedTruck) {
+        initAudio();
+        tapTruck(tappedTruck, (x, y) => {
+          for (let k = 0; k < 26; k++) showParticles.push(new ShowParticle(x, y, rand(-1.5, 1.5), rand(-2.6, 0), pick(['#fffbe6', '#ffd27a']), { decay: 0.02, gravity: 0.05, friction: 0.97, size: rand(1.2, 2.2), dot: true }));
+        });
+        return;
+      }
+      if (launch.state !== 'wait') return;
       initAudio();
       launch.requested = true;
     });
