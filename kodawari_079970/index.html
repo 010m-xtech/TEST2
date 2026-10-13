@@ -544,14 +544,14 @@ var D=[
 "v": "pig",
 "tv": "一般的には、鶏もも肉を使います。|名前には、こんな説があります。",
 "c": "鶏ではなく、豚のネギマ",
-"r": "三河もち豚を、1.5mmの厚さで。",
+"r": "三河もち豚を、1.5cmの厚さで。",
 "i": "当店のネギマは、鶏ネギマ。|ではなく、三河もち豚を使用した豚ネギマとなっております。",
 "w": [
 "pigc",
 {
 "front": "三河もち豚って、なに？",
 "intro": "徹底した管理のもと生産される<br>ブランド豚です。",
-"talk": "もっちりやわらか。|それを1.5mmの厚切りに。|大将が研究に研究を重ねてたどり着いた、炭火で焼ける限界の厚さです。|分厚くしっかり、豚の旨みをどうぞ。"
+"talk": "もっちりやわらか。|それを1.5cmの厚切りに。|大将が研究に研究を重ねてたどり着いた、炭火で焼ける限界の厚さです。|分厚くしっかり、豚の旨みをどうぞ。"
 }
 ],
 "t": ""
@@ -660,7 +660,7 @@ var HR=/^[ぁ-ゟー]+$/,HS=/^[ぁ-ゟ]/;
 function brks(str){var r={};if(!SEG)return r;var a=Array.from(SEG.segment(str));for(var k=1;k<a.length;k++){var c=a[k].segment,p=a[k-1].segment;if(/^[、。，．！？!?…‥」』）)】〕》〉・：:；;,.]/.test(c)||/\s$/.test(p)||/^\s/.test(c))continue;if(/^[おごご御]$/.test(p))continue;if(/[、。，．！？!?…‥]$/.test(p)||/^[「『（(【〈《]/.test(c)||(/[」』）)】]$/.test(p)&&!HS.test(c))||(HR.test(p)&&!HS.test(c))||(HR.test(p)&&HR.test(c)&&p.length>=3&&c.length>=3))r[a[k].index]=1}return r}
 function wbrNode(root){if(!SEG||!root)return;var w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null),L=[],n;while(n=w.nextNode())L.push(n);L.forEach(function(t){var par=t.parentNode;if(!par||par.closest&&par.closest("svg,script,style,textarea,title,.cb"))return;var x=t.nodeValue;if(x.length<4||!/[ぁ-ヿ一-鿿]/.test(x))return;var pv=t.previousSibling,nx=t.nextSibling;if((pv&&pv.nodeName==="WBR")||(nx&&nx.nodeName==="WBR"))return;var b=brks(x),has=false,i;for(i in b){has=true;break}var x2=x.replace(/([」』）)】])(?=[^、。，．！？!?…‥」』）)】・\s])/g,"$1\u2060");if(!has&&x2===x)return;var f=document.createDocumentFragment(),last=0,ks=Object.keys(b).map(Number).sort(function(m,o){return m-o});ks.forEach(function(i){f.appendChild(document.createTextNode(x.slice(last,i).replace(/([」』）)】])(?=[^、。，．！？!?…‥」』）)】・\s])/g,"$1\u2060")));f.appendChild(document.createElement("wbr"));last=i});f.appendChild(document.createTextNode(x.slice(last).replace(/([」』）)】])(?=[^、。，．！？!?…‥」』）)】・\s])/g,"$1\u2060")));par.replaceChild(f,t)})}
 function H(str,n){var left=n==null?1e9:n,h="",B=null,pos=0,pc="",sgs=segs(str);if(SEG)B=brks(sgs.map(function(sg){return sg[0]}).join(""));sgs.forEach(function(sg){if(left<=0)return;var t=sg[0].slice(0,left);left-=t.length;if(B){var u="";for(var i=0;i<t.length;i++){if(B[pos+i])u+="<wbr>";else if(pc&&/[」』）)】]/.test(pc)&&!/[、。，．！？!?…‥」』）)】・\s]/.test(t[i]))u+="\u2060";u+=t[i];pc=t[i]}t=u}pos+=sg[0].length;h+=sg[1]?'<span class="'+sg[1]+'">'+t+'</span>':t});return h}
-function autoSc(el,top){if(!el)return;setTimeout(function(){var r=el.getBoundingClientRect(),h=window.innerHeight;if(top||r.top<56||r.bottom>h-16){var t=top||r.height>h-120?r.top+window.scrollY-72:r.bottom+window.scrollY-h+28;window.scrollTo({top:Math.max(0,t),behavior:(typeof reduced!=="undefined"&&reduced)?"auto":"smooth"})}},140)}
+function autoSc(el,top){if(!el)return;setTimeout(function(){var r=el.getBoundingClientRect(),h=window.innerHeight;if(top||r.top<56||r.bottom>h-16){var t=top||r.height>h-120?r.top+window.scrollY-72:r.bottom+window.scrollY-h+28;if(!top&&t<window.scrollY&&(r.top>=56||window.scrollY-t<90))return;window.scrollTo({top:Math.max(0,t),behavior:(typeof reduced!=="undefined"&&reduced)?"auto":"smooth"})}},140)}
 function chef(el,paras,cb,label,add){var my=tok;if(!add)el.innerHTML='<div class="cf"><div class="av"><img src="'+EDA+'" alt="大将"><b>大将</b></div><div class="cb typing">'+(label?'<small class="tl">'+label+'</small>':'')+'</div></div>';var bx=el.querySelector(".cb");if(add)bx.classList.add("typing");var ps=paras.map(function(t){var p=document.createElement("p");bx.appendChild(p);return p}),i=0,j=0,t=null,done=false;
 function fin(){if(done)return;done=true;clearTimeout(t);if(window.curChef===fin)window.curChef=null;ps.forEach(function(p,k){p.innerHTML=H(paras[k])});bx.classList.remove("typing");if(cb)cb()}
 function step(){if(done||my!==tok||!el.isConnected)return;if(i>=paras.length){fin();return}var s=paras[i];if(j<s.length){j++;ps[i].innerHTML=H(s,j);t=setTimeout(step,26)}else{i++;j=0;t=setTimeout(step,280)}}
@@ -674,7 +674,7 @@ var K=[["01","もちもち食感","きめが細かく、ジューシーでしっ
 e.innerHTML='<button type="button" class="pcb" style="--bg:url(\''+PH.pork+'\')"><span class="pcf"><b>'+o.front+'</b><small>タップして、読んでみる</small></span><span class="pcc" hidden><b class="pci">'+o.intro+'</b>'+K.map(function(k){return'<span class="pcp" hidden><i>'+k[0]+'</i><span><b class="pct">'+k[1]+'</b><b>'+k[2]+'</b></span></span>'}).join("")+'</span></button>';
 var bt=e.querySelector(".pcb"),fr=e.querySelector(".pcf"),cc=e.querySelector(".pcc"),ps=e.querySelectorAll(".pcp");
 bt.onclick=function(){if(fl)return;fl=true;bt.classList.add("open");fr.hidden=true;cc.hidden=false;autoSc(bt);
-ps.forEach(function(p,k){setTimeout(function(){if(my!==tok)return;p.hidden=false;p.classList.add("ngshow");autoSc(p);if(k===ps.length-1)setTimeout(function(){if(my!==tok)return;var h=document.getElementById("cf1");chef(h,o.talk.split("|"),function(){if(my===tok)f()},"味わいどころ");autoSc(h)},calm?300:1600)},calm?0:500+k*1400)})}};
+ps.forEach(function(p,k){setTimeout(function(){if(my!==tok)return;p.hidden=false;p.classList.add("ngshow");autoSc(p);if(k===ps.length-1)setTimeout(function(){if(my!==tok)return;var h=document.createElement("div");e.parentNode.insertBefore(h,e.nextSibling);chef(h,o.talk.split("|"),function(){if(my===tok)f()},"味わいどころ");autoSc(h)},calm?300:1600)},calm?0:500+k*1400)})}};
 W.liver=function(e,w,f){var my=tok,done=0,c1=document.getElementById("cf1");
 e.innerHTML='<div class="qz"><div class="qo qh" hidden><button type="button" class="qb">苦手</button><button type="button" class="qb">ふつう</button><button type="button" class="qb">好き</button></div></div>';
 var R=[["苦手な方にも「食べれた！」と好評です。","まずは、ひと口どうぞ。"],["それなら、ぜひ。","脂の乗った、看板商品です。"],["うれしいです。","看板商品、ぜひどうぞ。"]],X=["レバーは、加熱しすぎると不愉快な食感になりますが、当店のレバーはとろけます。","数量限定、売切れ御免のメニューです。","ご注文されたら、何よりも先にどうぞ。"];
