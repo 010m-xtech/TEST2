@@ -769,6 +769,16 @@
       z-index: 9;
     }
     #launchHint.show { opacity: 1; }
+    .sky-truck {
+      position: absolute;
+      left: 0;
+      top: 0;
+      z-index: 2;
+      pointer-events: none;
+      will-change: transform;
+      filter: drop-shadow(0 0 10px rgba(255, 200, 120, 0.45)) drop-shadow(0 6px 10px rgba(0, 0, 0, 0.5));
+    }
+    #showOverlay .sky-truck { z-index: 3; }
     #launchHint .ring {
       width: 74px;
       height: 74px;
@@ -1672,7 +1682,7 @@
     </div>
     <div id="launchHint">
       <div class="ring"></div>
-      <p>SWIPE ↑ で打ち上げ！</p>
+      <p>TAP で打ち上げ！</p>
     </div>
     <!-- 確定演出のラベル -->
     <div id="revealLabel" class="absolute inset-x-0 top-[60%] z-10 flex flex-col items-center pointer-events-none px-4 text-center">
@@ -2543,9 +2553,52 @@
       }
     }
 
+
+    // ---------- ビールジョッキの形をした花火（共通） ----------
+    function beerShapePoints() {
+      const pts = [];
+      const L = -0.32, R = 0.22, T = -0.28, B = 0.5;
+      const gold = '#f7c35f', foam = '#fffbe6', fizz = '#fff1c9';
+      for (let i = 0; i <= 16; i++) { const t = i / 16; pts.push([L, T + (B - T) * t, gold], [R, T + (B - T) * t, gold]); }
+      for (let i = 1; i < 14; i++) pts.push([L + (R - L) * (i / 14), B, gold]);
+      for (let i = 0; i <= 14; i++) { const a = -Math.PI / 2 + Math.PI * i / 14; pts.push([R + Math.cos(a) * 0.17, 0.1 + Math.sin(a) * 0.2, gold]); }
+      for (let i = 0; i <= 30; i++) { const t = i / 30; pts.push([L - 0.05 + (R - L + 0.1) * t, T - 0.03 - Math.abs(Math.sin(t * Math.PI * 3)) * 0.13, foam]); }
+      for (let i = 0; i <= 14; i++) pts.push([L + (R - L) * (i / 14), T + 0.01, foam]);
+      for (let i = 0; i < 22; i++) pts.push([L + 0.06 + Math.random() * (R - L - 0.12), T + 0.1 + Math.random() * (B - T - 0.18), fizz]);
+      return pts;
+    }
+
+    // ---------- 夜空をかけるビールのトラック（共通） ----------
+    const TRUCK_SRC = 'truck.webp';
+    const TRUCK_RATIO = 178 / 430;
+    class SkyTruck {
+      constructor(container, cw, y, w, dur) {
+        this.el = document.createElement('img');
+        this.el.src = TRUCK_SRC;
+        this.el.alt = '';
+        this.el.className = 'sky-truck';
+        this.el.style.width = `${w}px`;
+        container.appendChild(this.el);
+        this.cw = cw; this.y = y; this.w = w; this.h = w * TRUCK_RATIO;
+        this.t0 = performance.now(); this.dur = dur;
+        this.done = false;
+      }
+      // 右から左へ、ふわっと上下しながら夜空を走る。戻り値は荷台うしろ（光の尾を出す位置）
+      update(now) {
+        const p = (now - this.t0) / this.dur;
+        if (p >= 1) { this.remove(); return null; }
+        const x = this.cw + 20 - (this.cw + this.w + 60) * p;
+        const y = this.y + Math.sin(p * Math.PI * 3) * 8 - p * 18;
+        const tilt = -3 + Math.sin(p * Math.PI * 6) * 1.5;
+        this.el.style.transform = `translate(${x}px, ${y}px) rotate(${tilt}deg)`;
+        return { x: x + this.w * 0.97, y: y + this.h * 0.62 };
+      }
+      remove() { this.done = true; if (this.el.parentNode) this.el.remove(); }
+    }
+
     // ---------- メイン画面の夜空の花火（本物の花火に近い打ち上げ・種類・光） ----------
     const MAIN_FW_COLORS = ['#ffffff', '#fff1c9', '#f7c35f', '#ffb067', '#ff7aa8', '#ff4f6d', '#7ef0c5', '#8fd3ff', '#c6a8ff'];
-    const MAIN_FW_KINDS = ['kiku', 'kiku', 'botan', 'yanagi', 'senrin', 'kamuro'];
+    const MAIN_FW_KINDS = ['kiku', 'kiku', 'botan', 'yanagi', 'senrin', 'kamuro', 'beer'];
     let mainFw = [];
     let mainRockets = [];
     let nextMainFwAt = 0;
@@ -2577,6 +2630,19 @@
     function mainBurst(x, y, scale = 1, withSound = false, kind = fwPick(MAIN_FW_KINDS)) {
       const c1 = fwPick(MAIN_FW_COLORS), c2 = fwPick(MAIN_FW_COLORS);
       const n = Math.round(70 * scale);
+      if (kind === 'beer') {
+        // ジョッキの形に開く（泡は白、ジョッキは金色）
+        const size = 120 * scale;
+        beerShapePoints().forEach(([px, py, col]) => {
+          for (let k = 0; k < 2; k++) {
+            const dx = px * size + (Math.random() - 0.5) * 3, dy = py * size + (Math.random() - 0.5) * 3;
+            addFwParticle(x, y, dx * 0.07, dy * 0.07, col, { f: 0.93, g: 0.004, decay: 0.0075 + Math.random() * 0.003, w: 2.3, glitter: true });
+          }
+        });
+        mainFlash(x, y, 0.5 * scale);
+        if (withSound) playFireworkSound();
+        return;
+      }
       if (kind === 'senrin') {
         for (let k = 0; k < 6; k++) {
           setTimeout(() => mainBurst(x + (Math.random() - 0.5) * 90 * scale, y + (Math.random() - 0.5) * 70 * scale, 0.35 * scale, false, Math.random() < 0.5 ? 'kiku' : 'botan'), 80 + k * 70);
@@ -2610,7 +2676,28 @@
       mainRockets.push({ x0: x + (Math.random() - 0.5) * 30, y0: height * 0.74, x, y, t0: performance.now(), dur: 800 + Math.random() * 450, scale, kind });
     }
 
+    // 夜空をかけるトラック（メイン画面）
+    let mainTrucks = [];
+    let nextTruckAt = 0;
+    function updateMainTrucks(now) {
+      if (!nextTruckAt) nextTruckAt = now + 5000;
+      if (!isShowPlaying && !storyActive && now > nextTruckAt) {
+        nextTruckAt = now + 14000 + Math.random() * 8000;
+        const w = Math.min(width, 430) * 0.42;
+        mainTrucks.push(new SkyTruck(appContainer, width, height * (0.2 + Math.random() * 0.16), w, 7000 + Math.random() * 1500));
+      }
+      for (let i = mainTrucks.length - 1; i >= 0; i--) {
+        const t = mainTrucks[i];
+        if (isShowPlaying) { t.remove(); mainTrucks.splice(i, 1); continue; }
+        const rear = t.update(now);
+        if (!rear) { mainTrucks.splice(i, 1); continue; }
+        // 光の尾と、ビールの泡のしぶき
+        for (let k = 0; k < 3; k++) addFwParticle(rear.x, rear.y + (Math.random() - 0.5) * 10, 0.8 + Math.random() * 1.2, (Math.random() - 0.5) * 0.6, Math.random() < 0.5 ? '#ffd27a' : '#fff4dc', { dot: true, w: 1 + Math.random(), decay: 0.02 + Math.random() * 0.015, g: 0.01, f: 0.97 });
+      }
+    }
+
     function drawMainFireworks(now) {
+      updateMainTrucks(now);
       if (mainLastNow) {
         mainAvgDt = mainAvgDt * 0.93 + (now - mainLastNow) * 0.07;
         if (mainAvgDt > 28 && mainFwQuality > 0.5) mainFwQuality -= 0.005;
@@ -3360,7 +3447,7 @@
     // ショーが終わったら round を進め、そのラウンドの写真を全削除する。
     // ==============================================
     const METER_GOAL = 5;
-    const SHOW_DURATION = 23200; // 確定演出 4.2秒 ＋ 打ち上げ待ち 最大3秒 ＋ 打ち上げ 1秒 ＋ 本編 15秒
+    const SHOW_DURATION = 26000; // 確定演出 4.2秒 ＋ 打ち上げ待ち 最大3秒 ＋ 打ち上げ 1秒 ＋ 本編 17.8秒
     const SHOW_LEAD_MS = 1600;                 // 5枚目が飛んでいく演出を見せてから開始
     const MEMORY_TTL_MS = 3 * 60 * 60 * 1000;  // 写真データの保険の有効期限（Firestore の TTL 設定で自動削除）
 
@@ -4248,7 +4335,7 @@
     const LAUNCH_AT = 4200;          // 「スワイプで打ち上げ」が始まる時刻
     const LAUNCH_WAIT_MAX = 3000;    // 誰もスワイプしなければ自動で打ち上げ
     const LAUNCH_FLIGHT = 950;       // 王冠が夜空へ昇る時間
-    const MAIN_LEN = 15000;          // 本編の長さ
+    const MAIN_LEN = 17800;          // 本編の長さ（最後のMVPを長めに見せる）
     const UPGRADE_DEADLINE = 2400;   // この時点までの乾杯数で昇格が決まる
     const UPGRADE_CHEERS = 15;       // 昇格に必要な乾杯数（全席合計）
     const RAINBOW = ['#ff4d4d', '#ff9f1a', '#ffe14d', '#5cff8a', '#4dc3ff', '#7a5cff', '#ff5cf0'];
@@ -4302,6 +4389,35 @@
       }
     }
 
+    function beerBurst(x, y, size) {
+      beerShapePoints().forEach(([px, py, col]) => {
+        for (let k = 0; k < 2; k++) {
+          const dx = px * size + rand(-2, 2), dy = py * size + rand(-2, 2);
+          showParticles.push(new ShowParticle(x, y, dx * 0.07, dy * 0.07, col, { friction: 0.93, gravity: 0.004, decay: rand(0.007, 0.01), size: 2.6, twinkle: false }));
+        }
+      });
+      flashSky(x, y, 0.6);
+    }
+    function fireBeerRocket(tx, ty, size, quiet = false) {
+      launchRocket(tx, ty, (x, y) => { playBoom(quiet ? 0.35 : 0.9); beerBurst(x, y, size); }, rand(650, 850), quiet);
+    }
+
+    let showTrucks = [];
+    function spawnShowTruck(yRatio, dur = 6500) {
+      showTrucks.push(new SkyTruck(showOverlay, SW, SH * yRatio, Math.min(SW, 430) * 0.46, dur));
+    }
+    function updateShowTrucks() {
+      const now = performance.now();
+      for (let i = showTrucks.length - 1; i >= 0; i--) {
+        const rear = showTrucks[i].update(now);
+        if (!rear) { showTrucks.splice(i, 1); continue; }
+        for (let k = 0; k < 3; k++) {
+          showParticles.push(new ShowParticle(rear.x, rear.y + rand(-5, 5), rand(0.8, 2), rand(-0.3, 0.3), pick(['#ffd27a', '#fff4dc', '#f7c35f']), { decay: rand(0.02, 0.035), gravity: 0.01, friction: 0.97, size: rand(1, 2), dot: true }));
+        }
+      }
+    }
+    function clearShowTrucks() { showTrucks.forEach(t => t.remove()); showTrucks = []; }
+
     function themedBurst(x, y, power = 1) {
       if (showTheme.key === 'willow') {
         willowBurst(x, y);
@@ -4342,6 +4458,7 @@
       if (showTheme.key === 'beer') y = Math.min(y, SH * (1 - beerLevel) - 60);
       if (y < 10) return;
       const k = showTheme.key;
+      if (Math.random() < 0.12) { fireBeerRocket(x, y, Math.min(SW, 430) * rand(0.22, 0.3), true); return; }
       firePlainRocket(x, y, {
         quiet: true,
         strength: 0.18,
@@ -5025,6 +5142,9 @@
         cheerHint.textContent = '連打でフィナーレが豪華に！';
       });
       at(O + 1700, hideHeadline);
+      // ビールのトラックが夜空をかける ＋ ジョッキの花火
+      at(O + 4800, () => spawnShowTruck(0.16));
+      at(O + 8900, () => fireBeerRocket(SW * 0.5, SH * 0.16, Math.min(SW, 430) * 0.42));
       at(O + 1900, () => cheerWrap.classList.remove('hidden'));
 
       const spots = [[0.28, 0.34], [0.72, 0.46], [0.3, 0.56], [0.7, 0.32], [0.5, 0.45]];
@@ -5056,6 +5176,8 @@
       });
 
       // ===== フィナーレ（乾杯の数で豪華に） =====
+      at(O + 10200, () => spawnShowTruck(0.1, 5200));
+      at(O + 11100, () => fireBeerRocket(SW * 0.5, SH * 0.2, Math.min(SW, 430) * 0.5));
       at(O + 9800, () => {
         const boost = cheerBoost();
         setHeadline('フィナーレ！', totalCheers() ? `みんなの乾杯 ×${totalCheers()}` : '');
@@ -5114,9 +5236,9 @@
         buzz([40, 40, 80]);
         if (items.length) finaleRing = { items, mvp: info.mvp ? info.mvp.item : null, born: showNow };
       });
-      at(O + 13000, () => { showSub.textContent = 'ありがとうございました！'; showSub.style.opacity = '1'; });
-      at(O + 14100, () => { showSub.textContent = '次は何が出るかな？ また乾杯しよう！'; showSub.style.opacity = '1'; });
-      at(O + 14300, () => showOverlay.classList.add('opacity-0'));
+      at(O + 14400, () => { showSub.textContent = 'ありがとうございました！'; showSub.style.opacity = '1'; });
+      at(O + 16300, () => { showSub.textContent = '次は何が出るかな？ また乾杯しよう！'; showSub.style.opacity = '1'; });
+      at(O + 17100, () => showOverlay.classList.add('opacity-0'));
       };
       return { ev, scheduleMain };
     }
@@ -5158,10 +5280,21 @@
         }
       }
 
-      const centerPopAt = popStart + n * 140 + 100;
+      // まわりの写真が弾けた後も、MVPの写真だけ中央に残してスポットライト（約2.8秒長く）
+      const centerPopAt = popStart + n * 140 + 2900;
       if (a < centerPopAt + 250) {
         let cs = easeOutBack(a / 700), calpha = 1;
-        if (a > centerPopAt) { const q = (a - centerPopAt) / 250; cs = 1 + q * 0.6; calpha = 1 - q; }
+        const solo = popStart + n * 140 + 250;
+        if (finaleRing.mvp && a > solo && a <= centerPopAt) {
+          cs = 1 + 0.22 * easeOutCubic((a - solo) / 600) + Math.sin(a / 260) * 0.015;
+          // MVPのまわりに金のきらめき
+          if (!finaleRing.nextSpark || a > finaleRing.nextSpark) {
+            finaleRing.nextSpark = a + 320;
+            const ang = Math.random() * Math.PI * 2, d = pr * rand(1.9, 2.6);
+            burstParticles(cx + Math.cos(ang) * d, cy + Math.sin(ang) * d, { count: 26, colors: ['#ffffff', '#fde68a', '#f7c35f'], power: 0.45, ring: true, particle: { decay: 0.03 } });
+          }
+        }
+        if (a > centerPopAt) { const q = (a - centerPopAt) / 250; cs = 1.22 + q * 0.6; calpha = 1 - q; }
         if (finaleRing.mvp) {
           const cr = pr * 1.45 * cs;
           drawCirclePhoto(sctx, finaleRing.mvp.img, cx, cy, cr, calpha, 34);
@@ -5222,7 +5355,7 @@
       showScene.style.transform = 'translateY(0)';
       showScene.classList.add('show');
       launchHint.classList.add('show');
-      showSub.textContent = '王冠を上にスワイプして、打ち上げよう！';
+      showSub.textContent = '王冠をタップして、打ち上げよう！';
       showSub.style.opacity = '1';
       playChime();
     }
@@ -5271,20 +5404,11 @@
       drawBottleCap(SW / 2, y, R * (1 - 0.45 * e), q * 10, glow, 36);
     }
 
-    // スワイプ（またはタップ）で打ち上げ
-    let swipeStartY = null;
+    // タップで打ち上げ（画面のどこをタップしてもOK）
     showOverlay.addEventListener('pointerdown', (e) => {
       if (launch.state !== 'wait' || e.target.closest('#cheerBtn')) return;
-      swipeStartY = e.clientY;
       initAudio();
-    });
-    showOverlay.addEventListener('pointerup', (e) => {
-      if (launch.state !== 'wait' || swipeStartY === null) return;
-      const dy = swipeStartY - e.clientY;
-      swipeStartY = null;
-      const rect = showOverlay.getBoundingClientRect();
-      const nearCap = Math.hypot(e.clientX - rect.left - SW / 2, e.clientY - rect.top - SH * 0.8) < 90;
-      if (dy > 30 || nearCap) launch.requested = true;
+      launch.requested = true;
     });
 
     function runShow(items, info) {
@@ -5328,6 +5452,7 @@
           tctx.globalCompositeOperation = 'lighter';
           goldRain();
           ambientFireworks();
+          updateShowTrucks();
           updateRockets();
           for (let i = showParticles.length - 1; i >= 0; i--) {
             const p = showParticles[i];
@@ -5454,6 +5579,7 @@
       await runShow(items, { showNo, mvp });
 
       cheerWrap.classList.add('hidden');
+      clearShowTrucks();
       hideRevealLabel();
       launchHint.classList.remove('show');
       showScene.classList.remove('show');
