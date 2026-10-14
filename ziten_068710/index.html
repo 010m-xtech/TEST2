@@ -696,8 +696,9 @@
     font-family: var(--font-gothic); font-size: 15px; line-height: 1.7; color: var(--sumi);
   }
   .feedback-form textarea:focus-visible { outline: 2px solid var(--shu); outline-offset: 2px; }
-  .feedback-note { margin: 8px 0 0; font-size: 12px; line-height: 1.6; color: rgba(255,255,255,0.85); text-align: left; }
+  .feedback-note { margin: 8px 0 0; font-size: 12px; line-height: 1.6; color: var(--shu); font-weight: 700; text-align: left; }
   .feedback-send { animation: none !important; margin-top: 14px; }
+  .feedback-form .feedback-note { margin: 10px 0 0; padding: 10px 12px; font-size: 13.5px; line-height: 1.75; color: #a8301c; font-weight: 700; background: #fff3ee; border: 1px solid #e9b3a5; border-left: 4px solid var(--shu); border-radius: 8px; }
   .feedback-send::before { display: none; }
   .feedback-send:disabled { opacity: .45; cursor: default; transform: none; }
 
@@ -1183,6 +1184,17 @@
   .flag-detail .fd-t img { width: 26px; height: 26px; object-fit: contain; }
   .flag-detail.pop { animation: fdPop .35s cubic-bezier(.2,1.3,.4,1); }
   @keyframes fdPop { from { opacity: 0; transform: translateY(6px) scale(.97); } to { opacity: 1; transform: none; } }
+  .hl-red { color: var(--shu); }
+  .hl-red:not(:has(.ch)) { background: linear-gradient(transparent 58%, #ffe97a 58%); }
+  .hl-red .ch.v { background: linear-gradient(transparent 58%, #ffe97a 58%); }
+  .red-t { color: var(--shu); }
+  .dt-t { display: block; color: var(--shu); font-size: 15px; }
+  .dt-h { display: block; color: var(--ai); font-size: 13px; margin-bottom: 4px; }
+  .blend-defs { margin: 12px 0 6px; padding: 10px 12px; background: rgba(255,255,255,.7); border: 1px solid var(--line); border-radius: 12px; }
+  .blend-defs div { font-size: 13.5px; line-height: 1.65; font-weight: 700; color: var(--ai); position: relative; padding-left: 20px; }
+  .blend-defs div + div { margin-top: 8px; }
+  .blend-defs i { position: absolute; left: 0; top: 6px; width: 12px; height: 12px; border-radius: 50%; }
+  .blend-defs b { display: block; color: var(--shu); font-size: 14px; }
   .flag-strip-t { font-size: 13px; font-weight: 700; color: var(--ai-light); text-align: center; margin-bottom: 8px; }
   .flag-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 6px; }
   .flag-chip { flex: 0 0 31%; text-align: center; }
@@ -1243,7 +1255,7 @@
   <main>
     <!-- Screen: トップ(お酒選択) -->
     <section class="screen active" data-screen="top">
-      <div class="guide" data-komeo="komeo1.webp"><div class="guide-src">ラベルの言葉や<wbr>造り方の秘密を<wbr>少し知るだけで、<wbr>いつものお酒が<wbr>違った表情を<wbr>見せてくれます。<br>知ればもっと<wbr>美味しくなる、<wbr>お酒の知識を<wbr>深めてみませんか？<br><strong>ご覧になりたいお酒のアイコンを、<br>タップ</strong>してください。</div></div>
+      <div class="guide" data-komeo="komeo1.webp"><div class="guide-src">ちょっと知るだけで、<wbr>いつものお酒が<wbr>もっとおいしくなる。<br>そんな小さな<wbr>発見を、<wbr>のんびり<wbr>楽しんでいってください。<br><span class="hl-red">気になるお酒の<wbr>アイコンを<wbr>タップ</span>してみてください。</div></div>
 
       <div class="top-categories-wrap">
         <div class="top-categories-row">
@@ -1845,21 +1857,9 @@
         <p class="diagram-note">※イメージ図です。ボタンを切り替えて、くらべてみてください。</p>
       </div>
 
-      <div class="accordion-item" onclick="toggleAccordion(this)">
-        <div class="accordion-header">
-          <div>常圧蒸留（じょうあつ）<small class="acc-hint">昔ながらの、コクと香りが強い焼酎</small></div>
-          <svg class="icon" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="accordion-body">通常の気圧で蒸発させる、昔ながらの方法。高い温度で熱するため、原料の風味がガッツリと抽出され、コクと香りの強い「昔ながらの濃い焼酎」になります。</div>
-      </div>
+      
 
-      <div class="accordion-item" onclick="toggleAccordion(this)">
-        <div class="accordion-header">
-          <div>減圧蒸留（げんあつ）<small class="acc-hint">軽快でクリアな、飲みやすい焼酎</small></div>
-          <svg class="icon" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="accordion-body">機械の中の気圧を下げて、低い温度で蒸発させる方法（高い山でお湯が早く沸くのと同じ原理です）。雑味が少なくなり、とても軽快でクリアな、飲みやすい焼酎になります。</div>
-      </div>
+      
 
 
       <button class="primary-btn" onclick="goScreen('our-shochu')">
@@ -1939,33 +1939,20 @@
         </div>
         <input type="range" class="polish-range" id="blendRange" min="0" max="100" step="5" value="50" aria-label="モルトの割合（パーセント）">
         <div class="blend-ends"><span>グレーン<br>100%</span><span style="text-align:right">モルト<br>100%</span></div>
+        <div class="blend-defs">
+          <div><i style="background:#A8561C"></i><b>モルト</b>大麦麦芽だけで造る。香りが豊かで個性が強く、味の主役。</div>
+          <div><i style="background:#EBCB77"></i><b>グレーン</b>トウモロコシや小麦などが主原料。クセが少なく、味をやさしくまとめる縁の下の力持ち。</div>
+          <div><i style="background:linear-gradient(135deg,#A8561C 50%,#EBCB77 50%)"></i><b>ブレンデッド</b>モルトとグレーンを、職人が絶妙な比率でまぜたもの。バランスが良く、飲みやすいのが魅力。</div>
+        </div>
         <p class="diagram-text" id="blendText"></p>
         <p class="diagram-note">※割合はイメージです。実際の配合は銘柄ごとに異なります。</p>
       </div>
 
-<div class="accordion-item" onclick="toggleAccordion(this)">
-        <div class="accordion-header">
-          <div>モルト<small class="acc-hint">大麦麦芽だけ。個性が強い</small></div>
-          <svg class="icon" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="accordion-body">大麦の麦芽（モルト）だけを原料にして造られるウイスキー。香りが豊かで個性が強く出やすいため、ウイスキーの味わいの主役となります。</div>
-      </div>
 
-      <div class="accordion-item" onclick="toggleAccordion(this)">
-        <div class="accordion-header">
-          <div>グレーン<small class="acc-hint">穀物が主役。軽やかでクセが少ない</small></div>
-          <svg class="icon" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="accordion-body">トウモロコシや小麦などの穀物を主原料にしたウイスキー。クセが少なく軽やかな味わいで、ブレンドする際に味を優しくまとめる「縁の下の力持ち」として活躍します。</div>
-      </div>
 
-      <div class="accordion-item" onclick="toggleAccordion(this)">
-        <div class="accordion-header">
-          <div>ブレンデッド<small class="acc-hint">モルト × グレーンの調和</small></div>
-          <svg class="icon" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="accordion-body">個性豊かな「モルト」と、穏やかな「グレーン」を絶妙な比率でブレンドしたもの。プロの職人が計算し尽くして味をまとめているため、非常にバランスが良く、飲みやすいのが最大の魅力です。</div>
-      </div>
+      
+
+      
 
       <div class="quiz-box" data-quiz="singleMalt"></div>
 
@@ -1994,7 +1981,7 @@
         </p>
       </div>
 
-      <div class="guide" data-komeo="komeo5.webp"><div class="guide-src">気になる国旗を<wbr>タップしてみてください。<wbr>味の個性が<wbr>表示されます。</div></div>
+      <div class="guide" data-komeo="komeo5.webp"><div class="guide-src"><span class="red-t">気になる国旗を<wbr>タップしてみてください。</span><wbr>味の個性が<wbr>表示されます。</div></div>
 
       <div class="flag-strip"><div class="flag-strip-t">国旗をタップすると、味の個性が見られます</div><div class="flag-row"><div class="flag-chip" role="button" tabindex="0" data-i="0"><span class="fl-svg"><svg viewBox="0 0 36 36"><rect width="36" height="36" rx="5" fill="#2b5aa8"/><path d="M3 3L33 33M33 3L3 33" stroke="#fff" stroke-width="5"/></svg></span><b>スコッチ</b><span>スモーキー</span></div><div class="flag-chip" role="button" tabindex="0" data-i="1"><span class="fl-svg"><svg viewBox="0 0 36 36"><rect width="36" height="36" rx="5" fill="#fff"/><g fill="#c8312b"><rect y="4" width="36" height="4"/><rect y="12" width="36" height="4"/><rect y="20" width="36" height="4"/><rect y="28" width="36" height="4"/></g><rect width="17" height="18" rx="3" fill="#2b4a86"/><g fill="#fff"><circle cx="5" cy="5" r="1.3"/><circle cx="11" cy="5" r="1.3"/><circle cx="8" cy="9" r="1.3"/><circle cx="5" cy="13" r="1.3"/><circle cx="11" cy="13" r="1.3"/></g></svg></span><b>バーボン</b><span>甘く力強い</span></div><div class="flag-chip" role="button" tabindex="0" data-i="2"><span class="fl-svg"><svg viewBox="0 0 36 36"><rect width="36" height="36" rx="5" fill="#fff" stroke="#d8cdb8"/><circle cx="18" cy="18" r="9" fill="#c8312b"/></svg></span><b>ジャパニーズ</b><span>繊細・バランス</span></div><div class="flag-chip" role="button" tabindex="0" data-i="3"><span class="fl-svg"><svg viewBox="0 0 36 36"><rect width="36" height="36" rx="5" fill="#fff"/><path d="M0 5a5 5 0 015-5h7v36H5a5 5 0 01-5-5z" fill="#2e9a5b"/><path d="M24 0h7a5 5 0 015 5v26a5 5 0 01-5 5h-7z" fill="#f08a2c"/></svg></span><b>アイリッシュ</b><span>なめらか</span></div><div class="flag-chip" role="button" tabindex="0" data-i="4"><span class="fl-svg"><svg viewBox="0 0 36 36"><rect width="36" height="36" rx="5" fill="#fff"/><path d="M0 5a5 5 0 015-5h6v36H5a5 5 0 01-5-5z" fill="#d23b33"/><path d="M25 0h6a5 5 0 015 5v26a5 5 0 01-5 5h-6z" fill="#d23b33"/><path d="M18 8l2 4 3-1-1 5 3-2 1 3-5 3 .5 2-3.5-.5v4h-1v-4l-3.5.5.5-2-5-3 1-3 3 2-1-5 3 1z" fill="#d23b33"/></svg></span><b>カナディアン</b><span>軽快</span></div></div></div>
       <div class="flag-detail" id="flagDetail"><div class="fd-hint">▲ 気になる国旗をタップ</div></div>
@@ -2475,6 +2462,14 @@ const screenLabels = {
   'whisky-intro': 'ウイスキー｜導入', 'whisky-types': 'ウイスキー｜ラベル', 'world-whisky': 'ウイスキー｜世界のウイスキー',
   'whisky-deep': 'ウイスキー｜さまざまな個性', 'our-whisky': 'ウイスキー｜吾熊のウイスキー'
 };
+(function () {
+  const bb = document.getElementById('backBtn'); let handled = false;
+  bb.addEventListener('pointerdown', () => {
+    const a = document.activeElement;
+    if (a && /^(TEXTAREA|INPUT)$/.test(a.tagName)) { a.blur(); handled = true; setTimeout(() => { handled = false; }, 700); if (bb.onclick) bb.onclick(); }
+  });
+  bb.addEventListener('click', e => { if (handled) { e.stopImmediatePropagation(); e.preventDefault(); handled = false; } }, true);
+})();
 const drinkByScreen = { 'sake-intro': '日本酒', 'shochu-intro': '焼酎', 'whisky-intro': 'ウイスキー' };
 function goScreen(name){
   // トップ画面でお酒のアイコンを選んだときだけ記録する（「戻る」操作では記録しない）
@@ -2702,8 +2697,8 @@ function initDistill() {
   const box = document.getElementById('distillDiagram');
   if (!box) return;
   const modes = {
-    jo:  { temp: 88, koku: 90, clear: 30, text: 'ふつうの気圧のまま、高めの温度で蒸発させる昔ながらの方法。原料の風味がしっかり出て、コクと香りの強い焼酎になります。' },
-    gen: { temp: 35, koku: 40, clear: 90, text: '機械の中の気圧を下げて、低い温度で蒸発させます（高い山でお湯が早く沸くのと同じ原理）。雑味が少なく、軽快でクリアな焼酎になります。' }
+    jo:  { temp: 88, koku: 90, clear: 30, title: '常圧蒸留（じょうあつ）', hint: '昔ながらの、コクと香りが強い焼酎', text: 'ふつうの気圧のまま、高めの温度で蒸発させる昔ながらの方法。原料の風味がしっかり出て、コクと香りの強い「濃い焼酎」になります。' },
+    gen: { temp: 35, koku: 40, clear: 90, title: '減圧蒸留（げんあつ）', hint: '軽快でクリアな、飲みやすい焼酎', text: '機械の中の気圧を下げて、低い温度で蒸発させます（高い山でお湯が早く沸くのと同じ原理）。雑味が少なく、軽快でクリアな、飲みやすい焼酎になります。' }
   };
   const btns = box.querySelectorAll('.seg button');
   function set(k) {
@@ -2712,7 +2707,7 @@ function initDistill() {
     box.querySelector('[data-m="temp"]').style.width = m.temp + '%';
     box.querySelector('[data-m="koku"]').style.width = m.koku + '%';
     box.querySelector('[data-m="clear"]').style.width = m.clear + '%';
-    document.getElementById('distillText').textContent = m.text;
+    document.getElementById('distillText').innerHTML = '<b class="dt-t">' + m.title + '</b><span class="dt-h">' + m.hint + '</span>' + m.text;
   }
   btns.forEach(b => b.addEventListener('click', () => { set(b.dataset.mode); markDone(box); }));
   set('jo');
@@ -3030,10 +3025,8 @@ function initGuides() {
 }
 
 /* ============ ご感想（自由記述） ============ */
-function showThanks(fb) {
+function ensureInsta(fb) {
   const g = fb.querySelector('.guide');
-  g.querySelector('.guide-img').src = imgSrc('komeo1.webp');
-  fb.dataset.thanked = '1';
   let ig = fb.querySelector('.insta');
   if (!ig) {
     ig = document.createElement('div');
@@ -3042,6 +3035,15 @@ function showThanks(fb) {
     g.insertAdjacentElement('afterend', ig);
     ig.querySelector('a').addEventListener('click', () => sendData({ type: 'card', detail: 'インスタグラム' }));
   }
+  requestAnimationFrame(() => ig.classList.add('show'));
+  return ig;
+}
+
+function showThanks(fb) {
+  const g = fb.querySelector('.guide');
+  g.querySelector('.guide-img').src = imgSrc('komeo1.webp');
+  fb.dataset.thanked = '1';
+  const ig = ensureInsta(fb);
   requestAnimationFrame(() => ig.classList.add('show'));
   sayGuide(g, 'ありがとうございました！<br>よかったらインスタグラムも<wbr>チェックしてください！<br>主におすすめや日本酒について<wbr>ご紹介しています！');
 }
@@ -3052,7 +3054,7 @@ function initFeedback() {
     const form = fb.querySelector('.feedback-form');
     const ta = fb.querySelector('textarea');
     const btn = fb.querySelector('.feedback-send');
-    g.addEventListener('guidedone', () => { if (!fb.dataset.thanked) form.classList.add('show'); });
+    g.addEventListener('guidedone', () => { ensureInsta(fb); if (!fb.dataset.thanked) form.classList.add('show'); });
     ta.addEventListener('input', () => { btn.disabled = ta.value.trim().length === 0; });
     btn.addEventListener('click', () => {
       const text = ta.value.trim();
@@ -3067,14 +3069,7 @@ function initFeedback() {
   document.querySelectorAll('.back-home-btn').forEach(b => {
     b.removeAttribute('onclick');
     b.addEventListener('click', () => {
-      const fb = b.closest('.screen').querySelector('.feedback');
-      if (fb && !fb.dataset.thanked) {
-        fb.querySelector('.feedback-form').classList.remove('show');
-        showThanks(fb);
-        fb.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        return;
-      }
-      goScreen('top');
+      goScreen('top');   // 1回のタップで戻る
     });
   });
 }
@@ -3272,6 +3267,12 @@ function makeFold(titleHTML, nodes, anchor) {
     const open = fold.classList.toggle('open');
     head.setAttribute('aria-expanded', open ? 'true' : 'false');
     cue.textContent = open ? '閉じる' : 'タップで開く';
+    if (open && fold.querySelector('.diagram, #polishBox, #sakeMatrix, .flow') && typeof slowScrollTo === 'function' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setTimeout(() => {
+        const hr = head.getBoundingClientRect(), br = fold.querySelector('.fold-body').getBoundingClientRect();
+        if (br.bottom > window.innerHeight - 20 || hr.top < 0) slowScrollTo(Math.max(0, window.scrollY + hr.top - 70), 1500);
+      }, 350);
+    }
   });
 }
 
@@ -3287,10 +3288,10 @@ function initFolds() {
     heads.forEach(h => {
       const nodes = [];
       let n = h.nextElementSibling;
-      while (n && !n.classList.contains('sub-heading') && !n.classList.contains('primary-btn') && !n.classList.contains('feedback')) {
+      while (n && !n.classList.contains('sub-heading') && !n.classList.contains('fold-stop') && !n.classList.contains('primary-btn') && !n.classList.contains('feedback')) {
         nodes.push(n); n = n.nextElementSibling;
       }
-      if (nodes.length === 1 && nodes[0].classList.contains('accordion-item')) return;   // 中身がカード1枚だけなら、折りたたまない（2段階タップを防ぐ）
+      if (screen === 'whisky-deep' && nodes.length === 1 && nodes[0].classList.contains('accordion-item')) return;   // 中身がカード1枚だけなら、折りたたまない（2段階タップを防ぐ）
       makeFold(h.innerHTML, nodes, h);
       h.remove();
     });
@@ -3542,8 +3543,8 @@ const LABEL_TERMS = {
   '辛口': { screen: 'sake-intro', flip: true }, '超辛口': { screen: 'sake-intro', flip: true }, 'から口': { screen: 'sake-intro', flip: true },
   '本格焼酎': { screen: 'shochu-labels', acc: '本格焼酎' }, '甲類': { screen: 'shochu-labels', acc: '焼酎甲類' },
   '黒麹': { screen: 'shochu-labels', acc: '黒麹' }, '白麹': { screen: 'shochu-labels', acc: '白麹' }, '黄麹': { screen: 'shochu-labels', acc: '黄麹' },
-  '常圧蒸留': { screen: 'shochu-labels', acc: '常圧蒸留' }, '減圧蒸留': { screen: 'shochu-labels', acc: '減圧蒸留' },
-  'モルト': { screen: 'whisky-types', acc: 'モルト' }, 'グレーン': { screen: 'whisky-types', acc: 'グレーン' }, 'ブレンデッド': { screen: 'whisky-types', acc: 'ブレンデッド' },
+  '常圧蒸留': { screen: 'shochu-labels', el: 'distillDiagram' }, '減圧蒸留': { screen: 'shochu-labels', el: 'distillDiagram' },
+  'モルト': { screen: 'whisky-types', el: 'blendDiagram' }, 'グレーン': { screen: 'whisky-types', el: 'blendDiagram' }, 'ブレンデッド': { screen: 'whisky-types', el: 'blendDiagram' },
   'スコッチ': { screen: 'world-whisky', acc: 'スコッチ' }, 'バーボン': { screen: 'world-whisky', acc: 'バーボン（' },
   'ジャパニーズ': { screen: 'world-whisky', acc: 'ジャパニーズ' }, 'アイリッシュ': { screen: 'world-whisky', acc: 'アイリッシュ' }, 'カナディアン': { screen: 'world-whisky', acc: 'カナディアン' },
   'ピート': { screen: 'whisky-deep', acc: 'スモーキー' }, 'バーボン樽': { screen: 'whisky-deep', acc: 'バーボン樽' },
