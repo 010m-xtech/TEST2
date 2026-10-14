@@ -1097,6 +1097,13 @@
   .ember { background: radial-gradient(circle, rgba(201,160,70,.95) 0%, rgba(201,160,70,.45) 48%, transparent 74%) !important; }
   #openingStamp { background: #b9402b; }
   .fold-title span { white-space: normal !important; }
+  /* オープニング中の軽量化：裏の画面は描かず、動きは書いている間は最小限に */
+  body.opening > *:not(#openingScreen):not(script):not(style) { visibility: hidden !important; }
+  #openingScreen.play #openingGlow { animation: none !important; opacity: .7 !important; }
+  #openingScreen.play #openingFrame { animation: frameFade 1.2s ease-out .3s forwards !important; }
+  @keyframes frameFade { 0% { opacity: 0; } 100% { opacity: 1; } }
+  #openingScreen:not(.settled) .ember { display: none !important; }
+  #openingScreen.settled #openingGlow { animation: glowBreath 4.5s ease-in-out infinite alternate !important; }
 </style>
 </head>
 <body class="opening">
@@ -2059,6 +2066,7 @@ function endOpening() {
   if (hasSkipped) return;
   hasSkipped = true;
   clearTimeout(openingTimer);
+  if (typeof flushInits === 'function') flushInits();
   openingScreen.style.opacity = '0';
   setTimeout(() => { openingScreen.style.display = 'none'; }, 900);
   setTimeout(() => {
@@ -2237,6 +2245,7 @@ function scheduleStamp(delayMs) {
   stampTimer = setTimeout(() => {
     if (hasSkipped) return;
     openingStamp.classList.add('pop');
+    const os = document.getElementById('openingScreen'); if (os) os.classList.add('settled');
     try { if (navigator.vibrate) navigator.vibrate(18); } catch (e) {}
   }, delayMs);
 }
@@ -3633,27 +3642,41 @@ function initResume() {
 }
 
 /* ============ 初期化 ============ */
-renderList('ourSakeList', sakeItems, true);
-renderList('ourShochuList', shochuGroups, false);
-renderList('ourWhiskyList', whiskyGroups, false);
-document.querySelectorAll('.quiz-box[data-quiz]').forEach(renderQuiz);
-initSakeMatrix();
-initPolishWhat();
-initPolish();
-initDistill();
-initHiire();
-initBlend();
-initFolds();
-initPoints();
-initReadable();
-initTags();
-initProgress();
-initGuides();
-initFeedback();
-initIntro();
-if (SURVEY_CONFIG.trackOpen) sendData({ type: 'open' });
-goScreen('top');
-initResume();
+/* オープニングを滑らかにするため、重い初期化は書き終わったあとに少しずつ行う */
+const INIT_STEPS = [
+  () => { renderList('ourSakeList', sakeItems, true); },
+  () => { renderList('ourShochuList', shochuGroups, false); },
+  () => { renderList('ourWhiskyList', whiskyGroups, false); },
+  () => { document.querySelectorAll('.quiz-box[data-quiz]').forEach(renderQuiz); },
+  () => { initSakeMatrix(); },
+  () => { initPolishWhat(); },
+  () => { initPolish(); },
+  () => { initDistill(); },
+  () => { initHiire(); },
+  () => { initBlend(); },
+  () => { initFolds(); },
+  () => { initPoints(); },
+  () => { initReadable(); },
+  () => { initTags(); },
+  () => { initProgress(); },
+  () => { initGuides(); },
+  () => { initFeedback(); },
+  () => { initIntro(); },
+  () => { if (SURVEY_CONFIG.trackOpen) sendData({ type: 'open' }); },
+  () => { goScreen('top'); },
+  () => { initResume(); }
+];
+let initIdx = 0, initTimer = null;
+function flushInits() {
+  clearTimeout(initTimer);
+  while (initIdx < INIT_STEPS.length) INIT_STEPS[initIdx++]();
+}
+function stepInits() {
+  if (initIdx >= INIT_STEPS.length) return;
+  INIT_STEPS[initIdx++]();
+  initTimer = setTimeout(stepInits, 40);
+}
+initTimer = setTimeout(stepInits, (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 200 : 4000);
 </script>
 
 </body>
