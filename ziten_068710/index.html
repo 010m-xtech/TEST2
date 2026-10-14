@@ -2169,42 +2169,60 @@ function buildLogoWriter() {
 }
 
 function setupLogoWriter(logo, W, H, r) {
-  const n = r.n, P = r.P, xs = r.xs, ys = r.ys, A = r.A, T = r.T, ord = r.ord;
+  const n = r.n, xs = r.xs, ys = r.ys, A = r.A, T = r.T;
   const out = document.createElement('canvas'); out.width = W; out.height = H; out.className = 'logo-write';
-  const ox = out.getContext('2d'); const im = ox.createImageData(W, H); const od = im.data;
-  for (let i = 0; i < n; i++) { od[P[i]] = 28; od[P[i] + 1] = 22; od[P[i] + 2] = 18; }
-  ox.putImageData(im, 0, 0);
-  const RAMP = 0.06; let raf = 0;
+  const ox = out.getContext('2d');
+  // 画素を「時間のかたまり×小さなタイル」に分け、一枚のアトラスに並べておく。
+  // 再生中は、GPU上でタイルを貼るだけにして、毎フレームの重い画素転送をなくす。
+  const TS = 64, FPS = 40, COLS = 16, tc = Math.ceil(W / TS), tr = Math.ceil(H / TS), NT = tc * tr;
+  const slotOf = new Map(), slots = [], buckets = [];
+  let nb = 0;
+  for (let i = 0; i < n; i++) { const b = Math.floor(T[i] * FPS); if (b >= nb) nb = b + 1; }
+  for (let b = 0; b < nb; b++) buckets.push([]);
+  const pix = [];
+  for (let i = 0; i < n; i++) {
+    const x = xs[i], y = ys[i], b = Math.floor(T[i] * FPS);
+    const tile = ((y / TS) | 0) * tc + ((x / TS) | 0), key = b * NT + tile;
+    let s = slotOf.get(key);
+    if (s === undefined) { s = slots.length; slotOf.set(key, s); slots.push(1); buckets[b].push([s, ((x / TS) | 0) * TS, ((y / TS) | 0) * TS]); }
+    pix.push(s);
+  }
+  const rows = Math.ceil(slots.length / COLS);
+  const atlas = document.createElement('canvas'); atlas.width = COLS * TS; atlas.height = Math.max(1, rows) * TS;
+  const actx = atlas.getContext('2d'); const aim = actx.createImageData(atlas.width, atlas.height); const ad = aim.data;
+  for (let i = 0; i < n; i++) {
+    const s = pix[i], k = ((((s / COLS) | 0) * TS + (ys[i] % TS)) * atlas.width + (s % COLS) * TS + (xs[i] % TS)) * 4;
+    ad[k] = 28; ad[k + 1] = 22; ad[k + 2] = 18; ad[k + 3] = A[i];
+  }
+  actx.putImageData(aim, 0, 0);
+  const drawBucket = b => {
+    const list = buckets[b];
+    for (let j = 0; j < list.length; j++) {
+      const e = list[j], s = e[0];
+      ox.drawImage(atlas, (s % COLS) * TS, ((s / COLS) | 0) * TS, TS, TS, e[1], e[2], TS, TS);
+    }
+  };
+  let raf = 0;
   logoWriter = {
     play() {
       cancelAnimationFrame(raf);
-      for (let i = 0; i < n; i++) od[P[i] + 3] = 0;
-      ox.putImageData(im, 0, 0);
-      let head = 0, tail = 0, t0 = 0;
+      ox.clearRect(0, 0, W, H);
+      let next = 0, t0 = 0;
       const step = now => {
         if (!t0) t0 = now;
-        const t = (now - t0) / 1000;
-        let x0 = W, y0 = H, x1 = -1, y1 = -1, i, x, y;
-        while (tail < n && T[ord[tail]] <= t) tail++;
-        while (head < tail && T[ord[head]] <= t - RAMP) {
-          i = ord[head]; od[P[i] + 3] = A[i]; x = xs[i]; y = ys[i];
-          if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; head++;
-        }
-        for (let k = head; k < tail; k++) {
-          i = ord[k]; od[P[i] + 3] = A[i] * ((t - T[i]) / RAMP); x = xs[i]; y = ys[i];
-          if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
-        }
-        if (x1 >= 0) ox.putImageData(im, 0, 0, x0, y0, x1 - x0 + 1, y1 - y0 + 1);
-        if (head < n) raf = requestAnimationFrame(step);
+        const upto = Math.min(nb - 1, Math.floor((now - t0) / 1000 * FPS));
+        while (next <= upto) drawBucket(next++);
+        if (next < nb) raf = requestAnimationFrame(step);
       };
       raf = requestAnimationFrame(step);
     },
-    showAll() { cancelAnimationFrame(raf); for (let i = 0; i < n; i++) od[P[i] + 3] = A[i]; ox.putImageData(im, 0, 0); }
+    showAll() { cancelAnimationFrame(raf); ox.clearRect(0, 0, W, H); for (let b = 0; b < nb; b++) drawBucket(b); }
   };
   logo.appendChild(out); logo.classList.add('written');
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) logoWriter.showAll();
   else if (!hasSkipped) { logoWriter.play(); scheduleStamp(3750); }
 }
+
 buildLogoWriter();
 
 /* 画像のパス解決（本番はファイル名のまま） */
@@ -2303,7 +2321,6 @@ const shochuGroups = [
   {
     label: "麦焼酎",
     items: [
-      { name: "<span class='region-label'>[徳島]</span><ruby>一番札<rt>いちばんふだ</rt></ruby>", desc: "フルーティーな香りとすっきりとした味わいの絶妙なバランス。クセがなく飲みやすいので、麦焼酎初心者にもおすすめです。" },
       { name: "<span class='region-label'>[大分]</span><ruby>安心院蔵<rt>あじむぐら</rt></ruby>", desc: "大麦を半分（50%）まで削り、低温でじっくり発酵させるという日本酒のような造りが特徴。雑味がなく、丸みのある旨味とスッキリとした飲み口です。" },
       { name: "<span class='region-label'>[大分]</span><ruby>兼八<rt>かねはち</rt></ruby>", desc: "はだか麦を使用し、ロースト感のある「麦チョコ」のような香ばしさと甘みが最大の特徴。唯一無二の味わいで熱狂的なファンを持つ幻の麦焼酎です。" }
     ]
@@ -2324,6 +2341,12 @@ const shochuGroups = [
     label: "黒糖",
     items: [
       { name: "<span class='region-label'>[鹿児島]</span><ruby>紅さんご<rt>べにさんご</rt></ruby>", desc: "奄美大島で造られる黒糖焼酎を、オーク樽でじっくりと熟成。まるで上質なラム酒やブランデーを思わせる芳醇な甘い香りと、深くまろやかなコクが楽しめます。ロックでゆっくりと味わいたい琥珀色の一杯です。" }
+    ]
+  },
+  {
+    label: "メニュー外の一本",
+    items: [
+      { name: "<span class='region-label'>[青森]</span><ruby>田酒<rt>でんしゅ</rt></ruby> の焼酎<span class='limited-label'>メニューには載っていません。このコンテンツだけでご紹介しています</span>", desc: "日本酒「田酒」で知られる青森の蔵が手がける焼酎です。日本酒づくりで培った技が活きた、すっきりと澄んだ味わいが魅力といわれます。メニューにはありませんが、気になった方は、お気軽にお声がけください。" }
     ]
   }
 ];
@@ -3433,7 +3456,15 @@ function showPoints(p, all) {
 
 function revealPoints(name) {
   const p = document.querySelector('.screen[data-screen="' + name + '"] .article-text[data-points]');
-  if (p) showPoints(p, false);
+  if (!p) return;
+  const jumping = !!window.__jumping;
+  if (!jumping) {                       // 開くたびに、最初からポンポンと表示する
+    (p._timers || []).forEach(clearTimeout);
+    p._started = false;
+    p.querySelectorAll('.pt.in').forEach(x => x.classList.remove('in'));
+    void p.offsetWidth;
+  }
+  showPoints(p, jumping);
 }
 
 
