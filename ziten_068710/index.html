@@ -1117,6 +1117,78 @@
   @keyframes nextBlink { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
   #openingVideo { inset: auto !important; left: 50% !important; top: 50% !important; width: min(max(100vw, 46.2vh), 560px) !important; height: auto !important; object-fit: contain; transform: translate(-50%, -50%); }
   #openingScreen.leaving #openingVideo { transform: translate(-50%, -50%) scale(1.05); }
+  .flip-card.tall { height: 410px; }
+  .sw-row { display: flex; gap: 8px; width: 100%; }
+  .sw-card { flex: 1; background: rgba(255,255,255,.7); border: 1px solid var(--line); border-radius: 10px; padding: 6px 6px 8px; text-align: center; }
+  .sw-card svg { width: 100%; height: auto; display: block; }
+  .sw-tit { font-size: 12.5px; line-height: 1.5; color: var(--sumi); margin-top: 2px; }
+  .sw-res { margin-top: 5px; font-size: 13px; line-height: 1.45; border-radius: 8px; padding: 4px 2px; font-weight: 700; }
+  .sw-res.amai { background: #fbeccd; color: #8a5a10; }
+  .sw-res.karai { background: #e3ecc0; color: #4d5f12; }
+  .sw-scale { width: 100%; margin-top: 8px; }
+  .sw-scale-t { font-size: 12.5px; color: var(--sumi); margin-bottom: 5px; line-height: 1.5; }
+  .sw-bar { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--sumi); }
+  .sw-bar i { flex: 1; height: 10px; border-radius: 5px; background: linear-gradient(90deg, #e8b25e, #efe7c9 50%, #7f9bc0); }
+  .sw-nums { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--ai-light); padding: 0 34px; margin-top: 2px; }
+  /* 図解を、上から順にゆっくり表示する */
+  .flow.seq > * { opacity: 0; transform: translateY(14px); transition: opacity .6s ease, transform .6s cubic-bezier(.2,1.2,.4,1); }
+  .flow.seq > .flow-arrow { transform: translateY(-6px) scaleY(.6); transform-origin: 50% 0; }
+  .flow.seq > .in { opacity: 1; transform: none; }
+  .flow-node.in.accent { animation: flowGlow 1.6s ease-out .3s 1; }
+  @keyframes flowGlow { 0% { box-shadow: 0 0 0 0 rgba(189,70,48,.45); } 70% { box-shadow: 0 0 0 12px rgba(189,70,48,0); } 100% { box-shadow: none; } }
+  .diagram-note.seq { opacity: 0; transition: opacity .6s ease; }
+  .diagram-note.seq.in { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { .flow.seq > *, .diagram-note.seq { opacity: 1 !important; transform: none !important; transition: none; } }
+  .pick-label { display: inline-block; margin-top: 4px; padding: 2px 9px; font-size: 12px; font-weight: 700; letter-spacing: .06em; color: #fff; background: linear-gradient(135deg, #c9962e, #a8731a); border-radius: 999px; box-shadow: 0 1px 4px rgba(168,115,26,.45); animation: pickGlint 2.8s ease-in-out infinite; }
+  @keyframes pickGlint { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.18); } }
+  .accordion-item:has(.pick-label) { border-color: rgba(201,150,46,.8) !important; background: linear-gradient(180deg, #fffaf0, #fff6e2) !important; box-shadow: 0 2px 10px rgba(201,150,46,.28); }
+  .pick-note { display: block; margin-bottom: 6px; font-weight: 700; color: #a8731a; }
+  @media (prefers-reduced-motion: reduce) { .pick-label { animation: none; } }
+  .fold-pick { display: inline-block; margin-left: 8px; padding: 1px 8px; font-size: 11.5px; font-weight: 700; color: #fff; background: linear-gradient(135deg, #c9962e, #a8731a); border-radius: 999px; vertical-align: 2px; white-space: nowrap; }
+  .mk-wrap { text-align: center; }
+  .mk-lead { font-size: 15px; color: var(--sumi); margin-bottom: 8px; }
+  .mk-lead strong { color: var(--shu); }
+  .mk-row { display: flex; align-items: center; justify-content: center; gap: 4px; background: #fffaf0; border: 1px solid var(--line); border-radius: 12px; padding: 10px 6px 8px; }
+  .mk-it { flex: 1; min-width: 0; }
+  .mk-ico { height: 62px; display: flex; align-items: flex-end; justify-content: center; gap: 2px; }
+  .mk-ico svg { height: 100%; width: auto; max-width: 100%; }
+  .mk-three svg { height: 44px; }
+  .mk-cap { font-size: 12px; line-height: 1.45; margin-top: 5px; color: var(--sumi); font-weight: 700; }
+  .mk-red { color: var(--shu); }
+  .mk-ar { color: var(--ai-light); font-size: 13px; flex: 0 0 auto; padding-bottom: 18px; }
+  .mk-no { margin-top: 10px; font-size: 14px; line-height: 1.7; color: var(--sumi); text-align: left; }
+  .mk-no strong { color: var(--shu); }
+  .mk-x { display: inline-block; width: 20px; height: 20px; line-height: 20px; text-align: center; border-radius: 50%; background: var(--shu); color: #fff; font-size: 13px; margin-right: 4px; }
+  .mk-sub { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--line); }
+  .mk-sub-t { font-size: 13px; color: var(--ai-light); font-weight: 700; margin-bottom: 6px; text-align: left; }
+  .mk-small .mk-ico { height: 50px; }
+  .mk-small .mk-it { flex: 0 0 76px; }
+  .mk-note { flex: 1; font-size: 12.5px; line-height: 1.55; color: var(--sumi); text-align: left; padding-left: 6px; }
+  .mk-small .mk-it { flex: 0 0 84px !important; }
+  .mk-small .mk-cap.mk-red { white-space: nowrap; font-size: 11.5px; margin-left: -8px; margin-right: -8px; }
+  .pt-ico { float: left; width: 54px; height: 54px; margin: 0 10px 2px 0; padding: 4px; box-sizing: border-box; background: #fffaf0; border: 1px solid var(--line); border-radius: 12px; }
+  .article-text .pt::after, .pt::after { content: ''; display: block; clear: both; }
+  .flag-strip { background: rgba(255,255,255,.7); border: 1px solid var(--line); border-radius: 12px; padding: 10px 8px 8px; margin: 4px 0 4px; }
+  .flag-chip { cursor: pointer; border-radius: 10px; padding: 4px 0; transition: background .2s, transform .2s; -webkit-tap-highlight-color: transparent; }
+  .flag-chip:active { transform: scale(.95); }
+  .flag-chip.on { background: #f6e3dc; box-shadow: 0 0 0 1.5px var(--shu) inset; }
+  .flag-chip.on .fl-svg, .flag-chip.on img { transform: scale(1.12); }
+  .flag-chip .fl-svg { display: block; width: 34px; height: 34px; margin: 0 auto 3px; transition: transform .25s cubic-bezier(.2,1.4,.4,1); }
+  .fl-svg svg { width: 100%; height: 100%; display: block; }
+  .fd-t .fl-svg { width: 26px; height: 26px; flex: none; }
+  .flag-chip img { transition: transform .25s cubic-bezier(.2,1.4,.4,1); }
+  .flag-detail { margin: 8px 0 14px; min-height: 64px; background: #fffaf0; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; font-weight: 700; font-size: 14px; line-height: 1.75; color: var(--ai); }
+  .flag-detail .fd-hint { text-align: center; color: var(--shu); opacity: .85; font-size: 13px; }
+  .flag-detail .fd-t { color: var(--shu); margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+  .flag-detail .fd-t img { width: 26px; height: 26px; object-fit: contain; }
+  .flag-detail.pop { animation: fdPop .35s cubic-bezier(.2,1.3,.4,1); }
+  @keyframes fdPop { from { opacity: 0; transform: translateY(6px) scale(.97); } to { opacity: 1; transform: none; } }
+  .flag-strip-t { font-size: 13px; font-weight: 700; color: var(--ai-light); text-align: center; margin-bottom: 8px; }
+  .flag-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 6px; }
+  .flag-chip { flex: 0 0 31%; text-align: center; }
+  .flag-chip img { width: 34px; height: 34px; object-fit: contain; display: block; margin: 0 auto 3px; }
+  .flag-chip b { display: block; font-size: 12px; color: var(--ai); line-height: 1.3; }
+  .flag-chip span { display: block; font-size: 11.5px; color: var(--shu); font-weight: 700; line-height: 1.35; }
 </style>
 </head>
 <body class="opening intro-wait">
@@ -1200,18 +1272,18 @@
 
             <div class="glass-box">
         <p class="article-text">
-          <span style="color:var(--shu); font-weight:700; display:block; margin-bottom:4px;">① 米と水が織りなす「醸造酒」</span>
-          日本酒は、米、米麹、水を主な原料として発酵させて造る「醸造酒」の一種。古くから日本特有の製法で造られてきた伝統的なお酒です。<br><br>
+          <span style="color:var(--shu); font-weight:700; display:block; margin-bottom:4px;"><svg class="pt-ico" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 5C24 5 11 19 11 28a13 13 0 0 0 26 0C37 19 24 5 24 5z" fill="#8fbfe6" stroke="#4a86b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="20" cy="31" rx="3.4" ry="6" transform="rotate(-25 20 31)" fill="#fff8e3" stroke="#c9b98a" stroke-width="1.5"/><ellipse cx="28" cy="31" rx="3.4" ry="6" transform="rotate(25 28 31)" fill="#fff8e3" stroke="#c9b98a" stroke-width="1.5"/></svg>① 米と水の「醸造酒」</span>
+          米・米麹・水を発酵させて造る、日本の伝統的なお酒です。<br><br>
           
-          <span style="color:var(--shu); font-weight:700; display:block; margin-bottom:4px;">② 世界一の「高アルコール度数」</span>
-          ワインやビールと同じ発酵酒ですが、実はその中で<strong>世界で一番アルコール度数が高くなる</strong>珍しいお酒でもあります。<br><br>
+          <span style="color:var(--shu); font-weight:700; display:block; margin-bottom:4px;"><svg class="pt-ico" viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="30" width="9" height="12" rx="2" fill="#cfd6e4"/><rect x="19.5" y="22" width="9" height="20" rx="2" fill="#cfd6e4"/><rect x="32" y="12" width="9" height="30" rx="2" fill="#bd4630"/><path d="M32 8l2.2 3 2.3-3.6 2.3 3.6 2.2-3-1 5.4h-7z" fill="#d9a441"/></svg>② 世界一の「高い度数」</span>
+          ワインやビールと同じ発酵酒の中で、<strong>世界一アルコール度数が高く</strong>なるお酒です。<br><br>
           
-          <span style="color:var(--shu); font-weight:700; display:block; margin-bottom:4px;">③ 職人が編み出した「奇跡のスゴ技」</span>
-          甘みのないお米を、目に見えない菌（麹）の力で<strong>「甘くしながらアルコールに変える」</strong>という、世界中のどのお酒にもない高度な技術で造られています。
+          <span style="color:var(--shu); font-weight:700; display:block; margin-bottom:4px;"><svg class="pt-ico" viewBox="0 0 48 48" aria-hidden="true"><ellipse cx="17" cy="30" rx="7" ry="11" transform="rotate(-20 17 30)" fill="#fff8e3" stroke="#c9b98a" stroke-width="2"/><circle cx="33" cy="32" r="3.2" fill="#8fbfe6"/><circle cx="38" cy="23" r="2.4" fill="#8fbfe6"/><circle cx="31" cy="21" r="1.8" fill="#8fbfe6"/><path d="M36 6l1.8 4.4 4.4 1.8-4.4 1.8L36 18.4l-1.8-4.4-4.4-1.8 4.4-1.8z" fill="#d9a441"/></svg>③ 職人の「奇跡のスゴ技」</span>
+          お米を麹の力で<strong>「甘くしながらアルコールに変える」</strong>、世界でも珍しい技術で造られます。
         </p>
       </div>
 
-      <div class="flip-card" onclick="this.classList.toggle('is-flipped')">
+      <div class="flip-card tall" onclick="this.classList.toggle('is-flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
             <img src="komeo6.webp" class="komeo-char komeo-pos3" alt="" loading="lazy" decoding="async">
@@ -1222,14 +1294,39 @@
               タップして裏返す
             </div>
           </div>
-          <div class="flip-card-back" style="padding: 16px 20px;">
-            <h4 style="margin-bottom: 8px; padding-bottom: 6px; font-size: 15px;">実は「糖分と酸味のバランス」</h4>
-            <p style="margin-bottom: 8px; font-size: 14px; line-height: 1.65;">
-              ラベルの「日本酒度（糖分の量）」がプラスなら辛口、マイナスなら甘口とされますが、<strong>実際の味わいは「酸味」とのバランス</strong>で決まります。
-            </p>
-            <p style="font-size: 14px; line-height: 1.65;">
-              同じ糖分でも、酸味が強ければキリッと辛く引き締まり、弱ければまろやかな甘味を感じやすくなります。表記はあくまで目安に、ご自身の好みのバランスを探してみてください。
-            </p>
+          <div class="flip-card-back" style="padding: 14px 14px 12px;">
+            <h4 style="margin-bottom: 8px; padding-bottom: 6px; font-size: 15px;">味は「糖分」と「酸味」のバランス</h4>
+            <div class="sw-row">
+              <div class="sw-card">
+                <svg viewBox="0 0 120 84" aria-hidden="true">
+                  <polygon points="60,66 49,80 71,80" fill="#8b7355"/>
+                  <g transform="rotate(-11 60 62)">
+                    <rect x="12" y="60" width="96" height="4" rx="2" fill="#8b7355"/>
+                    <circle cx="28" cy="46" r="14" fill="#e8b25e"/><text x="28" y="51" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">糖</text>
+                    <circle cx="94" cy="53" r="7" fill="#9bb23a"/><text x="94" y="57" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">酸</text>
+                  </g>
+                </svg>
+                <div class="sw-tit">糖分が多め<br>酸味はひかえめ</div>
+                <div class="sw-res amai">まろやかな<br>甘口に感じる</div>
+              </div>
+              <div class="sw-card">
+                <svg viewBox="0 0 120 84" aria-hidden="true">
+                  <polygon points="60,66 49,80 71,80" fill="#8b7355"/>
+                  <g transform="rotate(11 60 62)">
+                    <rect x="12" y="60" width="96" height="4" rx="2" fill="#8b7355"/>
+                    <circle cx="28" cy="50" r="10" fill="#e8b25e"/><text x="28" y="54" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">糖</text>
+                    <circle cx="92" cy="45" r="15" fill="#9bb23a"/><text x="92" y="50" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">酸</text>
+                  </g>
+                </svg>
+                <div class="sw-tit">糖分は同じでも<br>酸味が強い</div>
+                <div class="sw-res karai">キリッと<br>辛口に感じる</div>
+              </div>
+            </div>
+            <div class="sw-scale">
+              <div class="sw-scale-t">ラベルの「日本酒度」は、糖分の目安です</div>
+              <div class="sw-bar"><span>甘口</span><i></i><span>辛口</span></div>
+              <div class="sw-nums"><span>マイナス</span><span>0</span><span>プラス</span></div>
+            </div>
           </div>
         </div>
       </div>
@@ -1247,14 +1344,14 @@
 
             <div class="glass-box">
         <p class="article-text">
-          <span style="color:var(--shu); font-weight:700; display:block; margin-bottom:4px;">① 日本が誇る「蒸留酒」</span>
-          焼酎は、穀物や芋などを発酵させた後に、熱を加えてアルコール分を抽出して造られる「蒸留酒」の仲間です。<br><br>
+          <span style="color:var(--shu); font-weight:700; display:block; margin-bottom:4px;"><svg class="pt-ico" viewBox="0 0 48 48" aria-hidden="true"><path d="M9 41C5 29 13 21 21 21c0-6 2-10 7-12l11 2v4H30c-2 2-2 4-2 6 6 2 10 10 6 20z" fill="#d49a5a" stroke="#7a4a22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 41h25" stroke="#7a4a22" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M40 20c2-2 2-4 0-6M44 22c3-3 3-6 0-9" stroke="#9aa7bd" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>① 日本が誇る「蒸留酒」</span>
+          穀物や芋を発酵させたあと、熱でアルコール分を取り出して造ります。<br><br>
           
-          <span style="color:var(--shu); font-weight:700; display:block; margin-bottom:4px;">② 「糖質・プリン体ゼロ」の嬉しいお酒</span>
-          アルコールと香りの成分だけを抽出するため、糖質やプリン体を含まず、翌日に残りにくく身体に優しいのが特徴です。<br><br>
+          <span style="color:var(--shu); font-weight:700; display:block; margin-bottom:4px;"><svg class="pt-ico" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="17" fill="#fff" stroke="#bd4630" stroke-width="3"/><text x="24" y="31.5" text-anchor="middle" font-size="22" font-weight="700" fill="#bd4630" font-family="sans-serif">0</text></svg>② 「糖質・プリン体ゼロ」</span>
+          <strong>糖質もプリン体も含まない</strong>、すっきりしたお酒です。<br><br>
           
-          <span style="color:var(--shu); font-weight:700; display:block; margin-bottom:4px;">③ 世界でも珍しい「お湯割り」文化</span>
-          温かいお湯で割って美味しく飲めるお酒は、世界的にもかなり希少。温めることで素材の香りがふわっと広がり、心がホッと落ち着きます。
+          <span style="color:var(--shu); font-weight:700; display:block; margin-bottom:4px;"><svg class="pt-ico" viewBox="0 0 48 48" aria-hidden="true"><path d="M10 22h22v10a8 8 0 0 1-8 8h-6a8 8 0 0 1-8-8z" fill="#fff3d6" stroke="#7a4a22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M32 25h3a4 4 0 0 1 0 8h-3" fill="none" stroke="#7a4a22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 17c-2-2 2-4 0-7M22 17c-2-2 2-4 0-7M28 17c-2-2 2-4 0-7" stroke="#e2866a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>③ 世界でも珍しい「お湯割り」</span>
+          お湯で割って美味しく飲めるお酒は、世界でも希少。温めると<strong>香りがふわっと広がります。</strong>
         </p>
       </div>
 
@@ -1292,14 +1389,14 @@
 
             <div class="glass-box">
         <p class="article-text">
-          <span style="color:var(--shu); font-weight:700; display:block; margin-bottom:4px;">① 穀物から生まれる「蒸留酒」</span>
-          ウイスキーは、大麦などの穀物を発酵・蒸留し、木製の樽で長い年月をかけてじっくりと熟成させて造られるお酒です。<br><br>
+          <span style="color:var(--shu); font-weight:700; display:block; margin-bottom:4px;"><svg class="pt-ico" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 44V12" stroke="#8b6b3a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="18" cy="16" rx="4" ry="7" transform="rotate(-28 18 16)" fill="#e3b04b" stroke="#a97a1f" stroke-width="1.5"/><ellipse cx="30" cy="16" rx="4" ry="7" transform="rotate(28 30 16)" fill="#e3b04b" stroke="#a97a1f" stroke-width="1.5"/><ellipse cx="18" cy="27" rx="4" ry="7" transform="rotate(-28 18 27)" fill="#e3b04b" stroke="#a97a1f" stroke-width="1.5"/><ellipse cx="30" cy="27" rx="4" ry="7" transform="rotate(28 30 27)" fill="#e3b04b" stroke="#a97a1f" stroke-width="1.5"/><ellipse cx="18" cy="38" rx="4" ry="7" transform="rotate(-28 18 38)" fill="#e3b04b" stroke="#a97a1f" stroke-width="1.5"/><ellipse cx="30" cy="38" rx="4" ry="7" transform="rotate(28 30 38)" fill="#e3b04b" stroke="#a97a1f" stroke-width="1.5"/><ellipse cx="24" cy="8" rx="3.4" ry="6" fill="#e3b04b" stroke="#a97a1f" stroke-width="1.5"/></svg>① 穀物から生まれる「蒸留酒」</span>
+          大麦などを発酵・蒸留し、<strong>樽で長い年月</strong>熟成させて造ります。<br><br>
           
-          <span style="color:var(--shu); font-weight:700; display:block; margin-bottom:4px;">② できたては「無色透明」</span>
-          グラスで琥珀色に輝くウイスキーですが、実は造りたての原酒は焼酎のように無色透明だってご存知でしたか？<br><br>
+          <span style="color:var(--shu); font-weight:700; display:block; margin-bottom:4px;"><svg class="pt-ico" viewBox="0 0 48 48" aria-hidden="true"><path d="M5 12h16l-2.5 26a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2z" fill="#eaf3fb" stroke="#7d93ad" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M27 12h16l-2.5 26a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2z" fill="#df9a3e" stroke="#9a5c18" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M26.6 18h16" stroke="#9a5c18" stroke-width="1.5"/></svg>② できたては「無色透明」</span>
+          造りたての原酒は、実は<strong>焼酎のように無色透明</strong>です。<br><br>
           
-          <span style="color:var(--shu); font-weight:700; display:block; margin-bottom:4px;">③ 人間と自然の「共同作業」</span>
-          美しい色合いとバニラのような甘い香りは、樽の中で眠ることで初めて生まれます。半分は人間が、残りの半分は「自然の力」が造り出すロマンチックなお酒です。
+          <span style="color:var(--shu); font-weight:700; display:block; margin-bottom:4px;"><svg class="pt-ico" viewBox="0 0 48 48" aria-hidden="true"><path d="M7 14h26c4 5 4 22 0 28H7C3 36 3 19 7 14z" fill="#b98550" stroke="#7a5230" stroke-width="2"/><path d="M5 22h30M5 34h30" stroke="#7a5230" stroke-width="2.5"/><circle cx="37" cy="13" r="8" fill="#fffaf0" stroke="#7a5230" stroke-width="2"/><path d="M37 8v5l3 2" stroke="#bd4630" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>③ 人間と自然の「共同作業」</span>
+          琥珀色と甘い香りは、<strong>樽の中で眠ることで</strong>生まれます。人と自然の共同作業です。
         </p>
       </div>
 
@@ -1364,7 +1461,6 @@
         </div>
       </div>
 
-      <div class="quiz-box" data-quiz="polishRatio"></div>
 
       <div class="glass-box matrix-box trk" id="sakeMatrix">
         <h3 class="section-title">特定名称酒の早見表</h3>
@@ -1392,7 +1488,6 @@
         <p class="diagram-note">※数字は精米歩合です。「吟醸」「大吟醸」と名乗るには、低温でじっくり発酵させる「吟醸造り」などの条件も必要です。</p>
       </div>
 
-      <div class="quiz-box" data-quiz="junmai"></div>
 
       <button class="primary-btn" onclick="goScreen('sake-methods')">
         さまざまな「造り」
@@ -1411,7 +1506,7 @@
         </p>
       </div>
 
-      <div class="guide" data-komeo="komeo2.webp"><div class="guide-src">難しい言葉は、<wbr><strong>ひとことだけ</strong><wbr>読めば十分です。<wbr>途中のクイズにも、<wbr>ぜひ挑戦してみてください。</div></div>
+      <div class="guide" data-komeo="komeo2.webp"><div class="guide-src">難しい言葉は、<wbr><strong>ひとことだけ</strong><wbr>読めば十分です。</div></div>
 
       <div class="sub-heading mt-24">お米の削り方による違い（精米歩合）</div>
 
@@ -1465,7 +1560,6 @@
         <div class="accordion-body">「山卸廃止（やまおろしはいし）」の略。生酛造りで行うお米をすりつぶす重労働（山卸）をなくし、自然の力でお米を溶かす製法です。生酛と同じように自然の乳酸菌を使うため、コクのあるしっかりとした味わいになります。</div>
       </div>
 
-      <div class="quiz-box" data-quiz="yamahai"></div>
 
       <div class="sub-heading">もろみの発酵・仕込み方による違い</div>
 
@@ -1603,7 +1697,7 @@
             
       <div class="glass-box" style="padding: 16px 20px;">
         <p class="article-text">
-          焼酎の面白さは、なんといっても「原料のバリエーション」にあります。使う素材の個性がそのまま香りや味わいに表れるため、気分や食事に合わせて使い分けるのがおすすめです。<br>
+          焼酎の楽しさは、原料の多彩さにあります。素材の個性がそのまま香りや味わいになるので、その日の気分やお料理に合わせて選んでみてください。<br>
           <span style="font-size: 12px; color: var(--shu); font-weight: 700;">※アイコンをタップすると解説が表示されます</span>
         </p>
       </div>
@@ -1677,7 +1771,7 @@
       
       <div class="glass-box" style="padding: 16px 20px;">
         <p class="article-text">
-          焼酎のラベルには、そのお酒が「どんな風に造られたか」のヒントがたくさん隠されています。代表的な言葉の意味を知っておくと、好みの味を見つけやすくなります。
+          焼酎のラベルには、どんなふうに造られたかのヒントが詰まっています。言葉の意味を少し知るだけで、好みの一本が見つけやすくなります。
         </p>
       </div>
 
@@ -1709,7 +1803,6 @@
         <div class="accordion-body">風味の豊かな「本格焼酎（乙類）」と、スッキリとした「焼酎甲類」をブレンドした焼酎です。本格焼酎の香りやコクを楽しみつつ、甲類のクセのない飲みやすさを兼ね備えた、まさに「いいとこ取り」の飲みやすいお酒です。</div>
       </div>
 
-      <div class="quiz-box" data-quiz="kouotsu"></div>
 
       <div class="sub-heading">味のベースとなる「麹（こうじ）」</div>
 
@@ -1768,7 +1861,6 @@
         <div class="accordion-body">機械の中の気圧を下げて、低い温度で蒸発させる方法（高い山でお湯が早く沸くのと同じ原理です）。雑味が少なくなり、とても軽快でクリアな、飲みやすい焼酎になります。</div>
       </div>
 
-      <div class="quiz-box" data-quiz="genatsu"></div>
 
       <button class="primary-btn" onclick="goScreen('our-shochu')">
         吾熊の焼酎
@@ -1816,7 +1908,7 @@
       
       <div class="glass-box" style="padding: 16px 20px;">
         <p class="article-text">
-          ウイスキーのラベルに書かれている言葉は、そのお酒の「履歴書」のようなもの。どんな原料で、どんな場所で造られたかが隠されています。言葉の意味が少しわかるだけで、好みの味に出会う確率がグッと上がります。
+          ウイスキーのラベルは、お酒の「履歴書」のようなもの。どんな原料で、どこで造られたかが書かれています。言葉の意味が少しわかると、好みの一杯に出会いやすくなります。
         </p>
       </div>
 
@@ -1877,7 +1969,6 @@
 
       <div class="quiz-box" data-quiz="singleMalt"></div>
 
-      <div class="quiz-box" data-quiz="blended"></div>
 
       <button class="primary-btn" onclick="goScreen('world-whisky')">
         世界のウイスキー
@@ -1892,77 +1983,21 @@
       
       <div class="glass-box">
         <p class="article-text">
-          <span style="color:var(--shu); font-weight:700; display:block; margin-bottom:4px;">① 世界が認める「5つの聖地」</span>
-          ウイスキーは世界中で造られていますが、その中でも特に品質と人気が高い5つの生産地は<strong>「世界5大ウイスキー」</strong>と呼ばれています。<br><br>
+          <span style="color:var(--shu); font-weight:700; display:block; margin-bottom:4px;"><svg class="pt-ico" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="17" fill="#dfe9f5" stroke="#3b4f73" stroke-width="2"/><ellipse cx="24" cy="24" rx="7" ry="17" fill="none" stroke="#3b4f73" stroke-width="1.5"/><path d="M7 24h34M10 15h28M10 33h28" stroke="#3b4f73" stroke-width="1.5" fill="none"/><circle cx="15" cy="16" r="3" fill="#bd4630"/><circle cx="32" cy="14" r="3" fill="#bd4630"/><circle cx="36" cy="26" r="3" fill="#bd4630"/><circle cx="22" cy="31" r="3" fill="#bd4630"/><circle cx="12" cy="29" r="3" fill="#bd4630"/></svg>① 世界が認める「5つの産地」</span>
+          有名な5つの産地は<strong>「世界5大ウイスキー」</strong>と呼ばれます。<br><br>
           
-          <span style="color:var(--shu); font-weight:700; display:block; margin-bottom:4px;">② 実は「日本」もトップ5の1つ！</span>
-          歴史あるスコットランドやアイルランドと肩を並べ、<strong>日本もそのトップ5に選ばれている</strong>んです。<br><br>
+          <span style="color:var(--shu); font-weight:700; display:block; margin-bottom:4px;"><svg class="pt-ico" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="17" fill="#fff" stroke="#bd4630" stroke-width="2.5"/><circle cx="24" cy="24" r="8" fill="#bd4630"/><path d="M38 5l1.5 3.6 3.7.4-2.8 2.5.8 3.7-3.2-1.9-3.2 1.9.8-3.7-2.8-2.5 3.7-.4z" fill="#d9a441"/></svg>② 実は「日本」もその1つ！</span>
+          本場と並び、<strong>日本もトップ5に選ばれています。</strong><br><br>
           
-          <span style="color:var(--shu); font-weight:700; display:block; margin-bottom:4px;">③ 世界を魅了する「ジャパニーズ」</span>
-          日本の職人の繊細な技術は世界中から大絶賛されており、現在は空前の「ジャパニーズウイスキー・ブーム」が巻き起こっています。日本人としてなんだか誇らしい気持ちになりますね。
+          <span style="color:var(--shu); font-weight:700; display:block; margin-bottom:4px;"><svg class="pt-ico" viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="32" width="8" height="10" rx="2" fill="#e9c9bf"/><rect x="18" y="25" width="8" height="17" rx="2" fill="#e9c9bf"/><rect x="30" y="17" width="8" height="25" rx="2" fill="#e9c9bf"/><path d="M8 28l12-8 9-1 12-12" fill="none" stroke="#bd4630" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M34 7h8v8" fill="none" stroke="#bd4630" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>③ 世界が注目する「ジャパニーズ」</span>
+          繊細な技術が評価され、今はブームです。
         </p>
       </div>
 
-      <div class="guide" data-komeo="komeo5.webp"><div class="guide-src">気になる国を<wbr>タップしてみてください。<wbr>最後に<wbr>クイズもあります。</div></div>
+      <div class="guide" data-komeo="komeo5.webp"><div class="guide-src">気になる国旗を<wbr>タップしてみてください。<wbr>味の個性が<wbr>表示されます。</div></div>
 
-      <div class="sub-heading mt-24">世界5大ウイスキー</div>
-
-      <div class="accordion-item" onclick="toggleAccordion(this)">
-        <div class="accordion-header">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <img src="scotland.webp" alt="スコットランド" class="flag-icon" loading="lazy" decoding="async">
-            <span>スコッチ（スコットランド）<small class="acc-hint">スモーキーな香りが特徴</small></span>
-          </div>
-          <svg class="icon" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="accordion-body">ウイスキーの代名詞とも言える存在。「ピート」と呼ばれる泥炭を燃やして麦芽を乾燥させるため、特有の「スモーキーな香り（煙っぽさ）」があるのが最大の特徴です。</div>
-      </div>
-
-      <div class="accordion-item" onclick="toggleAccordion(this)">
-        <div class="accordion-header">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <img src="UK.webp" alt="アメリカ" class="flag-icon" loading="lazy" decoding="async">
-            <span>バーボン（アメリカ）<small class="acc-hint">トウモロコシが主役。甘く力強い</small></span>
-          </div>
-          <svg class="icon" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="accordion-body">トウモロコシを主原料とし、内側を焦がした新しいオーク樽で熟成させます。バニラやカラメルのような甘く濃厚な香りと、パンチの効いた力強い味わいが魅力です。</div>
-      </div>
-
-      <div class="accordion-item" onclick="toggleAccordion(this)">
-        <div class="accordion-header">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <img src="japan.webp" alt="日本" class="flag-icon" loading="lazy" decoding="async">
-            <span>ジャパニーズ（日本）<small class="acc-hint">繊細で、バランスが良い</small></span>
-          </div>
-          <svg class="icon" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="accordion-body">スコッチをお手本にしながら、日本の気候と日本人の繊細な味覚に合わせて独自に進化。クセが少なく、非常にバランスが良いため、食事と合わせやすいのが特徴です。</div>
-      </div>
-
-      <div class="accordion-item" onclick="toggleAccordion(this)">
-        <div class="accordion-header">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <img src="Ireland.webp" alt="アイルランド" class="flag-icon" loading="lazy" decoding="async">
-            <span>アイリッシュ（アイルランド）<small class="acc-hint">なめらかでマイルド</small></span>
-          </div>
-          <svg class="icon" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="accordion-body">ウイスキー発祥の地とも言われています。原料を乾燥させる時にピート（泥炭）を使わないことが多く、スモーキーさがありません。なめらかでマイルドな、とても飲みやすい味わいです。</div>
-      </div>
-
-      <div class="accordion-item" onclick="toggleAccordion(this)">
-        <div class="accordion-header">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <img src="Canada.webp" alt="カナダ" class="flag-icon" loading="lazy" decoding="async">
-            <span>カナディアン（カナダ）<small class="acc-hint">5大の中で最も軽快</small></span>
-          </div>
-          <svg class="icon" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="accordion-body">5大ウイスキーの中で最も軽快でマイルド。クセがなくスッキリとしているため、そのまま飲むだけでなく、カクテルのベースとしても世界中で愛されています。</div>
-      </div>
-
-      <div class="quiz-box" data-quiz="world5"></div>
+      <div class="flag-strip"><div class="flag-strip-t">国旗をタップすると、味の個性が見られます</div><div class="flag-row"><div class="flag-chip" role="button" tabindex="0" data-i="0"><span class="fl-svg"><svg viewBox="0 0 36 36"><rect width="36" height="36" rx="5" fill="#2b5aa8"/><path d="M3 3L33 33M33 3L3 33" stroke="#fff" stroke-width="5"/></svg></span><b>スコッチ</b><span>スモーキー</span></div><div class="flag-chip" role="button" tabindex="0" data-i="1"><span class="fl-svg"><svg viewBox="0 0 36 36"><rect width="36" height="36" rx="5" fill="#fff"/><g fill="#c8312b"><rect y="4" width="36" height="4"/><rect y="12" width="36" height="4"/><rect y="20" width="36" height="4"/><rect y="28" width="36" height="4"/></g><rect width="17" height="18" rx="3" fill="#2b4a86"/><g fill="#fff"><circle cx="5" cy="5" r="1.3"/><circle cx="11" cy="5" r="1.3"/><circle cx="8" cy="9" r="1.3"/><circle cx="5" cy="13" r="1.3"/><circle cx="11" cy="13" r="1.3"/></g></svg></span><b>バーボン</b><span>甘く力強い</span></div><div class="flag-chip" role="button" tabindex="0" data-i="2"><span class="fl-svg"><svg viewBox="0 0 36 36"><rect width="36" height="36" rx="5" fill="#fff" stroke="#d8cdb8"/><circle cx="18" cy="18" r="9" fill="#c8312b"/></svg></span><b>ジャパニーズ</b><span>繊細・バランス</span></div><div class="flag-chip" role="button" tabindex="0" data-i="3"><span class="fl-svg"><svg viewBox="0 0 36 36"><rect width="36" height="36" rx="5" fill="#fff"/><path d="M0 5a5 5 0 015-5h7v36H5a5 5 0 01-5-5z" fill="#2e9a5b"/><path d="M24 0h7a5 5 0 015 5v26a5 5 0 01-5 5h-7z" fill="#f08a2c"/></svg></span><b>アイリッシュ</b><span>なめらか</span></div><div class="flag-chip" role="button" tabindex="0" data-i="4"><span class="fl-svg"><svg viewBox="0 0 36 36"><rect width="36" height="36" rx="5" fill="#fff"/><path d="M0 5a5 5 0 015-5h6v36H5a5 5 0 01-5-5z" fill="#d23b33"/><path d="M25 0h6a5 5 0 015 5v26a5 5 0 01-5 5h-6z" fill="#d23b33"/><path d="M18 8l2 4 3-1-1 5 3-2 1 3-5 3 .5 2-3.5-.5v4h-1v-4l-3.5.5.5-2-5-3 1-3 3 2-1-5 3 1z" fill="#d23b33"/></svg></span><b>カナディアン</b><span>軽快</span></div></div></div>
+      <div class="flag-detail" id="flagDetail"><div class="fd-hint">▲ 気になる国旗をタップ</div></div>
 
       <button class="primary-btn" onclick="goScreen('whisky-deep')">
         もっとディープな話
@@ -1976,7 +2011,7 @@
       
       <div class="glass-box" style="padding: 16px 20px;">
         <p class="article-text">
-          ウイスキーの奥深い世界に足を踏み入れると、造り手の熱いこだわりや、自然がもたらす偶然の産物に出会います。ウイスキー好きがバーカウンターでついつい語りたくなってしまう、ツウなトピックをご紹介しましょう。
+          ウイスキーの世界には、造り手のこだわりや、自然が生んだ偶然がたくさん。カウンターでつい話したくなる、ちょっとツウなお話をご紹介します。
         </p>
       </div>
 
@@ -1992,7 +2027,6 @@
         <div class="accordion-body">スコッチウイスキーなどを飲むと、「正露丸」や「焚き火」のような強烈な香りがすることがあります。これは麦芽を乾燥させるときに燃やす「ピート（泥炭：シダやコケが長い年月をかけて炭化したもの）」の煙の香り。最初は「うっ」と思っても、不思議とこのクセのある香りの虜になってしまう人が後を絶ちません。</div>
       </div>
 
-      <div class="quiz-box" data-quiz="peat"></div>
 
       <div class="sub-heading">ウイスキーの風味を決める<wbr><span style="white-space: nowrap;">「樽（カスク）」</span></div>
       
@@ -2026,7 +2060,6 @@
         <div class="accordion-body">北海道などに自生する「ミズナラ（水楢）」で作られた樽。加工が難しく大変貴重ですが、長く寝かせると「お香」や「白檀（びゃくだん）」、「伽羅（きゃら）」といった日本らしい神秘的な香りが現れ、世界中のウイスキーファンから熱狂的な支持を集めています。</div>
       </div>
 
-      <div class="quiz-box" data-quiz="mizunara"></div>
 
       <button class="primary-btn" onclick="goScreen('our-whisky')">
         吾熊のウイスキー
@@ -2380,7 +2413,7 @@ const shochuGroups = [
   {
     label: "黒糖",
     items: [
-      { name: "<span class='region-label'>[鹿児島]</span><ruby>紅さんご<rt>べにさんご</rt></ruby>", desc: "奄美大島で造られる黒糖焼酎を、オーク樽でじっくりと熟成。まるで上質なラム酒やブランデーを思わせる芳醇な甘い香りと、深くまろやかなコクが楽しめます。ロックでゆっくりと味わいたい琥珀色の一杯です。" }
+      { name: "<span class='region-label'>[鹿児島]</span><ruby>紅さんご<rt>べにさんご</rt></ruby><br><span class='pick-label'>★ 吾熊のイチオシ</span>", desc: "<span class='pick-note'>当店のイチオシです。</span>奄美大島で造られる黒糖焼酎を、オーク樽でじっくりと熟成。まるで上質なラム酒やブランデーを思わせる芳醇な甘い香りと、深くまろやかなコクが楽しめます。ロックでゆっくりと味わいたい琥珀色の一杯です。" }
     ]
   },
   {
@@ -2512,55 +2545,6 @@ function renderList(wrapId, dataGroups, isSake) {
 /* ============ クイズ（コメオが反応） ============ */
 // correct: 正解の選択肢の番号（0始まり）
 const quizData = {
-  polishRatio: {
-    q: "Q. 「精米歩合60%」は、お米をどれくらい削ったという意味？",
-    options: [
-      "外側を60%削り、中心の40%を使った",
-      "外側を40%削り、中心の60%を使った",
-      "60日間かけてお米を磨いた"
-    ],
-    correct: 1,
-    exp: "「精米歩合」は<strong>削って残った割合</strong>のことです。60%なら、外側を40%削り落とし、中心の60%だけを使っています。数字が小さいほど、たくさん磨いたお米です。"
-  },
-  junmai: {
-    q: "Q. ラベルの「純米」は、どんなお酒のしるし？",
-    options: [
-      "お米を50%以下まで削ったお酒",
-      "加熱殺菌をしていないお酒",
-      "醸造アルコールを加えずに造ったお酒"
-    ],
-    correct: 2,
-    exp: "「純米」は<strong>お米・米麹・水だけ</strong>で造ったお酒のこと。醸造アルコールは加えていません。お米の削り具合は、「吟醸」「大吟醸」といった別の言葉で表します。"
-  },
-  yamahai: {
-    q: "Q. 「山廃（やまはい）」の「廃」は、何を廃止したという意味？",
-    options: [
-      "山卸（お米をすりつぶす作業）",
-      "火入れ（加熱殺菌）",
-      "精米（お米を削る作業）"
-    ],
-    correct: 0,
-    exp: "山廃は「<strong>山卸廃止</strong>」の略です。生酛造りで行う、お米をすりつぶす重労働（山卸）をなくし、自然の力でお米を溶かす製法です。"
-  },
-  genatsu: {
-    q: "Q. 「減圧蒸留」で造った焼酎は、どんな味わいになりやすい？",
-    options: [
-      "原料の風味がガツンと濃い",
-      "軽快でクリアな飲みやすさ",
-      "樽のような甘い香り"
-    ],
-    correct: 1,
-    exp: "減圧蒸留は、気圧を下げて<strong>低い温度</strong>で蒸発させる方法。雑味が少なく、軽快でクリアな味わいになります。ガツンと濃い「昔ながらの味」は、常圧蒸留の特徴です。"
-  },
-  kouotsu: {
-    q: "Q. サワーやチューハイの「ベース」としてよく使われるのは？",
-    options: [
-      "本格焼酎（乙類）",
-      "焼酎甲類"
-    ],
-    correct: 1,
-    exp: "<strong>焼酎甲類</strong>は無色透明でクセがなく、割り材のベースとして大活躍します。本格焼酎（乙類）は、原料の香りや味わいの個性を楽しむ焼酎です。"
-  },
   singleMalt: {
     q: "Q. よく聞く「シングルモルト」って何？",
     options: [
@@ -2568,44 +2552,28 @@ const quizData = {
       "たった一つの「樽」から取り出されたもの"
     ],
     correct: 0,
-    exp: "「シングルモルト」の「シングル」は、<strong>「たった一つの蒸留所（工場）」</strong>で造られた原酒のみを瓶詰めしているという意味です。<br><br>ちなみに、Bの「たった一つの樽」から取り出されたものは「シングルカスク（一つの樽）」と呼ばれ、同じ蒸留所の中でもさらに希少価値が高いウイスキーです。<br><br>他の蒸留所のお酒を一切混ぜない「シングルモルト」は、その土地の気候や造り手のこだわりが<strong>ダイレクトに現れます。</strong>蔵ごとの個性を味わえる、いわば「一点モノの芸術品」です。"
+    exp: "",
+    expHTML: `<div class="mk-wrap">
+  <div class="mk-lead"><strong>「シングル」＝「ひとつの蒸留所」</strong></div>
+  <div class="mk-row">
+    <div class="mk-it"><div class="mk-ico"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="40" y="8" width="8" height="18" fill="#8b7355"/><path d="M6 56V28l24-14 24 14v28z" fill="#e8dcc4" stroke="#8b7355" stroke-width="2.5" stroke-linejoin="round"/><rect x="25" y="38" width="10" height="18" fill="#8b7355"/><circle cx="30" cy="28" r="4" fill="#bd4630"/></svg></div><div class="mk-cap">蒸留所A</div></div>
+    <div class="mk-ar">▶</div>
+    <div class="mk-it"><div class="mk-ico mk-three"><svg viewBox="0 0 48 56" aria-hidden="true"><path d="M8 8h32c5 6 5 34 0 40H8C3 42 3 14 8 8z" fill="#b98550" stroke="#7a5230" stroke-width="2"/><path d="M6 17h36M6 39h36" stroke="#7a5230" stroke-width="2.5" fill="none"/></svg><svg viewBox="0 0 48 56" aria-hidden="true"><path d="M8 8h32c5 6 5 34 0 40H8C3 42 3 14 8 8z" fill="#b98550" stroke="#7a5230" stroke-width="2"/><path d="M6 17h36M6 39h36" stroke="#7a5230" stroke-width="2.5" fill="none"/></svg><svg viewBox="0 0 48 56" aria-hidden="true"><path d="M8 8h32c5 6 5 34 0 40H8C3 42 3 14 8 8z" fill="#b98550" stroke="#7a5230" stroke-width="2"/><path d="M6 17h36M6 39h36" stroke="#7a5230" stroke-width="2.5" fill="none"/></svg></div><div class="mk-cap">同じ蒸留所の<br>原酒を集める</div></div>
+    <div class="mk-ar">▶</div>
+    <div class="mk-it"><div class="mk-ico"><svg viewBox="0 0 40 72" aria-hidden="true"><rect x="15" y="2" width="10" height="14" rx="2" fill="#7a5230"/><path d="M15 16h10v8c8 4 10 8 10 16v26c0 3-2 5-5 5H10c-3 0-5-2-5-5V40c0-8 2-12 10-16z" fill="#d9a441" stroke="#7a5230" stroke-width="2"/><rect x="9" y="40" width="22" height="16" rx="2" fill="#fffaf0"/><text x="20" y="52" text-anchor="middle" font-size="9" font-weight="700" fill="#bd4630">SM</text></svg></div><div class="mk-cap mk-red">シングル<br>モルト</div></div>
+  </div>
+  <div class="mk-no"><span class="mk-x">×</span> 他の蒸留所のお酒は混ぜません。<br>だから、<strong>蔵ごとの個性</strong>がそのまま味わえます。</div>
+  <div class="mk-sub">
+    <div class="mk-sub-t">ちなみに「たった一つの樽」は…</div>
+    <div class="mk-row mk-small">
+      <div class="mk-it"><div class="mk-ico"><svg viewBox="0 0 48 56" aria-hidden="true"><path d="M8 8h32c5 6 5 34 0 40H8C3 42 3 14 8 8z" fill="#b98550" stroke="#7a5230" stroke-width="2"/><path d="M6 17h36M6 39h36" stroke="#7a5230" stroke-width="2.5" fill="none"/></svg></div><div class="mk-cap">1つの樽</div></div>
+      <div class="mk-ar">▶</div>
+      <div class="mk-it"><div class="mk-ico"><svg viewBox="0 0 40 72" aria-hidden="true"><rect x="15" y="2" width="10" height="14" rx="2" fill="#7a5230"/><path d="M15 16h10v8c8 4 10 8 10 16v26c0 3-2 5-5 5H10c-3 0-5-2-5-5V40c0-8 2-12 10-16z" fill="#d9a441" stroke="#7a5230" stroke-width="2"/><rect x="9" y="40" width="22" height="16" rx="2" fill="#fffaf0"/><text x="20" y="52" text-anchor="middle" font-size="9" font-weight="700" fill="#bd4630">SC</text></svg></div><div class="mk-cap mk-red">シングルカスク</div></div>
+      <div class="mk-note">同じ蔵のなかでも、<br>さらに希少です</div>
+    </div>
+  </div>
+</div>`
   },
-  blended: {
-    q: "Q. 「ブレンデッド」ウイスキーは、何と何を混ぜたもの？",
-    options: [
-      "新しい樽と古い樽の原酒",
-      "日本産とスコットランド産の原酒",
-      "モルト原酒とグレーン原酒"
-    ],
-    correct: 2,
-    exp: "ブレンデッドは、個性豊かな<strong>モルト</strong>と、穏やかな<strong>グレーン</strong>を絶妙な比率でブレンドしたもの。職人が味をまとめるので、バランスが良く飲みやすいのが魅力です。"
-  },
-  world5: {
-    q: "Q. 「世界5大ウイスキー」に入っていないのは、どれ？",
-    options: ["日本", "アイルランド", "フランス"],
-    correct: 2,
-    exp: "世界5大ウイスキーは、<strong>スコットランド・アメリカ・日本・アイルランド・カナダ</strong>の5つです。日本もそのひとつに数えられています。"
-  },
-  peat: {
-    q: "Q. スコッチの「スモーキーな香り」は、何の煙の香り？",
-    options: [
-      "麦芽を発酵させたときのガス",
-      "ピート（泥炭）を燃やした煙",
-      "水に溶けているミネラル"
-    ],
-    correct: 1,
-    exp: "麦芽を乾燥させるときに燃やす<strong>ピート（泥炭）</strong>の煙の香りです。好みが分かれますが、このクセのある香りの虜になる人も多くいます。"
-  },
-  mizunara: {
-    q: "Q. 日本独自の「ミズナラ樽」で長く熟成すると、どんな香りが現れる？",
-    options: [
-      "レーズンやビターチョコのような香り",
-      "お香や白檀のような日本らしい香り",
-      "バニラやカラメルのような香り"
-    ],
-    correct: 1,
-    exp: "長く寝かせると、<strong>「お香」や「白檀（びゃくだん）」</strong>のような神秘的な香りが現れます。レーズンやビターチョコはシェリー樽、バニラやカラメルはバーボン樽の特徴です。"
-  }
 };
 
 const KOMEO_THINK = 'komeo3.webp';
@@ -2628,7 +2596,7 @@ function renderQuiz(box) {
     </div>
     <div class="quiz-result" hidden>
       <h4 class="quiz-result-title"></h4>
-      <p>${d.exp}</p>
+      ${d.expHTML ? '<div class="quiz-exp">' + d.expHTML + '</div>' : '<p>' + d.exp + '</p>'}
       <button type="button" class="quiz-retry">もう一度</button>
     </div>
   `;
@@ -2862,7 +2830,7 @@ function paintBar(name) {
 /* ============ 設定（アンケート） ============ */
 const SURVEY_CONFIG = {
   // 回答の送信先URL（Google Apps Script のウェブアプリURLなど）。空欄の間は、回答は保存されません。
-  endpoint: 'https://script.google.com/macros/s/AKfycbzqNUGCHv2_8EL8MBPQMtgS9A5gTSLGatit30_mb_2pSbtzfllw57drBMDFZpoKRKpY/exec',
+  endpoint: '',
   // 1端末につき1回だけ表示するための目印
   storageKey: 'wagakuma_survey_done_v1',
   // 端末ごとの匿名ID・回答内容（性別・年代）を保存するキー
@@ -2927,7 +2895,7 @@ function cardTitle(el) {
   const t = el.querySelector('.accordion-header > div');
   if (!t) return '';
   const c = t.cloneNode(true);
-  c.querySelectorAll('rt, small, .limited-label').forEach(x => x.remove());
+  c.querySelectorAll('rt, small, .limited-label, .pick-label, .pick-note').forEach(x => x.remove());
   return c.textContent.replace(/\s+/g, ' ').trim();
 }
 
@@ -3289,6 +3257,7 @@ function initPolishWhat() {
 function makeFold(titleHTML, nodes, anchor) {
   const fold = document.createElement('div');
   fold.className = 'fold';
+  if (nodes.some(n => n.querySelector && n.querySelector('.pick-label'))) titleHTML += '<span class="fold-pick">★ イチオシ</span>';
   fold.innerHTML = '<button type="button" class="fold-head" aria-expanded="false">' +
     '<span class="fold-title">' + titleHTML + '</span>' +
     '<span class="fold-cue"><span class="fold-cue-text">タップで開く</span>' +
@@ -3321,6 +3290,7 @@ function initFolds() {
       while (n && !n.classList.contains('sub-heading') && !n.classList.contains('primary-btn') && !n.classList.contains('feedback')) {
         nodes.push(n); n = n.nextElementSibling;
       }
+      if (nodes.length === 1 && nodes[0].classList.contains('accordion-item')) return;   // 中身がカード1枚だけなら、折りたたまない（2段階タップを防ぐ）
       makeFold(h.innerHTML, nodes, h);
       h.remove();
     });
@@ -3440,9 +3410,28 @@ function initReadable() {
 }
 
 
+
+/* ============ 国旗タップで説明 ============ */
+function initFlags() {
+  const FLAGS = {"scotland.webp":"<svg viewBox=\"0 0 36 36\"><rect width=\"36\" height=\"36\" rx=\"5\" fill=\"#2b5aa8\"/><path d=\"M3 3L33 33M33 3L3 33\" stroke=\"#fff\" stroke-width=\"5\"/></svg>","UK.webp":"<svg viewBox=\"0 0 36 36\"><rect width=\"36\" height=\"36\" rx=\"5\" fill=\"#fff\"/><g fill=\"#c8312b\"><rect y=\"4\" width=\"36\" height=\"4\"/><rect y=\"12\" width=\"36\" height=\"4\"/><rect y=\"20\" width=\"36\" height=\"4\"/><rect y=\"28\" width=\"36\" height=\"4\"/></g><rect width=\"17\" height=\"18\" rx=\"3\" fill=\"#2b4a86\"/><g fill=\"#fff\"><circle cx=\"5\" cy=\"5\" r=\"1.3\"/><circle cx=\"11\" cy=\"5\" r=\"1.3\"/><circle cx=\"8\" cy=\"9\" r=\"1.3\"/><circle cx=\"5\" cy=\"13\" r=\"1.3\"/><circle cx=\"11\" cy=\"13\" r=\"1.3\"/></g></svg>","japan.webp":"<svg viewBox=\"0 0 36 36\"><rect width=\"36\" height=\"36\" rx=\"5\" fill=\"#fff\" stroke=\"#d8cdb8\"/><circle cx=\"18\" cy=\"18\" r=\"9\" fill=\"#c8312b\"/></svg>","Ireland.webp":"<svg viewBox=\"0 0 36 36\"><rect width=\"36\" height=\"36\" rx=\"5\" fill=\"#fff\"/><path d=\"M0 5a5 5 0 015-5h7v36H5a5 5 0 01-5-5z\" fill=\"#2e9a5b\"/><path d=\"M24 0h7a5 5 0 015 5v26a5 5 0 01-5 5h-7z\" fill=\"#f08a2c\"/></svg>","Canada.webp":"<svg viewBox=\"0 0 36 36\"><rect width=\"36\" height=\"36\" rx=\"5\" fill=\"#fff\"/><path d=\"M0 5a5 5 0 015-5h6v36H5a5 5 0 01-5-5z\" fill=\"#d23b33\"/><path d=\"M25 0h6a5 5 0 015 5v26a5 5 0 01-5 5h-6z\" fill=\"#d23b33\"/><path d=\"M18 8l2 4 3-1-1 5 3-2 1 3-5 3 .5 2-3.5-.5v4h-1v-4l-3.5.5.5-2-5-3 1-3 3 2-1-5 3 1z\" fill=\"#d23b33\"/></svg>"};
+  const FD = {0:{img:"scotland.webp",t:"スコッチ（スコットランド）",d:"ウイスキーの代名詞。泥炭（ピート）で麦芽を乾燥させるため、<strong>煙のようなスモーキーな香り</strong>が特徴です。"},1:{img:"UK.webp",t:"バーボン（アメリカ）",d:"トウモロコシが主原料。内側を焦がした新樽で熟成し、<strong>バニラやカラメルのような甘い香り</strong>と力強い味わいです。"},2:{img:"japan.webp",t:"ジャパニーズ（日本）",d:"スコッチを手本に、日本の気候や味覚に合わせて進化。<strong>クセが少なくバランスが良く</strong>、食事にも合わせやすい味わいです。"},3:{img:"Ireland.webp",t:"アイリッシュ（アイルランド）",d:"発祥の地ともいわれます。ピートを使わないことが多く、<strong>スモーキーさがなくマイルド</strong>で飲みやすい味わいです。"},4:{img:"Canada.webp",t:"カナディアン（カナダ）",d:"5つの中で<strong>最も軽快</strong>。クセがなくスッキリしていて、カクテルのベースとしても人気です。"}};
+  const box = document.getElementById('flagDetail'); if (!box) return;
+  const chips = document.querySelectorAll('.flag-chip');
+  const pick = c => {
+    const o = FD[c.dataset.i]; if (!o) return;
+    chips.forEach(x => x.classList.toggle('on', x === c));
+    box.innerHTML = '<div class="fd-t"><span class="fl-svg">' + FLAGS[o.img] + '</span>' + o.t + '</div>' + o.d;
+    box.classList.remove('pop'); void box.offsetWidth; box.classList.add('pop');
+  };
+  chips.forEach(c => {
+    c.addEventListener('click', () => pick(c));
+    c.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(c); } });
+  });
+}
+
 /* ============ 3つのポイントを順番に表示 ============ */
 function initPoints() {
-  document.querySelectorAll('.screen[data-screen$="-intro"] .glass-box > .article-text').forEach(p => {
+  document.querySelectorAll('.screen[data-screen$="-intro"] .glass-box > .article-text, .screen[data-screen="world-whisky"] .glass-box > .article-text').forEach(p => {
     const heads = Array.from(p.children).filter(c => c.tagName === 'SPAN' && /display:\s*block/.test(c.getAttribute('style') || ''));
     if (heads.length < 2) return;
     const groups = [];
@@ -3505,6 +3494,7 @@ function showPoints(p, all) {
 }
 
 function revealPoints(name) {
+  if (typeof resetFlows === 'function') resetFlows();
   const p = document.querySelector('.screen[data-screen="' + name + '"] .article-text[data-points]');
   if (!p) return;
   const jumping = !!window.__jumping;
@@ -3517,6 +3507,28 @@ function revealPoints(name) {
   showPoints(p, jumping);
 }
 
+
+/* ============ 図解（醸造と蒸留）を順番に表示 ============ */
+const flowSeq = [];
+function initFlowSeq() {
+  document.querySelectorAll('.flow').forEach(fl => {
+    const note = fl.parentNode.querySelector('.diagram-note');
+    const items = Array.from(fl.children).concat(note ? [note] : []);
+    fl.classList.add('seq'); if (note) note.classList.add('seq');
+    const o = { fl, items, timers: [], started: false };
+    flowSeq.push(o);
+    if (!('IntersectionObserver' in window)) { items.forEach(x => x.classList.add('in')); return; }
+    new IntersectionObserver(es => es.forEach(e => {
+      if (e.isIntersecting && !o.started) {
+        o.started = true;
+        items.forEach((x, i) => o.timers.push(setTimeout(() => x.classList.add('in'), 200 + i * 750)));
+      }
+    }), { threshold: 0.45 }).observe(fl);
+  });
+}
+function resetFlows() {
+  flowSeq.forEach(o => { o.timers.forEach(clearTimeout); o.timers = []; o.started = false; o.items.forEach(x => x.classList.remove('in')); });
+}
 
 /* ============ ラベルの言葉（タグ・手引き）と、元の場所へ戻る ============ */
 const LABEL_TERMS = {
@@ -3552,7 +3564,7 @@ const LABEL_GUIDE = {
 
 function plainTitle(el) {
   const c = el.cloneNode(true);
-  c.querySelectorAll('rt, small, .limited-label').forEach(x => x.remove());
+  c.querySelectorAll('rt, small, .limited-label, .pick-label, .pick-note').forEach(x => x.remove());
   return c.textContent.replace(/\s+/g, '');
 }
 
@@ -3696,7 +3708,8 @@ const INIT_STEPS = [
   () => { initHiire(); },
   () => { initBlend(); },
   () => { initFolds(); },
-  () => { initPoints(); },
+  () => { initFlowSeq(); },
+  () => { initPoints(); initFlags(); },
   () => { initReadable(); },
   () => { initTags(); },
   () => { initProgress(); },
