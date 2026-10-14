@@ -1114,6 +1114,10 @@
   #openingScreen.leaving #openingFrame { opacity: 0 !important; transition: opacity .8s ease; }
   .intro-inner { transition: opacity .5s ease; }
   body.intro-wait .intro-inner { opacity: 0 !important; }
+  .intro-bubble.waiting::after { content: '▼'; position: absolute; right: 14px; bottom: 5px; font-size: 11px; color: var(--shu); animation: nextBlink 1.1s ease-in-out infinite; }
+  @keyframes nextBlink { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+  #openingVideo { inset: auto !important; left: 50% !important; top: 50% !important; width: min(max(100vw, 46.2vh), 560px) !important; height: auto !important; object-fit: contain; transform: translate(-50%, -50%); }
+  #openingScreen.leaving #openingVideo { transform: translate(-50%, -50%) scale(1.05); }
 </style>
 </head>
 <body class="opening intro-wait">
@@ -3159,7 +3163,15 @@ function introSay(html, komeo, opts) {
       introState.typing = null;
       if (opts.auto) setTimeout(resolve, opts.auto);
       else if (opts.onTyped) opts.onTyped(resolve);
-      else setTimeout(resolve, readingPause(html));
+      else {
+        // 読み終わるまで消えないよう、タップで次へ進む（放っておいてもゆっくり進む）
+        const bubble = document.querySelector('.intro-bubble');
+        bubble.classList.add('waiting');
+        let tm = null;
+        const go = () => { clearTimeout(tm); introState.advance = null; bubble.classList.remove('waiting'); resolve(); };
+        introState.advance = go;
+        tm = setTimeout(go, Math.max(5000, readingPause(html) * 2));
+      }
     });
     if (!ctrl.isDone()) introState.typing = ctrl;
   });
@@ -3214,7 +3226,9 @@ function initIntro() {
   // 画面をタップすると、話している途中でも全文がすぐに表示される
   $id('introScreen').addEventListener('click', () => {
     if (introState.typing) introState.typing.finish();
+    else if (introState.advance) introState.advance();
   });
+  document.addEventListener('visibilitychange', () => { if (introState.typing) introState.typing.finish(); });
   prepareIntro();
 }
 
