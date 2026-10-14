@@ -45,53 +45,43 @@
 
   body{ min-height:100vh; display:flex; justify-content:center; }
 
-  /* オープニング */
+  /* オープニング（ロゴが筆で現れる短いアニメーション） */
   #openingScreen {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    z-index: 9999;
-    background-color: #000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: opacity 1.5s ease;
-    cursor: pointer;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 9999; background-color: #000;
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity .9s ease; cursor: pointer; overflow: hidden;
   }
-  
-  #openingVideo {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    object-fit: cover;
-    z-index: 1000;
+  #openingGlow {
+    position: absolute; inset: 0; opacity: 0;
+    background: radial-gradient(circle at 50% 48%, rgba(214,150,70,0.30) 0%, rgba(214,150,70,0.10) 32%, transparent 62%);
   }
-  #openingLogo {
-    position: relative;
-    z-index: 1001;
-    width: 180px;
-    max-width: 60%;
-    opacity: 0; 
-    transition: opacity 1.5s ease;
-    filter: brightness(0) invert(1);
+  #openingLogo { position: relative; z-index: 2; width: min(200px, 58vw); aspect-ratio: 480 / 671; }
+  #openingLogo .lg { position: absolute; inset: 0; }
+  #openingLogo .lg-main { clip-path: inset(0 0 0 30%); }
+  #openingLogo .lg-sub  { clip-path: inset(0 70% 0 0); }
+  #openingLogo img {
+    display: block; width: 100%; height: 100%; opacity: 0;
+    filter: brightness(0) blur(6px);
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 40%, transparent 60%);
+            mask-image: linear-gradient(to bottom, #000 0%, #000 40%, transparent 60%);
+    -webkit-mask-size: 100% 250%; mask-size: 100% 250%;
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-position: 0 100%; mask-position: 0 100%;
+    transform: scale(1.05);
   }
-  #skipText {
-    position: absolute;
-    bottom: 12%;
-    left: 50%;
-    transform: translateX(-50%);
-    color: #fff;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    white-space: nowrap;
-    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
-    z-index: 1002;
-    animation: skipAnim 2.5s ease-in-out infinite;
+  #openingScreen.play #openingGlow { animation: openGlow 3.4s ease-in-out forwards; }
+  #openingScreen.play .lg-main img { animation: brushIn 1.4s cubic-bezier(.3,.6,.3,1) .45s forwards; }
+  #openingScreen.play .lg-sub img  { animation: brushIn 1.0s cubic-bezier(.3,.6,.3,1) 1.7s forwards; }
+  @keyframes brushIn {
+    0%   { opacity: 0; filter: brightness(0) blur(6px); -webkit-mask-position: 0 100%; mask-position: 0 100%; transform: scale(1.05); }
+    25%  { opacity: 1; }
+    100% { opacity: 1; filter: brightness(0) blur(0); -webkit-mask-position: 0 0; mask-position: 0 0; transform: scale(1); }
   }
-  @keyframes skipAnim {
-    0%, 100% { opacity: 0.3; transform: translate(-50%, 0); }
-    50% { opacity: 1; transform: translate(-50%, -8px); }
+  @keyframes openGlow { 0% { opacity: 0; } 35% { opacity: 1; } 100% { opacity: .55; } }
+  @media (prefers-reduced-motion: reduce) {
+    #openingLogo img { opacity: 1; filter: brightness(0); -webkit-mask-image: none; mask-image: none; transform: none; animation: none !important; }
+    #openingGlow { opacity: .6; animation: none !important; }
   }
 
   /* アプリレイアウト */
@@ -233,6 +223,7 @@
   }
   .sub-heading.mt-24 { margin-top: 24px; }
   
+  .limited-label { display: block; font-size: 12.5px; color: #d61f1f; font-weight: 700; margin-top: 3px; letter-spacing: .05em; }
   .region-label { font-size: 12px; color: var(--ai-light); font-weight: normal; margin-right: 4px; }
   .rare-label { font-size: 13px; color: var(--shu); font-weight: 700; margin-right: 4px; }
 
@@ -928,15 +919,197 @@
     .top-categories-row.row-bottom { margin-top: calc(-1 * var(--ic) - 4px); }
     .top-category-label { font-size: clamp(15px, 2.4svh, 19px); }
   }
+
+  /* ===== 折りたたみ（見出しごと） ===== */
+  .fold { margin: 14px 0 6px; }
+  .fold-head {
+    width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent;
+    background: rgba(255,255,255,0.88); border: 1px solid rgba(214,204,180,0.9);
+    border-left: 4px solid var(--shu); border-radius: 10px;
+    padding: 13px 12px 13px 14px; color: var(--ai);
+    font-family: var(--font-mincho); font-weight: 700; font-size: 16.5px; line-height: 1.5;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  }
+  .fold-title { flex: 1 1 0; min-width: 0; word-break: keep-all; overflow-wrap: anywhere; line-break: strict; }
+  .fold-cue { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--font-gothic, inherit); font-size: 12px; font-weight: 700; color: var(--shu);
+    background: rgba(255,255,255,0.9); border: 1px solid var(--shu); border-radius: 999px; padding: 4px 8px 4px 10px; white-space: nowrap; }
+  .fold-chev { width: 14px; height: 14px; stroke: currentColor; stroke-width: 2.4; fill: none; transition: transform .25s ease; }
+  .fold.open .fold-chev { transform: rotate(180deg); }
+  .fold-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s ease; }
+  .fold.open .fold-body { grid-template-rows: 1fr; }
+  .fold-inner { overflow: hidden; min-height: 0; visibility: hidden; transition: visibility 0s linear .3s; }
+  .fold.open .fold-inner { visibility: visible; transition-delay: 0s; }
+  .fold.open .fold-inner { padding-top: 12px; }
+  .fold-inner > :first-child { margin-top: 0; }
+  .fold-body .polish-box > h3.section-title, .fold-body .matrix-box > h3.section-title { display: none; }
+  @media (prefers-reduced-motion: reduce){ .fold-body, .fold-chev { transition: none; } }
+
+  /* ===== 余白を少し詰める ===== */
+  .glass-box { margin-bottom: 16px; }
+  .glass-box { padding-top: 20px; padding-bottom: 20px; }
+  .sub-heading { margin-top: 22px; margin-bottom: 10px; }
+  .accordion-item { margin-bottom: 6px; }
+  .quiz-box { margin: 14px 0 16px; }
+  .guide { margin: 12px 0 6px; }
+
+  /* ===== 読みやすさ ===== */
+  .mk { background: linear-gradient(transparent 58%, rgba(240,170,60,0.42) 58%); font-weight: 700; padding: 0 1px; }
+  .accordion-body .sent { display: block; }
+  .accordion-body .sent + .sent { margin-top: 0.55em; }
+  .accordion-body .lead { font-weight: 700; color: var(--ai); }
+  .more-body .sent:first-child { margin-top: 0; }
+  .more-btn {
+    display: inline-flex; align-items: center; gap: 6px; margin: 10px 0 2px; padding: 7px 12px 7px 14px;
+    font: inherit; font-size: 13.5px; font-weight: 700; color: var(--shu); background: #fff;
+    border: 1px solid var(--shu); border-radius: 999px; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  }
+  .more-btn svg { width: 13px; height: 13px; stroke: currentColor; stroke-width: 2.4; fill: none; transition: transform .2s ease; }
+  .more-btn.on svg { transform: rotate(180deg); }
+  .more-body { margin-top: 8px; padding-top: 10px; border-top: 1px dotted var(--line); }
+  .more-body[hidden] { display: none; }
+  .accordion-item.open .accordion-body { max-height: 1600px; }
+
+  /* ===== インスタグラム ===== */
+  .insta { display: none; justify-content: center; margin: 6px 0 10px; }
+  .insta.show { display: flex; animation: fadeUp .5s ease both; }
+  .insta a { display: flex; flex-direction: column; align-items: center; gap: 8px; text-decoration: none; -webkit-tap-highlight-color: transparent; }
+  .insta img { display: block; width: 64px; height: 64px; border-radius: 16px; box-shadow: 0 3px 10px rgba(0,0,0,0.35); animation: instaPulse 2s ease-in-out infinite; }
+  .insta-cap { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 999px; background: #fff; color: var(--shu); border: 1px solid var(--shu); font-size: 13.5px; line-height: 1.3; }
+  .insta-cap::after { content: '›'; font-size: 17px; line-height: 1; }
+  @keyframes instaPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.07); } }
+  @media (prefers-reduced-motion: reduce){ .insta img { animation: none; } }
+
+  /* ===== 文字はすべて太字 ===== */
+  body, body * { font-weight: 700 !important; }
+
+  /* ===== 3つのポイントを順番に表示 ===== */
+  .pt { opacity: 0; transform: translateY(10px) scale(0.97); transition: opacity .45s ease, transform .5s cubic-bezier(.2,1.4,.4,1); }
+  .pt.in { opacity: 1; transform: none; }
+  .pt + .pt { margin-top: 22px; }
+  @media (prefers-reduced-motion: reduce){ .pt { transition: none; opacity: 1; transform: none; } }
+
+  /* ===== ラベルの言葉（タグ・手引き） ===== */
+  .tags { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 6px; margin-top: 14px; padding-top: 10px; border-top: 1px dotted var(--line); }
+  .tags-cap { font-size: 12.5px; color: var(--ai-light); margin-right: 2px; }
+  .tag { font: inherit; font-size: 13.5px; line-height: 1.2; color: var(--ai); background: #fff; border: 1px solid var(--ai); border-radius: 999px; padding: 7px 12px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .tag::after { content: ' ›'; color: var(--shu); }
+  .label-guide { background: rgba(255,255,255,0.88); border: 1px solid rgba(214,204,180,0.9); border-radius: 12px; padding: 14px 14px 10px; }
+  .label-guide > p { margin: 0 0 10px; font-size: 14px; line-height: 1.8; color: var(--sumi); }
+  .tag-group { margin-bottom: 10px; }
+  .tag-group-cap { font-size: 12.5px; color: var(--shu); margin-bottom: 6px; }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .jump-hl { animation: jumpHl 2.4s ease; }
+  @keyframes jumpHl { 0%,100% { box-shadow: 0 0 0 0 rgba(192,57,43,0); } 20%,70% { box-shadow: 0 0 0 4px rgba(214,31,31,0.55), 0 0 18px rgba(214,31,31,0.35); } }
+  #jumpPill { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom)); transform: translate(-50%, 24px); opacity: 0; pointer-events: none; z-index: 60;
+    display: inline-flex; align-items: center; gap: 6px; padding: 11px 18px 11px 12px; border-radius: 999px; border: 0; cursor: pointer;
+    background: var(--ai); color: #fff; font: inherit; font-size: 14px; box-shadow: 0 4px 14px rgba(0,0,0,0.4); transition: opacity .3s ease, transform .3s ease; max-width: calc(100vw - 32px); white-space: nowrap; }
+  #jumpPill.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+  #jumpPill svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 2.6; fill: none; }
+
+  /* ===== 前回の続きから ===== */
+  .resume-pill { display: flex; align-items: center; gap: 8px; width: 100%; margin: 0 0 10px; padding: 11px 12px 11px 14px; border-radius: 12px; cursor: pointer;
+    background: rgba(255,255,255,0.92); border: 1px solid var(--shu); color: var(--ai); font: inherit; font-size: 14px; text-align: left; -webkit-tap-highlight-color: transparent; }
+  .resume-cap { color: var(--shu); font-size: 12.5px; white-space: nowrap; }
+  .resume-name { flex: 1 1 auto; min-width: 0; }
+  .resume-pill svg { width: 15px; height: 15px; stroke: var(--shu); stroke-width: 2.6; fill: none; flex: 0 0 auto; }
+
+  /* 一画ずつ書かれる */
+  #openingLogo:not(.written):not(.fallback) .lg { visibility: hidden; }
+  #openingLogo.written .lg { display: none; }
+  #openingLogo .logo-write { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; }
+
+  /* オープニング：足跡のスタンプと、背景のゆらぎ */
+  #openingStamp {
+    position: absolute; left: 73%; top: 79%; width: 23%; aspect-ratio: 1; z-index: 3; opacity: 0; pointer-events: none;
+    background: var(--shu);
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: contain; mask-size: contain; -webkit-mask-position: center; mask-position: center;
+    transform: scale(2.4) rotate(-14deg);
+  }
+  #openingStamp::after {
+    content: ''; position: absolute; left: 50%; top: 56%; width: 150%; aspect-ratio: 1; margin: -75% 0 0 -75%;
+    border-radius: 50%; border: 2px solid rgba(189,70,48,0.55); opacity: 0; transform: scale(.3); -webkit-mask: none; mask: none;
+  }
+  #openingStamp.pop { animation: stampPop .55s cubic-bezier(.2,.9,.3,1.2) forwards; }
+  #openingStamp.pop::after { animation: stampRing .8s ease-out .08s forwards; }
+  @keyframes stampPop {
+    0%   { opacity: 0; transform: scale(2.4) rotate(-14deg); }
+    45%  { opacity: 1; transform: scale(0.86) rotate(-14deg); }
+    70%  { opacity: 1; transform: scale(1.07) rotate(-14deg); }
+    100% { opacity: 1; transform: scale(1) rotate(-14deg); }
+  }
+  @keyframes stampRing { 0% { opacity: .8; transform: scale(.3); } 100% { opacity: 0; transform: scale(1.15); } }
+  #openingScreen.play #openingGlow { animation: openGlow 3.4s ease-in-out forwards, glowBreath 4.5s ease-in-out 3.4s infinite alternate; }
+  @keyframes glowBreath { 0% { opacity: .55; } 100% { opacity: .9; } }
+  .ember { position: absolute; z-index: 1; border-radius: 50%; pointer-events: none; opacity: 0;
+    background: radial-gradient(circle, rgba(246,196,120,0.95) 0%, rgba(230,150,70,0.45) 45%, transparent 72%);
+    animation: emberRise var(--d, 9s) linear var(--w, 0s) infinite; }
+  @keyframes emberRise {
+    0%   { opacity: 0; transform: translate(0, 0) scale(.6); }
+    15%  { opacity: var(--o, .7); }
+    50%  { transform: translate(var(--dx, 14px), -18vh) scale(1); }
+    85%  { opacity: calc(var(--o, .7) * .6); }
+    100% { opacity: 0; transform: translate(calc(var(--dx, 14px) * -1), -38vh) scale(.7); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #openingStamp { opacity: 1; transform: rotate(-14deg); }
+    .ember { display: none; }
+  }
+
+  /* オープニング：和風の背景（藍墨・青海波・金の砂子） */
+  #openingScreen { background: radial-gradient(ellipse at 50% 42%, #1d2d45 0%, #111c2e 52%, #080d16 100%) !important; }
+  #openingWave {
+    position: absolute; inset: 0; z-index: 0; opacity: 0; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2760%27 height=%2730%27 viewBox=%270 0 60 30%27%3E%3Cdefs%3E%3Cg id=%27s%27%3E%3Ccircle r=%2730%27 /%3E%3Ccircle r=%2723%27 /%3E%3Ccircle r=%2716%27 /%3E%3Ccircle r=%279%27 /%3E%3C/g%3E%3C/defs%3E%3Cg fill=%27%230f1826%27 stroke=%27%23d6b46e%27 stroke-width=%271.1%27 stroke-opacity=%27.9%27%3E%3Cg transform=%27translate%2830 15%29%27%3E%3Ccircle r=%2730%27/%3E%3Ccircle r=%2723%27 fill=%27none%27/%3E%3Ccircle r=%2716%27 fill=%27none%27/%3E%3Ccircle r=%279%27 fill=%27none%27/%3E%3C/g%3E%3Cg transform=%27translate%280 30%29%27%3E%3Ccircle r=%2730%27/%3E%3Ccircle r=%2723%27 fill=%27none%27/%3E%3Ccircle r=%2716%27 fill=%27none%27/%3E%3Ccircle r=%279%27 fill=%27none%27/%3E%3C/g%3E%3Cg transform=%27translate%2860 30%29%27%3E%3Ccircle r=%2730%27/%3E%3Ccircle r=%2723%27 fill=%27none%27/%3E%3Ccircle r=%2716%27 fill=%27none%27/%3E%3Ccircle r=%279%27 fill=%27none%27/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); background-size: 60px 30px;
+    -webkit-mask-image: radial-gradient(ellipse at 50% 46%, transparent 14%, rgba(0,0,0,.55) 48%, #000 86%);
+            mask-image: radial-gradient(ellipse at 50% 46%, transparent 14%, rgba(0,0,0,.55) 48%, #000 86%);
+  }
+  #openingScreen.play #openingWave { animation: waveIn 2.2s ease-out .1s forwards, waveDrift 14s linear infinite; }
+  @keyframes waveIn { 0% { opacity: 0; } 100% { opacity: .20; } }
+  @keyframes waveDrift { 0% { background-position: 0 0; } 100% { background-position: 60px 0; } }
+  #openingFrame {
+    position: absolute; inset: 14px; z-index: 1; pointer-events: none; opacity: 0;
+    border: 1px solid rgba(214,180,110,.55); box-shadow: inset 0 0 0 4px rgba(15,24,38,.0), 0 0 0 1px rgba(214,180,110,.0);
+  }
+  #openingFrame::after { content: ''; position: absolute; inset: 4px; border: 1px solid rgba(214,180,110,.28); }
+  #openingScreen.play #openingFrame { animation: frameIn 1.6s ease-out .3s forwards; }
+  @keyframes frameIn { 0% { opacity: 0; transform: scale(1.04); } 100% { opacity: 1; transform: scale(1); } }
+  /* 金の砂子（きらめく粒） */
+  .ember { background: radial-gradient(circle, rgba(244,214,140,1) 0%, rgba(214,180,110,.55) 45%, transparent 72%) !important; animation: sunago var(--d, 6s) ease-in-out var(--w, 0s) infinite !important; }
+  @keyframes sunago {
+    0%, 100% { opacity: 0; transform: translate(0, 0) scale(.6); }
+    50% { opacity: var(--o, .8); transform: translate(var(--dx, 6px), -2vh) scale(1.1); }
+  }
+  @media (prefers-reduced-motion: reduce) { #openingWave { opacity: .2; animation: none !important; } #openingFrame { opacity: 1; animation: none !important; } }
+
+  /* オープニング：和紙の背景（生成り・繊維・墨のロゴ） */
+  #openingScreen {
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27400%27 height=%27400%27%3E%3Cpath d=%27M130 60 Q150 68 170 80%27 stroke=%27%23b79a68%27 stroke-opacity=%270.38%27 stroke-width=%270.63%27 fill=%27none%27/%3E%3Cpath d=%27M34 167 Q14 164 8 158%27 stroke=%27%239c8258%27 stroke-opacity=%270.32%27 stroke-width=%270.85%27 fill=%27none%27/%3E%3Cpath d=%27M25 234 Q27 238 28 254%27 stroke=%27%23d2b98a%27 stroke-opacity=%270.21%27 stroke-width=%270.57%27 fill=%27none%27/%3E%3Cpath d=%27M123 326 Q114 318 101 314%27 stroke=%27%23b79a68%27 stroke-opacity=%270.30%27 stroke-width=%270.87%27 fill=%27none%27/%3E%3Cpath d=%27M199 213 Q181 216 149 224%27 stroke=%27%239c8258%27 stroke-opacity=%270.35%27 stroke-width=%270.92%27 fill=%27none%27/%3E%3Cpath d=%27M98 230 Q115 212 126 201%27 stroke=%27%23b79a68%27 stroke-opacity=%270.21%27 stroke-width=%270.75%27 fill=%27none%27/%3E%3Cpath d=%27M303 61 Q324 70 340 70%27 stroke=%27%23ffffff%27 stroke-opacity=%270.44%27 stroke-width=%270.71%27 fill=%27none%27/%3E%3Cpath d=%27M199 319 Q204 328 216 330%27 stroke=%27%23b79a68%27 stroke-opacity=%270.19%27 stroke-width=%270.92%27 fill=%27none%27/%3E%3Cpath d=%27M259 397 Q251 426 248 449%27 stroke=%27%23b79a68%27 stroke-opacity=%270.39%27 stroke-width=%270.71%27 fill=%27none%27/%3E%3Cpath d=%27M244 197 Q245 209 238 224%27 stroke=%27%23d2b98a%27 stroke-opacity=%270.20%27 stroke-width=%270.77%27 fill=%27none%27/%3E%3Cpath d=%27M220 353 Q233 332 254 314%27 stroke=%27%23ffffff%27 stroke-opacity=%270.52%27 stroke-width=%270.73%27 fill=%27none%27/%3E%3Cpath d=%27M92 33 Q78 28 79 13%27 stroke=%27%239c8258%27 stroke-opacity=%270.24%27 stroke-width=%270.50%27 fill=%27none%27/%3E%3Cpath d=%27M168 148 Q191 142 208 135%27 stroke=%27%23b79a68%27 stroke-opacity=%270.28%27 stroke-width=%271.02%27 fill=%27none%27/%3E%3Cpath d=%27M381 272 Q362 284 348 297%27 stroke=%27%23d2b98a%27 stroke-opacity=%270.19%27 stroke-width=%270.54%27 fill=%27none%27/%3E%3Cpath d=%27M84 65 Q91 65 114 75%27 stroke=%27%23b79a68%27 stroke-opacity=%270.39%27 stroke-width=%270.87%27 fill=%27none%27/%3E%3Cpath d=%27M28 83 Q24 72 6 58%27 stroke=%27%23d2b98a%27 stroke-opacity=%270.21%27 stroke-width=%271.01%27 fill=%27none%27/%3E%3Cpath d=%27M397 186 Q407 194 430 206%27 stroke=%27%23ffffff%27 stroke-opacity=%270.47%27 stroke-width=%270.92%27 fill=%27none%27/%3E%3Cpath d=%27M207 82 Q191 111 169 126%27 stroke=%27%23ffffff%27 stroke-opacity=%270.59%27 stroke-width=%271.02%27 fill=%27none%27/%3E%3Cpath d=%27M278 104 Q291 119 295 133%27 stroke=%27%23ffffff%27 stroke-opacity=%270.51%27 stroke-width=%270.87%27 fill=%27none%27/%3E%3Cpath d=%27M315 303 Q315 321 317 329%27 stroke=%27%239c8258%27 stroke-opacity=%270.29%27 stroke-width=%270.71%27 fill=%27none%27/%3E%3Cpath d=%27M12 11 Q14 33 10 41%27 stroke=%27%23d2b98a%27 stroke-opacity=%270.36%27 stroke-width=%270.93%27 fill=%27none%27/%3E%3Cpath d=%27M140 390 Q148 394 157 403%27 stroke=%27%23d2b98a%27 stroke-opacity=%270.32%27 stroke-width=%271.04%27 fill=%27none%27/%3E%3Cpath d=%27M336 192 Q336 173 350 149%27 stroke=%27%23d2b98a%27 stroke-opacity=%270.35%27 stroke-width=%270.95%27 fill=%27none%27/%3E%3Cpath d=%27M191 71 Q183 101 166 116%27 stroke=%27%23d2b98a%27 stroke-opacity=%270.28%27 stroke-width=%270.95%27 fill=%27none%27/%3E%3Cpath d=%27M34 64 Q65 68 93 74%27 stroke=%27%239c8258%27 stroke-opacity=%270.31%27 stroke-width=%270.86%27 fill=%27none%27/%3E%3Cpath d=%27M190 375 Q170 376 166 368%27 stroke=%27%23b79a68%27 stroke-opacity=%270.30%27 stroke-width=%271.06%27 fill=%27none%27/%3E%3Cpath d=%27M174 349 Q176 371 186 400%27 stroke=%27%239c8258%27 stroke-opacity=%270.35%27 stroke-width=%270.70%27 fill=%27none%27/%3E%3Cpath d=%27M218 334 Q223 326 216 313%27 stroke=%27%23d2b98a%27 stroke-opacity=%270.36%27 stroke-width=%271.03%27 fill=%27none%27/%3E%3Cpath d=%27M52 61 Q70 48 80 32%27 stroke=%27%239c8258%27 stroke-opacity=%270.22%27 stroke-width=%270.78%27 fill=%27none%27/%3E%3Cpath d=%27M290 223 Q275 225 259 219%27 stroke=%27%23b79a68%27 stroke-opacity=%270.37%27 stroke-width=%270.53%27 fill=%27none%27/%3E%3Cpath d=%27M77 17 Q58 26 55 23%27 stroke=%27%23b79a68%27 stroke-opacity=%270.28%27 stroke-width=%270.87%27 fill=%27none%27/%3E%3Cpath d=%27M202 205 Q180 211 157 219%27 stroke=%27%239c8258%27 stroke-opacity=%270.33%27 stroke-width=%271.03%27 fill=%27none%27/%3E%3Cpath d=%27M377 104 Q402 91 416 89%27 stroke=%27%23b79a68%27 stroke-opacity=%270.27%27 stroke-width=%270.69%27 fill=%27none%27/%3E%3Cpath d=%27M268 171 Q258 189 260 197%27 stroke=%27%23ffffff%27 stroke-opacity=%270.39%27 stroke-width=%271.03%27 fill=%27none%27/%3E%3Cpath d=%27M387 88 Q364 113 341 123%27 stroke=%27%239c8258%27 stroke-opacity=%270.22%27 stroke-width=%270.76%27 fill=%27none%27/%3E%3Cpath d=%27M206 136 Q204 140 195 159%27 stroke=%27%23d2b98a%27 stroke-opacity=%270.28%27 stroke-width=%270.51%27 fill=%27none%27/%3E%3Cpath d=%27M133 250 Q159 262 169 265%27 stroke=%27%23b79a68%27 stroke-opacity=%270.20%27 stroke-width=%270.66%27 fill=%27none%27/%3E%3Cpath d=%27M362 73 Q378 53 383 28%27 stroke=%27%23ffffff%27 stroke-opacity=%270.45%27 stroke-width=%270.82%27 fill=%27none%27/%3E%3Cpath d=%27M206 198 Q208 208 200 229%27 stroke=%27%23b79a68%27 stroke-opacity=%270.24%27 stroke-width=%270.51%27 fill=%27none%27/%3E%3Cpath d=%27M35 104 Q35 120 43 147%27 stroke=%27%23b79a68%27 stroke-opacity=%270.25%27 stroke-width=%270.83%27 fill=%27none%27/%3E%3Cpath d=%27M371 107 Q355 99 348 103%27 stroke=%27%239c8258%27 stroke-opacity=%270.24%27 stroke-width=%270.61%27 fill=%27none%27/%3E%3Cpath d=%27M373 251 Q378 274 384 290%27 stroke=%27%23ffffff%27 stroke-opacity=%270.44%27 stroke-width=%270.51%27 fill=%27none%27/%3E%3Cpath d=%27M100 6 Q72 -2 54 -9%27 stroke=%27%23d2b98a%27 stroke-opacity=%270.20%27 stroke-width=%270.99%27 fill=%27none%27/%3E%3Cpath d=%27M173 198 Q152 218 131 231%27 stroke=%27%239c8258%27 stroke-opacity=%270.26%27 stroke-width=%271.00%27 fill=%27none%27/%3E%3Cpath d=%27M283 254 Q266 263 263 283%27 stroke=%27%23b79a68%27 stroke-opacity=%270.32%27 stroke-width=%271.03%27 fill=%27none%27/%3E%3Cpath d=%27M172 22 Q156 45 139 53%27 stroke=%27%239c8258%27 stroke-opacity=%270.33%27 stroke-width=%270.53%27 fill=%27none%27/%3E%3Cpath d=%27M74 108 Q65 122 62 121%27 stroke=%27%23ffffff%27 stroke-opacity=%270.41%27 stroke-width=%271.08%27 fill=%27none%27/%3E%3Cpath d=%27M124 143 Q117 149 111 155%27 stroke=%27%239c8258%27 stroke-opacity=%270.23%27 stroke-width=%270.97%27 fill=%27none%27/%3E%3Cpath d=%27M36 327 Q24 317 16 314%27 stroke=%27%239c8258%27 stroke-opacity=%270.20%27 stroke-width=%271.07%27 fill=%27none%27/%3E%3Cpath d=%27M341 62 Q349 39 353 8%27 stroke=%27%23d2b98a%27 stroke-opacity=%270.21%27 stroke-width=%270.93%27 fill=%27none%27/%3E%3Cpath d=%27M257 18 Q280 5 299 -16%27 stroke=%27%239c8258%27 stroke-opacity=%270.38%27 stroke-width=%270.95%27 fill=%27none%27/%3E%3Cpath d=%27M227 325 Q229 320 220 308%27 stroke=%27%239c8258%27 stroke-opacity=%270.20%27 stroke-width=%270.53%27 fill=%27none%27/%3E%3Cpath d=%27M255 384 Q232 381 223 394%27 stroke=%27%239c8258%27 stroke-opacity=%270.29%27 stroke-width=%270.50%27 fill=%27none%27/%3E%3Cpath d=%27M319 299 Q303 288 281 291%27 stroke=%27%23d2b98a%27 stroke-opacity=%270.24%27 stroke-width=%270.54%27 fill=%27none%27/%3E%3Cpath d=%27M106 292 Q113 278 104 265%27 stroke=%27%23d2b98a%27 stroke-opacity=%270.20%27 stroke-width=%271.05%27 fill=%27none%27/%3E%3Cpath d=%27M115 19 Q124 37 129 61%27 stroke=%27%23ffffff%27 stroke-opacity=%270.51%27 stroke-width=%270.58%27 fill=%27none%27/%3E%3Cpath d=%27M193 194 Q212 211 241 229%27 stroke=%27%23ffffff%27 stroke-opacity=%270.47%27 stroke-width=%270.78%27 fill=%27none%27/%3E%3Cpath d=%27M47 357 Q67 348 74 354%27 stroke=%27%23d2b98a%27 stroke-opacity=%270.20%27 stroke-width=%270.80%27 fill=%27none%27/%3E%3Cpath d=%27M398 398 Q420 382 427 380%27 stroke=%27%23b79a68%27 stroke-opacity=%270.21%27 stroke-width=%270.81%27 fill=%27none%27/%3E%3Cpath d=%27M381 53 Q361 55 329 50%27 stroke=%27%239c8258%27 stroke-opacity=%270.29%27 stroke-width=%271.03%27 fill=%27none%27/%3E%3Cpath d=%27M158 64 Q144 41 133 11%27 stroke=%27%23d2b98a%27 stroke-opacity=%270.26%27 stroke-width=%270.69%27 fill=%27none%27/%3E%3Cpath d=%27M336 1 Q343 -14 362 -41%27 stroke=%27%23b79a68%27 stroke-opacity=%270.38%27 stroke-width=%270.67%27 fill=%27none%27/%3E%3Cpath d=%27M149 157 Q121 140 98 125%27 stroke=%27%23ffffff%27 stroke-opacity=%270.56%27 stroke-width=%270.67%27 fill=%27none%27/%3E%3Cpath d=%27M21 265 Q41 282 47 301%27 stroke=%27%23ffffff%27 stroke-opacity=%270.40%27 stroke-width=%270.72%27 fill=%27none%27/%3E%3Cpath d=%27M382 354 Q371 342 347 316%27 stroke=%27%239c8258%27 stroke-opacity=%270.34%27 stroke-width=%270.53%27 fill=%27none%27/%3E%3Cpath d=%27M293 180 Q274 154 262 141%27 stroke=%27%239c8258%27 stroke-opacity=%270.22%27 stroke-width=%270.75%27 fill=%27none%27/%3E%3Cpath d=%27M113 102 Q97 78 85 62%27 stroke=%27%23d2b98a%27 stroke-opacity=%270.30%27 stroke-width=%270.74%27 fill=%27none%27/%3E%3Cpath d=%27M67 65 Q78 53 89 50%27 stroke=%27%23ffffff%27 stroke-opacity=%270.60%27 stroke-width=%270.77%27 fill=%27none%27/%3E%3Cpath d=%27M56 77 Q43 82 44 95%27 stroke=%27%23ffffff%27 stroke-opacity=%270.55%27 stroke-width=%270.62%27 fill=%27none%27/%3E%3Cpath d=%27M8 348 Q3 328 7 314%27 stroke=%27%23b79a68%27 stroke-opacity=%270.29%27 stroke-width=%270.84%27 fill=%27none%27/%3E%3C/svg%3E") 0 0 / 400px 400px,
+      url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27220%27 height=%27220%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%27.85%27 numOctaves=%273%27 seed=%276%27 stitchTiles=%27stitch%27/%3E%3CfeColorMatrix values=%270 0 0 0 .52  0 0 0 0 .42  0 0 0 0 .27  0 0 0 .55 -.12%27/%3E%3C/filter%3E%3Crect width=%27100%25%27 height=%27100%25%27 filter=%27url%28%23n%29%27/%3E%3C/svg%3E") 0 0 / 220px 220px,
+      radial-gradient(ellipse at 50% 44%, #f8f1e1 0%, #efe5d0 52%, #ddd0b3 100%) !important;
+  }
+  #openingWave { display: none !important; }
+  #openingGlow { background: radial-gradient(circle at 50% 48%, rgba(255,252,240,0.85) 0%, rgba(255,250,235,0.35) 34%, transparent 64%) !important; }
+  #openingFrame { border-color: rgba(80,56,36,.55) !important; }
+  #openingFrame::after { border-color: rgba(80,56,36,.28) !important; }
+  .ember { background: radial-gradient(circle, rgba(201,160,70,.95) 0%, rgba(201,160,70,.45) 48%, transparent 74%) !important; }
+  #openingStamp { background: #b9402b; }
 </style>
 </head>
 <body class="opening">
 
 <!-- オープニング画面 -->
-<div id="openingScreen">
-  <video id="openingVideo" src="title2.mp4" autoplay muted playsinline></video>
-  <img id="openingLogo" src="wagakuma.webp" alt="吾熊">
-  <div id="skipText">画面をタップしてスキップ</div>
+<div id="openingScreen" class="play">
+  <div id="openingWave"></div>
+  <div id="openingFrame"></div>
+  <div id="openingGlow"></div>
+  <div id="openingLogo" role="img" aria-label="酒肴家 吾熊">
+    <div class="lg lg-main"><img src="wagakuma.webp" alt=""></div>
+    <div class="lg lg-sub"><img src="wagakuma.webp" alt=""></div>
+    <div id="openingStamp"></div>
+  </div>
 </div>
 
 <!-- 導入（キャラクターのあいさつ→アンケート） -->
@@ -976,10 +1149,6 @@
   <main>
     <!-- Screen: トップ(お酒選択) -->
     <section class="screen active" data-screen="top">
-      <div class="glass-box">
-        <h2 class="title">今夜の一杯を、もっと美味しく。</h2>
-      </div>
-
       <div class="guide" data-komeo="komeo1.webp"><div class="guide-src">ラベルの言葉や<wbr>造り方の秘密を<wbr>少し知るだけで、<wbr>いつものお酒が<wbr>違った表情を<wbr>見せてくれます。<br>知ればもっと<wbr>美味しくなる、<wbr>お酒の知識を<wbr>深めてみませんか？<br><strong>ご覧になりたいお酒のアイコンを、<br>タップ</strong>してください。</div></div>
 
       <div class="top-categories-wrap">
@@ -1882,49 +2051,157 @@
 <script>
 /* ============ オープニング制御 ============ */
 const openingScreen = document.getElementById('openingScreen');
-const openingVideo = document.getElementById('openingVideo');
-const openingLogo = document.getElementById('openingLogo');
 let hasSkipped = false;
+let openingTimer = null;
 
 function endOpening() {
   if (hasSkipped) return;
   hasSkipped = true;
-  openingScreen.style.opacity = '0'; 
-  setTimeout(() => {
-    openingScreen.style.display = 'none'; 
-  }, 1500);
+  clearTimeout(openingTimer);
+  openingScreen.style.opacity = '0';
+  setTimeout(() => { openingScreen.style.display = 'none'; }, 900);
   setTimeout(() => {
     document.body.classList.remove('opening');
     startIntro();
     resumeGuides();
-  }, 700);
+  }, 500);
+}
+
+function startOpening() {
+  hasSkipped = false;
+  openingScreen.style.display = '';
+  openingScreen.style.opacity = '1';
+  document.body.classList.add('opening');
+  openingScreen.classList.remove('play');
+  void openingScreen.offsetWidth;
+  openingScreen.classList.add('play');
+  if (typeof logoWriter !== 'undefined' && logoWriter) { if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) logoWriter.showAll(); else { logoWriter.play(); scheduleStamp(3750); } }
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  clearTimeout(openingTimer);
+  openingTimer = setTimeout(endOpening, reduce ? 1800 : 5300);
 }
 
 openingScreen.addEventListener('click', endOpening);
+openingTimer = setTimeout(endOpening, (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 1800 : 5300);
 
-// 確実にフェードイン・フェードアウトさせるための判定処理
-openingVideo.addEventListener('timeupdate', () => {
-  if (hasSkipped) return;
-  const time = openingVideo.currentTime;
-  
-  if (time >= 5 && openingLogo.style.opacity !== '1') {
-    openingLogo.style.opacity = '1';
-  }
-  
-  if (time >= 8) {
-    endOpening();
-  }
-});
 
-const playPromise = openingVideo.play();
-if (playPromise !== undefined) {
-  playPromise.catch(error => {
-    endOpening();
-  });
+
+/* ============ ロゴを一画ずつ書く ============ */
+const LOGO_MAP = { w: 120, h: 168, data: 'ZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZhERERERERERERERERERERERERERERERERERERERERERERERZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZhERERERERERERERERERERERERERERERERERERERERERERERZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZhERERERERERERERERERERERERERERERERERERERERERERERZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZhERERERERERERERERERERERERERERERERERERERERERERERZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZhERERERERERERERERERERERERERERERERERERERERERERERZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZhERERERERERERERERERERERERERERERERERERERERERERERZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZhERERERERERERERERERERERERERERERERERERERERERERERZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZhERERERERERERERERERERERERERERERERERERERERERERERZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZhERERERERERERERERERERERERERERERERERERERERERERERZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZndxERERERERERERERERERERERERERERERERERERERERERERERZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmd3d3ERERERERERERERERERERERERERERERERERERERERERERERZmZmZmZmZmZmZmZmZmZmZmZmZmZmZ3d3d3ERERERERERERERERERERERERERERERERERERERERERERERZmZmZmZmZmZmZmZmZmZmZmZmZmZnd3d3d3cRERERERERERERERERERERERERERERERERERERERERERERZmZmZmZmZmZmZmZmZmZmZmZmZmd3d3d3d3cRERERERERERERERERERERERERERERERERERERERERERERZmZmZmZmZmZmZmZmZmZmZmZmZ3d3d3d3d3cRERERERERERERERERERERERERERERERERERERERERERERZmZmZmZmZmZmZmZmZmZmZmZnd3d3d3d3d3dxERERERERERERERERERERERERERERERERERERERERERERZmZmZmZmZmZmZmZmZmZmZmd3d3d3d3d3d3dxERERERERERERERERERERERERERERERERERERERERERERd2ZmZmZmZmZmZmZmZmZmZ3d3d3d3d3d3d3dxERERERERERERERERERERERERERERERERERERERERERERd3ZmZmZmZmZmZmZmZmZnd3d3d3d3d3d3d3d3ERERERERERERERERERERERERERERERERERERERERERERd3d2ZmZmZmZmZmZmZmd3d3d3d3d3d3d3d3d3ERERERERERERERERERERERERERERERERERERERERERERd3d3dmZmZmZmZmZmZnd3d3d3d3d3d3d3d3d3ERERERERERERERERERERERERERERERERERERERERERERd3d3d3d2ZmZmZmZ3d3d3d3d3d3d3d3d3d3d3cRERERERERERERERERERERERERERERERERERERERERERd3d3d3d3d3d2d3d3d3d3d3d3d3d3d3d3d3d3cRERERERERERERERERERERERERERERERERERERERERERd3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3cRERERERERERERERERERERERERERERERERERERERERERd3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3cRERERERERERERERERERERERERERERERERERERERERERd3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3cRERERERERERERERERERERERERERERERERERERERERERd3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3cRERERERERERERERERERERERERERERERERERERERERERd3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3cRERERERERERERERERERERERERERERERERERERERERERd3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3dxERERERERERERERERERERERERERERERERERERERERERd3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3dxERERERERERERERERERERERERERERERERERERERERERd3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3dxERERERERERERERERERERERERERERERERERERERERERd3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3dxERERERERERERERERERERERERERERERERERERERERERd3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3dEQRERERERERERERERERERERERERERERERERERERERERd3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3RERBERERERERERERERERERERERERERERERERERERERERd3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d0REREERERERERERERERERERERERERERERERERERERERERd3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3dERERERBERERERERERERERERERERERERERERERERERERERd3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3REREREREERERERERERERERERERERERERERERERERERERERd3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d0REREREREQRERERERERERERERERERERERERERERERERERERd3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3dERERERERERBERERERERERERERERERERERERERERERERERERd3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3REREREREREREERERERERERERERERERERERERERERERERERERd3d3d3eId3d3eIiHd4iIh3d3d3d3d3d0REREREREREREQREREREREREREREREREREiIiIhERERERERERd3d4iIiIiId4iIiIiIiIiId3d3d3d3dERERERERERERERBEREREREREREREREREiIiIiIiEREREREREReIiIiIiIiIiIiIiIiIiIiIiId3d3d3REREREREREREREREEREREREREREREREiIiIiIiIiIhERERERERiIiIiIiIiIiIiIiIiIiIiIiIiIh3d0REREREREREREREREQRERERERERERESIiIiIiIiIiIiIRERERERiIiIiIiIiIiIiIiIiIiIiIiIiIiIhERERERERERERERERERBERERERERERIiIiIiIiIiIiIiIhERERERiIiIiIiIiIiIiIiIiIiIiIiIiIiIhEREREREREREREREREREEREREREREiIiIiIiIiIiIiIiIiIRERERiIiIiIiIiIiIiIiIiIiIiIiIiIiIREREREREREREREREREREQRERERESIiIiIiIiIiIiIiIiIiIiERERiIiIiIiIiIiIiIiIiIiIiIiIiIiIRERERERERERERERERERERBEREiIiIiIiIiIiIiIiIiIiIiIiIhESiIiIiIiIiIiIiIiIiIiIiIiIiIiIREREREREREREREREREREREIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiiIiIiIiIiIiIiIiIiIiIiIiIiIiEREREREREREREREREREREREIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiiIiIiIiIiIiIiIiIiIiIiIiIiIiEREREREREREREREREREREREIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiiIiIiIiIiIiIiIiIiIiIiIiIiIiEREREREREREREREREREREREIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiiIiIiIiIiIiIiIiIiIiIiIiIiIhEREREREREREREREREREREREIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiiIiIiIiIiIiIiIiIiIiIiIiIiIhEREREREREREREREREREREREIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiiIiIiIiIiIiIiIiIiIiIiIiIiIhEREREREREREREREREREREREIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiiIiIiIiIiIiIiIiIiIiIiIiIiIREREREREREREREREREREREREIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiiIiIiIiIiIiIiIiIiIiIiIiIiIREREREREREREREREREREREREIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiiIiIiIiIiIiIiIiIiIiIiIiIiIREREREREREREREREREREREREIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiiIiIiIiIiIiIiIiIiIiIiIiIiIREREREREREREREREREREREREIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiiIiIiIiIiIiIiIiIiIiIiIiIiIREREREREREREREREREREREREIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiiIiIiIiIiIiIiIiIiIiIiIiIiIREREREREREREREREREREREREIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiiIiIiIiIiIiIiIiIiIiIiIiIiERERERERERERERERERERERERCIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiiIiIiIiIiIiIiIiIiIiIiIiIiURERERERERERERERERERERERCIiIiIiIiIiIiIiIiIiIiIiIiIiIiIimZiIiIiIiIiIiIiIiIiIiIiZmURERERERERERERERERERERERCIiIiIiIiIiIiIiIiIiIiIiIiIiIiIimZmZmYiIiIiIiIiIiIiIiZmZmURERERERERERERERERERERERCIiIiIiIiIiIiIiIiIiIiIiIiIiIiIimZmZmZiIiIiIiIiIiIiZmZmZmURERERERERERERERERERERERCIiIiIiIiIiIiIiIiIiIiIiIiIiIiIimZmZmZmYiIiIiIiImZmZmZmZmURERERERERERERERERERERERCIiIiIiIiIiIiIiIiIiIiIiIiIiIiIimZmZmZmZiIiIiIiZmZmZmZmZlEREREREREREREREREREREREREIiIiIiIiIiIiIiIiIiIiIiIiIiIiIimZmZmZmZmIiIiJmZmZmZmZmZlEREREREREREREREREREREREREIiIiIiIiIiIiIiIiIiIiIiIiIiIiIimZmZmZmZmZiIiZmZmZmZmZmZlEREREREREREREREREREREREREQiIiIiIiIiIiIiIiIiIiIiIiIiIiIimZmZmZmZmZiImZmZmZmZmZmZRERERERERERERERERERERERERERCIiIiIiIiIiIiIiIiIiIiIiIiIiIimZmZmZmZmZmZmZmZmZmZmZmUREREREREREREREREREREREREREREIiIiIiIiIiIiIiIiIiIiIiIiIiIimZmZmZmZmZmZmZmZmZmZmZmUREREREREREREREREREREREREREREQiIiIiIiIiIiIiIiIiIiIiIiIiIimZmZmZmZmZmZmZmZmZmZmZlEREREREREREREREREREREREREREREREIiIiIiIiIiIiIiIiIiIiIiIiIimZmZmZmZmZmZmZmZmZmZmZlEREREREREREREREREREREREREREREREREIiIiIiIiIiIiIiIiIiIiIiIimZmZmZmZmZmZmZmZmZmZmZREREREREREREREREREREREREREREREREREIiIiIiIiIiIiIiIiIiIiIiIimZmZmZmZmZmZmZmZmZmZmZREREREREREREREREREREREREREREREREREIiIiIiIiIiIiIiIiIiIiIiIimZmZmZmZmZmZmZmZmZmZmUREREREREREREREREREREREREREREREREREQiIiIiIiIiIiIiIiIiIiIiIimZmZmZmZmZmZmZmZmZmZmUREREREREREREREREREREREREREREREREREQiIiIiIiIiIiIiIiIiIiIiIimZmZmZmZmZmZmZmZmZmZmUREREREREREREREREREREREREREREREREREQiIiIiIiIiIiIiIiIiIiIiIimZmZmZmZmZmpmZmZmZmZlERERERERERERERERERERERERERERERERERERCIiIiIiIiIiIiIiIiIiIiIimZmZmZmZmZqqmZmZmZmZRERERERERERERERERERERERERERERERERERERCIiIiIiIiIiIiIiIiIiIiIimZmZmZmZmaqqqqmZmZmZREREREREREREREREREREREREREREREREREREREIiIiIiIiIiIiIiIiIiIiIiqqqZmZmZqqqqqqqqqqqkREREREREREREREREREREREREREREREREREREREIiIzMzIiIiIiIiIiIiIiIiqqqqqqqqqqqqqqqqqqqkREREREREREREREREREREREREREREREREREREREQjMzMzMyIiIiIiIiIiIiIiqqqqqqqqqqqqqqqqqqqkREREREREREREREREREREREREREREREREREREREMzMzMzMzMzIiIiIiIiIiIiqqqqqqqqqqqqqqqqqqqqREREREREREREREREREREREREREREREREREREREMzMzMzMzMzMiIiIiIiIiIiqqqqqqqqqqqqqqqqqqqqRERERERERERERERERERERERERERERERERERERDMzMzMzMzMzMiIiIiIiIiIiqqqqqqqqqqqqqqqqqqqqRERERERERERERERERERERERERERERERERERERDMzMzMzMzMzMyIiIiIiIiIiqqqqqqqqqqqqqqqqqqqqpERERERERERERERERERERERERERERERERERERDMzMzMzMzMzMyIiIiIiIiIiqqqqqqqqqqqqqqqqqqqqpERERERERFVVREREREREREREREREREREREREMzMzMzMzMzMzMzMiIiIiIiIiqqqqqqqqqqqqqqqqqqqqpERERERERVVVVUREREREREREREREREREREMzMzMzMzMzMzMzMzMzMzIiIjMzqqqqqqqqqqqqqqqqqqqqqkREREREVVVVVVVEREREREREREREREREQzMzMzMzMzMzMzMzMzMzMzMzMzMzqqqqqqqqqqqqqqqqqqqqqqpERERFVVVVVVVVRERVVVVUREREREREMzMzMzMzMzMzMzMzMzMzMzMzMzMzqqqqqqqqqqqqqqqqqqqqqqqkREVVVVVVVVVVVVVVVVVVREREREREMzMzMzMzMzMzMzMzMzMzMzMzMzMzqqqqqqqqqqqqqqqqqqqqqqqqRFVVVVVVVVVVVVVVVVVVVURERERDMzMzMzMzMzMzMzMzMzMzMzMzMzMzqqqqqqqqqqqqqqqqqqqqqqqqpVVVVVVVVVVVVVVVVVVVVVVVVVVTMzMzMzMzMzMzMzMzMzMzMzMzMzMzqqqqqqqqqqqqqqqqqqqqqqqqVVVVVVVVVVVVVVVVVVVVVVVVVVVTMzMzMzMzMzMzMzMzMzMzMzMzMzMzqqqqqqqqqqqqqqqqqqqqqqqqVVVVVVVVVVVVVVVVVVVVVVVVVVVTMzMzMzMzMzMzMzMzMzMzMzMzMzMzqqqqqqqqqqqqqqqqqqqqqqqqVVVVVVVVVVVVVVVVVVVVVVVVVVVVMzMzMzMzMzMzMzMzMzMzMzMzMzMzqqqqqqqqqqqqqqqqqqqqqqqqVVVVVVVVVVVVVVVVVVVVVVVVVVVVMzMzMzMzMzMzMzMzMzMzMzMzMzMzqqqqqqqqqqqqqqqqqqqqqqqqVVVVVVVVVVVVVVVVVVVVVVVVVVVVMzMzMzMzMzMzMzMzMzMzMzMzMzMzqqqqqqqqqqqqqqqqqqqqqqqqVVVVVVVVVVVVVVVVVVVVVVVVVVVVMzMzMzMzMzMzMzMzMzMzMzMzMzMzqqqqqqqqqqqqqqqqqqqqqqqqVVVVVVVVVVVVVVVVVVVVVVVVVVVVMzMzMzMzMzMzMzMzMzMzMzMzMzMzqqqqqqqqqqqqqqqqqqqqqqqqVVVVVVVVVVVVVVVVVVVVVVVVVVVVMzMzMzMzMzMzMzMzMzMzMzMzMzMzqqqqqqqqqqqqu6qqqqqqqqqlVVVVVVVVVVVVVVVVVVVVVVVVVVVVMzMzMzMzMzMzMzMzMzMzMzMzMzMzqqqqqqqqqqqqu7u6qqqqqqqlVVVVVVVVVVVVVVVVVVVVVVVVVVVVMzMzMzMzMzMzMzMzMzMzMzMzMzMzqqqqqqqqqru7u7u7u7uqqqqlVVVVVVVVVVVVVVVVVVVVVVVVVVVVMzMzMzMzMzMzMzMzMzMzMzMzMzMzqqqqqqqqq7u7u7u7u7u7uqqlVVVVVVVVVVVVVVVVVVVVVVVVVVVVUzMzMzMzMzMzMzMzMzMzMzMzMzMzqqqqqqqqq7u7u7u7u7u7u7ulVVVVVVVVVVVVVVVVVVVVVVVVVVVVUzMzMzMzMzMzMzMzMzMzMzMzMzMzqqqqqqqqu7u7u7u7u7u7u7u1VVVVVVVVVVVVVVVVVVVVVVVVVVVVUzMzMzMzMzMzMzMzMzMzMzMzMzMzqqqqqqqqu7u7u7u7u7u7u7u1VVVVVVVVVVVVVVVVVVVVVVVVVVVVVTMzMzMzMzMzMzMzMzMzMzMzMzMzqqqqqqqru7u7u7u7u7u7u7u7VVVVVVVVVVVVVVVVVVVVVVVVVVVVVTMzMzMzMzMzMzMzMzMzMzMzMzMzqqqqqqrMy7u7u7u7u7u7u7u7VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMzMzMzMzMzMzMzMzMzMzMzMzMzqqqqqszMzLu7u7u7u7u7u7u7VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMzMzMzMzMzMzMzMzMzMzMzMzMzqqqszMzMzMy7u7u7u7u7u7u1VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMzMzMzMzMzMzMzMzMzMzMzMzMzqqzMzMzMzMzMu7u7u7u7u7VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMzMzMzMzMzMzMzMzMzMzMzMzMzrMzMzMzMzMzMzLu7u7u7u1VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMzMzMzMzMzMzMzMzMzMzMzMzMzzMzMzMzMzMzMzMzMzMy7tVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUzMzMzMzMzMzMzMzMzMzMzMzMzzMzMzMzMzMzMzMzMzMzMxVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUzMzMzMzMzMzMzMzMzMzMzMzMzzMzMzMzMzMzMzMzMzMzMxVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUzMzMzMzMzMzMzMzMzMzMzMzMzzMzMzMzMzMzMzMzMzMzMxVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUzMzMzMzMzMzMzMzMzMzMzMzMzzMzMzMzMzMzMzMzMzMzMxVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUzMzMzMzMzMzMzMzMzMzMzMzMzzMzMzMzMzMzMzMzMzMzMxVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUzMzMzMzMzMzMzMzMzMzMzMzMzzMzMzMzMzMzMzMzMzMzMxVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUzMzMzMzMzMzMzMzMzMzMzMzMzzMzMzMzMzMzMzMzMzMzMxVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTMzMzMzMzMzMzMzMzMzMzMzMzzMzMzMzMzMzMzMzMzMzMxVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTMzMzMzMzMzMzMzMzMzMzMzMzzMzMzMzMzMzMzMzMzMzMxVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMzMzMzMzMzMzMzMzMzMzMzMzzMzMzMzMzMzMzMzMzMzMxVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMzMzMzMzMzMzMzMzMzMzMzMzzMzMzMzMzMzMzMzMzMzMxVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUzMzMzMzMzMzMzMzMzMzMzMzzMzMzMzMzMzM3dzMzMzMxVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUzMzMzMzMzMzMzMzMzMzMzMzzMzMzMzMzN3d3d3MzMzMxVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTMzMzMzMzMzMzMzMzMzMzMzzMzMzMzM3d3d3d3czMzMxVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMzMzMzMzMzMzMzMzMzMzMzzMzMzMzN3d3d3d3dzMzMVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMzMzMzMzMzMzMzMzMzMzMzzMzMzM3d3d3d3d3d3MzMVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUzMzMzMzMzMzMzMzMzMzMzzMzM3d3d3d3d3d3d3d3MVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUzMzMzMzMzMzMzMzMzMzMzzN3d3d3d3d3d3d3d3d3dVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUzMzMzMzMzMzMzMzMzMzMz3d3d3d3d3d3d3d3d3d3dVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTMzMzMzMzMzMzMzMzMzMz3d3d3d3d3d3d3d3d3d3dVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTMzMzMzMzMzMzMzMzMzMz3d3d3d3d3d3d3d3d3d3d1VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTMzMzMzMzMzMzMzMzMzMz3d3d3d3d3d3d3d3d3d3d1VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMzMzMzMzMzMzMzMzMzMz3d3d3d3d3d3d3d3d3d3d1VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMzMzMzMzMzMzMzMzMzMz3d3d3d3d3d3d3d3d3d3d3VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMzMzMzMzMzMzMzMzMzMz3d3d3d3d3d3d3d3d3d3d3VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUzMzMzMzMzMzMzMzMzMz3d3d3d3d3d3d3d3d3d3d3dVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUzMzMzMzMzMzMzMzMzMz3d3d3d3d3d3d3d3d3d3d3dVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUzMzMzMzMzMzMzMzMzMz7u7u7u7u7u7u7u3d3d3d3dVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTMzMzMzMzMzMzMzMzMz7u7u7u7u7u7u7u7u7u3d3d1VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTMzMzMzMzMzMzMzMzMz7u7u7u7u7u7u7u7u7u7u3d1VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTMzMzMzMzMzMzMzMzMz7u7u7u7u7u7u7u7u7u7u7u1VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMzMzMzMzMzMzMzMzMz7u7u7u7u7u7u7u7u7u7u7u7lVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMzMzMzMzMzMzMzMzMz7u7u7u7u7u7u7u7u7u7u7u7lVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMzMzMzMzMzMzMzMzMz7u7u7u7u7u7u7u7u7u7u7u7uVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUzMzMzMzMzMzMzMzMz7u7u7u7u7u7u7u7u7u7u7u7u5VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUzMzMzMzMzMzMzMzMz7u7u7u7u7u7u7u7u7u7u7u7u7lVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUzMzMzMzMzMzMzMzMz7u7u7u7u7u7u7u7u7u7u7u7u7uVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTMzMzMzMzMzMzMzMz7u7u7u7u7u7u7u7u7u7u7u7u7u5VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTMzMzMzMzMzMzMzMz7u7u7u7u7u7u7u7u7u7u7u7u7u7lVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTMzMzMzMzMzMzMzMz7u7u7u7u7u7u7u7u7u7u7u7u7u7uVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMzMzMzMzMzMzMzMz7u7u7u7u7u7u7u7u7u7u7u7u7u7u5VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMzMzMzMzMzMzMzMz7u7u7u7u7u7u7u7u7u7u7u7u7u7u5VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMzMzMzMzMzMzMzMz7u7u7u7u7u7u7u7u7u7u7u7u7u7u7lVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUzMzMzMzMzMzMzMz7u7u7u7u7u7u7u7u7u7u7u7u7u7u7uVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUzMzMzMzMzMzMzMz7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u5VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUzMzMzMzMzMzMzMz7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7lVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTMzMzMzMzMzMzMz7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7uVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTMzMzMzMzMzMzMz7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u5VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTMzMzMzMzMzMzMz7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7lVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTMzMzMzMzMzMzMz' };
+const LOGO_STROKES = [[1,0.35,0.039,327,41,329,44,332,47,335,50,338,53,341,56,344,58,347,61,350,64,353,67,356,69,359,72,360,72],[1,0.398,0.039,387,41,390,40,393,39,396,37,399,37,402,36,405,35,408,35,411,35,414,36,417,37,419,38],[1,0.446,0.039,390,52,391,55,392,58,393,61,394,64,395,67,394,71,396,73,396,76,396,79,397,82,397,85,397,88,397,91,397,94,396,96],[1,0.493,0.039,411,54,412,57,413,60,414,65,413,68,413,71,413,74,413,77,413,80,412,83,412,86,412,89,410,92,410,95,409,98,408,101,408,102],[1,0.541,0.039,333,95,336,97,339,100,342,102,344,105],[1,0.589,0.059,396,67,399,66,402,65,405,65,408,65,411,64,417,64,420,65,423,65,426,66,429,66,432,69,434,72,435,75,436,78,437,81,438,84,439,87,439,90,440,93,440,96,441,99,441,102,441,105,441,108,441,111,441,114,441,117,441,120,441,123,441,126,441,129,441,132,440,135,439,138,438,140],[1,0.658,0.039,374,80,374,83,374,86,374,89,374,92,374,95,374,98,374,101,374,104,375,107,375,110,375,113,376,116,377,119,378,122,380,125,381,128,382,131,383,134],[1,0.705,0.039,343,133,346,136,348,138,351,141],[1,0.753,0.039,397,112,400,113,403,113,406,115,407,114],[1,0.801,0.039,398,135,401,135,404,135,407,136,410,135,413,136],[1,0.849,0.039,426,129,427,132,430,135,433,137,436,140],[2,0.935,0.039,405,180,406,183,407,186,407,189,408,192,408,195,408,198,407,201,406,204],[2,0.983,0.039,376,196,379,197,382,198,385,201,388,204,390,206],[2,1.031,0.039,391,206,394,206,397,206,400,206,403,205,406,204],[2,1.079,0.039,390,207,389,210,388,213,387,216,384,219,381,222,380,225,376,227,373,229,370,231,367,232,364,234,361,234,358,235,355,237,352,239,352,240],[2,1.126,0.039,406,204,409,207,412,210,415,212,418,213,421,215,422,216],[2,1.174,0.039,380,226,383,229,386,232,388,235,389,238,390,241,390,244,390,245],[2,1.222,0.039,326,275,329,275,332,274,335,273,338,271,341,270,344,268,347,266,350,265,353,263,356,262,359,260,362,259,365,257,368,256,371,255,374,254,377,254,380,253,381,253],[2,1.27,0.039,389,247,386,250,383,253],[2,1.318,0.039,391,246,394,246,397,246,400,246,403,245,406,244,409,244,412,243,415,242,418,242,421,242,424,241,427,241,430,241,433,241,436,241,439,240,442,240,445,240,448,240,451,240,454,240,457,241,459,241],[2,1.365,0.039,382,254,381,257,381,260,380,263,378,266,377,269,375,272,374,275,372,278,370,281,369,284,366,287,363,290,361,292,359,295,358,298,357,301,356,302],[2,1.413,0.039,404,285,407,286,410,287,413,288],[2,1.461,0.039,402,302,405,302,408,302,411,303],[2,1.509,0.08,402,320,401,317,400,314,400,311,400,308,401,305,401,300,401,297,401,294,401,291,401,288,402,283,401,280,401,277,401,274,401,271,402,268,405,266,408,265,411,264,414,263,417,264,420,266,422,269,424,272,425,275,426,278,426,281,427,284,428,287,428,290,428,293,429,296,429,299,429,302,430,305,430,308,430,311,431,314,430,317,430,320,430,323,430,326,430,329,431,332,431,335,432,338,432,340],[3,1.637,0.039,388,360,391,363,392,366,393,369,394,372,394,375,394,378,394,381,394,384],[3,1.684,0.039,350,401,351,404,353,407,355,410,358,413,360,416,362,419,364,422],[3,1.732,0.039,374,393,377,394,380,393,383,391,386,390,389,389,392,387,394,385],[3,1.78,0.039,395,385,398,385,401,385,404,385,407,385,410,386,413,386,416,386,419,387,422,387,425,388,428,389,431,391,434,393,435,396,436,399,437,402],[3,1.828,0.039,378,411,381,412,384,413,387,415,388,416],[3,1.876,0.039,389,416,392,414,395,412,398,411,401,409,404,407],[3,1.923,0.039,388,417,388,420,388,423,388,426],[3,1.971,0.039,387,427,384,429,381,430,378,433,375,436],[3,2.019,0.039,388,427,391,430,394,432,397,435,399,438,401,441,403,444,405,447,406,448],[3,2.067,0.039,426,408,429,408,432,406,435,404,436,403],[3,2.115,0.039,383,446,381,449,380,452,380,455,379,458],[3,2.162,0.039,430,431,428,434,425,436,422,438,419,440,416,442,413,444,410,445,407,448],[3,2.21,0.039,379,458,382,460,384,463,383,466,383,469,382,472],[3,2.258,0.039,368,465,371,463,373,461,376,460,379,458],[3,2.306,0.039,406,449,406,452,403,456,403,459,403,462,403,465,403,468,402,471,402,474,401,477,399,480,396,482],[3,2.354,0.039,407,453,410,455,413,456,416,458,419,460,422,462,425,463,428,465,431,467,434,468,437,470,440,471,443,472,446,474,449,475,452,477,455,477,458,476,459,475],[3,2.401,0.039,382,472,379,474,376,476,373,478,370,481],[3,2.449,0.039,382,472,385,475,388,478,391,480,394,482],[4,2.536,0.039,224,241,227,242,230,243,233,245,236,247,239,250,240,253,242,256,242,259,243,262,244,265,244,268,245,271,245,274,245,277,245,280,245,283,243,285],[4,2.583,0.039,206,283,209,283,212,282,215,281,218,280,221,279,224,278,227,278,230,277,233,277,236,278,239,281,242,284,243,285],[4,2.631,0.039,243,285,244,288,245,291],[4,2.679,0.063,141,340,144,337,147,334,150,332,153,329,156,328,159,326,162,324,165,322,168,321,171,319,174,318,177,316,180,315,183,314,186,313,189,312,192,311,195,310,198,310,201,309,204,308,207,307,210,307,213,306,216,306,219,305,222,305,225,304,228,304,231,303,234,301,237,299,240,297,242,294,244,292],[4,2.751,0.041,246,292,249,293,252,294,255,296,258,297,261,298,264,300,267,301,270,302,273,302,276,303,279,304,282,305,285,306,288,307,291,307,294,308,297,309,300,311,303,313,306,314,309,316,312,317,315,318],[4,2.802,0.061,252,328,249,327,246,326,243,325,240,325,237,325,234,326,231,327,228,329,225,331,224,334,223,337,222,340,222,343,224,346,227,348,230,349,233,350,236,351,239,351,242,352,245,352,248,353,251,353,254,353,257,352,260,351,263,349,264,346,264,343,263,340,262,337,260,334,257,332,254,329,253,328],[5,2.91,0.045,198,388,199,391,199,394,200,397,200,400,198,403,195,405,193,407,190,410,188,413,187,416,186,419,186,422,187,425,188,428,190,431,193,431,196,432,199,431,202,431,205,431,208,430,211,430,214,429,217,428,220,426,221,426],[5,2.965,0.039,244,380,245,383,246,386,246,389,246,392,246,395,246,398,247,401,247,404,249,407,250,410,252,413,253,416],[5,3.013,0.039,252,417,249,420,247,423,247,426,247,429,247,432,248,435,250,438,253,440,256,442,259,444,260,445],[5,3.061,0.039,254,417,257,418,260,418,263,420,266,422,269,424,270,424],[5,3.108,0.039,243,447,244,450,245,453,245,456,245,459,245,462,247,465,248,467],[5,3.156,0.045,190,478,190,475,190,472,191,469,191,466,191,463,191,460,192,457,193,454,196,452,199,451,202,451,205,451,206,454,207,457,207,460,208,463,208,468,208,471,208,474,207,477,208,482,208,485,207,488,207,491,207,494,206,497],[5,3.21,0.039,189,479,192,479,195,479,198,479,201,479,204,479,206,479],[5,3.258,0.039,149,503,151,506,152,509,154,512,155,515,156,518,158,521,159,524,161,527,162,530,164,533,166,536,167,539,168,540],[5,3.306,0.039,248,468,245,471,244,474,244,477,244,480,244,483,245,486,248,488,251,489,254,490,257,489,260,489,263,489,266,488,269,487,272,486,275,485,278,483,280,480,281,479],[5,3.354,0.039,249,468,252,469,255,471,258,472,259,472],[5,3.401,0.039,205,512,208,515,210,518,213,520],[5,3.449,0.039,239,518,241,521,242,522],[5,3.497,0.039,284,515,286,518,288,521,289,524,288,525],[6,1.005,0.031,66,32,65,35,64,38,64,41,64,44,65,47,65,50,66,53,67,56,67,59,68,62,68,65,68,68,68,71,66,74,65,77],[7,1.067,0.031,61,98,64,100,67,102,69,105,70,108,70,109],[7,1.106,0.031,35,124,38,122,41,121,44,120,47,119,50,118,53,117,56,117,59,116,62,116,65,116],[7,1.144,0.031,71,110,74,112,77,112,80,113,83,113,86,115,86,118,87,121,87,124],[7,1.183,0.031,70,111,68,114,66,116],[7,1.221,0.031,66,117,66,120,66,123,66,126,66,127],[7,1.26,0.031,27,143,30,144,33,142,36,140,39,139,42,138,45,136,48,135,51,134,54,133,57,131,60,130,63,129,65,128],[7,1.298,0.031,69,129,72,128,75,128,78,128,81,128,84,127,88,126,91,126,94,126,97,126,100,126,103,127,106,128,108,128],[7,1.337,0.031,69,130,69,133,67,136],[7,1.375,0.031,69,138,66,140,63,142,62,145,62,148,63,151,66,152,69,153,72,153,75,153,78,150,80,148],[7,1.414,0.031,70,138,73,138,76,139,79,142,79,145,80,147],[8,1.476,0.031,49,177,52,180,54,183,56,186,56,189],[8,1.514,0.031,77,168,78,171,79,174,80,177,81,179,81,182,81,185,81,188,83,191,81,195,80,198,80,201,79,204,79,207,77,209],[8,1.553,0.031,39,187,46,187,49,187,52,187,55,190],[8,1.591,0.031,44,188,44,191,44,194,44,195],[8,1.63,0.031,45,196,48,196,51,196,54,196],[8,1.668,0.031,56,191,56,194,55,198,55,201,55,204],[8,1.707,0.031,41,204,44,206,47,207,50,207,53,206,54,205],[8,1.745,0.031,55,205,58,208,61,211,64,213,67,216,68,217],[8,1.784,0.031,84,193,87,195,90,194,93,194],[8,1.822,0.031,74,210,72,212,71,215,69,217],[8,1.861,0.031,58,225,61,224,64,224,67,222,68,221],[8,1.9,0.034,57,226,54,227,53,230,52,233,50,235,50,238,50,241,51,244,54,247,57,248,60,248,63,248,66,249,69,250,74,254,77,256,80,256,83,256,86,255,87,254],[8,1.941,0.031,58,226,60,229,61,232,61,235],[8,1.98,0.031,52,234,55,236,58,236,63,236,66,236,69,236,71,236],[8,2.018,0.031,74,224,77,225,80,225,83,226,86,227,89,230,89,233,89,236,88,239,86,242,83,244,80,245,77,246,75,248],[8,2.057,0.031,73,225,73,228,73,231,72,234,72,239,72,242,72,245,73,248,73,252],[8,2.095,0.031,54,262,57,260,60,259,63,259,66,259,69,256,71,254],[9,2.157,0.031,42,273,42,276,41,279,42,282,41,285,41,288,41,291,41,294,41,297,41,300,42,303,42,306,42,309,43,312,43,315,44,318,45,321,46,324,47,327,48,329],[9,2.196,0.031,94,283,95,285,98,287,98,290,97,293,98,296,98,299,98,302,97,305,98,310,97,310],[9,2.234,0.031,96,308,93,307,90,308,87,309,85,312,86,315,88,317,91,317,94,316,95,313,96,310],[10,2.296,0.031,56,337,54,340,52,343,50,346,49,349,49,352,48,355,47,358,50,360,53,360,56,360,57,360],[10,2.334,0.031,67,350,66,353,66,356,63,357,60,358,57,360],[10,2.373,0.031,57,360,60,363,61,365],[10,2.411,0.031,84,347,87,346,90,346,93,346,94,346],[10,2.45,0.034,83,348,83,351,83,354,84,357,85,362,85,365,85,368,86,371,86,374,87,377,87,380,87,383,87,386,88,389,91,391,94,390,97,389,100,388,103,387,106,386,108,385],[10,2.492,0.031,62,366,62,369,62,371],[10,2.53,0.031,61,372,58,373,55,376,55,379],[10,2.569,0.031,62,372,65,374,65,377,66,381,67,384,67,387,68,390,69,393,69,396,69,399,70,401],[10,2.607,0.031,86,360,89,360,92,360,95,360,98,359,100,358],[10,2.646,0.031,54,380,53,383,53,386,53,389,53,392,53,395,53,398,53,401,53,403],[10,2.684,0.031,55,380,58,381,61,381,64,381,65,381],[10,2.723,0.031,38,411,40,414,43,417,46,420,47,421],[10,2.761,0.031,64,410,66,413,69,412],[10,2.8,0.031,105,407,107,410,109,413,111,414],[11,2.862,0.031,66,428,69,430,72,432,75,434,77,437,77,440,76,443,75,446,75,449,75,452,75,455,77,458,79,461],[12,2.923,0.031,70,477,69,480,69,483,69,486,68,489,68,492,68,499,68,502,70,505,72,509,72,512],[12,2.962,0.031,69,494,72,494,75,495,78,495,82,497,85,498,88,500,91,503,93,506,93,509,94,511],[12,3.0,0.031,67,498,64,499,61,501,59,504,59,507,58,510,59,513,62,515,65,515,68,515,71,513],[12,3.039,0.031,78,498,77,501,75,504,73,506],[13,3.101,0.031,65,528,68,528,71,529,71,532,70,535,70,538,70,541,70,544],[13,3.139,0.031,69,545,66,547,64,550,64,553],[13,3.178,0.032,70,545,73,546,76,548,78,551,80,554,80,557,80,560,80,563,78,566,75,567,73,571,72,574,69,575,66,573,65,570,67,567,70,566,73,566,74,567],[14,3.241,0.031,72,595,70,598,68,601,67,604,67,607,67,610,68,613,68,616,69,619,70,622,71,625,72,628,72,631,72,634,70,637,69,640,68,641]];
+let logoWriter = null;
+
+function buildLogoWriter() {
+  const logo = document.getElementById('openingLogo');
+  const src = logo.querySelector('img').getAttribute('src');
+  const img = new Image();
+  img.onload = () => {
+    try {
+      const W = img.naturalWidth, H = img.naturalHeight;
+      const c = document.createElement('canvas'); c.width = W; c.height = H;
+      const cx = c.getContext('2d', { willReadFrequently: true });
+      cx.drawImage(img, 0, 0);
+      const src = cx.getImageData(0, 0, W, H).data;
+      const raw = atob(LOGO_MAP.data);
+      const cell = new Uint8Array(LOGO_MAP.w * LOGO_MAP.h);
+      for (let i = 0; i < cell.length; i++) { const b = raw.charCodeAt(i >> 1); cell[i] = (i & 1) ? (b & 15) : (b >> 4); }
+      // ① 筆の通り道の点（文字ごと）に、書く時刻を割り当てる
+      const pts = {};   // id -> [x, y, t]
+      LOGO_STROKES.forEach(s => {
+        const id = s[0], ts = s[1], dur = s[2], xy = s.slice(3);
+        const n = xy.length / 2; let L = 0; const cum = [0];
+        for (let i = 1; i < n; i++) { L += Math.hypot(xy[2*i] - xy[2*i-2], xy[2*i+1] - xy[2*i-1]); cum.push(L); }
+        const arr = pts[id] || (pts[id] = []);
+        for (let i = 0; i < n; i++) arr.push([xy[2*i], xy[2*i+1], ts + dur * (L ? cum[i] / L : 0)]);
+      });
+      // 点を粗い格子に入れて、近い点をすばやく探せるようにする
+      const G = 8, gw = Math.ceil(W / G), gh = Math.ceil(H / G), grids = {};
+      Object.keys(pts).forEach(id => {
+        const g = new Array(gw * gh);
+        pts[id].forEach(p => { const k = (p[1] / G | 0) * gw + (p[0] / G | 0); (g[k] || (g[k] = [])).push(p); });
+        grids[id] = g;
+      });
+      const endT = {}; Object.keys(pts).forEach(id => { endT[id] = Math.max.apply(null, pts[id].map(p => p[2])); });
+      // ② インクのある画素ごとに「書かれる時刻」を決める
+      const idx = [], alp = [], tm = [];
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        const a = src[(y * W + x) * 4 + 3]; if (a <= 8) continue;
+        const id = cell[Math.min(LOGO_MAP.h - 1, y >> 2) * LOGO_MAP.w + Math.min(LOGO_MAP.w - 1, x >> 2)];
+        const g = grids[id]; let t = null;
+        if (g) {
+          let best = 1e9; const gx = x / G | 0, gy = y / G | 0;
+          for (let r = 1; r <= 6 && t === null; r++) {
+            for (let yy = Math.max(0, gy - r); yy <= Math.min(gh - 1, gy + r); yy++) for (let xx = Math.max(0, gx - r); xx <= Math.min(gw - 1, gx + r); xx++) {
+              const l = g[yy * gw + xx]; if (!l) continue;
+              for (let i = 0; i < l.length; i++) { const d = (l[i][0] - x) * (l[i][0] - x) + (l[i][1] - y) * (l[i][1] - y); if (d < best) { best = d; t = l[i][2]; } }
+            }
+          }
+        }
+        if (t === null) t = endT[id] !== undefined ? endT[id] : 0;
+        idx.push((y * W + x) * 4); alp.push(a); tm.push(t);
+      }
+      const out = document.createElement('canvas'); out.width = W; out.height = H; out.className = 'logo-write';
+      const ox = out.getContext('2d'); const im = ox.createImageData(W, H); const od = im.data;
+      for (let i = 0; i < idx.length; i++) { od[idx[i]] = 28; od[idx[i] + 1] = 22; od[idx[i] + 2] = 18; }
+      ox.putImageData(im, 0, 0);
+      const RAMP = 0.05; let raf = 0;
+      logoWriter = {
+        play() {
+          cancelAnimationFrame(raf);
+          const t0 = performance.now();
+          const step = now => {
+            const t = (now - t0) / 1000; let alive = false;
+            for (let i = 0; i < idx.length; i++) {
+              let k = (t - tm[i]) / RAMP; if (k <= 0) { od[idx[i] + 3] = 0; alive = true; continue; }
+              od[idx[i] + 3] = k >= 1 ? alp[i] : alp[i] * k;
+              if (k < 1) alive = true;
+            }
+            ox.putImageData(im, 0, 0);
+            if (alive) raf = requestAnimationFrame(step);
+          };
+          raf = requestAnimationFrame(step);
+        },
+        showAll() { cancelAnimationFrame(raf); for (let i = 0; i < idx.length; i++) od[idx[i] + 3] = alp[i]; ox.putImageData(im, 0, 0); }
+      };
+      logo.appendChild(out); logo.classList.add('written');
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) logoWriter.showAll();
+      else if (!hasSkipped) { logoWriter.play(); scheduleStamp(3750); }
+    } catch (e) { logo.classList.add('fallback'); scheduleStamp(2600); }
+  };
+  img.onerror = () => { logo.classList.add('fallback'); scheduleStamp(2600); };
+  img.src = src;
 }
+buildLogoWriter();
 
 /* 画像のパス解決（本番はファイル名のまま） */
 function imgSrc(n) { return (window.__IMG && window.__IMG[n]) || n; }
+
+/* ============ オープニング：足跡と背景 ============ */
+const openingStamp = document.getElementById('openingStamp');
+let stampTimer = null;
+function scheduleStamp(delayMs) {
+  clearTimeout(stampTimer);
+  openingStamp.classList.remove('pop');
+  stampTimer = setTimeout(() => {
+    if (hasSkipped) return;
+    openingStamp.classList.add('pop');
+    try { if (navigator.vibrate) navigator.vibrate(18); } catch (e) {}
+  }, delayMs);
+}
+(function initOpeningExtras() {
+  const m = imgSrc('ashi.webp');
+  openingStamp.style.webkitMaskImage = 'url("' + m + '")';
+  openingStamp.style.maskImage = 'url("' + m + '")';
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) return;
+  for (let i = 0; i < 18; i++) {
+    const e = document.createElement('span'); e.className = 'ember';
+    const s = 3 + Math.random() * 5;
+    e.style.cssText = 'left:' + (6 + Math.random() * 88) + '%;top:' + (6 + Math.random() * 88) + '%;width:' + s + 'px;height:' + s + 'px;' +
+      '--d:' + (8 + Math.random() * 6) + 's;--w:-' + (Math.random() * 10) + 's;--o:' + (0.35 + Math.random() * 0.45) + ';--dx:' + (Math.random() * 40 - 20) + 'px';
+    openingScreen.insertBefore(e, openingScreen.firstChild);
+  }
+})();
 
 /* ============ アコーディオン開閉 ============ */
 function toggleAccordion(element) {
@@ -1961,20 +2238,19 @@ function showMaterialDetail(key, element) {
 
 /* ============ 銘柄データ ============ */
 const sakeItems = [
-  { name: "<span class='region-label'>[奈良]</span><ruby>春鹿<rt>はるしか</rt></ruby> 超辛口 純米酒", desc: "奈良の老舗「今西清兵衛商店」が造る、辛口日本酒の代名詞とも言える名酒。穏やかな香りとまろやかな旨味の後に、スパーンと切れる潔い後味がやってきます。冷やでもお燗でも、どんな料理にもピタリと寄り添う万能な食中酒です。" },
-  { name: "<span class='region-label'>[埼玉]</span><ruby>彩來<rt>さら</rt></ruby> 宵の月 純米吟醸生酒", desc: "埼玉県・北西酒造が手がける、透明感とフルーティーさが魅力の銘柄。マスカットやメロンを思わせる華やかな香りに、お米の優しい甘みと美しい酸味が絶妙に調和しています。日本酒を飲み慣れない方にもおすすめの瑞々しい一杯です。" },
+  { name: "<span class='region-label'>[奈良]</span><ruby>春鹿<rt>はるしか</rt></ruby> 超辛口 純米酒", desc: "奈良の老舗「今西清兵衛商店」が造る、辛口日本酒の代名詞とも言える名酒。穏やかな香りとまろやかな旨味の後に、スパーンと切れる潔い後味がやってきます。冷やでもお燗でも楽しめる、懐の深い一本です。" },
+  { name: "<span class='region-label'>[山形]</span><ruby>出羽桜<rt>でわざくら</rt></ruby> 桜花吟醸酒", desc: "1980年の発売以来、「吟醸酒」という言葉を世に知らしめた歴史的な名酒。青リンゴや洋梨を思わせる、華やかでフルーティーな香りの素晴らしさは今も色褪せません。軽快でスッキリとした味わいは、ワイングラスで楽しむのもおすすめです。" },
   { name: "<span class='region-label'>[山形]</span><ruby>くどき上手<rt>くどきじょうず</rt></ruby> ばくれん", desc: "華やかな香りが特徴の山形「亀の井酒造」が、あえて造り上げた「超辛口（日本酒度+20）」の吟醸酒。「ばくれん」とはお転婆娘の意味。ほのかなフルーティーさを漂わせつつ、飲んだ瞬間にキリッと喉を駆け抜ける痛快なキレの良さがたまりません。" },
-  { name: "<span class='region-label'>[岐阜]</span><ruby>三千盛<rt>みちざかり</rt></ruby> 純米大吟醸 辛口", desc: "「甘口にあらずんば酒にあらず」と言われた時代から、一貫して辛口の美学を追求し続ける岐阜の名蔵元の代表作。大吟醸ならではの極めてクリアな口当たりの中に、お米の旨みが息づいています。お刺身など繊細な和食と合わせたいドライでシャープな一本です。" },
-  { name: "<span class='region-label'>[群馬]</span><ruby>聖<rt>ひじり</rt></ruby> 雄町50DOPE生酛 純米大吟醸雄町100％", desc: "群馬県「聖酒造」が、伝統的な「生酛（きもと）造り」をモダンに表現した意欲作。酒米のルーツ「雄町」を100%使用しています。生酛由来の奥深く複雑な旨味と、ヨーグルトのような爽やかな酸味が織りなす、ジューシーでリッチな飲み応え抜群のお酒です。" },
+  { name: "<span class='region-label'>[岐阜]</span><ruby>三千盛<rt>みちざかり</rt></ruby> 純米大吟醸 から口", desc: "「甘口にあらずんば酒にあらず」と言われた時代から、一貫して辛口の美学を追求し続ける岐阜の名蔵元の代表作。大吟醸ならではの極めてクリアな口当たりの中に、お米の旨みが息づいています。ドライでシャープな「から口」の一本です。" },
+  { name: "<span class='region-label'>[兵庫]</span><ruby>播州一献<rt>ばんしゅういっこん</rt></ruby> 純米吟醸 <ruby>愛山<rt>あいやま</rt></ruby>", desc: "兵庫県の蔵元「山陽盃酒造」が醸す一本。使われている「愛山」は、生産量が少なく希少とされる酒米で、まろやかな甘みと奥行きのある旨みを生むといわれます。純米吟醸ならではの上品な香りと、ふくらみのある味わいをお楽しみください。" },
   { name: "<span class='region-label'>[岐阜]</span><ruby>久寿玉<rt>くすだま</rt></ruby> 超辛口 特別本醸造", desc: "飛騨高山で最も古い歴史を持つ「平瀬酒造店」が醸す、地元で愛され続ける超辛口。飛騨の厳しい寒さの中で造られたこのお酒は、スッキリとした軽快な口当たりの中に、お米の輪郭を感じる旨みがあります。熱燗にしても味が崩れず、ホッと落ち着く味わいです。" },
   { name: "<span class='region-label'>[岩手]</span><ruby>南部美人<rt>なんぶびじん</rt></ruby> 特別純米酒", desc: "世界最大規模のワイン品評会で「チャンピオン・サケ」に輝いたこともある、日本を代表する特別純米酒。岩手の豊かな自然が育んだ、ふわりと優しい果実のような香りと、ふくよかな旨みが口いっぱいに広がります。誰が飲んでも美味しいと思える究極のスタンダードです。" },
-  { name: "<span class='region-label'>[佐賀]</span><ruby>鍋島<rt>なべしま</rt></ruby> 夏吟醸 Summer Moon 吟醸", desc: "九州を代表する佐賀の銘酒「鍋島」が夏限定でリリースする、星空ラベルが美しい一本。夏の夜風のように爽やかで清涼感のある香りが特徴です。ほんのりとした優しい甘みと、スッキリとしたキレのある後味が、暑さを忘れさせてくれます。" },
-  { name: "<span class='region-label'>[山形]</span><ruby>出羽桜<rt>でわざくら</rt></ruby> 桜花吟醸酒", desc: "1980年の発売以来、「吟醸酒」という言葉を世に知らしめた歴史的な名酒。青リンゴや洋梨を思わせる、華やかでフルーティーな香りの素晴らしさは今も色褪せません。軽快でスッキリとした味わいは、ワイングラスで楽しむのもおすすめです。" },
-  { name: "<span class='region-label'>[石川]</span><ruby>五凛<rt>ごりん</rt></ruby> 純米酒", desc: "石川の銘酒「天狗舞」の蔵元が、料理と一緒に楽しむために立ち上げたブランド。なめらかな口当たりとお米の旨みがしっかりと感じられ、飲み飽きしない見事なバランスを保っています。美味しい料理をさらに美味しく引き立ててくれる最高の名脇役です。" },
-  { name: "<span class='region-label'>[山口]</span><ruby>貴<rt>たか</rt></ruby> 濃醇辛口純米", desc: "山口県「永山本家酒造場」が造る、力強さとキレを兼ね備えた純米酒。一般的な辛口の「スッキリ」としたイメージとは異なり、お米の旨みと骨格のある酸味がしっかり感じられる「濃醇（のうじゅん）」な味わいが特徴。お肉料理や味の濃いおつまみと抜群の相性です。" },
-  { name: "<span class='region-label'>[京都]</span><ruby>澤屋<rt>さわや</rt></ruby>まつもと 守破離 愛山", desc: "伝統を守りつつ新たな境地を開く京都の「守破離（しゅはり）」シリーズ。幻の酒米「愛山」を使用しています。開栓直後の微炭酸を含んだフレッシュな口当たりと、深く上品な甘み、それを引き締める上質な酸味が口の中で見事なハーモニーを奏でます。" },
+  { name: "<span class='region-label'>[滋賀]</span><ruby>萩乃露<rt>はぎのつゆ</rt></ruby> <ruby>芳弥<rt>よしや</rt></ruby>X 特別純米 生酛<span class='limited-label'>数量限定酒</span>", desc: "滋賀県高島市の蔵元「福井弥平商店」が醸す、数量限定の特別純米酒。「生酛（きもと）」は、蔵に棲む乳酸菌の力を借りて酒母を育てる昔ながらの造りで、しっかりとしたコクと、きれいな酸味を持つ味わいになるのが特徴です。限られた本数のみの出会いをお楽しみください。" },
   { name: "<span class='region-label'>[長野]</span><ruby>甍<rt>いらか</rt></ruby>（銀・紅）ひとごこち 無濾過原酒瓶燗", desc: "酒米「ひとごこち」を使用し、お酒本来の風味を逃さないよう「無濾過原酒」のまま瓶ごと丁寧に加熱殺菌（瓶燗）したこだわりの一本。お米のふくよかな旨みとコクがギュッと詰まっており、一口飲むごとに豊かな香りと深い余韻が押し寄せる満足度の高い味わいです。" },
-  { name: "<span class='region-label'>[愛媛]</span><ruby>石鎚<rt>いしづち</rt></ruby> 極み辛口本醸造", desc: "「食中酒の極み」を目標に掲げる愛媛県「石鎚酒造」が、毎日の晩酌のために造り上げた辛口酒。派手な香りはありませんが、穏やかでホッとする香りと、水の良さを感じる滑らかな飲み口が魅力。飲み進めるほどに旨みが増し、気がつけば杯が空になってしまうお酒です。" }
+  { name: "<span class='region-label'>[愛知]</span><ruby>三河武士<rt>みかわぶし</rt></ruby> 純米 火入れ", desc: "愛知県岡崎市で、元禄三年（1690年）の創業から酒造りを続ける「丸石醸造」の純米酒。精米歩合は70%で、お米本来の旨みがしっかり感じられます。「火入れ」とは、貯蔵や出荷の前に加熱して酒質を安定させる工程のこと。落ち着いた味わいで、じっくり向き合える一本です。" },
+  { name: "<span class='region-label'>[秋田]</span><ruby>春霞<rt>はるがすみ</rt></ruby> 純米吟醸 六号酵母", desc: "秋田県美郷町の蔵元「栗林酒造店」が醸す純米吟醸。「六号酵母」は、秋田の「新政酒造」で見つかった酵母で、穏やかで上品な香りと、すっきりとしたきれいな味わいを生むといわれます。秋田酒造りの歴史を感じられる一杯です。" },
+  { name: "<span class='region-label'>[愛媛]</span><ruby>石鎚<rt>いしづち</rt></ruby> 極み辛口本醸造", desc: "「食中酒の極み」を目標に掲げる愛媛県「石鎚酒造」が、毎日の晩酌のために造り上げた辛口酒。派手な香りはありませんが、穏やかでホッとする香りと、水の良さを感じる滑らかな飲み口が魅力。飲み進めるほどに旨みが増し、気がつけば杯が空になってしまうお酒です。" },
+  { name: "<span class='region-label'>[岐阜]</span><ruby>百十郎<rt>ひゃくじゅうろう</rt></ruby> 純米大吟醸 <ruby>黒面<rt>くろづら</rt></ruby>", desc: "岐阜県羽島市の蔵元「林本店」が醸す純米大吟醸。「百十郎」は、同蔵で近年生まれた銘柄で、ラベルや名前の個性も印象的です。純米大吟醸ならではの華やかな香りと、透明感のある味わいをお楽しみください。" }
 ];
 
 const shochuGroups = [
@@ -2014,12 +2290,6 @@ const shochuGroups = [
     label: "黒糖",
     items: [
       { name: "<span class='region-label'>[鹿児島]</span><ruby>紅さんご<rt>べにさんご</rt></ruby>", desc: "奄美大島で造られる黒糖焼酎を、オーク樽でじっくりと熟成。まるで上質なラム酒やブランデーを思わせる芳醇な甘い香りと、深くまろやかなコクが楽しめます。ロックでゆっくりと味わいたい琥珀色の一杯です。" }
-    ]
-  },
-  {
-    label: "その他",
-    items: [
-      { name: "<span class='rare-label'>【レア酒】</span><ruby>酒粕焼酎 田酒<rt>さけかすしょうちゅう でんしゅ</rt></ruby>", desc: "青森の銘酒「田酒」の酒粕を贅沢に使用。吟醸香のような華やかでフルーティーな香りと、スッキリとした味わいが特徴。度数30度でしっかりとした飲みごたえがあります。" }
     ]
   }
 ];
@@ -2097,6 +2367,9 @@ function goScreen(name){
   backBtn.onclick = () => goScreen(backMap[name] || 'top');
 
   window.scrollTo(0, 0);
+  if (typeof revealPoints === 'function') revealPoints(name);
+  if (typeof hideJumpPill === 'function' && !window.__jumping) hideJumpPill();
+  if (typeof saveResume === 'function') saveResume(name);
 }
 
 /* ============ 銘柄一覧の描画 ============ */
@@ -2106,7 +2379,13 @@ function renderList(wrapId, dataGroups, isSake) {
   
   let html = '';
   if (isSake) {
-    html = dataGroups.map(item => `
+    const regionOf = {'山形':'東北','岩手':'東北','秋田':'東北','岐阜':'中部','長野':'中部','愛知':'中部','奈良':'近畿','兵庫':'近畿','滋賀':'近畿','愛媛':'四国'};
+    const order = ['東北','中部','近畿','四国'];
+    const groups = order.map(label => ({ label, items: dataGroups.filter(it => {
+      const m = it.name.match(/\[([^\]]+)\]/); return m && regionOf[m[1]] === label; }) })).filter(g => g.items.length);
+    groups.forEach(group => {
+      html += `<div class="sub-heading mt-24">${group.label}</div>`;
+      html += group.items.map(item => `
       <div class="accordion-item" onclick="toggleAccordion(this)">
         <div class="accordion-header">
           <div>${item.name}</div>
@@ -2115,6 +2394,7 @@ function renderList(wrapId, dataGroups, isSake) {
         <div class="accordion-body">${item.desc}</div>
       </div>
     `).join('');
+    });
   } else {
     dataGroups.forEach(group => {
       html += `<div class="sub-heading mt-24">${group.label}</div>`;
@@ -2450,7 +2730,7 @@ function initProgress() {
     const items = progressItems(sec);
     progressState[name] = { total: items.length, done: 0 };
     items.forEach(el => { el.dataset.track = '1'; });
-    if (items.length >= 3) {
+    if (false) {
       const bar = document.createElement('div');
       bar.className = 'progress';
       bar.dataset.for = name;
@@ -2550,7 +2830,7 @@ function cardTitle(el) {
   const t = el.querySelector('.accordion-header > div');
   if (!t) return '';
   const c = t.cloneNode(true);
-  c.querySelectorAll('rt, small').forEach(x => x.remove());
+  c.querySelectorAll('rt, small, .limited-label').forEach(x => x.remove());
   return c.textContent.replace(/\s+/g, ' ').trim();
 }
 
@@ -2685,13 +2965,29 @@ function initGuides() {
 }
 
 /* ============ ご感想（自由記述） ============ */
+function showThanks(fb) {
+  const g = fb.querySelector('.guide');
+  g.querySelector('.guide-img').src = imgSrc('komeo1.webp');
+  fb.dataset.thanked = '1';
+  let ig = fb.querySelector('.insta');
+  if (!ig) {
+    ig = document.createElement('div');
+    ig.className = 'insta';
+    ig.innerHTML = '<a href="https://instagram.com/shukouya_wagakuma?obrf=MXZ0MWQ3N2JpZXU2dQ%3D%3D" target="_blank" rel="noopener noreferrer" aria-label="インスタグラム（酒肴家 吾熊）"><img src="' + imgSrc('instagram.webp') + '" alt="" width="64" height="64"><span class="insta-cap">タップして、インスタグラムを見る</span></a>';
+    g.insertAdjacentElement('afterend', ig);
+    ig.querySelector('a').addEventListener('click', () => sendData({ type: 'card', detail: 'インスタグラム' }));
+  }
+  requestAnimationFrame(() => ig.classList.add('show'));
+  sayGuide(g, 'ありがとうございました！<br>よかったらインスタグラムも<wbr>チェックしてください！<br>主におすすめや日本酒について<wbr>ご紹介しています！');
+}
+
 function initFeedback() {
   document.querySelectorAll('.feedback').forEach(fb => {
     const g = fb.querySelector('.guide');
     const form = fb.querySelector('.feedback-form');
     const ta = fb.querySelector('textarea');
     const btn = fb.querySelector('.feedback-send');
-    g.addEventListener('guidedone', () => form.classList.add('show'));
+    g.addEventListener('guidedone', () => { if (!fb.dataset.thanked) form.classList.add('show'); });
     ta.addEventListener('input', () => { btn.disabled = ta.value.trim().length === 0; });
     btn.addEventListener('click', () => {
       const text = ta.value.trim();
@@ -2699,8 +2995,21 @@ function initFeedback() {
       sendData({ type: 'feedback', text: text, from: fb.closest('.screen').dataset.screen });
       form.classList.remove('show');
       form.classList.add('sent');
-      g.querySelector('.guide-img').src = imgSrc('komeo1.webp');
-      sayGuide(g, '送信しました。<br>ご協力、<wbr>ありがとうございました。');
+      showThanks(fb);
+    });
+  });
+  // 「最初の画面に戻る」：まだお礼を話していなければ、先にキャラクターが話す
+  document.querySelectorAll('.back-home-btn').forEach(b => {
+    b.removeAttribute('onclick');
+    b.addEventListener('click', () => {
+      const fb = b.closest('.screen').querySelector('.feedback');
+      if (fb && !fb.dataset.thanked) {
+        fb.querySelector('.feedback-form').classList.remove('show');
+        showThanks(fb);
+        fb.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+      goScreen('top');
     });
   });
 }
@@ -2868,6 +3177,396 @@ function initPolishWhat() {
   });
 }
 
+
+/* ============ 見出しごとの折りたたみ ============ */
+function makeFold(titleHTML, nodes, anchor) {
+  const fold = document.createElement('div');
+  fold.className = 'fold';
+  fold.innerHTML = '<button type="button" class="fold-head" aria-expanded="false">' +
+    '<span class="fold-title">' + titleHTML + '</span>' +
+    '<span class="fold-cue"><span class="fold-cue-text">タップで開く</span>' +
+    '<svg class="fold-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>' +
+    '</button><div class="fold-body"><div class="fold-inner"></div></div>';
+  const inner = fold.querySelector('.fold-inner');
+  anchor.parentNode.insertBefore(fold, anchor);
+  nodes.forEach(n => inner.appendChild(n));
+  const head = fold.querySelector('.fold-head');
+  const cue = fold.querySelector('.fold-cue-text');
+  head.addEventListener('click', () => {
+    const open = fold.classList.toggle('open');
+    head.setAttribute('aria-expanded', open ? 'true' : 'false');
+    cue.textContent = open ? '閉じる' : 'タップで開く';
+  });
+}
+
+function initFolds() {
+  // ① 小見出し（.sub-heading）ごとに、次の小見出しまでを折りたたむ
+  const parents = new Set();
+  document.querySelectorAll('.screen .sub-heading').forEach(h => parents.add(h.parentNode));
+  parents.forEach(parent => {
+    const kids = Array.from(parent.children);
+    const heads = kids.filter(k => k.classList.contains('sub-heading'));
+    const screen = parent.closest('.screen').dataset.screen;
+    // 見出しが1つだけの画面は、折りたたんでも短くならないのでそのまま
+    heads.forEach(h => {
+      const nodes = [];
+      let n = h.nextElementSibling;
+      while (n && !n.classList.contains('sub-heading') && !n.classList.contains('primary-btn') && !n.classList.contains('feedback')) {
+        nodes.push(n); n = n.nextElementSibling;
+      }
+      makeFold(h.innerHTML, nodes, h);
+      h.remove();
+    });
+  });
+  // ② 特定名称酒の画面：2つの図解を折りたたむ
+  const st = document.querySelector('.screen[data-screen="sake-types"]');
+  if (st) {
+    [['polishBox', 'お米を削ってみましょう'], ['sakeMatrix', '特定名称酒の早見表']].forEach(([id, title]) => {
+      const box = document.getElementById(id);
+      if (!box) return;
+      const nodes = [box];
+      const nx = box.nextElementSibling;
+      if (nx && nx.classList.contains('quiz-box')) nodes.push(nx);
+      makeFold(title, nodes, box);
+    });
+  }
+}
+
+
+/* ============ 読みやすさ（文ごとの改行・要点マーカー・要点＋くわしく） ============ */
+function splitSentences(html) {
+  const out = []; let cur = '', depth = 0, inTag = false;
+  for (const ch of html) {
+    cur += ch;
+    if (ch === '<') inTag = true;
+    else if (ch === '>') inTag = false;
+    else if (!inTag) {
+      if ('「（('.includes(ch)) depth++;
+      else if ('」）)'.includes(ch)) depth = Math.max(0, depth - 1);
+      else if ((ch === '。' || ch === '！' || ch === '？') && depth === 0) { out.push(cur); cur = ''; }
+    }
+  }
+  if (cur.replace(/<[^>]*>|\s/g, '')) out.push(cur);
+  return out;
+}
+
+function markTerms(root) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(n) {
+      const p = n.parentNode;
+      if (!p || p.closest('rt, small, .mk, button, .acc-hint')) return NodeFilter.FILTER_REJECT;
+      return /「[^」]{1,14}」/.test(n.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+    }
+  });
+  const nodes = []; while (walker.nextNode()) nodes.push(walker.currentNode);
+  nodes.forEach(n => {
+    const frag = document.createDocumentFragment();
+    n.nodeValue.split(/(「[^」]{1,14}」)/).forEach(part => {
+      if (/^「[^」]{1,14}」$/.test(part)) { const m = document.createElement('span'); m.className = 'mk'; m.textContent = part; frag.appendChild(m); }
+      else if (part) frag.appendChild(document.createTextNode(part));
+    });
+    n.parentNode.replaceChild(frag, n);
+  });
+}
+
+function breakAfterSentences(root) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(n) { return n.parentNode.closest('rt, small, button') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT; }
+  });
+  const nodes = []; while (walker.nextNode()) nodes.push(walker.currentNode);
+  nodes.forEach(n => {
+    const v = n.nodeValue;
+    if (v.indexOf('。') < 0) return;
+    const frag = document.createDocumentFragment();
+    let depth = 0, buf = '';
+    for (let i = 0; i < v.length; i++) {
+      const ch = v[i]; buf += ch;
+      if ('「（'.includes(ch)) depth++;
+      else if ('」）'.includes(ch)) depth = Math.max(0, depth - 1);
+      else if (ch === '。' && depth === 0) {
+        const rest = v.slice(i + 1);
+        const atEnd = !rest.trim() && !(n.nextSibling && n.nextSibling.nodeName !== 'BR' && n.nextSibling.nodeType === 1 && false);
+        frag.appendChild(document.createTextNode(buf)); buf = '';
+        const nextIsBr = !rest.trim() ? (n.nextSibling && n.nextSibling.nodeName === 'BR') : /^\s*$/.test('');
+        const isLast = !rest.trim() && !n.nextSibling;
+        if (!isLast && !nextIsBr) frag.appendChild(document.createElement('br'));
+      }
+    }
+    if (buf) frag.appendChild(document.createTextNode(buf));
+    n.parentNode.replaceChild(frag, n);
+  });
+}
+
+function initReadable() {
+  // ① アコーディオンの解説：要点（最初の文）＋「くわしく見る」
+  document.querySelectorAll('.accordion-body').forEach(body => {
+    const html = body.innerHTML;
+    if (/<br|<ul|<ol|<table|<img/i.test(html)) { markTerms(body); breakAfterSentences(body); return; }
+    const sents = splitSentences(html.trim());
+    if (sents.length <= 1) { markTerms(body); return; }
+    let leadN = 1;
+    if (sents[0].replace(/<[^>]*>/g, '').length < 22 && sents.length > 3) leadN = 2;
+    const mk = arr => arr.map(t => '<span class="sent">' + t.trim() + '</span>').join('');
+    if (sents.length - leadN <= 1) {
+      // 2文だけの短い解説：そのまま文ごとに改行（折りたたまない）
+      body.innerHTML = '<span class="lead sent">' + sents[0].trim() + '</span>' + mk(sents.slice(1));
+    } else {
+      body.innerHTML = '<span class="lead sent">' + sents.slice(0, leadN).map(t => t.trim()).join('') + '</span>' +
+        '<button type="button" class="more-btn" aria-expanded="false"><span class="more-txt">くわしく見る</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
+        '<div class="more-body" hidden>' + mk(sents.slice(leadN)) + '</div>';
+      const btn = body.querySelector('.more-btn'), more = body.querySelector('.more-body'), txt = body.querySelector('.more-txt');
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const open = more.hidden; more.hidden = !open;
+        btn.classList.toggle('on', open);
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        txt.textContent = open ? '閉じる' : 'くわしく見る';
+      });
+    }
+    markTerms(body);
+  });
+  // ② 導入文などの本文：文ごとに改行＋要点マーカー
+  document.querySelectorAll('.screen:not([data-screen="top"]) .article-text').forEach(p => {
+    if (p.closest('.diagram, .feedback')) return;
+    breakAfterSentences(p); markTerms(p);
+  });
+}
+
+
+/* ============ 3つのポイントを順番に表示 ============ */
+function initPoints() {
+  document.querySelectorAll('.screen[data-screen$="-intro"] .glass-box > .article-text').forEach(p => {
+    const heads = Array.from(p.children).filter(c => c.tagName === 'SPAN' && /display:\s*block/.test(c.getAttribute('style') || ''));
+    if (heads.length < 2) return;
+    const groups = [];
+    Array.from(p.childNodes).forEach(n => {
+      if (n === heads[groups.length]) groups.push([n]);
+      else if (groups.length) groups[groups.length - 1].push(n);
+      else if (n.nodeType === 3 && !n.nodeValue.trim()) return;
+    });
+    groups.forEach(g => {
+      while (g.length && ((g[g.length - 1].nodeName === 'BR') || (g[g.length - 1].nodeType === 3 && !g[g.length - 1].nodeValue.trim()))) {
+        const x = g.pop(); x.parentNode.removeChild(x);
+      }
+      const w = document.createElement('div'); w.className = 'pt';
+      g[0].parentNode.insertBefore(w, g[0]);
+      g.forEach(n => w.appendChild(n));
+    });
+    p.dataset.points = '1';
+    p.addEventListener('click', () => showPoints(p, true));
+  });
+}
+
+
+function slowScrollTo(y, ms) {
+  const start = window.scrollY, d = y - start;
+  if (Math.abs(d) < 8) return;
+  let stop = false;
+  const cancel = () => { stop = true; ['touchstart', 'wheel', 'keydown', 'mousedown'].forEach(t => window.removeEventListener(t, cancel)); };
+  ['touchstart', 'wheel', 'keydown', 'mousedown'].forEach(t => window.addEventListener(t, cancel, { passive: true }));
+  const t0 = performance.now();
+  (function step(now) {
+    if (stop) return;
+    const k = Math.min(1, (now - t0) / ms);
+    const e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    window.scrollTo(0, start + d * e);
+    if (k < 1) requestAnimationFrame(step); else cancel();
+  })(t0);
+}
+
+function scrollAfterPoints(p) {
+  const sec = p.closest('.screen');
+  if (!sec || !sec.classList.contains('active') || window.scrollY > 30) return;   // 自分でスクロールした場合は動かさない
+  const box = p.closest('.glass-box') || p;
+  const r = box.getBoundingClientRect();
+  const target = window.scrollY + r.bottom - window.innerHeight * 0.5;
+  const max = document.documentElement.scrollHeight - window.innerHeight;
+  const y = Math.min(target, max);
+  if (y > window.scrollY + 8) slowScrollTo(y, 2400);
+}
+
+function showPoints(p, all) {
+  const items = Array.from(p.querySelectorAll('.pt:not(.in)'));
+  if (all || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    (p._timers || []).forEach(clearTimeout);
+    items.forEach(x => x.classList.add('in')); return;
+  }
+  if (p._started) return;
+  p._started = true; p._timers = [];
+  items.forEach((x, i) => p._timers.push(setTimeout(() => x.classList.add('in'), 900 + i * 1500)));
+  p._timers.push(setTimeout(() => scrollAfterPoints(p), 900 + items.length * 1500 + 300));
+}
+
+function revealPoints(name) {
+  const p = document.querySelector('.screen[data-screen="' + name + '"] .article-text[data-points]');
+  if (p) showPoints(p, false);
+}
+
+
+/* ============ ラベルの言葉（タグ・手引き）と、元の場所へ戻る ============ */
+const LABEL_TERMS = {
+  '純米大吟醸': { screen: 'sake-types', mcell: 'jundai' }, '純米吟醸': { screen: 'sake-types', mcell: 'junginjo' },
+  '特別純米': { screen: 'sake-types', mcell: 'tokujun' }, '純米': { screen: 'sake-types', mcell: 'jun' },
+  '大吟醸': { screen: 'sake-types', mcell: 'dai' }, '吟醸': { screen: 'sake-types', mcell: 'gin' },
+  '特別本醸造': { screen: 'sake-types', mcell: 'tokuhon' }, '本醸造': { screen: 'sake-types', mcell: 'hon' },
+  '生酛': { screen: 'sake-methods', acc: '生酛造り' }, '山廃': { screen: 'sake-methods', acc: '山廃造り' },
+  '火入れ': { screen: 'sake-methods', el: 'hiireDiagram' }, '生酒': { screen: 'sake-methods', acc: '生酒' },
+  '原酒': { screen: 'sake-methods', acc: '原酒' }, '無濾過': { screen: 'sake-methods', acc: '無濾過' },
+  '辛口': { screen: 'sake-intro', flip: true }, '超辛口': { screen: 'sake-intro', flip: true }, 'から口': { screen: 'sake-intro', flip: true },
+  '本格焼酎': { screen: 'shochu-labels', acc: '本格焼酎' }, '甲類': { screen: 'shochu-labels', acc: '焼酎甲類' },
+  '黒麹': { screen: 'shochu-labels', acc: '黒麹' }, '白麹': { screen: 'shochu-labels', acc: '白麹' }, '黄麹': { screen: 'shochu-labels', acc: '黄麹' },
+  '常圧蒸留': { screen: 'shochu-labels', acc: '常圧蒸留' }, '減圧蒸留': { screen: 'shochu-labels', acc: '減圧蒸留' },
+  'モルト': { screen: 'whisky-types', acc: 'モルト' }, 'グレーン': { screen: 'whisky-types', acc: 'グレーン' }, 'ブレンデッド': { screen: 'whisky-types', acc: 'ブレンデッド' },
+  'スコッチ': { screen: 'world-whisky', acc: 'スコッチ' }, 'バーボン': { screen: 'world-whisky', acc: 'バーボン（' },
+  'ジャパニーズ': { screen: 'world-whisky', acc: 'ジャパニーズ' }, 'アイリッシュ': { screen: 'world-whisky', acc: 'アイリッシュ' }, 'カナディアン': { screen: 'world-whisky', acc: 'カナディアン' },
+  'ピート': { screen: 'whisky-deep', acc: 'スモーキー' }, 'バーボン樽': { screen: 'whisky-deep', acc: 'バーボン樽' },
+  'シェリー樽': { screen: 'whisky-deep', acc: 'シェリー樽' }, 'ミズナラ樽': { screen: 'whisky-deep', acc: 'ミズナラ樽' }
+};
+
+const SAKE_TAGS = {
+  '春鹿': ['純米', '超辛口'], '出羽桜': ['吟醸'], '三千盛': ['純米大吟醸', 'から口'], '播州一献': ['純米吟醸'],
+  '久寿玉': ['超辛口', '特別本醸造'], '南部美人': ['特別純米'], '萩乃露': ['特別純米', '生酛'], '甍': ['無濾過', '原酒'],
+  '三河武士': ['純米', '火入れ'], '春霞': ['純米吟醸'], '石鎚': ['辛口', '本醸造'], '百十郎': ['純米大吟醸']
+};
+
+const LABEL_GUIDE = {
+  'our-sake': [['種類', ['純米大吟醸', '純米吟醸', '特別純米', '純米', '大吟醸', '吟醸', '特別本醸造', '本醸造']], ['造り・仕上げ', ['生酛', '山廃', '火入れ', '生酒', '原酒', '無濾過']], ['味わい', ['辛口']]],
+  'our-shochu': [['種類', ['本格焼酎', '甲類']], ['麹', ['黒麹', '白麹', '黄麹']], ['蒸留', ['常圧蒸留', '減圧蒸留']]],
+  'our-whisky': [['原料', ['モルト', 'グレーン', 'ブレンデッド']], ['産地', ['スコッチ', 'バーボン', 'ジャパニーズ', 'アイリッシュ', 'カナディアン']], ['個性', ['ピート', 'バーボン樽', 'シェリー樽', 'ミズナラ樽']]]
+};
+
+function plainTitle(el) {
+  const c = el.cloneNode(true);
+  c.querySelectorAll('rt, small, .limited-label').forEach(x => x.remove());
+  return c.textContent.replace(/\s+/g, '');
+}
+
+function openFoldOf(el) {
+  let f = el.closest('.fold');
+  while (f) {
+    if (!f.classList.contains('open')) f.querySelector('.fold-head').click();
+    f = f.parentElement && f.parentElement.closest('.fold');
+  }
+}
+
+let jumpReturn = null;
+function hideJumpPill() {
+  const p = document.getElementById('jumpPill');
+  if (p) p.classList.remove('show');
+  jumpReturn = null;
+}
+function showJumpPill(fromScreen, y) {
+  let p = document.getElementById('jumpPill');
+  if (!p) {
+    p = document.createElement('button');
+    p.id = 'jumpPill'; p.type = 'button';
+    p.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg><span></span>';
+    p.addEventListener('click', () => {
+      const r = jumpReturn; if (!r) return;
+      goScreen(r.screen);
+      setTimeout(() => window.scrollTo(0, r.y), 30);
+    });
+    document.body.appendChild(p);
+  }
+  p.querySelector('span').textContent = (screenLabels[fromScreen] || '前の画面').split('｜').pop() + 'にもどる';
+  jumpReturn = { screen: fromScreen, y: y };
+  requestAnimationFrame(() => p.classList.add('show'));
+}
+
+function jumpToTerm(label) {
+  const t = LABEL_TERMS[label];
+  if (!t) return;
+  const from = currentScreen, y = window.scrollY;
+  goScreen(t.screen);
+  const sec = document.querySelector('.screen[data-screen="' + t.screen + '"]');
+  let target = null;
+  if (t.mcell) {
+    target = sec.querySelector('.mcell[data-key="' + t.mcell + '"]');
+    if (target) { openFoldOf(target); target.click(); }
+  } else if (t.el) {
+    target = document.getElementById(t.el); if (target) openFoldOf(target);
+  } else if (t.flip) {
+    target = sec.querySelector('.flip-card');
+    if (target) target.classList.add('is-flipped');
+  } else if (t.acc) {
+    const items = Array.from(sec.querySelectorAll('.accordion-item'));
+    target = items.find(i => plainTitle(i.querySelector('.accordion-header > div')) === t.acc) ||
+             items.find(i => plainTitle(i.querySelector('.accordion-header > div')).indexOf(t.acc) >= 0);
+    if (target) { openFoldOf(target); if (!target.classList.contains('open')) toggleAccordion(target); }
+  }
+  showJumpPill(from, y);
+  logCard(label);
+  if (target) {
+    setTimeout(() => {
+      const r = target.getBoundingClientRect();
+      slowScrollTo(Math.max(0, window.scrollY + r.top - 110), 700);
+      target.classList.add('jump-hl');
+      setTimeout(() => target.classList.remove('jump-hl'), 2600);
+    }, 420);
+  }
+}
+
+function makeTag(label) {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'tag'; b.textContent = label;
+  b.addEventListener('click', e => { e.stopPropagation(); jumpToTerm(label); });
+  return b;
+}
+
+function initTags() {
+  // ① 銘柄の解説の下に「ラベルの言葉」
+  document.querySelectorAll('#ourSakeList .accordion-item').forEach(item => {
+    const title = plainTitle(item.querySelector('.accordion-header > div'));
+    const key = Object.keys(SAKE_TAGS).find(k => title.indexOf(k) >= 0);
+    if (!key) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'tags';
+    wrap.innerHTML = '<span class="tags-cap">ラベルの言葉</span>';
+    SAKE_TAGS[key].forEach(l => wrap.appendChild(makeTag(l)));
+    wrap.addEventListener('click', e => e.stopPropagation());
+    item.querySelector('.accordion-body').appendChild(wrap);
+  });
+  // ② 「ラベルの言葉を読み解く」手引き
+  Object.keys(LABEL_GUIDE).forEach(name => {
+    const list = document.querySelector('.screen[data-screen="' + name + '"] [id^="our"][id$="List"]');
+    if (!list) return;
+    const box = document.createElement('div');
+    box.className = 'label-guide';
+    box.innerHTML = '<p>瓶のラベルで見かけた言葉を、タップしてください。意味の解説へご案内します。</p>';
+    LABEL_GUIDE[name].forEach(([cap, terms]) => {
+      const g = document.createElement('div'); g.className = 'tag-group';
+      g.innerHTML = '<div class="tag-group-cap">' + cap + '</div>';
+      const row = document.createElement('div'); row.className = 'tag-row';
+      terms.forEach(l => row.appendChild(makeTag(l)));
+      g.appendChild(row); box.appendChild(g);
+    });
+    makeFold('ラベルの言葉を読み解く', [box], list);
+  });
+}
+
+/* ============ 途中からの再開 ============ */
+const RESUME_KEY = 'wagakuma_resume';
+function saveResume(name) {
+  try {
+    if (name === 'top') return;
+    if (name.indexOf('our-') === 0) { localStorage.removeItem(RESUME_KEY); return; }
+    localStorage.setItem(RESUME_KEY, JSON.stringify({ s: name, t: Date.now() }));
+  } catch (e) {}
+}
+function initResume() {
+  let r = null;
+  try { r = JSON.parse(localStorage.getItem(RESUME_KEY) || 'null'); } catch (e) {}
+  if (!r || !screenLabels[r.s] || Date.now() - r.t > 6 * 3600 * 1000) return;
+  const wrap = document.querySelector('.screen[data-screen="top"] .top-categories-wrap');
+  if (!wrap) return;
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'resume-pill';
+  b.innerHTML = '<span class="resume-cap">前回の続きから</span><span class="resume-name"></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  b.querySelector('.resume-name').textContent = screenLabels[r.s];
+  b.addEventListener('click', () => { sendData({ type: 'card', detail: '続きから' }); goScreen(r.s); });
+  wrap.parentNode.insertBefore(b, wrap);
+}
+
 /* ============ 初期化 ============ */
 renderList('ourSakeList', sakeItems, true);
 renderList('ourShochuList', shochuGroups, false);
@@ -2879,12 +3578,17 @@ initPolish();
 initDistill();
 initHiire();
 initBlend();
+initFolds();
+initPoints();
+initReadable();
+initTags();
 initProgress();
 initGuides();
 initFeedback();
 initIntro();
 if (SURVEY_CONFIG.trackOpen) sendData({ type: 'open' });
 goScreen('top');
+initResume();
 </script>
 
 </body>
