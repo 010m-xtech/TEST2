@@ -1104,12 +1104,23 @@
   @keyframes frameFade { 0% { opacity: 0; } 100% { opacity: 1; } }
   #openingScreen:not(.settled) .ember { display: none !important; }
   #openingScreen.settled #openingGlow { animation: glowBreath 4.5s ease-in-out infinite alternate !important; }
+  /* オープニング：動画（スマホでも滑らか）。再生できない時は従来の描画に切り替える */
+  #openingVideo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; opacity: 0; pointer-events: none; background: transparent; }
+  #openingScreen.vid #openingVideo { opacity: 1; }
+  #openingScreen.vid #openingLogo, #openingScreen.vid #openingGlow, #openingScreen.vid .ember { display: none !important; }
+  #openingScreen { transition: opacity 1.5s cubic-bezier(.4,0,.2,1) !important; }
+  #openingVideo { transition: opacity .4s ease, transform 1.6s ease-out; }
+  #openingScreen.leaving #openingVideo { transform: scale(1.05); }
+  #openingScreen.leaving #openingFrame { opacity: 0 !important; transition: opacity .8s ease; }
+  .intro-inner { transition: opacity .5s ease; }
+  body.intro-wait .intro-inner { opacity: 0 !important; }
 </style>
 </head>
-<body class="opening">
+<body class="opening intro-wait">
 
 <!-- オープニング画面 -->
 <div id="openingScreen" class="play">
+  <video id="openingVideo" muted playsinline webkit-playsinline preload="auto"></video>
   <div id="openingWave"></div>
   <div id="openingFrame"></div>
   <div id="openingGlow"></div>
@@ -2067,13 +2078,15 @@ function endOpening() {
   hasSkipped = true;
   clearTimeout(openingTimer);
   if (typeof flushInits === 'function') flushInits();
+  document.body.classList.remove('opening');          // 裏の画面を先に表示し、ゆっくり重ねて切り替える
+  openingScreen.classList.add('leaving');
   openingScreen.style.opacity = '0';
-  setTimeout(() => { openingScreen.style.display = 'none'; }, 900);
+  setTimeout(() => { openingScreen.style.display = 'none'; openingScreen.classList.remove('leaving'); }, 1600);
   setTimeout(() => {
-    document.body.classList.remove('opening');
+    document.body.classList.remove('intro-wait');
     startIntro();
     resumeGuides();
-  }, 500);
+  }, 1000);
 }
 
 function startOpening() {
@@ -2084,6 +2097,7 @@ function startOpening() {
   openingScreen.classList.remove('play');
   void openingScreen.offsetWidth;
   openingScreen.classList.add('play');
+  { const v = document.getElementById('openingVideo'); if (v && openingScreen.classList.contains('vid')) { try { v.currentTime = 0; v.play(); } catch (e) {} } }
   if (typeof logoWriter !== 'undefined' && logoWriter) { if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) logoWriter.showAll(); else { logoWriter.play(); scheduleStamp(3750); } }
   const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   clearTimeout(openingTimer);
@@ -2231,7 +2245,20 @@ function setupLogoWriter(logo, W, H, r) {
   else if (!hasSkipped) { logoWriter.play(); scheduleStamp(3750); }
 }
 
-buildLogoWriter();
+(function () {
+  const v = document.getElementById('openingVideo');
+  let decided = false;
+  const useCanvas = () => { if (decided) return; decided = true; try { v.pause(); } catch (e) {} buildLogoWriter(); };
+  const useVideo = () => { if (decided) return; decided = true; openingScreen.classList.add('vid'); if (!hasSkipped && isFinite(v.duration)) { clearTimeout(openingTimer); openingTimer = setTimeout(endOpening, Math.max(1500, (v.duration - v.currentTime) * 1000 + 700)); } };
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!v || reduce) { useCanvas(); return; }
+  v.muted = true; v.setAttribute('playsinline', ''); v.setAttribute('webkit-playsinline', '');
+  v.addEventListener('playing', useVideo, { once: true });
+  v.addEventListener('error', useCanvas, { once: true });
+  v.src = imgSrc('opening.mp4');
+  try { const pr = v.play(); if (pr && pr.catch) pr.catch(useCanvas); } catch (e) { useCanvas(); }
+  setTimeout(() => { if (!decided) useCanvas(); }, 1500);
+})();
 
 /* 画像のパス解決（本番はファイル名のまま） */
 function imgSrc(n) { return (window.__IMG && window.__IMG[n]) || n; }
@@ -2240,6 +2267,7 @@ function imgSrc(n) { return (window.__IMG && window.__IMG[n]) || n; }
 const openingStamp = document.getElementById('openingStamp');
 let stampTimer = null;
 function scheduleStamp(delayMs) {
+  if (openingScreen.classList.contains('vid')) return;
   clearTimeout(stampTimer);
   openingStamp.classList.remove('pop');
   stampTimer = setTimeout(() => {
