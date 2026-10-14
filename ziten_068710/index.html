@@ -1018,7 +1018,7 @@
   /* 一画ずつ書かれる */
   #openingLogo:not(.written):not(.fallback) .lg { visibility: hidden; }
   #openingLogo.written .lg { display: none; }
-  #openingLogo .logo-write { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; }
+  #openingLogo .logo-write { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; transform: translateZ(0); will-change: transform; }
 
   /* オープニング：足跡のスタンプと、背景のゆらぎ */
   #openingStamp {
@@ -1096,6 +1096,7 @@
   #openingFrame::after { border-color: rgba(80,56,36,.28) !important; }
   .ember { background: radial-gradient(circle, rgba(201,160,70,.95) 0%, rgba(201,160,70,.45) 48%, transparent 74%) !important; }
   #openingStamp { background: #b9402b; }
+  .fold-title span { white-space: normal !important; }
 </style>
 </head>
 <body class="opening">
@@ -2140,28 +2141,40 @@ function buildLogoWriter() {
         if (t === null) t = endT[id] !== undefined ? endT[id] : 0;
         idx.push((y * W + x) * 4); alp.push(a); tm.push(t);
       }
+      const n = idx.length;
+      const xs = new Uint16Array(n), ys = new Uint16Array(n), A = new Uint8Array(n), T = new Float32Array(n), P = new Int32Array(n);
+      for (let i = 0; i < n; i++) { P[i] = idx[i]; const pix = idx[i] >> 2; xs[i] = pix % W; ys[i] = (pix / W) | 0; A[i] = alp[i]; T[i] = tm[i]; }
+      // 書かれる順に並べる（時刻ごとの区分けで高速に）
+      const BK = 6000, cnt = new Int32Array(BK + 2);
+      for (let i = 0; i < n; i++) cnt[Math.min(BK, (T[i] * 1000) | 0) + 1]++;
+      for (let k = 1; k < cnt.length; k++) cnt[k] += cnt[k - 1];
+      const ord = new Int32Array(n);
+      for (let i = 0; i < n; i++) ord[cnt[Math.min(BK, (T[i] * 1000) | 0)]++] = i;
       const out = document.createElement('canvas'); out.width = W; out.height = H; out.className = 'logo-write';
       const ox = out.getContext('2d'); const im = ox.createImageData(W, H); const od = im.data;
-      for (let i = 0; i < idx.length; i++) { od[idx[i]] = 28; od[idx[i] + 1] = 22; od[idx[i] + 2] = 18; }
+      for (let i = 0; i < n; i++) { od[P[i]] = 28; od[P[i] + 1] = 22; od[P[i] + 2] = 18; }
       ox.putImageData(im, 0, 0);
-      const RAMP = 0.05; let raf = 0;
+      const RAMP = 0.06; let raf = 0;
       logoWriter = {
         play() {
           cancelAnimationFrame(raf);
-          const t0 = performance.now();
+          for (let i = 0; i < n; i++) od[P[i] + 3] = 0;
+          ox.putImageData(im, 0, 0);
+          let head = 0, tail = 0, t0 = 0;
           const step = now => {
-            const t = (now - t0) / 1000; let alive = false;
-            for (let i = 0; i < idx.length; i++) {
-              let k = (t - tm[i]) / RAMP; if (k <= 0) { od[idx[i] + 3] = 0; alive = true; continue; }
-              od[idx[i] + 3] = k >= 1 ? alp[i] : alp[i] * k;
-              if (k < 1) alive = true;
-            }
-            ox.putImageData(im, 0, 0);
-            if (alive) raf = requestAnimationFrame(step);
+            if (!t0) t0 = now;
+            const t = (now - t0) / 1000;
+            let x0 = W, y0 = H, x1 = -1, y1 = -1;
+            const mark = i => { const x = xs[i], y = ys[i]; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; };
+            while (tail < n && T[ord[tail]] <= t) tail++;
+            while (head < tail && T[ord[head]] <= t - RAMP) { const i = ord[head]; od[P[i] + 3] = A[i]; mark(i); head++; }
+            for (let k = head; k < tail; k++) { const i = ord[k]; od[P[i] + 3] = A[i] * ((t - T[i]) / RAMP); mark(i); }
+            if (x1 >= 0) ox.putImageData(im, 0, 0, x0, y0, x1 - x0 + 1, y1 - y0 + 1);
+            if (head < n) raf = requestAnimationFrame(step);
           };
           raf = requestAnimationFrame(step);
         },
-        showAll() { cancelAnimationFrame(raf); for (let i = 0; i < idx.length; i++) od[idx[i] + 3] = alp[i]; ox.putImageData(im, 0, 0); }
+        showAll() { cancelAnimationFrame(raf); for (let i = 0; i < n; i++) od[P[i] + 3] = A[i]; ox.putImageData(im, 0, 0); }
       };
       logo.appendChild(out); logo.classList.add('written');
       if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) logoWriter.showAll();
@@ -2194,7 +2207,7 @@ function scheduleStamp(delayMs) {
   openingStamp.style.maskImage = 'url("' + m + '")';
   const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduce) return;
-  for (let i = 0; i < 18; i++) {
+  for (let i = 0; i < 10; i++) {
     const e = document.createElement('span'); e.className = 'ember';
     const s = 3 + Math.random() * 5;
     e.style.cssText = 'left:' + (6 + Math.random() * 88) + '%;top:' + (6 + Math.random() * 88) + '%;width:' + s + 'px;height:' + s + 'px;' +
@@ -2327,7 +2340,7 @@ const whiskyGroups = [
     ]
   },
   {
-    label: "<span style='font-size: 12.5px; letter-spacing: -0.05em; white-space: nowrap;'>バーボン（アメリカ産・トウモロコシ51％以上）</span>",
+    label: "バーボン<wbr>（アメリカ産・<wbr>トウモロコシ51％以上）",
     items: [
       { name: "<span class='region-label'>[アメリカ]</span>メーカーズマーク", desc: "一般的なバーボンの原料とは異なり、パンなどにも使われる「小麦」を多めに使用。ふっくらとした優しい甘みと、絹のようになめらかな口当たりが特徴です。" },
       { name: "<span class='region-label'>[アメリカ]</span>I・Wハーパー", desc: "洗練されたスタイリッシュなバーボン。雑味が少なくとてもクリアな味わいで、ほんのりとした甘さが魅力です。" },
