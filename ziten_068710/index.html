@@ -2998,6 +2998,8 @@ function sayGuide(g, html) {
 
 function maybeSay(g) {
   if (g.dataset.said || guidesPaused()) return;
+  const sc = g.closest('.screen'), pp = sc && sc.querySelector('.article-text[data-points]');
+  if (pp && pp._ptsDone === false && (pp.compareDocumentPosition(g) & Node.DOCUMENT_POSITION_FOLLOWING)) return;   // 3つのポイントの表示が終わってから話す
   const r = g.getBoundingClientRect();
   if (r.height === 0) return;
   if (r.top < window.innerHeight * 0.92 && r.bottom > 60) {
@@ -3476,7 +3478,11 @@ function scrollAfterPoints(p) {
   if (!sec || !sec.classList.contains('active') || window.scrollY > 30) return;   // 自分でスクロールした場合は動かさない
   const box = p.closest('.glass-box') || p;
   const r = box.getBoundingClientRect();
-  const target = window.scrollY + r.bottom - window.innerHeight * 0.5;
+  let target = window.scrollY + r.bottom - window.innerHeight * 0.5;
+  if (sec.dataset.screen === 'shochu-intro') {          // 焼酎：「醸造と蒸留のちがい」の図まで、ゆっくり
+    const dg = sec.querySelector('.diagram');
+    if (dg) target = window.scrollY + dg.getBoundingClientRect().top - 70;
+  }
   const max = document.documentElement.scrollHeight - window.innerHeight;
   const y = Math.min(target, max);
   if (y > window.scrollY + 8) slowScrollTo(y, 2400);
@@ -3486,11 +3492,12 @@ function showPoints(p, all) {
   const items = Array.from(p.querySelectorAll('.pt:not(.in)'));
   if (all || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     (p._timers || []).forEach(clearTimeout);
-    items.forEach(x => x.classList.add('in')); return;
+    items.forEach(x => x.classList.add('in')); p._ptsDone = true; resumeGuides(); return;
   }
   if (p._started) return;
   p._started = true; p._timers = [];
   items.forEach((x, i) => p._timers.push(setTimeout(() => x.classList.add('in'), 900 + i * 1500)));
+  p._timers.push(setTimeout(() => { p._ptsDone = true; resumeGuides(); }, 900 + items.length * 1500 + 200));
   p._timers.push(setTimeout(() => scrollAfterPoints(p), 900 + items.length * 1500 + 300));
 }
 
@@ -3501,7 +3508,7 @@ function revealPoints(name) {
   const jumping = !!window.__jumping;
   if (!jumping) {                       // 開くたびに、最初からポンポンと表示する
     (p._timers || []).forEach(clearTimeout);
-    p._started = false;
+    p._started = false; p._ptsDone = false;
     p.querySelectorAll('.pt.in').forEach(x => x.classList.remove('in'));
     void p.offsetWidth;
   }
