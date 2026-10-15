@@ -55,7 +55,7 @@
     opacity: 1;
   }
   #bg-video-op {
-    filter: brightness(2.5);
+    filter: none;
   }
   .bg-video-overlay{
     position:absolute; inset:0;
@@ -737,7 +737,7 @@
 <div class="bg-video-wrap">
   <!-- OP動画: 初回のみ読み込む(preload=none。JSが再生を開始) -->
   <video id="bg-video-op" muted playsinline preload="none">
-    <source src="title3.mp4" type="video/mp4">
+    <source src="opening.mp4" type="video/mp4">
   </video>
   <video id="bg-video-main-1" muted playsinline preload="auto">
     <source src="back.mp4" type="video/mp4">
@@ -1457,8 +1457,8 @@ function goBack() {
 }
 
 /* ============ OP ============
-   当初と同じ流れ: 動画を最後まで再生 → ロゴを表示(1秒かけて) → 3秒後に水槽へ。タップでスキップ。
-   ※動画が再生できない・終わらない場合に備えて、ロゴを出して進む保険を入れています。 */
+   流れ: ロゴのアニメーション動画(約5.6秒)を最後まで再生 → そのまま水槽へ。タップでスキップ。
+   ※動画が再生できない・終わらない場合に備えて、静止のロゴを出して進む保険を入れています。 */
 let opTimer = null, opGuard = null, opLogoShown = false;
 
 function showOpLogo(){
@@ -1471,7 +1471,7 @@ function showOpLogo(){
 function startOp(){
   goScreen('op');
   const v = document.getElementById('bg-video-op');
-  v.addEventListener('ended', showOpLogo);
+  v.addEventListener('ended', () => { if (!opLogoShown) { opLogoShown = true; finishOp(); } });   // ロゴは動画の中に入っているので、動画が終わったらそのまま次へ
   v.addEventListener('error', showOpLogo);
   const sources = v.querySelectorAll('source');
   if (!sources.length) showOpLogo();                // 動画ファイルが指定されていない
