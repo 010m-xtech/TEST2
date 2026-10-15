@@ -94,32 +94,54 @@ h1{font-family:var(--serif);font-weight:700;font-size:clamp(28px,4.6vw,38px);mar
 .d-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:2px}
 .tag{font-size:12px;font-weight:700;color:#fff;background:var(--pc);border-radius:999px;padding:1px 10px;letter-spacing:.04em}
 .d-no{font-family:var(--serif);font-size:13px;color:var(--muted);letter-spacing:.1em}
-.detail h2{margin:4px 0 14px;font-family:var(--serif);font-weight:700;font-size:22px;line-height:1.4;letter-spacing:.04em;
+.detail h2{margin:4px 0 14px;font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.4;letter-spacing:.04em;
   color:#fff;background:var(--pc);border-radius:12px;padding:10px 18px}
-.time{margin:-4px 0 14px;font-size:14px;color:var(--muted)}
+.time{margin:-4px 0 20px;font-size:15px;color:var(--muted)}
 .time b{color:var(--fg);margin-right:6px}
-.detail ul{margin:0 0 20px;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
-.detail li{position:relative;padding:0 0 0 22px;font-size:15px}
-.detail li::before{content:"";position:absolute;left:4px;top:.65em;width:6px;height:6px;border-radius:50%;background:var(--pc)}
-.links{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}
-.links a{display:inline-flex;align-items:center;gap:10px;text-decoration:none;color:#fff;background:var(--pc);border:2px solid var(--pc);border-radius:12px;
-  padding:12px 22px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 0 color-mix(in srgb,var(--pc) 60%,#000);transition:transform .15s,box-shadow .15s,filter .15s}
-.links a::before{content:"📄";font-size:16px}
-.links a:hover{transform:translateY(-2px);filter:brightness(1.08);box-shadow:0 6px 0 color-mix(in srgb,var(--pc) 60%,#000)}
-.links a:active{transform:translateY(3px);box-shadow:0 1px 0 color-mix(in srgb,var(--pc) 60%,#000)}
-.links a:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
-.links a.todo{color:var(--muted);border-style:dashed;border-color:#d8c9a6;cursor:default;background:var(--soft);box-shadow:none;transform:none;filter:none}
-.nav{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.nav button{all:unset;cursor:pointer;font-weight:700;font-size:15px;padding:12px 24px;border-radius:999px;color:var(--fg);border:2px solid var(--line);background:var(--card);transition:transform .15s,background .15s,border-color .15s}
+.sub{display:flex;align-items:center;gap:10px;margin:0 0 10px;font-size:13px;font-weight:700;color:var(--pc);letter-spacing:.08em}
+.sub::after{content:"";flex:1;height:1px;background:var(--line)}
+.detail ul{margin:0 0 22px;padding:0;list-style:none;counter-reset:todo}
+.detail li{counter-increment:todo;display:flex;align-items:flex-start;gap:14px;padding:14px 2px;border-bottom:1px dashed var(--line);
+  font-size:18px;font-weight:700;line-height:1.6}
+.detail li:first-child{padding-top:4px}
+.detail li::before{content:counter(todo);flex:none;width:30px;height:30px;margin-top:.5px;border-radius:50%;display:grid;place-items:center;
+  background:var(--pc);color:#fff;font-family:var(--serif);font-size:15px;font-weight:700}
+
+/* 資料ボタン */
+.links{display:flex;flex-direction:column;gap:12px;margin-bottom:6px}
+.links a{display:flex;align-items:center;gap:14px;min-height:68px;padding:10px 14px;text-decoration:none;color:var(--fg);
+  background:#fff;border:2px solid var(--pc);border-radius:16px;box-shadow:0 5px 0 color-mix(in srgb,var(--pc) 70%,#000);
+  cursor:pointer;transition:transform .15s,box-shadow .15s,background .15s}
+.links .ic{flex:none;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:22px;background:color-mix(in srgb,var(--pc) 14%,#fff)}
+.links .lb2{flex:1;display:flex;flex-direction:column;line-height:1.35}
+.links .lb2 b{font-size:17px}
+.links .lb2 small{font-size:12px;color:var(--muted);font-weight:700}
+.links .go{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--pc);color:#fff;font-size:20px;font-weight:700;transition:transform .2s}
+.links a:hover{background:color-mix(in srgb,var(--pc) 7%,#fff);transform:translateY(-2px);box-shadow:0 7px 0 color-mix(in srgb,var(--pc) 70%,#000)}
+.links a:hover .go{transform:translateX(4px)}
+.links a:active{transform:translateY(4px);box-shadow:0 1px 0 color-mix(in srgb,var(--pc) 70%,#000)}
+.links a:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+.links a.todo{cursor:default;border:2px dashed #d8c9a6;box-shadow:none;background:var(--soft);transform:none}
+.links a.todo .ic{background:#efe6d2;filter:grayscale(1);opacity:.7}
+.links a.todo b{color:var(--muted)}
+.links a.todo .go{background:#d8c9a6;font-size:11px;width:auto;padding:0 10px;height:26px;border-radius:999px}
+
+/* 前へ・次へ */
+.nav{display:flex;justify-content:space-between;gap:12px;margin-top:26px;padding-top:20px;border-top:1px solid var(--line)}
+.nav button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;justify-content:center;gap:2px;min-height:64px;
+  padding:10px 24px;border-radius:16px;font-weight:700;font-size:16px;line-height:1.3;color:var(--fg);background:#fff;border:2px solid var(--line);
+  box-shadow:0 4px 0 var(--line);transition:transform .15s,box-shadow .15s,border-color .15s}
+.nav button small{font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.7}
 .nav button:hover{border-color:var(--fg);transform:translateY(-2px)}
-.nav button.next{margin-left:auto;background:var(--fg);color:var(--card);border-color:var(--fg);padding:12px 30px;box-shadow:0 4px 0 #000}
-.nav button.next:active{transform:translateY(3px);box-shadow:none}
-.nav button.next:hover{background:var(--pc);border-color:var(--pc)}
-.nav button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.nav button.next{margin-left:auto;text-align:right;min-width:260px;padding:10px 28px;background:var(--fg);color:var(--card);border-color:var(--fg);
+  box-shadow:0 5px 0 #000;font-size:18px}
+.nav button.next:hover{background:var(--pc);border-color:var(--pc);box-shadow:0 7px 0 color-mix(in srgb,var(--pc) 60%,#000)}
+.nav button:active{transform:translateY(4px);box-shadow:none}
+.nav button:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
 .nav button[hidden]{display:none}
 
 /* 写真 */
-.d-body{display:grid;grid-template-columns:1fr 300px;gap:24px;align-items:start}
+.d-body{display:grid;grid-template-columns:1fr 360px;gap:32px;align-items:start}
 .photo{margin:0;border-radius:14px;overflow:hidden;aspect-ratio:4/3;background:var(--soft);border:1px solid var(--line)}
 .photo img{display:block;width:100%;height:100%;object-fit:cover}
 .photo.contain{background:#2e2d2b}
@@ -167,9 +189,12 @@ h1{font-family:var(--serif);font-weight:700;font-size:clamp(28px,4.6vw,38px);mar
   .pd .lb{margin:0;text-align:left;font-size:12px}
   .pd .lb b{display:inline;font-size:14px;margin:0 6px}
   .pd .rg{display:inline}
-  .links a{flex:1 1 100%;justify-content:center}
-  .nav button{padding:11px 18px;font-size:14px}
-  .nav button.next{padding:11px 22px}
+  .detail li{font-size:16px;gap:12px;padding:12px 0}
+  .detail li::before{width:26px;height:26px;font-size:13px}
+  .links a{min-height:60px}
+  .links .lb2 b{font-size:15px}
+  .nav{flex-direction:column-reverse}
+  .nav button,.nav button.next{width:100%;min-width:0;text-align:center;align-items:center;font-size:16px}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
@@ -354,11 +379,12 @@ function show(i){
   stopDemo();
   drive(i); highlight(i);
   const s=STEPS[i], p=phaseOf(s.phase);
+  const btn=(l,sub,go)=>`<span class="ic" aria-hidden="true">📄</span><span class="lb2"><b>${esc(l.label)}</b><small>${sub}</small></span><span class="go" aria-hidden="true">${go}</span>`;
   const links=s.links.map(l=> l.url
     ? (isSite(l.url)
-        ? `<a href="${esc(l.url)}" target="_top">${esc(l.label)} →</a>`
-        : `<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)} ↗</a>`)
-    : `<a class="todo" aria-disabled="true">${esc(l.label)}（準備中）</a>`).join("");
+        ? `<a href="${esc(l.url)}" target="_top">${btn(l,"クリックしてページを開く","→")}</a>`
+        : `<a href="${esc(l.url)}" target="_blank" rel="noopener">${btn(l,"クリックして資料を開く（別タブ）","↗")}</a>`)
+    : `<a class="todo" aria-disabled="true">${btn(l,"ただいま準備中です","準備中")}</a>`).join("");
   const photo=s.photo
     ? `<figure class="photo${s.photoFit==="contain"?" contain":""}"><img src="${esc(s.photo)}" alt="${esc(s.photoAlt||plain(s.title))}" loading="lazy"></figure>`
     : `<figure class="photo empty" aria-hidden="true"><span>${s.icon||"📷"}</span>写真準備中</figure>`;
@@ -368,12 +394,13 @@ function show(i){
     ${periodOf(i)?`<p class="time">⏱ 期間の目安：<b>${esc(plain(periodOf(i).time))}</b>${esc(periodOf(i).note)}</p>`:""}
     ${i===STEPS.length-1?GOAL:""}
     <div class="d-body"><div>
+      <p class="sub">やること</p>
       <ul>${s.todo.map(t=>`<li>${esc(t)}</li>`).join("")}</ul>
-      ${links?`<div class="links">${links}</div>`:""}
+      ${links?`<p class="sub">使う資料</p><div class="links">${links}</div>`:""}
     </div>${photo}</div>
     <div class="nav">
-      <button type="button" class="prev"${i===0?" hidden":""}>← 前のステップ</button>
-      <button type="button" class="next">${i===STEPS.length-1?"①に戻って次のサイクルへ ↻":"次のステップへ →"}</button>
+      <button type="button" class="prev"${i===0?" hidden":""}><small>← 前のステップ</small>${i>0?`${nums[i-1]} ${esc(plain(STEPS[i-1].title))}`:""}</button>
+      <button type="button" class="next">${i===STEPS.length-1?`<small>次のサイクルへ ↻</small>${nums[0]} ${esc(plain(STEPS[0].title))}に戻る`:`<small>次のステップへ →</small>${nums[i+1]} ${esc(plain(STEPS[i+1].title))}`}</button>
     </div></div>`;
   const panel=$("detail").firstElementChild;
   panel.querySelector(".prev").addEventListener("click",()=>show(i-1));
