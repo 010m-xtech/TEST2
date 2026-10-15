@@ -1,0 +1,160 @@
+<title>新サービス導入フロー</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap">
+<style>
+/* layout: PDCAで区切った6ステップ。押すと下に詳細と資料リンクが開く */
+:root{
+  --bg:#f7f8fa; --card:#ffffff; --fg:#1f2430; --muted:#5d6475; --line:#d9dde5;
+  --me:#4b45b0; --me-bg:#eeedfd; --staff:#0f6e56; --staff-bg:#e3f5ee;
+  --ok:#2f6b12; --ok-bg:#eaf3de; --focus:#4b45b0;
+  --font:"BIZ UDPGothic","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#16181d; --card:#1f222a; --fg:#e8eaf0; --muted:#a3a9b8; --line:#363b47;
+  --me:#b9b4ff; --me-bg:#2b2852; --staff:#7fd8b8; --staff-bg:#163a30;
+  --ok:#b5dd8a; --ok-bg:#24361a; --focus:#b9b4ff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#16181d; --card:#1f222a; --fg:#e8eaf0; --muted:#a3a9b8; --line:#363b47;
+  --me:#b9b4ff; --me-bg:#2b2852; --staff:#7fd8b8; --staff-bg:#163a30;
+  --ok:#b5dd8a; --ok-bg:#24361a; --focus:#b9b4ff; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.7;
+  padding-block:24px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1{font-size:24px;margin:0;text-wrap:balance}
+.lead{margin:4px 0 0;color:var(--muted)}
+h2{font-size:16px;margin:0 0 10px;display:flex;align-items:baseline;gap:8px}
+h2 small{font-weight:400;color:var(--muted);font-size:13px}
+.who{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.chip{padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:14px}
+.chip.me{background:var(--me-bg);color:var(--me);border-color:var(--me);font-weight:700}
+.arrow{color:var(--muted)}
+.note{font-size:13px;color:var(--muted);width:100%}
+.phases{display:grid;grid-template-columns:2fr 2fr 1fr 1fr;gap:6px;margin-bottom:6px;font-size:13px;color:var(--muted);text-align:center}
+.phases div{border-bottom:2px solid var(--line);padding-bottom:4px}
+.steps{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.step{all:unset;cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 4px;
+  display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;min-height:86px;justify-content:center;transition:border-color .15s,transform .15s}
+.step:hover{border-color:var(--me);transform:translateY(-2px)}
+.step:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.step .n{font-size:13px;color:var(--muted)}
+.step .t{font-size:14px;font-weight:700;line-height:1.35;word-break:keep-all}
+.step[aria-expanded="true"]{background:var(--me-bg);border-color:var(--me);color:var(--me)}
+.step[aria-expanded="true"] .n{color:var(--me)}
+.hint{font-size:13px;color:var(--muted);margin-top:8px}
+.detail{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin-top:10px}
+.detail h3{margin:0 0 4px;font-size:18px}
+.detail .who-line{font-size:13px;margin:0 0 12px;display:flex;gap:6px;flex-wrap:wrap}
+.tag{padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700}
+.tag.me{background:var(--me-bg);color:var(--me)} .tag.staff{background:var(--staff-bg);color:var(--staff)}
+.detail ul{margin:0 0 14px;padding-left:1.2em}
+.links{display:flex;flex-wrap:wrap;gap:8px}
+.links a{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--me);border:1px solid var(--me);border-radius:8px;padding:8px 14px;font-size:14px;font-weight:700}
+.links a:hover{background:var(--me-bg)}
+.links a:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.links a.todo{color:var(--muted);border-style:dashed;border-color:var(--line);cursor:default}
+.bands{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.band{border-radius:10px;padding:10px 14px;font-size:14px;border:1px solid}
+.band b{margin-right:8px}
+.band.me{background:var(--me-bg);color:var(--me);border-color:var(--me)}
+.band.staff{background:var(--staff-bg);color:var(--staff);border-color:var(--staff)}
+.goal{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.goal .chip.ok{background:var(--ok-bg);color:var(--ok);border-color:var(--ok);font-weight:700}
+@media (max-width:640px){
+  .phases{display:none}
+  .steps{grid-template-columns:1fr}
+  .step{flex-direction:row;justify-content:flex-start;gap:10px;min-height:0;padding:12px 14px;text-align:left}
+  .bands{grid-template-columns:1fr}
+  .bands .band{grid-column:auto!important}
+}
+@media (prefers-reduced-motion:reduce){.step{transition:none}.step:hover{transform:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>新サービス導入フロー</h1>
+    <p class="lead">流れの中でわからなくなったら、そのステップを押してください。やることと資料が出てきます。</p>
+  </header>
+
+  <section>
+    <h2>6つのステップ<small>押すと詳細と資料が開きます</small></h2>
+    <div class="phases" aria-hidden="true">
+      <div>Plan</div><div>Do</div><div>Check</div><div>Action</div>
+    </div>
+    <div class="steps" id="steps" role="list"></div>
+    <div id="detail"></div>
+    <p class="hint" id="hint">まずは①から押してみてください。</p>
+  </section>
+</div>
+
+<script>
+/* ===== ここだけ編集すればOK =====
+   url に資料やページのURLを入れてください。空欄("")のボタンは「準備中」表示になります。
+   サイト内のページは、そのページを開いたときのアドレスバーのURLをそのまま貼ればOKです。
+   例：{label:"コンテンツ一覧を見る", url:"https://mmtoolbox.wixsite.com/010m-xtech/contents"} */
+/* タイトル中の「|」はボタン内で改行してよい位置です */
+const STEPS = [
+  { title:"お店を|選ぶ",
+    todo:["ターゲット店を決める",
+          "ターゲット店をセグメント分けする"],
+    links:[{label:"客層セグメント判定", url:""}] },
+  { title:"案内する|コンテンツを|選ぶ",
+    todo:["①の客層セグメント判定の結果で、ターゲット店におすすめのコンテンツを参考にする",
+          "ターゲット店の悩みを事前に想定していれば、それに合ったコンテンツを参考にする"],
+    links:[{label:"コンテンツ", url:""}] },
+  { title:"内容説明",
+    todo:["提案資料を使って説明する",
+          "他店の事例を紹介して、パートナーにイメージしてもらう"],
+    links:[{label:"提案資料", url:""},{label:"他店事例／コンテンツメリット", url:""}] },
+  { title:"パートナーと|共創",
+    todo:["パートナー独自のサービスをパートナーと一緒に作る",
+          "POPの見せ方から中身の内容まで決める"],
+    links:[{label:"他店事例／コンテンツメリット", url:""},{label:"POP事例", url:""}] },
+  { title:"設置して|反応を見る",
+    todo:["パートナーからの声を現場で聞いてみましょう",
+          "スプレッドシートにてデータ管理（クロステクノからフィードバック）"],
+    links:[] },
+  { title:"データで|振り返る",
+    todo:["どの数字が良かったか、良くなかったかを確認する",
+          "分析結果から次の行動を決める"],
+    links:[] }
+];
+/* ===== 編集ここまで ===== */
+
+/* サイト内のページ（mmtoolbox.wixsite.com）は同じ画面で移動、それ以外の資料は新しいタブで開く */
+const SITE="mmtoolbox.wixsite.com/010m-xtech";
+const isSite=u=>u.includes(SITE);
+
+const nums="①②③④⑤⑥";
+const stepsEl=document.getElementById("steps"), detailEl=document.getElementById("detail"), hintEl=document.getElementById("hint");
+let open=-1;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+STEPS.forEach((s,i)=>{
+  const b=document.createElement("button");
+  b.className="step"; b.id="step-"+i; b.setAttribute("role","listitem");
+  b.setAttribute("aria-expanded","false"); b.setAttribute("aria-controls","detail");
+  b.innerHTML=`<span class="n">${nums[i]}</span><span class="t">${esc(s.title).split("|").join("<wbr>")}</span>`;
+  b.addEventListener("click",()=>show(i));
+  stepsEl.appendChild(b);
+});
+
+function show(i){
+  open = (open===i) ? -1 : i;
+  [...stepsEl.children].forEach((b,j)=>b.setAttribute("aria-expanded", j===open?"true":"false"));
+  hintEl.hidden = open!==-1;
+  if(open===-1){detailEl.innerHTML="";return;}
+  const s=STEPS[i];
+  const links=s.links.map(l=> l.url
+    ? (isSite(l.url)
+        ? `<a href="${esc(l.url)}" target="_top">${esc(l.label)} →</a>`
+        : `<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)} ↗</a>`)
+    : `<a class="todo" aria-disabled="true">${esc(l.label)}（準備中）</a>`).join("");
+  detailEl.innerHTML=`<div class="detail" role="region" aria-label="${esc(s.title.split("|").join(""))}の詳細">
+    <h3>${nums[i]} ${esc(s.title.split("|").join(""))}</h3>
+    <ul>${s.todo.map(t=>`<li>${esc(t)}</li>`).join("")}</ul>
+    ${links?`<div class="links">${links}</div>`:""}</div>`;
+}
+show(0);
+</script>
