@@ -493,7 +493,7 @@
 
     <!-- オープニング（動画は src ではなく data-src。軽量モードでは読み込まない） -->
     <div id="intro-container">
-        <video id="intro-video" data-src="title3.mp4" muted playsinline preload="auto"></video>
+        <video id="intro-video" data-src="opening.mp4" muted playsinline preload="auto"></video>
         <img id="intro-logo" src="koziki_title2.webp" alt="NO FISH NO LIFE">
         <div id="intro-skip-text">画面をタップしてスキップ</div>
     </div>
@@ -1034,25 +1034,12 @@
                 if (!introPhaseTriggered && (introVideo.paused || introVideo.currentTime === 0)) logoOnly();
             }, 3500));
 
-            introVideo.addEventListener('timeupdate', () => {
-                if (introSkipped || introPhaseTriggered) return;
-
-                // 5秒経過で暗くなりロゴ表示
-                if (introVideo.currentTime >= 5.0) {
-                    introPhaseTriggered = true;
-                    introVideo.style.opacity = '0';
-                    if (introLogo) introLogo.style.opacity = '1';
-
-                    // 5秒+2秒=7秒後に終了
-                    introTimeouts.push(setTimeout(endIntro, 2000));
-                }
-            });
+            // 新しいオープニング動画はロゴの演出まで動画の中に入っているので、
+            // 終わったらそのままゲームへ進む（ロゴ画像は動画が使えないときだけ表示）
             introVideo.addEventListener('ended', () => {
                 if (!introSkipped && !introPhaseTriggered) {
                     introPhaseTriggered = true;
-                    introVideo.style.opacity = '0';
-                    if (introLogo) introLogo.style.opacity = '1';
-                    introTimeouts.push(setTimeout(endIntro, 2000));
+                    endIntro();
                 }
             });
         }
