@@ -122,6 +122,8 @@ h1{font-family:var(--serif);font-weight:700;font-size:clamp(28px,4.6vw,38px);mar
 .d-body{display:grid;grid-template-columns:1fr 300px;gap:24px;align-items:start}
 .photo{margin:0;border-radius:14px;overflow:hidden;aspect-ratio:4/3;background:var(--soft);border:1px solid var(--line)}
 .photo img{display:block;width:100%;height:100%;object-fit:cover}
+.photo.contain{background:#2e2d2b}
+.photo.contain img{object-fit:contain}
 .photo.empty{display:grid;place-content:center;text-align:center;color:var(--muted);font-size:12px;
   background:repeating-linear-gradient(135deg,var(--soft) 0 14px,#fffaf0 14px 28px)}
 .photo.empty span{display:block;font-size:36px;line-height:1.3;opacity:.75}
@@ -207,39 +209,40 @@ h1{font-family:var(--serif);font-weight:700;font-size:clamp(28px,4.6vw,38px);mar
    例：{label:"コンテンツ一覧を見る", url:"https://mmtoolbox.wixsite.com/010m-xtech/contents"}
    phase は P / D / C / A のどれかです（上の色の帯と対応します）。
    photo に写真のURL（またはこのフォルダに置いた画像のファイル名）を入れると、詳細の横に写真が出ます。
-   空欄("")のときは「写真準備中」の枠になります。photoAlt は写真の説明です。 */
+   空欄("")のときは「写真準備中」の枠になります。photoAlt は写真の説明です。
+   photoFit:"contain" にすると、写真を切り取らずに全体を表示します（一覧画像など）。 */
 /* タイトル中の「|」はボタン内で改行してよい位置です */
 const STEPS = [
   { phase:"P", title:"お店を|選ぶ",
     todo:["ターゲット店を決める",
           "ターゲット店をセグメント分けする"],
     links:[{label:"客層セグメント判定", url:""}],
-    photo:"", photoAlt:"", icon:"🏪" },
+    photo:"step1.webp", photoAlt:"資料を見ながら検討する様子", icon:"🏪" },
   { phase:"P", title:"案内する|コンテンツを|選ぶ",
     todo:["①の客層セグメント判定の結果で、ターゲット店におすすめのコンテンツを参考にする",
           "ターゲット店の悩みを事前に想定していれば、それに合ったコンテンツを参考にする"],
     links:[{label:"コンテンツ", url:""}],
-    photo:"", photoAlt:"", icon:"📋" },
+    photo:"step2.webp", photoAlt:"コンテンツ一覧", photoFit:"contain", icon:"📋" },
   { phase:"D", title:"内容|説明",
     todo:["提案資料を使って説明する",
           "他店の事例を紹介して、パートナーにイメージしてもらう"],
     links:[{label:"提案資料", url:""},{label:"他店事例／コンテンツメリット", url:""}],
-    photo:"", photoAlt:"", icon:"💬" },
+    photo:"step3.webp", photoAlt:"テーブルで資料を広げて説明する様子", icon:"💬" },
   { phase:"D", title:"パートナーと|共創",
     todo:["パートナー独自のサービスをパートナーと一緒に作る",
           "POPの見せ方から中身の内容まで決める"],
     links:[{label:"他店事例／コンテンツメリット", url:""},{label:"POP事例", url:""}],
-    photo:"", photoAlt:"", icon:"🤝" },
+    photo:"step4.webp", photoAlt:"パートナーと握手する様子", icon:"🤝" },
   { phase:"C", title:"設置して|反応を|見る",
     todo:["パートナーからの声を現場で聞いてみましょう",
           "スプレッドシートにてデータ管理（クロステクノからフィードバック）"],
     links:[],
-    photo:"", photoAlt:"", icon:"📍" },
+    photo:"step5.webp", photoAlt:"店舗スタッフと資料を見ながら話す様子", icon:"📍" },
   { phase:"A", title:"データで|振り返る",
     todo:["どの数字が良かったか、良くなかったかを確認する",
           "分析結果から次の行動を決める"],
     links:[],
-    photo:"", photoAlt:"", icon:"📊" }
+    photo:"step6.webp", photoAlt:"データを振り返るイメージ", icon:"📊" }
 ];
 const PHASES = [
   { key:"P", name:"Plan",   ja:"計画", sub:"どこで・何を" },
@@ -251,7 +254,7 @@ const PHASES = [
 const PERIODS = [
   { from:1, to:2, label:"目安", time:"1日", note:"" },
   { from:3, to:5, label:"打合せから納品まで", time:"早ければ 1〜2週間", note:"※選定したコンテンツや改修内容によって異なります" },
-  { from:6, to:6, label:"", time:"2〜3か月ごとに|振り返り", note:"内容を改修するなどして、サイクルを回していきます" }
+  { from:6, to:6, label:"", time:"都度振り返り", note:"2〜3か月ごとにコンテンツの改修" }
 ];
 /* ページ下の相談メッセージ */
 const HELP = "※悩んだり・わからない箇所があれば、<b>クロステクノ</b>へお気軽にご相談ください。";
@@ -311,7 +314,7 @@ pe.innerHTML=PERIODS.map(d=>`<div class="pd" style="grid-column:${d.from}/${d.to
 const periodOf=i=>PERIODS.find(d=>i+1>=d.from&&i+1<=d.to);
 $("help").innerHTML=`<span aria-hidden="true">💬</span><p>${HELP}</p>`;
 
-/* トラック写真は bubble フォルダのものを使用（右へ走るときは右向き、左へ戻るときは左向きの写真） */
+/* トラック写真は bubble フォルダのものを使用（常に右向き） */
 const truck=$("truck"), truckImg=$("truckImg");
 let cur=-1, stopTimer, demo=null;
 function drive(i,dur=1200){
@@ -320,7 +323,6 @@ function drive(i,dur=1200){
   truck.style.left=((i+.5)/STEPS.length*100)+"%";
   cur=i;
   if(from===-1||from===i) return;
-  truckImg.src = i<from ? "../bubble/truck.webp" : "../bubble/truck-right.webp";
   truck.classList.add("moving");
   clearTimeout(stopTimer);
   stopTimer=setTimeout(()=>truck.classList.remove("moving"),dur);
@@ -345,7 +347,7 @@ const GOAL=`<div class="goal" role="status">
   </svg>
   <div><p class="g-label">1サイクル完了、乾杯！</p>
     <h3>“遊び”をきっかけに、<wbr>パートナーとの信頼関係を<wbr>構築していってください！</h3>
-    <p>2〜3か月ごとに振り返り、内容を改修するなどして、サイクルを回していきましょう。</p></div>
+    <p>都度振り返り、2〜3か月ごとにコンテンツを改修して、サイクルを回していきましょう。</p></div>
 </div>`;
 
 function show(i){
@@ -358,7 +360,7 @@ function show(i){
         : `<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)} ↗</a>`)
     : `<a class="todo" aria-disabled="true">${esc(l.label)}（準備中）</a>`).join("");
   const photo=s.photo
-    ? `<figure class="photo"><img src="${esc(s.photo)}" alt="${esc(s.photoAlt||plain(s.title))}" loading="lazy"></figure>`
+    ? `<figure class="photo${s.photoFit==="contain"?" contain":""}"><img src="${esc(s.photo)}" alt="${esc(s.photoAlt||plain(s.title))}" loading="lazy"></figure>`
     : `<figure class="photo empty" aria-hidden="true"><span>${s.icon||"📷"}</span>写真準備中</figure>`;
   $("detail").innerHTML=`<div class="detail" style="--pc:${COLOR[s.phase]}">
     <div class="d-top"><span class="tag">${p.name}｜${p.ja}</span><span class="d-no">STEP ${i+1} / ${STEPS.length}</span></div>
@@ -393,7 +395,6 @@ function runDemo(){
   demo=setTimeout(step,500);
 }
 
-new Image().src="../bubble/truck.webp";
 show(0);
 const card=document.querySelector(".card");
 if("IntersectionObserver" in window){
