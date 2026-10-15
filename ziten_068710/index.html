@@ -973,7 +973,8 @@
   .accordion-item.open .accordion-body { max-height: 1600px; }
 
   /* ===== インスタグラム ===== */
-  .insta { display: none; justify-content: center; margin: 6px 0 10px; }
+  .insta { display: none; flex-direction: column; align-items: center; margin: 14px 0 10px; }
+  .insta-lead { margin: 0 0 10px; text-align: center; font-size: 13.5px; line-height: 1.7; font-weight: 700; color: var(--ai); }
   .insta.show { display: flex; animation: fadeUp .5s ease both; }
   .insta a { display: flex; flex-direction: column; align-items: center; gap: 8px; text-decoration: none; -webkit-tap-highlight-color: transparent; }
   .insta img { display: block; width: 64px; height: 64px; border-radius: 16px; box-shadow: 0 3px 10px rgba(0,0,0,0.35); animation: instaPulse 2s ease-in-out infinite; }
@@ -3033,8 +3034,8 @@ function ensureInsta(fb) {
   if (!ig) {
     ig = document.createElement('div');
     ig.className = 'insta';
-    ig.innerHTML = '<a href="https://instagram.com/shukouya_wagakuma?obrf=MXZ0MWQ3N2JpZXU2dQ%3D%3D" target="_blank" rel="noopener noreferrer" aria-label="インスタグラム（酒肴家 吾熊）"><img src="' + imgSrc('instagram.webp') + '" alt="" width="64" height="64"><span class="insta-cap">タップして、インスタグラムを見る</span></a>';
-    g.insertAdjacentElement('afterend', ig);
+    ig.innerHTML = '<p class="insta-lead">インスタグラムでは、おすすめのお酒や<wbr>日本酒の話題を<wbr>ご紹介しています。</p><a href="https://instagram.com/shukouya_wagakuma?obrf=MXZ0MWQ3N2JpZXU2dQ%3D%3D" target="_blank" rel="noopener noreferrer" aria-label="インスタグラム（酒肴家 吾熊）"><img src="' + imgSrc('instagram.webp') + '" alt="" width="64" height="64"><span class="insta-cap">タップして、インスタグラムを見る</span></a>';
+    fb.appendChild(ig);
     ig.querySelector('a').addEventListener('click', () => sendData({ type: 'card', detail: 'インスタグラム' }));
   }
   requestAnimationFrame(() => ig.classList.add('show'));
@@ -3047,7 +3048,7 @@ function showThanks(fb) {
   fb.dataset.thanked = '1';
   const ig = ensureInsta(fb);
   requestAnimationFrame(() => ig.classList.add('show'));
-  sayGuide(g, 'ありがとうございました！<br>よかったらインスタグラムも<wbr>チェックしてください！<br>主におすすめや日本酒について<wbr>ご紹介しています！');
+  sayGuide(g, 'ありがとうございました！<br>いただいたお声は、<wbr>今後の参考にさせていただきます。');
 }
 
 function initFeedback() {
