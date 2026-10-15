@@ -107,6 +107,13 @@ h1{font-family:var(--serif);font-weight:700;font-size:clamp(28px,4.6vw,38px);mar
 .detail li::before{content:counter(todo);flex:none;width:30px;height:30px;margin-top:.5px;border-radius:50%;display:grid;place-items:center;
   background:var(--pc);color:#fff;font-family:var(--serif);font-size:15px;font-weight:700}
 
+/* ひとことメモ（tip） */
+.tip{display:flex;gap:12px;align-items:flex-start;margin:-6px 0 22px;padding:14px 16px;border-radius:14px;
+  background:color-mix(in srgb,var(--pc) 8%,#fff);border:1.5px solid color-mix(in srgb,var(--pc) 35%,transparent)}
+.tip span{flex:none;font-size:22px;line-height:1.3}
+.tip p{margin:0;font-size:15px;font-weight:700;line-height:1.65}
+.tip p small{display:block;margin-top:4px;font-size:14px;font-weight:400;color:var(--muted)}
+
 /* 資料ボタン */
 .links{display:flex;flex-direction:column;gap:12px;margin-bottom:6px}
 .links a{display:flex;align-items:center;gap:14px;min-height:68px;padding:10px 14px;text-decoration:none;color:var(--fg);
@@ -235,6 +242,7 @@ h1{font-family:var(--serif);font-weight:700;font-size:clamp(28px,4.6vw,38px);mar
    phase は P / D / C / A のどれかです（上の色の帯と対応します）。
    photo に写真のURL（またはこのフォルダに置いた画像のファイル名）を入れると、詳細の横に写真が出ます。
    空欄("")のときは「写真準備中」の枠になります。photoAlt は写真の説明です。
+   tip を書くと、やることの下に💡付きのメモ枠が出ます（lead が太字、text が補足）。
    photoFit:"contain" にすると、写真を切り取らずに全体を表示します（一覧画像など）。 */
 /* タイトル中の「|」はボタン内で改行してよい位置です */
 const STEPS = [
@@ -247,7 +255,9 @@ const STEPS = [
     todo:["①の客層セグメント判定の結果で、ターゲット店におすすめのコンテンツを参考にする",
           "ターゲット店の悩みを事前に想定していれば、それに合ったコンテンツを参考にする"],
     links:[{label:"コンテンツ", url:""}],
-    photo:"step2.webp", photoAlt:"コンテンツ一覧", photoFit:"contain", icon:"📋" },
+    photo:"step2.webp", photoAlt:"コンテンツ一覧", photoFit:"contain", icon:"📋",
+    tip:{ lead:"※事前にターゲットに案内するコンテンツが決まったら、コンテンツごとに作成した担当者にお気軽に問い合わせてもOKです！",
+          text:"どんな内容にできるか、どんな商談の仕方ができるかを提案します！" } },
   { phase:"D", title:"内容|説明",
     todo:["提案資料を使って説明する",
           "他店の事例を紹介して、パートナーにイメージしてもらう"],
@@ -396,6 +406,7 @@ function show(i){
     <div class="d-body"><div>
       <p class="sub">やること</p>
       <ul>${s.todo.map(t=>`<li>${esc(t)}</li>`).join("")}</ul>
+      ${s.tip?`<div class="tip"><span aria-hidden="true">💡</span><p>${esc(s.tip.lead)}${s.tip.text?`<small>${esc(s.tip.text)}</small>`:""}</p></div>`:""}
       ${links?`<p class="sub">使う資料</p><div class="links">${links}</div>`:""}
     </div>${photo}</div>
     <div class="nav">
