@@ -1255,14 +1255,15 @@
     <!-- Vue.js スクリプト -->
     <script>
         // ▼ 店舗名（オープニングに表示） ▼
-        const STORE_NAME = 'Trattoria';
+        const STORE_NAME = 'トン・ガリアーノ';
         // ▼ お店の名前（ビールのお届け追跡に表示） ▼
         const SHOP_NAME = 'トン・ガリアーノ';
 
         // ▼ 画像の置き場所（質問・商品の画像は sakesindan_179940 フォルダのものを共用。このフォルダに画像を置くなら '' にする） ▼
         const IMG_DIR = '../sakesindan_179940/';
 
-        // ▼ GASのURL（集計用。新しい店舗用のスプレッドシートのURLを入れてください。空なら送信しません） ▼
+        // ▼ GASのURL（集計用。空なら送信しません） ▼
+        //   スプレッドシートの準備と URL の入れ方は、このフォルダの GAS_README.md を見てください（受け取り側のプログラムは spreadsheet.gs）
         const GAS_URL = '';
 
         const { createApp, ref, computed, onMounted, watch, nextTick } = Vue;
@@ -1602,17 +1603,21 @@
                         }
                         pos = np;
                     }
-                    if (run === mapRun) showResult();
+                    if (run === mapRun) { beerFilm.value = '最後まで見た'; showResult(); }
                 };
                 const stopDeliveryMap = () => { mapRun++; jumpReq = null; pourTimersSub.forEach(clearTimeout); if (wakeUp) { const w = wakeUp; wakeUp = null; w('stop'); } };
 
                 // ▼ ビールを選んだ人に「こだわりを見てから結果へ」「そのまま結果へ」を選んでもらう ▼
+                // ビールのこだわり演出を見たか（スプレッドシートに送る）
+                const beerFilm = ref('');
                 const watchKodawari = () => {
+                    beerFilm.value = '途中で結果へ'; // 最後まで見たら「最後まで見た」に変わる
                     step.value = 'pouring';
                     scrollToTop();
                     runDeliveryMap();
                 };
                 const goResultDirect = () => {
+                    beerFilm.value = '見ずに結果へ';
                     step.value = 'pouring';
                     showResult();
                 };
@@ -2279,6 +2284,7 @@
                 });
 
                 onMounted(() => {
+                    document.getElementById('app').addEventListener('scroll', openSurveyIfBottom, { passive: true });
                     // 質問・商品画像をあらかじめ読み込み、画面切り替え時のチラつきを防ぐ
                     const preload = [
                         ...questions.flatMap(q => q.options.map(o => o.img)),
@@ -2321,11 +2327,33 @@
                     }
                 };
 
+                // 端末の種類（スプレッドシートで読みやすい形に）
+                const deviceName = (() => {
+                    const ua = navigator.userAgent;
+                    const os = /iPhone/.test(ua) ? 'iPhone' : /iPad|Macintosh.*Mobile/.test(ua) ? 'iPad' : /Android/.test(ua) ? 'Android' : /Windows/.test(ua) ? 'Windows' : /Mac/.test(ua) ? 'Mac' : 'その他';
+                    const br = /Line\//.test(ua) ? 'LINE' : /Instagram/.test(ua) ? 'Instagram' : /CriOS|Chrome/.test(ua) && !/Edg/.test(ua) ? 'Chrome' : /Edg/.test(ua) ? 'Edge' : /Safari/.test(ua) ? 'Safari' : 'その他';
+                    return os + ' / ' + br;
+                })();
+                // おすすめの1杯の名前（赤・白などを選んだら、その1杯）
+                const productFullName = computed(() => {
+                    if (!finalProduct.value) return '';
+                    if (isPreparation.value) return '準備中';
+                    const v = variants.value[variantIndex.value];
+                    return productDisplayName.value + (v && !v.name ? '（' + v.label + '）' : '');
+                });
                 const buildPayload = (event) => ({
                     event,
                     store: STORE_NAME,
                     diagnosisId: diagnosisId.value,
+                    device: deviceName,
                     userAgent: navigator.userAgent,
+                    gender: answersByQ.value[0] === 'A' ? '男性' : '女性',
+                    age: answersByQ.value[1] === 'A' ? '35歳未満' : '35歳以上',
+                    drink: drinkTheme.value.realName || drinkTheme.value.name,
+                    resultName: finalResult.value ? finalResult.value.titleRuby : '',
+                    product: productFullName.value,
+                    beerFilm: isBeer.value ? beerFilm.value : '-',
+                    // これまでの集計との互換用
                     q1Gender: answersByQ.value[0] === 'A' ? '男性' : '女性',
                     q2Age: answersByQ.value[1] === 'A' ? '35歳未満' : '35歳以上',
                     selectedDrink: drinkTheme.value.realName || drinkTheme.value.name,
@@ -2357,13 +2385,25 @@
                 };
                 // 「×」や外側のタップで閉じても、12時間は出さない
                 const closeSurvey = () => { markSurvey(); surveyOpen.value = false; surveyStep.value = 0; };
-                // 最後の画面（本日の1杯）を開いて少ししたら、ふわっと出す
+                // 最後の画面（本日の1杯）を、いちばん下までスクロールしたら、ふわっと出す
                 const surveyOpen = ref(false);
                 let surveyTimer = null;
+                const openSurveyIfBottom = () => {
+                    if (step.value !== 'product' || surveyStep.value !== 1 || surveyOpen.value || surveyTimer) return;
+                    const app = document.getElementById('app');
+                    if (!app) return;
+                    if (app.scrollTop + app.clientHeight >= app.scrollHeight - 40) {
+                        surveyTimer = setTimeout(() => { surveyTimer = null; if (step.value === 'product') surveyOpen.value = true; }, 500);
+                    }
+                };
                 watch(step, (s) => {
-                    clearTimeout(surveyTimer);
-                    if (s === 'product' && surveyStep.value === 1) surveyTimer = setTimeout(() => { if (step.value === 'product') surveyOpen.value = true; }, 3000);
-                    else if (s !== 'product') surveyOpen.value = false;
+                    clearTimeout(surveyTimer); surveyTimer = null;
+                    if (s !== 'product') { surveyOpen.value = false; return; }
+                    // 画面が短くてスクロールできないときは、少し待ってから出す
+                    setTimeout(() => {
+                        const app = document.getElementById('app');
+                        if (app && app.scrollHeight <= app.clientHeight + 40) openSurveyIfBottom();
+                    }, 3500);
                 });
 
                 const prevQuestion = () => {
