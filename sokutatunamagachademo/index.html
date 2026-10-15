@@ -1,406 +1,436 @@
-<title>導入フロー</title>
-<meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Maru+Gothic:wght@500;700&display=swap">
-<style>
-/* layout: 落ち着いたビールの琥珀色の背景（上でゆっくり揺れる泡、静かに立ちのぼる気泡）に、生成り色のカード。
-   カード内は「道路＋トラック写真 → PDCAの帯 → 6つのステップ → 期間の目安」の順。
-   ステップを押すとトラックがそこまで走り、下に詳細が開く。 */
-:root{
-  --beer1:#ffda6b; --beer2:#f4b73c; --beer3:#d98f1f; --foam:#fbf6ea;
-  --card:#fffefa; --fg:#33260f; --muted:#7a6545; --line:#eee2c6; --soft:#fbf4e3;
-  --p:#3a62a0; --d:#cc5a32; --c:#3a8a60; --a:#7a58b0; --focus:#3a62a0;
-  --font:"BIZ UDPGothic","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
-  --serif:"Zen Maru Gothic","Hiragino Maru Gothic ProN","BIZ UDPGothic",sans-serif;
-  color-scheme:light;
-}
-*{box-sizing:border-box}
-html{background:var(--beer2)}
-body{margin:0;min-height:100vh;color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.8;
-  background:linear-gradient(180deg,var(--beer1) 0%,var(--beer2) 50%,var(--beer3) 100%);
-  padding-block:104px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
-  overflow-x:hidden}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>速達生ビールガチャ</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone@7.23.10/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black select-none" style="-webkit-tap-highlight-color: transparent;">
+    <div id="root"></div>
 
-/* ---- 背景：ゆっくり揺れる泡と気泡 ---- */
-.beer{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
-.foam{position:absolute;left:-10%;right:-10%;top:-24px;height:100px;transform-origin:50% 100%;animation:slosh 7s ease-in-out infinite}
-.foam i{position:absolute;inset:0;background-repeat:repeat-x;background-size:320px 100%}
-.foam i:nth-child(1){opacity:.55;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 100' preserveAspectRatio='none'%3E%3Cpath d='M0 0H320V74Q280 92 240 78T160 76T80 80T0 74Z' fill='%23fbf6ea'/%3E%3C/svg%3E");animation:wave 12s linear infinite reverse}
-.foam i:nth-child(2){background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 100' preserveAspectRatio='none'%3E%3Cpath d='M0 0H320V66Q260 84 200 68T100 70T0 66Z' fill='%23fbf6ea'/%3E%3C/svg%3E");animation:wave 8s linear infinite}
-@keyframes wave{to{background-position-x:320px}}
-@keyframes slosh{0%,100%{transform:rotate(-1.2deg)}50%{transform:rotate(1.2deg) translateY(3px)}}
-.bubble{position:absolute;bottom:-16px;border-radius:50%;border:1px solid rgba(255,255,255,.8);background:rgba(255,255,255,.3);
-  animation:rise var(--t,14s) linear infinite;animation-delay:var(--dl,0s)}
-@keyframes rise{0%{transform:translate(0,0);opacity:0}10%{opacity:.9}50%{transform:translate(-5px,-56vh)}100%{transform:translate(4px,-112vh);opacity:0}}
+    <script type="text/babel" data-type="module" data-presets="react">
+        const { useState, useMemo, useEffect, useRef } = React;
 
-/* ---- 本体 ---- */
-.wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
-header{text-align:center;color:var(--fg)}
-.eyebrow{margin:0;font-family:var(--serif);font-size:12px;letter-spacing:.42em;opacity:.75}
-h1{font-family:var(--serif);font-weight:700;font-size:clamp(28px,4.6vw,38px);margin:4px 0 0;line-height:1.3;letter-spacing:.1em}
-.rule{display:block;width:44px;height:1px;background:var(--fg);opacity:.5;margin:14px auto 12px}
-.lead{margin:0;font-size:14px;opacity:.85;text-wrap:pretty}
-.card{background:var(--card);border-radius:28px;padding:32px 28px 28px;box-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 14px 36px rgba(140,80,0,.16)}
+        // --- 景品データ定義 (アンケート関連文言を削除) ---
+        const PRIZES = [
+          { 
+            id: 1, rank: '1等', prob: 5, 
+            border: 'border-yellow-300', text: 'text-yellow-400',
+            resultTitle: '1等当選おめでとう！', 
+            giftLine1: '次回使える',
+            giftLine2: 'ビール半額券',
+            giftLine3: '3枚プレゼント！',
+            imgUrl: 'https://i.postimg.cc/zvKxRHM9/hua-xiang5.png',
+            soundType: 'fanfare'
+          },
+          { 
+            id: 2, rank: '2等', prob: 15, 
+            border: 'border-gray-400', text: 'text-gray-300',
+            resultTitle: '2等当選おめでとう！', 
+            giftLine1: '次回使える',
+            giftLine2: 'ビール半額券',
+            giftLine3: '2枚プレゼント！',
+            imgUrl: null,
+            soundType: 'fanfare'
+          },
+          { 
+            id: 3, rank: '3等', prob: 80, 
+            border: 'border-amber-600', text: 'text-amber-500',
+            resultTitle: '3等当選おめでとう！', 
+            giftLine1: '次回使える',
+            giftLine2: 'ビール半額券',
+            giftLine3: '1枚プレゼント！',
+            imgUrl: null,
+            soundType: 'fanfare'
+          }
+        ];
 
-/* 道路とトラック */
-.road{position:relative;height:88px;margin:0 0 10px}
-.road::after{content:"";position:absolute;left:0;right:0;bottom:0;height:10px;border-radius:5px;background:#3d3730}
-.road::before{content:"";position:absolute;left:10px;right:10px;bottom:4px;height:2px;z-index:1;
-  background:repeating-linear-gradient(90deg,rgba(255,255,255,.7) 0 16px,transparent 16px 32px)}
-.truck{position:absolute;bottom:4px;left:8.333%;width:170px;transform:translateX(-50%);z-index:2;
-  transition:left 1.2s cubic-bezier(.55,0,.3,1)}
-.truck img{display:block;width:100%;height:auto;filter:drop-shadow(0 3px 2px rgba(0,0,0,.18))}
-.truck.moving img{animation:bump .3s ease-in-out infinite}
-@keyframes bump{50%{transform:translateY(-1.5px)}}
+        // --- 黄金に輝くテキスト用スタイル ---
+        const customStyles = `
+        @keyframes floatUp {
+          0% { transform: translateY(80px) scale(0.6); opacity: 0; }
+          100% { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-8px) rotate(-5deg); }
+          75% { transform: translateX(8px) rotate(5deg); }
+        }
+        @keyframes popZoom {
+          0% { transform: scale(0.5); opacity: 0; }
+          70% { transform: scale(1.1); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes imagePop {
+          0% { transform: scale(0.1) translateY(100px) rotate(-10deg); opacity: 0; }
+          60% { transform: scale(1.1) translateY(-20px) rotate(5deg); opacity: 1; }
+          80% { transform: scale(0.95) translateY(10px) rotate(-2deg); }
+          100% { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; }
+        }
+        @keyframes riseUp {
+          0% { transform: translateY(100vh) scale(0.3); opacity: 0; }
+          10% { opacity: 0.8; }
+          90% { opacity: 0.8; }
+          100% { transform: translateY(-20vh) scale(1.5); opacity: 0; }
+        }
+        
+        /* 🌟 変更箇所：透明度を使わず、直接濃い色で塗りつぶした完全な静止画サンバースト */
+        .sunburst {
+          background: repeating-conic-gradient(
+            from 0deg,
+            #000000 0deg,
+            #000000 10deg,
+            #3d2500 10deg,
+            #211400 20deg
+          );
+        }
+        
+        .glass-highlight {
+          background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+        }
+        
+        .gold-text-shimmer {
+          background: linear-gradient(to bottom, #fff 0%, #fede53 30%, #f1ad04 70%, #9a6500 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.8));
+        }
+        `;
 
-/* PDCAの帯 */
-.pdca{display:grid;gap:6px;margin-bottom:10px}
-.ph{display:flex;align-items:center;justify-content:center;gap:10px;border-radius:12px;padding:9px 6px;
-  color:var(--pc);background:color-mix(in srgb,var(--pc) 13%,var(--card));border:1px solid color-mix(in srgb,var(--pc) 28%,transparent);
-  transition:background .4s,color .4s}
-.ph.on{background:var(--pc);color:#fff;border-color:var(--pc)}
-.ph b{font-family:var(--serif);font-weight:700;font-size:22px;line-height:1}
-.ph span{display:flex;flex-direction:column;line-height:1.25;font-size:13px;font-weight:700;letter-spacing:.04em}
-.ph small{font-size:11px;font-weight:400;opacity:.85;letter-spacing:0}
+        // --- ビールグラスを描画するSVGコンポーネント ---
+        const BeerGlass = ({ rank }) => {
+            const fillColors = {
+                '1等': ['#FEF08A', '#EAB308', '#A16207'],
+                '2等': ['#E5E7EB', '#9CA3AF', '#4B5563'],
+                '3等': ['#FCD34D', '#D97706', '#92400E'],
+            };
+            const colors = fillColors[rank] || fillColors['1等'];
 
-/* ステップ */
-.steps{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
-.step{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;
-  padding:12px 4px;border-radius:14px;border:1.5px solid var(--line);background:var(--card);transition:border-color .25s,background .25s,transform .25s}
-.step .n{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-family:var(--serif);font-weight:700;font-size:15px;line-height:1;color:var(--pc);border:1.5px solid var(--pc)}
-.step[aria-pressed="true"] .n{background:var(--pc);color:#fff}
-.step .t{font-weight:700;font-size:13px;line-height:1.4;word-break:keep-all}
-.step:hover{border-color:var(--pc);transform:translateY(-2px)}
-.step:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
-.step[aria-pressed="true"]{border-color:var(--pc);background:color-mix(in srgb,var(--pc) 7%,var(--card));box-shadow:inset 0 -3px 0 var(--pc)}
-.step[aria-pressed="true"] .t{color:var(--pc)}
+            return (
+                <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-xl overflow-visible">
+                    <defs>
+                        <linearGradient id={`grad-${rank}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor={colors[0]} />
+                            <stop offset="50%" stopColor={colors[1]} />
+                            <stop offset="100%" stopColor={colors[2]} />
+                        </linearGradient>
+                    </defs>
+                    <path d="M75 40 C 100 40, 100 75, 75 75" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="6" strokeLinecap="round" />
+                    <path d="M25 25 C 25 25, 20 85, 35 90 C 50 95, 60 95, 75 90 C 90 85, 85 25, 85 25 Z" fill={`url(#grad-${rank})`} stroke="rgba(255,255,255,0.6)" strokeWidth="3" />
+                    <path d="M35 30 Q 30 60 40 85" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="4" strokeLinecap="round" />
+                    <React.Fragment>
+                        <path d="M20 25 Q 30 5 55 15 Q 75 5 90 25 Q 95 35 85 40 Q 55 45 25 40 Q 15 35 20 25 Z" fill="#FFFFFF" />
+                        <circle cx="35" cy="15" r="8" fill="#FFFFFF" />
+                        <circle cx="65" cy="12" r="10" fill="#FFFFFF" />
+                        <circle cx="50" cy="8" r="12" fill="#FFFFFF" />
+                        <path d="M 75 15 L 80 10 M 80 20 L 85 18 M 70 20 L 68 15" stroke="yellow" strokeWidth="2" strokeLinecap="round" />
+                    </React.Fragment>
+                </svg>
+            );
+        };
 
-/* 期間の目安 */
-.period{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:10px}
-.pd .br{border:1px solid var(--muted);border-top:0;border-radius:0 0 8px 8px;height:10px;opacity:.6}
-.pd .lb{margin:6px 0 0;font-size:12px;color:var(--muted);text-align:center;line-height:1.5}
-.pd .lb b{word-break:keep-all;display:block;font-family:var(--serif);font-size:15px;color:var(--fg)}
-.pd .rg{display:none;margin-right:6px}
+        // --- ガチャマシンのコンポーネント ---
+        const GachaMachine = ({ onPlay }) => {
+            const [isImageLoaded, setIsImageLoaded] = useState(false);
 
-/* 相談 */
-.help{display:flex;align-items:center;gap:12px;margin-top:22px;padding:14px 18px;border-radius:14px;background:#fff6dc;border:1px solid #f1d58a;font-size:14px}
-.help span{font-size:24px;line-height:1;flex:none}
-.help p{margin:0}
-.help b{color:var(--d)}
+            useEffect(() => {
+                const timer = setTimeout(() => setIsImageLoaded(true), 3000);
+                return () => clearTimeout(timer);
+            }, []);
 
-/* 詳細 */
-.detail{margin-top:22px;border-top:1px solid var(--line);padding-top:22px;animation:show .4s ease-out}
-@keyframes show{from{opacity:0;transform:translateY(6px)}}
-.d-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:2px}
-.tag{font-size:12px;font-weight:700;color:#fff;background:var(--pc);border-radius:999px;padding:1px 10px;letter-spacing:.04em}
-.d-no{font-family:var(--serif);font-size:13px;color:var(--muted);letter-spacing:.1em}
-.detail h2{margin:4px 0 14px;font-family:var(--serif);font-weight:700;font-size:22px;line-height:1.4;letter-spacing:.04em;
-  color:#fff;background:var(--pc);border-radius:12px;padding:10px 18px}
-.time{margin:-4px 0 14px;font-size:14px;color:var(--muted)}
-.time b{color:var(--fg);margin-right:6px}
-.detail ul{margin:0 0 20px;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
-.detail li{position:relative;padding:0 0 0 22px;font-size:15px}
-.detail li::before{content:"";position:absolute;left:4px;top:.65em;width:6px;height:6px;border-radius:50%;background:var(--pc)}
-.links{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}
-.links a{display:inline-flex;align-items:center;gap:10px;text-decoration:none;color:#fff;background:var(--pc);border:2px solid var(--pc);border-radius:12px;
-  padding:12px 22px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 0 color-mix(in srgb,var(--pc) 60%,#000);transition:transform .15s,box-shadow .15s,filter .15s}
-.links a::before{content:"📄";font-size:16px}
-.links a:hover{transform:translateY(-2px);filter:brightness(1.08);box-shadow:0 6px 0 color-mix(in srgb,var(--pc) 60%,#000)}
-.links a:active{transform:translateY(3px);box-shadow:0 1px 0 color-mix(in srgb,var(--pc) 60%,#000)}
-.links a:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
-.links a.todo{color:var(--muted);border-style:dashed;border-color:#d8c9a6;cursor:default;background:var(--soft);box-shadow:none;transform:none;filter:none}
-.nav{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.nav button{all:unset;cursor:pointer;font-weight:700;font-size:15px;padding:12px 24px;border-radius:999px;color:var(--fg);border:2px solid var(--line);background:var(--card);transition:transform .15s,background .15s,border-color .15s}
-.nav button:hover{border-color:var(--fg);transform:translateY(-2px)}
-.nav button.next{margin-left:auto;background:var(--fg);color:var(--card);border-color:var(--fg);padding:12px 30px;box-shadow:0 4px 0 #000}
-.nav button.next:active{transform:translateY(3px);box-shadow:none}
-.nav button.next:hover{background:var(--pc);border-color:var(--pc)}
-.nav button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
-.nav button[hidden]{display:none}
+            return (
+                <div 
+                    className="flex flex-col items-center justify-center cursor-pointer group w-full h-[100dvh] touch-manipulation select-none" 
+                    onClick={onPlay}
+                >
+                    <div className="relative w-full h-full p-4 sm:p-6 md:p-10 transition-transform duration-300 active:scale-95 md:group-hover:scale-[1.02] flex items-center justify-center">
+                        {!isImageLoaded && (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center z-20 bg-zinc-900/50 backdrop-blur-sm">
+                                <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-4 shadow-[0_0_15px_rgba(245,158,11,0.5)]"></div>
+                                <p className="text-amber-400 font-bold animate-pulse drop-shadow-md">ガチャ準備中...</p>
+                            </div>
+                        )}
 
-/* 写真 */
-.d-body{display:grid;grid-template-columns:1fr 300px;gap:24px;align-items:start}
-.photo{margin:0;border-radius:14px;overflow:hidden;aspect-ratio:4/3;background:var(--soft);border:1px solid var(--line)}
-.photo img{display:block;width:100%;height:100%;object-fit:cover}
-.photo.contain{background:#2e2d2b}
-.photo.contain img{object-fit:contain}
-.photo.empty{display:grid;place-content:center;text-align:center;color:var(--muted);font-size:12px;
-  background:repeating-linear-gradient(135deg,var(--soft) 0 14px,#fffaf0 14px 28px)}
-.photo.empty span{display:block;font-size:36px;line-height:1.3;opacity:.75}
+                        <img 
+                            src="https://github.com/user-attachments/assets/a3f56b5a-4215-4063-b622-80f7e6953db6" 
+                            alt="速達生ビールガチャ" 
+                            className={`block w-auto h-auto max-w-full max-h-full md:max-w-[720px] object-contain rounded-2xl drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)] transition-opacity duration-700 ease-in-out ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                            onLoad={() => setIsImageLoaded(true)}
+                            onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = "https://placehold.co/1080x1080/27272a/f59e0b?text=Tap+to+Start!%5Cn(Your+Image+Here)";
+                                setIsImageLoaded(true);
+                            }}
+                        />
+                        <div className="absolute inset-0 bg-white opacity-0 active:opacity-10 md:group-hover:opacity-10 transition-opacity duration-300 pointer-events-none"></div>
+                    </div>
+                </div>
+            );
+        };
 
-/* ⑥のゴール演出 */
-.goal{display:flex;align-items:center;gap:18px;border-radius:16px;padding:14px 20px;margin:0 0 16px;
-  background:linear-gradient(135deg,#fff7dc,#ffeab3);border:1px solid #f1d58a}
-.goal svg{width:62px;flex:none;overflow:visible}
-.goal h3{margin:2px 0 4px;font-family:var(--serif);font-size:clamp(19px,2.8vw,26px);font-weight:700;line-height:1.45;color:var(--d);word-break:keep-all;text-wrap:balance}
-.goal .g-label{margin:0;font-size:13px;font-weight:700;color:var(--fg)}
-.goal p{margin:2px 0 0;font-size:13px;color:var(--muted)}
-.goal .liquid{transform:translateY(64px);animation:fill 1.4s .2s cubic-bezier(.4,0,.2,1) forwards}
-@keyframes fill{to{transform:translateY(0)}}
-.goal .head{transform-box:fill-box;transform-origin:50% 100%;transform:scale(0);animation:head .5s 1.5s cubic-bezier(.3,1.6,.5,1) forwards}
-@keyframes head{to{transform:scale(1)}}
-.goal .gb{opacity:0;animation:gb 1.8s linear infinite}
-.goal .gb:nth-of-type(2){animation-delay:.6s}.goal .gb:nth-of-type(3){animation-delay:1.2s}
-@keyframes gb{0%{opacity:0;transform:translateY(0)}20%{opacity:.9}100%{opacity:0;transform:translateY(-40px)}}
+        // --- 詐欺対策用の現在時刻表示コンポーネント ---
+        const RealTimeClock = () => {
+            const [time, setTime] = useState(new Date());
+            useEffect(() => {
+                const timer = setInterval(() => setTime(new Date()), 1000);
+                return () => clearInterval(timer);
+            }, []);
+            
+            const formattedTime = time.toLocaleString('ja-JP', { 
+                year: 'numeric', month: '2-digit', day: '2-digit', 
+                hour: '2-digit', minute: '2-digit', second: '2-digit' 
+            });
 
-@media (max-width:680px){
-  .d-body{grid-template-columns:1fr;gap:14px}
-  .photo{order:-1;aspect-ratio:16/9}
-  .goal{padding:12px 14px;gap:12px}
-  .goal svg{width:48px}
-  body{padding-top:88px}
-  .card{padding:22px 12px 18px;border-radius:20px}
-  .truck{width:104px}
-  .road{height:58px}
-  .ph{flex-direction:column;gap:2px;padding:6px 2px}
-  .ph b{font-size:18px}
-  .ph span{font-size:10.5px;align-items:center}
-  .ph small{display:none}
-  .steps,.period{gap:4px}
-  .step{padding:9px 2px;border-radius:9px}
-  .step .t{font-size:10.5px}
-  .step .n{width:24px;height:24px;font-size:13px}
-  .detail h2{font-size:19px;padding:9px 14px}
-  .period{grid-template-columns:1fr!important;gap:6px;margin-top:14px}
-  .pd{grid-column:auto!important;display:flex}
-  .pd .br{display:none}
-  .pd .lb{margin:0;text-align:left;font-size:12px}
-  .pd .lb b{display:inline;font-size:14px;margin:0 6px}
-  .pd .rg{display:inline}
-  .links a{flex:1 1 100%;justify-content:center}
-  .nav button{padding:11px 18px;font-size:14px}
-  .nav button.next{padding:11px 22px}
-}
-@media (prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation:none!important;transition:none!important}
-  .goal .liquid,.goal .head{transform:none}
-}
-</style>
+            return (
+                <div 
+                    className="text-white font-mono text-xl sm:text-2xl md:text-3xl font-black tracking-widest drop-shadow-[0_3px_6px_rgba(0,0,0,0.95)] whitespace-nowrap"
+                    style={{ WebkitTextStroke: '0.8px black', paintOrder: 'stroke fill' }}
+                >
+                    {formattedTime}
+                </div>
+            );
+        };
 
-<div class="beer" aria-hidden="true">
-  <div class="foam"><i></i><i></i></div>
-  <div id="bubbles"></div>
-</div>
+        // --- アプリケーションのメイン ---
+        const App = () => {
+          const [stage, setStage] = useState('idle');
+          const [prizeId, setPrizeId] = useState(null);
+          const [isLoaded, setIsLoaded] = useState(false); 
+          const [shopName, setShopName] = useState("店舗");
 
-<div class="wrap">
-  <header>
-    <p class="eyebrow">HOW TO START</p>
-    <h1>導入フロー</h1>
-    <span class="rule" aria-hidden="true"></span>
-    <p class="lead">ステップを選ぶと、トラックがそこまで走り、やることと資料をご案内します。</p>
-  </header>
+          const videoRef = useRef(null);
+          const audioCtxRef = useRef(null);
 
-  <section class="card" aria-label="導入フロー">
-    <div class="road" aria-hidden="true">
-      <div class="truck" id="truck"><img id="truckImg" src="../bubble/truck-right.webp" alt=""></div>
-    </div>
-    <div class="pdca" id="pdca"></div>
-    <div class="steps" id="steps" role="group" aria-label="ステップを選ぶ"></div>
-    <div class="period" id="period"></div>
-    <div id="detail" aria-live="polite"></div>
-    <div class="help" id="help"></div>
-  </section>
-</div>
+          const activePrize = useMemo(() => {
+              if (!prizeId) return null;
+              return PRIZES.find(p => p.id === prizeId) || PRIZES[2];
+          }, [prizeId]);
 
-<script>
-/* ===== ここだけ編集すればOK =====
-   url に資料やページのURLを入れてください。空欄("")のボタンは「準備中」表示になります。
-   サイト内のページは、そのページを開いたときのアドレスバーのURLをそのまま貼ればOKです。
-   例：{label:"コンテンツ一覧を見る", url:"https://mmtoolbox.wixsite.com/010m-xtech/contents"}
-   phase は P / D / C / A のどれかです（上の色の帯と対応します）。
-   photo に写真のURL（またはこのフォルダに置いた画像のファイル名）を入れると、詳細の横に写真が出ます。
-   空欄("")のときは「写真準備中」の枠になります。photoAlt は写真の説明です。
-   photoFit:"contain" にすると、写真を切り取らずに全体を表示します（一覧画像など）。 */
-/* タイトル中の「|」はボタン内で改行してよい位置です */
-const STEPS = [
-  { phase:"P", title:"お店を|選ぶ",
-    todo:["ターゲット店を決める",
-          "ターゲット店をセグメント分けする"],
-    links:[{label:"客層セグメント判定", url:""}],
-    photo:"step1.webp", photoAlt:"資料を見ながら検討する様子", icon:"🏪" },
-  { phase:"P", title:"案内する|コンテンツを|選ぶ",
-    todo:["①の客層セグメント判定の結果で、ターゲット店におすすめのコンテンツを参考にする",
-          "ターゲット店の悩みを事前に想定していれば、それに合ったコンテンツを参考にする"],
-    links:[{label:"コンテンツ", url:""}],
-    photo:"step2.webp", photoAlt:"コンテンツ一覧", photoFit:"contain", icon:"📋" },
-  { phase:"D", title:"内容|説明",
-    todo:["提案資料を使って説明する",
-          "他店の事例を紹介して、パートナーにイメージしてもらう"],
-    links:[{label:"提案資料", url:""},{label:"他店事例／コンテンツメリット", url:""}],
-    photo:"step3.webp", photoAlt:"テーブルで資料を広げて説明する様子", icon:"💬" },
-  { phase:"D", title:"パートナーと|共創",
-    todo:["パートナー独自のサービスをパートナーと一緒に作る",
-          "POPの見せ方から中身の内容まで決める"],
-    links:[{label:"他店事例／コンテンツメリット", url:""},{label:"POP事例", url:""}],
-    photo:"step4.webp", photoAlt:"パートナーと握手する様子", icon:"🤝" },
-  { phase:"C", title:"設置して|反応を|見る",
-    todo:["パートナーからの声を現場で聞いてみましょう",
-          "スプレッドシートにてデータ管理（クロステクノからフィードバック）"],
-    links:[],
-    photo:"step5.webp", photoAlt:"店舗スタッフと資料を見ながら話す様子", icon:"📍" },
-  { phase:"A", title:"データで|振り返る",
-    todo:["どの数字が良かったか、良くなかったかを確認する",
-          "分析結果から次の行動を決める"],
-    links:[],
-    photo:"step6.webp", photoAlt:"データを振り返るイメージ", icon:"📊" }
-];
-const PHASES = [
-  { key:"P", name:"Plan",   ja:"計画", sub:"どこで・何を" },
-  { key:"D", name:"Do",     ja:"実行", sub:"提案して一緒につくる" },
-  { key:"C", name:"Check",  ja:"評価", sub:"" },
-  { key:"A", name:"Action", ja:"改善", sub:"" }
-];
-/* 期間の目安：from〜to のステップの下にカッコで表示し、各ステップの詳細にも出します（time の「|」は改行してよい位置） */
-const PERIODS = [
-  { from:1, to:2, label:"目安", time:"1日", note:"" },
-  { from:3, to:5, label:"打合せから納品まで", time:"早ければ 1〜2週間", note:"※選定したコンテンツや改修内容によって異なります" },
-  { from:6, to:6, label:"", time:"2〜3か月ごとに|振り返り", note:"内容を改修するなどして、サイクルを回していきます" }
-];
-/* ページ下の相談メッセージ */
-const HELP = "※悩んだり・わからない箇所があれば、<b>クロステクノ</b>へお気軽にご相談ください。";
-/* ===== 編集ここまで ===== */
+          useEffect(() => {
+              const urlParams = new URLSearchParams(window.location.search);
+              setShopName(urlParams.get('shop') || "店舗");
+              setIsLoaded(true);
+          }, []);
 
-/* サイト内のページ（mmtoolbox.wixsite.com）は同じ画面で移動、それ以外の資料は新しいタブで開く */
-const SITE="mmtoolbox.wixsite.com/010m-xtech";
-const isSite=u=>u.includes(SITE);
+          const bubbles = useMemo(() => {
+            return Array.from({ length: 400 }).map((_, i) => {
+                const size = Math.random() * 20 + 5; 
+                const left = Math.random() * 100;
+                const duration = Math.random() * 4 + 2; 
+                const delay = Math.random() * -10; 
+                return { size, left, duration, delay };
+            });
+          }, []);
 
-const COLOR={P:"var(--p)",D:"var(--d)",C:"var(--c)",A:"var(--a)"};
-const nums="①②③④⑤⑥";
-const $=id=>document.getElementById(id);
-const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const plain=s=>s.split("|").join("");
-const phaseOf=k=>PHASES.find(p=>p.key===k)||PHASES[0];
+          const drawPrize = () => {
+            const rand = Math.random() * 100;
+            let sum = 0;
+            for (const prize of PRIZES) {
+                sum += prize.prob;
+                if (rand <= sum) return prize;
+            }
+            return PRIZES[PRIZES.length - 1];
+          };
 
-/* 気泡 */
-const bub=$("bubbles");
-for(let k=0;k<20;k++){
-  const b=document.createElement("span"); b.className="bubble";
-  const s=3+Math.random()*9;
-  b.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*100}%;--t:${9+Math.random()*10}s;--dl:${-Math.random()*24}s`;
-  bub.appendChild(b);
-}
+          const playFanfare = (ctx) => {
+              if (!ctx) return;
+              try {
+                  const playNote = (freq, startTime, duration) => {
+                      const osc = ctx.createOscillator();
+                      const gain = ctx.createGain();
+                      osc.connect(gain);
+                      gain.connect(ctx.destination);
+                      osc.type = 'triangle'; 
+                      osc.frequency.value = freq;
+                      
+                      gain.gain.setValueAtTime(0, startTime);
+                      gain.gain.linearRampToValueAtTime(0.2, startTime + 0.05);
+                      gain.gain.setValueAtTime(0.2, startTime + duration - 0.05);
+                      gain.gain.linearRampToValueAtTime(0, startTime + duration);
+                      
+                      osc.start(startTime);
+                      osc.stop(startTime + duration);
+                  };
+                  
+                  const now = ctx.currentTime;
+                  playNote(523.25, now, 0.15);
+                  playNote(659.25, now + 0.15, 0.15);
+                  playNote(783.99, now + 0.30, 0.15);
+                  playNote(1046.50, now + 0.45, 0.5);
+              } catch (e) {
+                  console.error("Audio playback error:", e);
+              }
+          };
 
-/* PDCAの帯（列幅はステップ数に合わせて自動） */
-const pdcaEl=$("pdca");
-pdcaEl.style.gridTemplateColumns=PHASES.map(p=>STEPS.filter(s=>s.phase===p.key).length+"fr").join(" ");
-PHASES.forEach(p=>{
-  const d=document.createElement("div"); d.className="ph"; d.dataset.k=p.key; d.style.setProperty("--pc",COLOR[p.key]);
-  d.innerHTML=`<b>${p.name[0]}</b><span>${p.name}｜${p.ja}${p.sub?`<small>${p.sub}</small>`:""}</span>`;
-  pdcaEl.appendChild(d);
-});
+          useEffect(() => {
+            if (stage === 'result' && activePrize && activePrize.soundType === 'fanfare') {
+                playFanfare(audioCtxRef.current);
+            }
+          }, [stage, activePrize]);
 
-/* ステップボタン */
-const stepsEl=$("steps");
-STEPS.forEach((s,i)=>{
-  const b=document.createElement("button");
-  b.type="button"; b.className="step"; b.id="step-"+i; b.style.setProperty("--pc",COLOR[s.phase]);
-  b.setAttribute("aria-pressed","false"); b.setAttribute("aria-controls","detail");
-  b.innerHTML=`<span class="n">${i+1}</span><span class="t">${esc(s.title).split("|").join("<wbr>")}</span>`;
-  b.addEventListener("click",()=>show(i));
-  b.addEventListener("keydown",e=>{
-    const d=e.key==="ArrowRight"?1:e.key==="ArrowLeft"?-1:0;
-    if(d&&STEPS[i+d]){e.preventDefault();show(i+d);$("step-"+(i+d)).focus();}
-  });
-  stepsEl.appendChild(b);
-});
+          const handlePlay = () => {
+            if (stage !== 'idle') return;
 
-/* 期間の目安 */
-const pe=$("period");
-pe.style.gridTemplateColumns=`repeat(${STEPS.length},1fr)`;
-pe.innerHTML=PERIODS.map(d=>`<div class="pd" style="grid-column:${d.from}/${d.to+1}">
-  <div class="br"></div>
-  <p class="lb"><span class="rg">${d.from===d.to?nums[d.from-1]:nums[d.from-1]+"〜"+nums[d.to-1]}</span>${d.label?esc(d.label):""}<b>${esc(d.time).split("|").join("<wbr>")}</b>${d.note?esc(d.note):""}</p>
-</div>`).join("");
-const periodOf=i=>PERIODS.find(d=>i+1>=d.from&&i+1<=d.to);
-$("help").innerHTML=`<span aria-hidden="true">💬</span><p>${HELP}</p>`;
+            if (!audioCtxRef.current) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) {
+                    audioCtxRef.current = new AudioContext();
+                }
+            }
+            if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
+                audioCtxRef.current.resume();
+            }
 
-/* トラック写真は bubble フォルダのものを使用（右へ走るときは右向き、左へ戻るときは左向きの写真） */
-const truck=$("truck"), truckImg=$("truckImg");
-let cur=-1, stopTimer, demo=null;
-function drive(i,dur=1200){
-  const from=cur;
-  truck.style.transitionDuration=dur+"ms";
-  truck.style.left=((i+.5)/STEPS.length*100)+"%";
-  cur=i;
-  if(from===-1||from===i) return;
-  truckImg.src = i<from ? "../bubble/truck.webp" : "../bubble/truck-right.webp";
-  truck.classList.add("moving");
-  clearTimeout(stopTimer);
-  stopTimer=setTimeout(()=>truck.classList.remove("moving"),dur);
-}
-function highlight(i){
-  [...stepsEl.children].forEach((b,j)=>b.setAttribute("aria-pressed",j===i?"true":"false"));
-  [...pdcaEl.children].forEach(d=>d.classList.toggle("on",d.dataset.k===STEPS[i].phase));
-}
+            if (navigator.vibrate) {
+                navigator.vibrate([100, 50, 100]); 
+            }
+            
+            const prize = drawPrize();
+            setPrizeId(prize.id);
+            setStage('playing_video');
+            
+            if (videoRef.current) {
+                videoRef.current.currentTime = 0;
+                videoRef.current.play().catch(e => console.error("動画の再生に失敗しました:", e));
+            }
+          };
 
-const GOAL=`<div class="goal" role="status">
-  <svg viewBox="0 0 80 100" aria-hidden="true">
-    <defs><clipPath id="glass"><rect x="15" y="22" width="40" height="70" rx="6"/></clipPath></defs>
-    <g clip-path="url(#glass)">
-      <rect class="liquid" x="15" y="30" width="40" height="62" fill="#f4b73c"/>
-      <circle class="gb" cx="26" cy="84" r="1.8" fill="#fff"/><circle class="gb" cx="38" cy="88" r="1.4" fill="#fff"/><circle class="gb" cx="46" cy="82" r="1.6" fill="#fff"/>
-    </g>
-    <g class="head" fill="#fffaf0" stroke="#33260f" stroke-width="2.5">
-      <path d="M13 32c-4-9 4-16 11-12 3-7 14-8 18-1 6-5 17 0 15 9v4H13z" stroke-linejoin="round"/>
-    </g>
-    <rect x="15" y="22" width="40" height="70" rx="6" fill="none" stroke="#33260f" stroke-width="3"/>
-    <path d="M55 40h7a8 8 0 0 1 8 8v14a8 8 0 0 1-8 8h-7" fill="none" stroke="#33260f" stroke-width="3"/>
-  </svg>
-  <div><p class="g-label">1サイクル完了、乾杯！</p>
-    <h3>“遊び”をきっかけに、<wbr>パートナーとの信頼関係を<wbr>構築していってください！</h3>
-    <p>2〜3か月ごとに振り返り、内容を改修するなどして、サイクルを回していきましょう。</p></div>
-</div>`;
+          if (!isLoaded) return null;
 
-function show(i){
-  stopDemo();
-  drive(i); highlight(i);
-  const s=STEPS[i], p=phaseOf(s.phase);
-  const links=s.links.map(l=> l.url
-    ? (isSite(l.url)
-        ? `<a href="${esc(l.url)}" target="_top">${esc(l.label)} →</a>`
-        : `<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)} ↗</a>`)
-    : `<a class="todo" aria-disabled="true">${esc(l.label)}（準備中）</a>`).join("");
-  const photo=s.photo
-    ? `<figure class="photo${s.photoFit==="contain"?" contain":""}"><img src="${esc(s.photo)}" alt="${esc(s.photoAlt||plain(s.title))}" loading="lazy"></figure>`
-    : `<figure class="photo empty" aria-hidden="true"><span>${s.icon||"📷"}</span>写真準備中</figure>`;
-  $("detail").innerHTML=`<div class="detail" style="--pc:${COLOR[s.phase]}">
-    <div class="d-top"><span class="tag">${p.name}｜${p.ja}</span><span class="d-no">STEP ${i+1} / ${STEPS.length}</span></div>
-    <h2>${nums[i]} ${esc(plain(s.title))}</h2>
-    ${periodOf(i)?`<p class="time">⏱ 期間の目安：<b>${esc(plain(periodOf(i).time))}</b>${esc(periodOf(i).note)}</p>`:""}
-    ${i===STEPS.length-1?GOAL:""}
-    <div class="d-body"><div>
-      <ul>${s.todo.map(t=>`<li>${esc(t)}</li>`).join("")}</ul>
-      ${links?`<div class="links">${links}</div>`:""}
-    </div>${photo}</div>
-    <div class="nav">
-      <button type="button" class="prev"${i===0?" hidden":""}>← 前のステップ</button>
-      <button type="button" class="next">${i===STEPS.length-1?"①に戻って次のサイクルへ ↻":"次のステップへ →"}</button>
-    </div></div>`;
-  const panel=$("detail").firstElementChild;
-  panel.querySelector(".prev").addEventListener("click",()=>show(i-1));
-  panel.querySelector(".next").addEventListener("click",()=>show(i===STEPS.length-1?0:i+1));
-}
+          return (
+            <React.Fragment>
+              <style>{customStyles}</style>
+              
+              <div className="min-h-screen bg-gradient-to-b from-yellow-100 via-yellow-400 to-amber-600 font-sans overflow-x-hidden relative selection:bg-amber-800 selection:text-white">
+                
+                <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+                    {bubbles.map((bubble, i) => (
+                        <div key={i}
+                             className="absolute bottom-0 bg-white/50 rounded-full border border-white/40 backdrop-blur-[2px] shadow-[0_0_8px_rgba(255,255,255,0.6)]"
+                             style={{
+                                 width: `${bubble.size}px`, height: `${bubble.size}px`, left: `${bubble.left}%`,
+                                 animation: `riseUp ${bubble.duration}s linear infinite ${bubble.delay}s`
+                             }}
+                        />
+                    ))}
+                    <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-white/60 rounded-full blur-[100px] mix-blend-overlay"></div>
+                    <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-orange-600/30 rounded-full blur-[120px] mix-blend-color-burn"></div>
+                </div>
 
-/* 最初に画面に入ったとき、トラックが①→⑥を一度走って①に戻る（どこかを押したら止まる） */
-function stopDemo(){ if(demo!==null){clearTimeout(demo);demo=null;} }
-function runDemo(){
-  if(matchMedia("(prefers-reduced-motion:reduce)").matches) return;
-  const seq=[...STEPS.keys()].slice(1).concat(0);
-  let k=0;
-  const step=()=>{
-    if(k>=seq.length){demo=null;return;}
-    const i=seq[k++], d=i===0?1400:600;
-    drive(i,d); highlight(i);
-    demo=setTimeout(step,d+(i===STEPS.length-1?500:120));
-  };
-  demo=setTimeout(step,500);
-}
+                <div className="w-full mx-auto flex flex-col items-center justify-center min-h-[100dvh] relative z-10">
+                    <div className="w-full h-[100dvh] flex justify-center items-center">
+                        <GachaMachine onPlay={handlePlay} />
+                    </div>
+                </div>
 
-new Image().src="../bubble/truck.webp";
-show(0);
-const card=document.querySelector(".card");
-if("IntersectionObserver" in window){
-  const io=new IntersectionObserver(es=>{ if(es.some(e=>e.isIntersecting)){io.disconnect();runDemo();} },{threshold:.4});
-  io.observe(card);
-}else runDemo();
-</script>
+                <div 
+                    className={`fixed inset-0 bg-black z-50 flex items-center justify-center transition-opacity duration-300 ${stage === 'playing_video' ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+                    style={{ visibility: stage === 'playing_video' ? 'visible' : 'hidden' }}
+                >
+                    <video 
+                        ref={videoRef}
+                        src="https://github.com/user-attachments/assets/e6cba716-a806-4e82-84cb-618aa012f1f2"
+                        className="w-full h-full object-contain"
+                        playsInline
+                        onEnded={() => setStage('result')}
+                    ></video>
+                </div>
+
+                {stage === 'result' && (
+                    /* 🌟 変更箇所: 背景を強制的に真っ黒で塗りつぶし、後ろの映像が透けるのを完全に防ぐ */
+                    <div 
+                        className="fixed inset-0 z-50 flex flex-col justify-between items-center p-4 overflow-y-auto min-h-[100dvh]"
+                        style={{ backgroundColor: '#000000' }} 
+                    >
+                        
+                        {/* 🌟 変更箇所: 透明度を使わない静止画の濃いサンバーストを配置 */}
+                        <div className="absolute inset-0 sunburst -z-10 pointer-events-none"></div>
+                        
+                        {activePrize && (
+                            <div className="flex-grow flex flex-col items-center justify-center w-full max-w-[340px] md:max-w-xl py-4 animate-[popZoom_0.6s_cubic-bezier(0.175,0.885,0.32,1.275)_forwards]">
+                                
+                                <div className="flex items-center justify-center gap-3 md:gap-8 mb-4 relative">
+                                    <div className={`w-20 h-20 md:w-36 md:h-36 rounded-full border-4 md:border-8 ${activePrize.border} flex flex-col items-center justify-center bg-zinc-900/95 ${activePrize.glow || 'shadow-[0_10px_40px_rgba(0,0,0,0.8)]'} relative z-10`}>
+                                        <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/20 to-transparent pointer-events-none"></div>
+                                        <span 
+                                            className={`text-2xl md:text-5xl font-black ${activePrize.text} drop-shadow-[0_0_15px_rgba(255,255,255,0.4)] tracking-tighter`}
+                                            style={{ WebkitTextStroke: '1.5px #000', paintOrder: 'stroke fill' }}
+                                        >
+                                            {activePrize.rank}
+                                        </span>
+                                        <React.Fragment>
+                                            <span className="absolute -top-6 md:-top-8 text-3xl md:text-6xl drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)] animate-bounce">👑</span>
+                                            <span className="absolute top-1 left-1 text-base animate-ping">✨</span>
+                                            <span className="absolute bottom-2 right-1 text-xl animate-pulse">✨</span>
+                                        </React.Fragment>
+                                    </div>
+                                    
+                                    <div className="relative z-10 flex items-center justify-center w-20 h-20 md:w-36 md:h-36">
+                                        {activePrize.imgUrl ? (
+                                            <img 
+                                                src={activePrize.imgUrl} 
+                                                alt={activePrize.rank} 
+                                                className="w-full h-full object-contain filter drop-shadow-[0_15px_25px_rgba(0,0,0,0.8)] animate-[imagePop_0.8s_cubic-bezier(0.175,0.885,0.32,1.275)_forwards]" 
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full filter drop-shadow-[0_15px_25px_rgba(0,0,0,0.8)] bg-white/5 rounded-3xl p-1.5 backdrop-blur-sm border border-white/10 relative">
+                                                <BeerGlass rank={activePrize.rank} />
+                                            </div>
+                                        )}
+                                        <div className="absolute inset-0 bg-yellow-400 mix-blend-overlay animate-pulse rounded-full blur-2xl opacity-20 pointer-events-none"></div>
+                                    </div>
+                                </div>
+
+                                {activePrize.name && (
+                                    <h2 className={`text-2xl md:text-4xl font-black mb-2 drop-shadow-[0_5px_10px_rgba(0,0,0,0.9)] ${activePrize.text} tracking-tight text-center`} style={{ WebkitTextStroke: '1.5px #000', paintOrder: 'stroke fill' }}>
+                                        {activePrize.name}
+                                    </h2>
+                                )}
+                                
+                                <div className="bg-zinc-900/90 px-4 py-4 md:px-12 md:py-6 rounded-2xl border-2 border-amber-500/30 text-center backdrop-blur-md shadow-[0_15px_30px_rgba(0,0,0,0.8)] relative z-10 w-full">
+                                    <div className="text-xl md:text-3xl font-black text-yellow-400 tracking-tight leading-snug drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] mb-2">
+                                        {activePrize.resultTitle}
+                                    </div>
+                                    
+                                    <div className="text-xl md:text-3xl font-black gold-text-shimmer tracking-tight leading-snug px-1">
+                                        <div>{activePrize.giftLine1}</div>
+                                        <div className="text-2xl md:text-4xl font-extrabold my-1">{activePrize.giftLine2}</div>
+                                        <div className="text-3xl md:text-5xl font-black mt-1">
+                                            {activePrize.giftLine3}
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="mt-5 flex flex-col gap-2.5 items-center justify-center w-full">
+                                        <div className="py-2.5 px-3 bg-gradient-to-r from-green-500 to-green-600 rounded-xl border-2 border-green-300 shadow-[0_0_20px_rgba(34,197,94,0.5)] w-full">
+                                            <p className="text-base md:text-xl font-black text-white drop-shadow-md leading-snug">
+                                                会計時にこの画面を見せて<br />
+                                                景品をもらってね！
+                                            </p>
+                                        </div>
+                                        <p className="text-yellow-300 font-black text-xs md:text-base drop-shadow-[0_2px_5px_rgba(0,0,0,0.9)] whitespace-nowrap tracking-wide">
+                                            ※スクショか写真を撮って後で見せてください
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        
+                        <div className="w-full text-center pb-2 z-50">
+                            {activePrize && <RealTimeClock />}
+                        </div>
+                    </div>
+                )}
+              </div>
+            </React.Fragment>
+          );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
