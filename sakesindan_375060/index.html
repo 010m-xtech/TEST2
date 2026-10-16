@@ -377,11 +377,60 @@
         @keyframes puddleGrow { from { transform: scale(0); } to { transform: scale(1); } }
         .puddle-grow { transform-box: fill-box; transform-origin: center; animation-name: puddleGrow; animation-timing-function: ease-out; }
 
+
+        /* ▼ 動くイラスト（こぼれ・すり切り・カチ割り）：何もしないときは「できあがり」の形 ▼ */
+        .wine-anim * { transform-box: fill-box; }
+        .wine-anim .wa-cycle { animation: waCycle 7s linear infinite; }
+        @keyframes waCycle { 0% { opacity: 0; } 4%, 94% { opacity: 1; } 100% { opacity: 0; } }
+        .ko-stream, .su-stream, .ka-stream { opacity: 0; transform-origin: 50% 0; }
+        /* こぼれ */
+        .ko-stream { animation: koStream 7s ease-out infinite; }
+        @keyframes koStream { 0%, 3% { opacity: 1; transform: scaleY(0); } 9% { transform: scaleY(1); } 46% { opacity: 1; transform: scaleY(1); } 52%, 100% { opacity: 0; transform: scaleY(1); } }
+        .ko-rise { animation: koRise 7s ease-in-out infinite; }
+        @keyframes koRise { 0%, 6% { transform: translateY(102px); } 44%, 100% { transform: translateY(0); } }
+        .ko-foam { transform-origin: 50% 100%; animation: koFoam 7s ease-out infinite; }
+        @keyframes koFoam { 0%, 38% { transform: scale(.6, 0); } 50% { transform: scale(1.06, 1.15); } 56% { transform: scale(1, 1); } 72% { transform: scale(1.03, 1.08); } 88%, 100% { transform: scale(1, 1); } }
+        .ko-drip { stroke-dasharray: 110; stroke-dashoffset: 0; animation: koDrip 7s ease-in infinite; }
+        .ko-drip2 { animation-name: koDrip2; }
+        @keyframes koDrip { 0%, 48% { stroke-dashoffset: 110; } 74%, 100% { stroke-dashoffset: 0; } }
+        @keyframes koDrip2 { 0%, 54% { stroke-dashoffset: 110; } 80%, 100% { stroke-dashoffset: 0; } }
+        .ko-drop { opacity: 0; animation: koDrop 7s ease-in infinite; }
+        .ko-drop2 { animation-delay: -.6s; }
+        @keyframes koDrop { 0%, 70% { opacity: 0; transform: translateY(0); } 72% { opacity: 1; } 80% { opacity: 1; transform: translateY(20px); } 82%, 100% { opacity: 0; transform: translateY(22px); } }
+        .ko-pool { transform-origin: 50% 50%; animation: koPool 7s ease-out infinite; }
+        @keyframes koPool { 0%, 62% { transform: scaleX(0); } 92%, 100% { transform: scaleX(1); } }
+        /* すり切り */
+        .su-stream { animation: suStream 7s ease-out infinite; }
+        @keyframes suStream { 0%, 3% { opacity: 1; transform: scaleY(0); } 9% { transform: scaleY(1); } 54% { opacity: 1; transform: scaleY(1); } 60%, 100% { opacity: 0; transform: scaleY(1); } }
+        .su-rise { animation: suRise 7s ease-in-out infinite; }
+        @keyframes suRise { 0%, 6% { transform: translateY(96px); } 50%, 100% { transform: translateY(0); } }
+        .su-dome { transform-origin: 50% 100%; animation: suDome 7s ease-out infinite; }
+        @keyframes suDome { 0%, 48% { transform: scaleY(0); } 60% { transform: scaleY(1.25); } 66% { transform: scaleY(.92); } 72%, 100% { transform: scaleY(1); } }
+        .su-glint { opacity: .8; animation: suGlint 7s ease-in-out infinite; }
+        @keyframes suGlint { 0%, 64% { opacity: 0; transform: translateX(0); } 72% { opacity: .9; } 90%, 100% { opacity: .3; transform: translateX(22px); } }
+        .su-spark path { transform-origin: 50% 50%; opacity: 0; animation: suSpark 7s ease-out infinite; }
+        .su-spark .su-spark2 { animation-delay: .3s; }
+        @keyframes suSpark { 0%, 66% { opacity: 0; transform: scale(0) rotate(0); } 72% { opacity: 1; transform: scale(1.2) rotate(45deg); } 82% { opacity: 1; transform: scale(1) rotate(90deg); } 90%, 100% { opacity: 0; transform: scale(.4) rotate(120deg); } }
+        /* カチ割り */
+        .ka-ice { animation: kaIce1 7s ease-in infinite; }
+        .ka-i2 { animation-name: kaIce2; }
+        .ka-i3 { animation-name: kaIce3; }
+        @keyframes kaIce1 { 0%, 5% { opacity: 0; transform: translateY(-110px); } 6% { opacity: 1; } 13% { transform: translateY(0); animation-timing-function: ease-out; } 15% { transform: translateY(-4px); animation-timing-function: ease-in; } 17%, 100% { opacity: 1; transform: translateY(0); } }
+        @keyframes kaIce2 { 0%, 11% { opacity: 0; transform: translateY(-90px); } 12% { opacity: 1; } 18% { transform: translateY(0); animation-timing-function: ease-out; } 20% { transform: translateY(-4px); animation-timing-function: ease-in; } 22%, 100% { opacity: 1; transform: translateY(0); } }
+        @keyframes kaIce3 { 0%, 17% { opacity: 0; transform: translateY(-70px); } 18% { opacity: 1; } 23% { transform: translateY(0); animation-timing-function: ease-out; } 25% { transform: translateY(-3px); animation-timing-function: ease-in; } 27%, 100% { opacity: 1; transform: translateY(0); } }
+        .ka-clink { opacity: 0; transform-origin: 50% 50%; animation: kaClink 7s ease-out infinite; }
+        @keyframes kaClink { 0%, 13% { opacity: 0; transform: scale(.6) rotate(-8deg); } 16% { opacity: 1; transform: scale(1.1) rotate(4deg); } 28% { opacity: 1; transform: scale(1) rotate(0); } 34%, 100% { opacity: 0; transform: scale(1); } }
+        .ka-stream { animation: kaStream 7s ease-out infinite; }
+        @keyframes kaStream { 0%, 32% { opacity: 0; transform: scaleY(0); } 33% { opacity: 1; transform: scaleY(0); } 38% { transform: scaleY(1); } 78% { opacity: 1; transform: scaleY(1); } 83%, 100% { opacity: 0; transform: scaleY(1); } }
+        .ka-rise { animation: kaRise 7s ease-in-out infinite; }
+        @keyframes kaRise { 0%, 36% { transform: translateY(90px); } 80%, 100% { transform: translateY(0); } }
+
         @media (prefers-reduced-motion: reduce) {
             .glass-bubble, .pan, .truck-ride, .speed-lines line, .seg-fill, .lg-wave, .lg-foam, .bg-wave-slow, .bg-wave-mid, .bg-wave-fast, .bg-bubble { animation: none; }
             .memory { transform-box: fill-box; transform-origin: 50% 70%; animation: memoryIn 1.4s cubic-bezier(.22,1,.36,1) both, memoryFloat 2.6s ease-in-out infinite alternate; }
             .map-pop, .tap-stream, .gauge-needle, .thermo-fill, .ratio-in { animation-duration: .01s; }
             .beer-rise { animation: none; }
+            .wine-anim .wa-cycle, .wine-anim .wa-cycle * { animation: none !important; }
             .pour-rise, .ice-drop, .brim-swell, .overflow-drip, .puddle-grow { animation-duration: .01s !important; animation-delay: 0s !important; }
                 .btn-shimmer::after, .animate-nudge, .bokeh, .glass-shine, .twinkle, .mystery-q, .mystery-liquid, .slice-pop { animation: none; }
             .cin-left, .cin-right, .cin-text { animation: none; opacity: 1; }
@@ -991,8 +1040,76 @@
                                 <span class="absolute inset-0 photo-vignette pointer-events-none"></span>
                             </div>
                             <div v-else class="w-full h-full flex items-center justify-center bg-[radial-gradient(circle_at_50%_40%,#fbf7ef,#efe6d4)]">
+                                <!-- 動くイラスト：こぼれ・すり切り・カチ割り（くり返し再生） -->
+                                <svg v-if="finalProduct && finalProduct.anim" :key="'anim-' + finalProduct.anim + finalProduct.liquid" viewBox="0 0 120 150" class="h-[88%] wine-anim" aria-hidden="true">
+                                    <defs>
+                                        <clipPath id="animClip"><path :d="productGlass.body" /></clipPath>
+                                        <linearGradient id="animShade" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".2" /><stop offset=".5" stop-color="#fff" stop-opacity="0" /><stop offset="1" stop-color="#000" stop-opacity=".12" /></linearGradient>
+                                    </defs>
+                                    <g class="wa-cycle">
+                                        <!-- こぼれ：注ぐ → いっぱい → 泡があふれて、受け皿へこぼれていく -->
+                                        <template v-if="finalProduct.anim === 'kobore'">
+                                            <ellipse cx="60" cy="134" rx="40" ry="6" fill="none" stroke="#6b5a48" stroke-width="1.6" />
+                                            <ellipse class="ko-pool" cx="60" cy="132.5" rx="34" ry="4" :fill="finalProduct.liquid" stroke="rgba(107,90,72,.4)" stroke-width=".8" />
+                                            <rect class="ko-stream" x="58.5" y="0" width="3" height="120" rx="1.5" :fill="finalProduct.liquid" />
+                                            <g clip-path="url(#animClip)">
+                                                <g class="ko-rise">
+                                                    <rect x="0" y="26" width="120" height="110" :fill="finalProduct.liquid" />
+                                                    <rect x="0" y="26" width="120" height="110" fill="url(#animShade)" />
+                                                    <circle v-for="b in glassBubbles" :key="'ab' + b.id" class="glass-bubble" :cx="b.cx" :cy="b.cy" :r="b.r" fill="rgba(255,255,255,.85)" :style="b.style" />
+                                                </g>
+                                            </g>
+                                            <path class="ko-foam" d="M33 30 Q32 15 45 18 Q51 8 60 14 Q69 8 75 18 Q88 15 87 30 Z" fill="#fff8e6" stroke="rgba(107,90,72,.3)" stroke-width="1" />
+                                            <!-- グラスの外を伝って流れ落ちる泡（ふちどりで見やすく） -->
+                                            <path class="ko-drip" d="M35 27 Q29 62 34 104 Q36 118 37 128" fill="none" stroke="rgba(107,90,72,.55)" stroke-width="6.4" stroke-linecap="round" />
+                                            <path class="ko-drip" d="M35 27 Q29 62 34 104 Q36 118 37 128" fill="none" stroke="#fff8e6" stroke-width="4.4" stroke-linecap="round" />
+                                            <path class="ko-drip ko-drip2" d="M85 27 Q91 58 85 96 Q83 114 82 128" fill="none" stroke="rgba(107,90,72,.55)" stroke-width="5.4" stroke-linecap="round" />
+                                            <path class="ko-drip ko-drip2" d="M85 27 Q91 58 85 96 Q83 114 82 128" fill="none" stroke="#fff8e6" stroke-width="3.6" stroke-linecap="round" />
+                                            <circle class="ko-drop" cx="31" cy="112" r="2.6" fill="#fff8e6" stroke="rgba(107,90,72,.55)" stroke-width="1" />
+                                            <circle class="ko-drop ko-drop2" cx="88" cy="106" r="2.2" fill="#fff8e6" stroke="rgba(107,90,72,.55)" stroke-width="1" />
+                                        </template>
+
+                                        <!-- すり切り：注ぐ → ふちまで → ふちより少し盛り上がって、なみなみ -->
+                                        <template v-else-if="finalProduct.anim === 'surikiri'">
+                                            <rect class="su-stream" x="58.5" y="0" width="3" height="120" rx="1.5" :fill="finalProduct.liquid" />
+                                            <g clip-path="url(#animClip)">
+                                                <g class="su-rise">
+                                                    <rect x="0" y="34" width="120" height="110" :fill="finalProduct.liquid" />
+                                                    <rect x="0" y="34" width="120" height="110" fill="url(#animShade)" />
+                                                </g>
+                                            </g>
+                                            <path class="su-dome" d="M29 35 C34 25 86 25 91 35 Z" :fill="finalProduct.liquid" stroke="rgba(107,90,72,.5)" stroke-width="1" />
+                                            <path class="su-glint" d="M40 30 Q50 27 58 27.4" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="1.8" stroke-linecap="round" />
+                                            <g class="su-spark" fill="#e8b84a">
+                                                <path d="M20 22 l1.6 4 4 1.6 -4 1.6 -1.6 4 -1.6 -4 -4 -1.6 4 -1.6 Z" />
+                                                <path class="su-spark2" d="M100 16 l1.2 3 3 1.2 -3 1.2 -1.2 3 -1.2 -3 -3 -1.2 3 -1.2 Z" />
+                                            </g>
+                                        </template>
+
+                                        <!-- カチ割り：氷がカラン → ワインを注ぐ -->
+                                        <template v-else>
+                                            <rect class="ka-stream" x="51.5" y="0" width="3" height="126" rx="1.5" :fill="finalProduct.liquid" />
+                                            <g clip-path="url(#animClip)">
+                                                <g class="ka-rise">
+                                                    <rect x="0" y="46" width="120" height="100" :fill="finalProduct.liquid" />
+                                                    <rect x="0" y="46" width="120" height="100" fill="url(#animShade)" />
+                                                    <circle v-for="b in glassBubbles" :key="'kb' + b.id" class="glass-bubble" :cx="b.cx" :cy="b.cy" :r="b.r" fill="rgba(255,255,255,.85)" :style="b.style" />
+                                                </g>
+                                            </g>
+                                            <g v-for="(c, i) in KACHI_ICE" :key="'ki' + i" :class="'ka-ice ka-i' + c[3]">
+                                                <rect :x="c[0]" :y="c[1]" width="17" height="15" rx="3.5" fill="rgba(255,255,255,.5)" stroke="rgba(255,255,255,.95)" stroke-width="1.1"
+                                                      :transform="'rotate(' + c[2] + ' ' + (c[0] + 8) + ' ' + (c[1] + 7) + ')'" />
+                                            </g>
+                                            <text class="ka-clink" x="96" y="26" text-anchor="middle" font-size="10" font-weight="700" fill="#7a9bb0">カラン</text>
+                                        </template>
+
+                                        <!-- 器の輪郭 -->
+                                        <path :d="productGlass.body" fill="rgba(255,255,255,.12)" stroke="#6b5a48" stroke-width="2" stroke-linejoin="round" />
+                                        <path v-if="productGlass.handle" :d="productGlass.handle" fill="none" stroke="#6b5a48" stroke-width="2.4" stroke-linejoin="round" />
+                                    </g>
+                                </svg>
                                 <!-- 器のイラスト（すり切り・ジョッキ・こぼれ・カクテルなど） -->
-                                <svg v-if="productGlass" viewBox="0 0 120 150" class="h-[88%]" aria-hidden="true">
+                                <svg v-else-if="productGlass" viewBox="0 0 120 150" class="h-[88%]" aria-hidden="true">
                                     <defs><clipPath id="glassClip"><path :d="productGlass.body" /></clipPath></defs>
                                     <!-- こぼれ：受け皿にたまった分 -->
                                     <template v-if="productGlass.overflow">
@@ -1294,6 +1411,8 @@
             flute:   { body: 'M47 12 H73 Q75 58 67 76 Q60 84 53 76 Q45 58 47 12 Z', fill: 22, bottom: 74, bx: [52, 68], stem: 'M60 82 V132', base: true },
             wine:    { body: 'M32 22 H88 Q93 64 71 80 Q66 84 60 84 Q54 84 49 80 Q27 64 32 22 Z', fill: 40, bottom: 76, bx: [46, 74], stem: 'M60 84 V132', base: true }
         };
+        // カチ割りの氷（x・y・角度・落ちる順 1〜3：下の氷から順に落ちる）
+        const KACHI_ICE = [[32, 100, 5, 1], [52, 104, 18, 1], [36, 76, 20, 2], [56, 80, -15, 2], [30, 52, 12, 3], [50, 48, -8, 3]];
         // 泡（横位置0〜1・遅れ・速さ・大きさ）
         const BUBBLES = [
             [.15, 0, 2.4, 1.6], [.35, .8, 2.9, 1.2], [.55, .3, 2.2, 1.8], [.75, 1.3, 2.7, 1.3],
@@ -1727,7 +1846,7 @@
                                 nameIt: 'Spumante con Ghiaccio',
                                 tagline: 'カジュアルにワインを楽しみたい方へ',
                                 price: '¥990',
-                                glass: 'jug', liquid: 'rgba(236, 214, 140, .85)', ice: true, bubbles: true,
+                                glass: 'jug', liquid: 'rgba(236, 214, 140, .85)', ice: true, bubbles: true, anim: 'kachiwari',
                                 description: 'ジョッキいっぱいのカチ割り氷に、スパークリングワインをたっぷりと。キンキンに冷えた泡が、のどをスカッと駆け抜けます。',
                                 matching: 'フリット・ミスト\nカルパッチョ\nフライドポテト',
                                 catch: 'キンキンの泡で、今日をリセット',
@@ -1766,8 +1885,7 @@
                                 nameIt: 'Spumante Traboccante',
                                 tagline: 'スパークリングワインをしっかり楽しみたい方へ',
                                 price: '¥990',
-                                glass: 'tall', liquid: 'rgba(238, 216, 150, .85)', bubbles: true,
-                                img: './wine_kobore.webp',
+                                glass: 'tall', liquid: 'rgba(238, 216, 150, .85)', bubbles: true, anim: 'kobore',
                                 description: 'グラスからあふれるほど、なみなみと注ぐスパークリングワイン。見た目も気分も華やかに、たっぷりの泡を心ゆくまで楽しめます。',
                                 matching: '生ハム\nカプレーゼ\nフリット',
                                 catch: 'グラスからあふれる、とっておきの泡',
@@ -1829,7 +1947,7 @@
                                 name: 'カチ割り氷ジョッキワイン',
                                 tagline: 'カジュアルにワインを楽しみたい方へ',
                                 price: '¥990',
-                                glass: 'jug', ice: true,
+                                glass: 'jug', ice: true, anim: 'kachiwari',
                                 description: 'カチ割り氷を詰めたジョッキに、ワインをたっぷりと。ひんやり冷えて口あたりがやわらかくなり、ワインがぐっと気軽に楽しめます。',
                                 catch: 'ワインをもっと気軽に、ごくごくと',
                                 points: ['カチ割り氷で、ワインがぐっと飲みやすく', 'ジョッキでたっぷり、気取らず楽しめる', '氷が溶けるほどに、やさしい口あたり'],
@@ -1839,13 +1957,13 @@
                                 pickBy: { q: 3, A: 0, B: 1 }, // Q4 食事：お肉・揚げ物 → 赤 / 魚介・野菜 → 白（「おすすめ」の印をつける）
                                 variants: [
                                     {
-                                        label: '赤', nameIt: 'Rosso con Ghiaccio', liquid: 'rgba(140, 22, 40, .85)', img: './wine_kachiwari_rosso.webp',
+                                        label: '赤', nameIt: 'Rosso con Ghiaccio', liquid: 'rgba(140, 22, 40, .85)',
                                         keywords: ['ひんやり', 'ベリー', 'まろやか'],
                                         taste: { sweet: 2.5, body: 2.5 },
                                         matching: 'マルゲリータ\nボロネーゼ\nソーセージ'
                                     },
                                     {
-                                        label: '白', nameIt: 'Bianco con Ghiaccio', liquid: 'rgba(238, 212, 128, .85)', img: './wine_kachiwari_bianco.webp',
+                                        label: '白', nameIt: 'Bianco con Ghiaccio', liquid: 'rgba(238, 212, 128, .85)',
                                         keywords: ['ひんやり', '青りんご', 'やさしい'],
                                         taste: { sweet: 2.5, body: 1.5 },
                                         matching: 'カプレーゼ\nアヒージョ\nシーフードピッツァ'
@@ -1881,7 +1999,7 @@
                                 name: 'すり切りワイン',
                                 tagline: 'ワインをしっかり楽しみたい方へ',
                                 price: '¥990',
-                                glass: 'tumbler',
+                                glass: 'tumbler', anim: 'surikiri',
                                 description: 'グラスのふちまで、なみなみと注ぐ「すり切り」スタイル。氷を入れずに、ワイン本来の香りと味わいをじっくりと楽しめます。',
                                 catch: 'グラスのふちまで、なみなみと',
                                 points: ['ふちまで注ぐ「すり切り」で、たっぷり味わえる', '氷を入れず、ワイン本来の香りをじっくり', 'ゆっくり飲むほど、香りがひらいていく'],
@@ -1891,7 +2009,7 @@
                                 pickBy: { q: 3, A: 0, B: 1 }, // Q4 食事：お肉・揚げ物 → 赤 / 魚介・野菜 → 白（「おすすめ」の印をつける）
                                 variants: [
                                     {
-                                        label: '赤', nameIt: 'Vino Rosso', liquid: 'rgba(120, 18, 34, .92)', img: './wine_surikiri.webp',
+                                        label: '赤', nameIt: 'Vino Rosso', liquid: 'rgba(120, 18, 34, .92)',
                                         keywords: ['なみなみ', '果実味', 'コク'],
                                         taste: { sweet: 2, body: 4 },
                                         matching: '牛肉の煮込み\nラザニア\nチーズの盛り合わせ'
@@ -2542,7 +2660,7 @@
                     STORE_NAME,
                     step, selectedDrink, drinks, drinkTheme, isBeer, isMystery, questions, KODAWARI, DELIVERY,
                     BG_BUBBLES, DRIVE, DRIVE_INTRO, DRIVE_PANELS, photoOk, DRIVE_BUILDINGS_SVG, DRIVE_TREES, ROAD_RAIL, popCards, panX, driveIntro, driveIndex, popStop, segKey, segMs, sceneFresh, POUR_STEPS, POUR_MESSAGE, pourSub, nextSpot, prevSpot, tapStory, watchKodawari, goResultDirect,
-                    variants, variantIndex, defaultVariantIndex, rawProduct, chooseOnResult, pourPlan, pourAnim, productGlass, glassBubbles, pourLiquid, otherMenu,
+                    KACHI_ICE, variants, variantIndex, defaultVariantIndex, rawProduct, chooseOnResult, pourPlan, pourAnim, productGlass, glassBubbles, pourLiquid, otherMenu,
                     pizzaSlices, cheer, confetti,
                     pickedIndex, slideDirection, pourStage, pourMessages, isResultReplay, portaStage, typeTheme,
                     currentQuestionIndex, currentQuestion, answersHistory, finalResult, finalProduct,
