@@ -176,8 +176,6 @@
         }
 
         /* メニューリクエスト（アンケート） */
-        .req-tab { border: 1px solid rgba(212,168,90,0.45); color: var(--muted); transition: background .2s ease, color .2s ease; }
-        .req-tab.on { background: var(--gold); color: var(--navy); border-color: var(--gold); }
         .req-input {
             background: rgba(13,22,38,0.8); color: var(--cream);
             border: 1px solid rgba(242,232,213,0.2);
@@ -516,13 +514,8 @@
                         <div class="font-head text-gold text-[10px] tracking-[0.45em] mb-1">NEXT SEASON DRAFT</div>
                         <h3 class="text-lg font-black tracking-wider">あったら嬉しいメニューは？</h3>
                         <p class="text-[11px] text-muted mt-1 mb-4">次回、メニューに登場するかも…？</p>
-                        <div class="flex gap-2 mb-3">
-                            <button v-for="c in ['FOOD', 'DRINK']" :key="c" @click="request.category = c"
-                                    class="req-tab flex-1 py-2 rounded-md font-head text-sm tracking-[0.25em]"
-                                    :class="{ on: request.category === c }">{{ c }}</button>
-                        </div>
                         <input v-model="request.text" maxlength="40" class="req-input w-full rounded-md px-3 py-2.5"
-                               :placeholder="request.category === 'FOOD' ? '例：ハンバーガー、BBQリブ' : '例：クラフトコーラ、IPA'"
+                               placeholder="例：ハンバーガー、クラフトコーラ"
                                @keyup.enter="sendRequest">
                         <button @click="sendRequest" :disabled="!request.text.trim()"
                                 class="btn-primary w-full mt-3 py-3 rounded-md font-bold tracking-widest disabled:opacity-40">
@@ -875,7 +868,7 @@
                 // トップ画面が出たあとにふわっと表示。答える（またはスキップ）と12時間は出ない。
                 const REQUEST_KEY = 'america_menu_request_at';
                 const REQUEST_INTERVAL = 12 * 60 * 60 * 1000;
-                const request = reactive({ show: false, category: 'FOOD', text: '', sent: false });
+                const request = reactive({ show: false, text: '', sent: false });
                 const requestDue = () => {
                     try {
                         const last = Number(localStorage.getItem(REQUEST_KEY) || 0);
@@ -899,19 +892,19 @@
                     markRequestDone();
                     setTimeout(() => { request.show = false; }, 300);
                     if (!GAS_URL) return;
+                    // シートの列構成に関わらずコメントが残るよう、性別・年齢・タイプ・カテゴリの各欄に入れて送る
                     try {
                         const params = new URLSearchParams({
-                            q1: '-', q2: '-', gender: '-', age: '-',
-                            type: 'menu_request', result: 'menu_request',
-                            category: `メニューリクエスト（${request.category}）：${text}`,
-                            event: 'menu_request', request_category: request.category, request_text: text,
-                            ua: navigator.userAgent
+                            q1: 'メニューリクエスト', gender: 'メニューリクエスト',
+                            q2: '-', age: '-',
+                            type: text, result: text,
+                            category: `メニューリクエスト：${text}`,
+                            event: 'menu_request', comment: text, ua: navigator.userAgent
                         });
-                        fetch(GAS_URL, {
-                            method: 'POST', mode: 'no-cors', keepalive: true,
-                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                            body: params.toString()
-                        });
+                        const body = new Blob([params.toString()], { type: 'application/x-www-form-urlencoded' });
+                        if (!(navigator.sendBeacon && navigator.sendBeacon(GAS_URL, body))) {
+                            fetch(GAS_URL, { method: 'POST', mode: 'no-cors', keepalive: true, headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params.toString() });
+                        }
                     } catch (error) {}
                 };
                 const skipRequest = () => {
