@@ -248,7 +248,88 @@
         .staff-enter-active .staff-card { animation: staffPop .45s cubic-bezier(.22,1.2,.36,1); }
         @keyframes staffPop { 0% { transform: scale(.92); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
+        /* ▼ 商品ごとのテーマカラー（--shu を商品の色に差し替える。color-mix 非対応の端末は今までのえんじ色のまま） ▼ */
+        .wa-paper .tanzaku {
+            background: linear-gradient(to bottom, color-mix(in srgb, var(--shu) 82%, #fff), var(--shu) 40%, color-mix(in srgb, var(--shu) 78%, #000));
+            box-shadow: 0 6px 14px color-mix(in srgb, var(--shu) 35%, transparent), inset 0 0 0 1px rgba(255,255,255,.12);
+        }
+        .wa-paper .spray-canvas { background: var(--shu); }
+        .wa-paper .spray-canvas.is-drawn { background: transparent; }
+        .wa-paper .btn-enji {
+            background: linear-gradient(to bottom, color-mix(in srgb, var(--shu) 85%, #fff), var(--shu) 55%, color-mix(in srgb, var(--shu) 80%, #000));
+            border-bottom-color: color-mix(in srgb, var(--shu) 60%, #000);
+            box-shadow: 0 6px 20px color-mix(in srgb, var(--shu) 40%, transparent);
+        }
+        .wa-paper .hanko-stamp::after { border-color: color-mix(in srgb, var(--shu) 50%, transparent); }
+        .kw-chip { background: rgba(166, 61, 42, .10); background: color-mix(in srgb, var(--shu) 11%, transparent); }
+        .meter-dot { box-shadow: 0 0 0 3px color-mix(in srgb, var(--shu) 20%, transparent); }
+        /* 写真の背景も商品の色に。白い背景の写真は multiply で背景色になじむ */
+        .photo-frame { background: #fff; background: color-mix(in srgb, var(--shu) 14%, #fff); border-color: color-mix(in srgb, var(--shu) 25%, #e3d8c3); }
+        .photo-frame img { mix-blend-mode: multiply; }
+        /* 「もう一方のお酒も見る」ボタン */
+        .btn-other { border: 1px solid var(--shu); color: var(--shu); background: color-mix(in srgb, var(--shu) 6%, transparent); transition: background-color .2s, transform .1s; }
+        .btn-other:hover { background: color-mix(in srgb, var(--shu) 12%, transparent); }
+        .btn-other:active { transform: scale(.98); }
+
+        /* ▼ 商品ごとの演出（写真まわりに、最初の数秒だけ） ▼ */
+        .fx-layer {
+            position: absolute; top: 0; left: 0; right: 0; height: 26rem; z-index: 5;
+            pointer-events: none; overflow: hidden;
+            -webkit-mask-image: linear-gradient(to bottom, #000 75%, transparent);
+                    mask-image: linear-gradient(to bottom, #000 75%, transparent);
+        }
+        .fx-item { position: absolute; opacity: 0; line-height: 1; animation-fill-mode: both; will-change: transform, opacity; }
+        /* 上から舞い落ちる（オレンジ・いちご・茶葉・花びら） */
+        @keyframes fxFall {
+            0%   { top: -8%; opacity: 0; transform: translateX(0) rotate(0); }
+            12%  { opacity: .95; }
+            80%  { opacity: .85; }
+            100% { top: 100%; opacity: 0; transform: translateX(var(--sx)) rotate(var(--rot)); }
+        }
+        .fx-fall { animation-name: fxFall; animation-timing-function: cubic-bezier(.35,.1,.6,1); }
+        .fx-petal { border-radius: 80% 0 80% 0; background: linear-gradient(135deg, color-mix(in srgb, var(--shu) 55%, #fff), var(--shu)); }
+        /* 下から上がる泡 */
+        @keyframes fxRise {
+            0%   { top: 100%; opacity: 0; transform: translateX(0) scale(.6); }
+            15%  { opacity: .9; }
+            100% { top: -10%; opacity: 0; transform: translateX(var(--sx)) scale(1); }
+        }
+        .fx-rise { animation-name: fxRise; animation-timing-function: ease-in; border-radius: 9999px; border: 1.5px solid color-mix(in srgb, var(--shu) 70%, #fff); background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.9), color-mix(in srgb, var(--shu) 15%, transparent) 60%); }
+        /* 燗の湯気がふわっと立つ */
+        @keyframes fxSteam {
+            0%   { opacity: 0; transform: translate(0, 0) scale(.5); }
+            30%  { opacity: .55; }
+            100% { opacity: 0; transform: translate(var(--sx), -130px) scale(1.6); }
+        }
+        .fx-steam { animation-name: fxSteam; animation-timing-function: ease-out; border-radius: 50%; filter: blur(8px); background: color-mix(in srgb, var(--shu) 30%, #fff); }
+        /* 水面の波紋 */
+        @keyframes fxRipple {
+            0%   { opacity: 0; transform: translate(-50%, -50%) scale(.15); }
+            15%  { opacity: .8; }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+        }
+        .fx-ripple { animation-name: fxRipple; animation-timing-function: ease-out; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--shu) 60%, #fff); box-shadow: 0 0 0 6px color-mix(in srgb, var(--shu) 10%, transparent); }
+        /* うさぎがぴょんぴょん横切る */
+        @keyframes fxHopX { 0% { left: -12%; opacity: 1; } 100% { left: 108%; opacity: 1; } }
+        @keyframes fxHopY { 0%, 100% { transform: translateY(0) scaleX(-1); } 50% { transform: translateY(-34px) scaleX(-1); } }
+        .fx-hop { animation-name: fxHopX; animation-timing-function: linear; }
+        .fx-hop > span { display: inline-block; animation: fxHopY .5s ease-in-out infinite; }
+
+        /* ▼ 質問に答えたときのひとこと ▼ */
+        .reaction-wrap { position: fixed; left: 0; right: 0; top: 18%; z-index: 40; display: flex; justify-content: center; pointer-events: none; padding: 0 16px; }
+        .reaction {
+            background: linear-gradient(to bottom, #c4563b, var(--enji));
+            color: #fff6ee; font-weight: 700; letter-spacing: .08em;
+            padding: .55rem 1.1rem; border-radius: 9999px; font-size: 15px;
+            box-shadow: 0 8px 24px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.15) inset;
+        }
+        .reaction-enter-active { transition: opacity .25s ease, transform .35s cubic-bezier(.3,1.5,.5,1); }
+        .reaction-leave-active { transition: opacity .4s ease, transform .4s ease; }
+        .reaction-enter-from { opacity: 0; transform: translateY(10px) scale(.85); }
+        .reaction-leave-to { opacity: 0; transform: translateY(-14px); }
+
         @media (prefers-reduced-motion: reduce) {
+            .fx-layer { display: none; }
             .hanko-stamp, .hanko-stamp::after { animation: none; opacity: .92; }
             .cup.is-drunk { animation: none; transform: scale(.86); }
             .reveal-item { opacity: 1; transform: none; transition: none; }
@@ -523,8 +604,13 @@
             </div>
 
             <!-- ▼ 4. 商品紹介画面（和） ▼ -->
-            <div v-else-if="step === 'product' && finalResult" key="product" class="wa-paper font-wa shrink-0 w-full max-w-[98%] sm:max-w-lg my-auto rounded-sm shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden relative">
+            <div v-else-if="step === 'product' && finalResult" :key="'product-' + selectedDrink" :style="productThemeStyle" class="wa-paper font-wa shrink-0 w-full max-w-[98%] sm:max-w-lg my-auto rounded-sm shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden relative">
                 <div class="seigaiha"></div>
+
+                <!-- 商品ごとの演出（オレンジが舞う・うさぎが跳ねる など。最初の数秒だけ） -->
+                <div v-if="productEffect.length && !prefersReducedMotion" class="fx-layer" aria-hidden="true">
+                    <span v-for="(fx, i) in productEffect" :key="i" class="fx-item" :class="fx.cls" :style="fx.style"><span v-if="fx.char">{{ fx.char }}</span></span>
+                </div>
 
                 <div class="px-5 sm:px-8 pb-6 sm:pb-8 -mt-1">
                     <!-- 見出し -->
@@ -534,7 +620,7 @@
 
                     <!-- 写真 ＋ 縦書きの銘柄名 -->
                     <div class="flex items-stretch justify-center gap-4 sm:gap-6 mb-6 fade-in-section delay-2">
-                        <div class="relative w-[58%] max-w-[240px] aspect-[4/5] bg-white p-2 shadow-[0_6px_18px_rgba(60,40,20,0.18)] border border-[#e3d8c3] overflow-hidden">
+                        <div class="photo-frame relative w-[58%] max-w-[240px] aspect-[4/5] p-2 shadow-[0_6px_18px_rgba(60,40,20,0.18)] border overflow-hidden">
                             <img v-if="finalProduct && finalProduct.img" :src="finalProduct.img" :alt="productDisplayName" class="w-full h-full object-contain" @error="handleImageError">
                             <!-- えんじの塗りつぶしが、スプレーを吹き付けるように少しずつ消えて写真が現れる -->
                             <canvas v-if="finalProduct && finalProduct.img && !isPreparation && !prefersReducedMotion" id="sprayCanvas" class="spray-canvas"></canvas>
@@ -544,7 +630,7 @@
                         </div>
                         <div class="flex flex-col items-center py-1 min-h-0">
                             <!-- 長い銘柄名は縦書きのまま自然に2行目へ折り返す -->
-                            <h2 class="tategaki tanzaku flex-1 min-h-0 font-extrabold px-2 py-3 rounded-[2px]" :class="productNameClass">
+                            <h2 id="productName" class="tategaki tanzaku flex-1 min-h-0 font-extrabold px-2 py-3 rounded-[2px]" :class="productNameClass" :style="productNameFontPx ? { fontSize: productNameFontPx + 'px', letterSpacing: 0 } : null">
                                 <span v-for="line in productNameLines" :key="line" class="block">{{ line }}</span>
                             </h2>
                             <span class="hanko shrink-0 text-[11px] font-semibold tracking-[0.15em] px-1 py-1.5 mt-3" :class="{ 'hanko-stamp': !isPreparation }">{{ finalResult.titleRuby }}</span>
@@ -560,7 +646,7 @@
                             </p>
                             <ul v-if="finalProduct.keywords" class="flex flex-wrap justify-center gap-1.5 mb-5">
                                 <li v-for="k in finalProduct.keywords" :key="k"
-                                    class="text-[12px] sm:text-[13px] px-2.5 py-0.5 rounded-sm bg-[rgba(166,61,42,0.10)] text-[color:var(--shu)] font-semibold tracking-wide">{{ k }}</li>
+                                    class="kw-chip text-[12px] sm:text-[13px] px-2.5 py-0.5 rounded-sm text-[color:var(--shu)] font-semibold tracking-wide">{{ k }}</li>
                             </ul>
 
                             <p class="text-[13px] sm:text-sm leading-[1.95] tracking-wide mb-6 text-[#4a423b]">
@@ -587,7 +673,7 @@
                                         <span class="w-12 text-right shrink-0">{{ m.l }}</span>
                                         <div class="relative flex-1 h-[2px] bg-[#d9ccb3]">
                                             <span v-for="n in 5" :key="n" class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#d9ccb3]" :style="{ left: ((n - 1) * 25) + '%' }"></span>
-                                            <span class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-[color:var(--shu)] shadow-[0_0_0_3px_rgba(166,61,42,0.2)]" :style="{ left: ((m.v - 1) * 25) + '%' }"></span>
+                                            <span class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 meter-dot w-3.5 h-3.5 rounded-full bg-[color:var(--shu)]" :style="{ left: ((m.v - 1) * 25) + '%' }"></span>
                                         </div>
                                         <span class="w-12 shrink-0">{{ m.r }}</span>
                                     </div>
@@ -628,6 +714,12 @@
                     </button>
                     <p v-if="!isPreparation" class="text-center text-[11px] text-[#7a6e62] tracking-wider -mt-1 mb-4 fade-in-section delay-4">タップすると、この1杯が大きく表示されます</p>
 
+                    <!-- 同じタイプのもう一方のお酒（日本酒 ⇔ ジン）も見る -->
+                    <button v-if="otherDrink" @click="showOtherDrink"
+                            class="btn-other w-full mb-3 py-3 text-sm font-bold tracking-widest rounded-sm flex items-center justify-center gap-2 fade-in-section delay-4">
+                        <span>{{ otherDrink.id === 'sake' ? '🍶' : '🍸' }} 同じ{{ finalResult.titleRuby }}タイプの{{ otherDrink.name }}も見る</span>
+                    </button>
+
                     <!-- ボタン -->
                     <div class="flex gap-3 fade-in-section delay-4">
                         <button @click="backToResult"
@@ -640,6 +732,13 @@
                         </button>
                     </div>
                 </div>
+            </div>
+        </transition>
+
+        <!-- ▼ 質問に答えたときのひとこと（次の質問に進みながら、ふわっと出て消える） ▼ -->
+        <transition name="reaction">
+            <div v-if="reaction" :key="reactionKey" class="reaction-wrap font-wa" aria-live="polite">
+                <p class="reaction">{{ reaction }}</p>
             </div>
         </transition>
 
@@ -811,54 +910,59 @@
                     {
                         text: '今日の気分は？',
                         options: [
-                            { text: 'スカッと弾けて今日をリセットしたい！', img: 'okiru.webp', type: 'A' },
-                            { text: '静かにほっこり今日を癒やしたい…', img: 'yasumu.webp', type: 'B' }
+                            { text: 'スカッと弾けて今日をリセットしたい！', img: 'okiru.webp', type: 'A', react: 'リセットしたい日、ありますよね！' },
+                            { text: '静かにほっこり今日を癒やしたい…', img: 'yasumu.webp', type: 'B', react: 'ほっこりいきましょう…' }
                         ]
                     },
                     {
                         text: 'お酒に合わせたい食事は？',
                         options: [
-                            { text: 'ガッツリなお肉や揚げ物', img: '2-2.webp', type: 'A' },
-                            { text: 'ヘルシーなお刺身や野菜', img: '2-1.webp', type: 'B' }
+                            { text: 'ガッツリなお肉や揚げ物', img: '2-2.webp', type: 'A', react: 'ガッツリ、いいですね！' },
+                            { text: 'ヘルシーなお刺身や野菜', img: '2-1.webp', type: 'B', react: 'さっぱりヘルシー派ですね' }
                         ]
                     },
                     {
                         text: 'ふと嗅ぎたい惹かれる香りは？',
                         options: [
-                            { text: 'みずみずしい柑橘やフルーティーな香り', img: '3-1.webp', type: 'A' },
-                            { text: 'スパイシーな香辛料やハーブ・木の香り', img: '3-2.webp', type: 'B' }
+                            { text: 'みずみずしい柑橘やフルーティーな香り', img: '3-1.webp', type: 'A', react: '柑橘・フルーツ派ですね！' },
+                            { text: 'スパイシーな香辛料やハーブ・木の香り', img: '3-2.webp', type: 'B', react: 'スパイス・ハーブ派、通ですね' }
                         ]
                     },
                     {
                         text: '今の口が一番求めているのは？',
                         options: [
-                            { text: 'やさしい甘みフルーティーな甘酸っぱさ', img: '4-1.webp', type: 'A' },
-                            { text: 'キリッとした苦みドライで控えめな甘さ', img: '4-2.webp', type: 'B' }
+                            { text: 'やさしい甘みフルーティーな甘酸っぱさ', img: '4-1.webp', type: 'A', react: 'やさしい甘み、癒やされます' },
+                            { text: 'キリッとした苦みドライで控えめな甘さ', img: '4-2.webp', type: 'B', react: 'キリッとドライ、大人ですね' }
                         ]
                     },
                     {
                         text: '喉を通るときの好みは？',
                         options: [
-                            { text: 'キリッと締まる爽快なキレ', img: 'awa.webp', type: 'A' },
-                            { text: 'すーっと通るなめらかな口当たり', img: 'nameraka.webp', type: 'B' }
+                            { text: 'キリッと締まる爽快なキレ', img: 'awa.webp', type: 'A', react: '爽快なキレ、たまりません！' },
+                            { text: 'すーっと通るなめらかな口当たり', img: 'nameraka.webp', type: 'B', react: 'なめらか派ですね' }
                         ]
                     },
                     {
                         text: '今日のお酒選びのテーマは？',
                         options: [
-                            { text: '失敗したくない！王道定番派', img: 'ousama.webp', type: 'A' },
-                            { text: '新しい発見がほしい！個性的派', img: 'bouken.webp', type: 'B' }
+                            { text: '失敗したくない！王道定番派', img: 'ousama.webp', type: 'A', react: '王道、間違いなしです！' },
+                            { text: '新しい発見がほしい！個性的派', img: 'bouken.webp', type: 'B', react: '新しい出会いを探しましょう！' }
                         ]
                     }
                 ];
 
+                // （react … 選んだときに出るひとこと。書かなければ何も出ない）
+
                 // ▼ 商品データの入れ方 ▼
                 // 必須は name（商品名）と img（画像）だけ。あとは書いてあればそれを使い、
                 // 書いていない項目は下の PRODUCT_DEFAULTS（お酒の種類 × タイプ別のひな形）で自動的に埋めます。
-                //   description … 説明文 / matching … 合う肴（改行区切り） / catch … キャッチコピー
+                //   description … 説明文 / matching … 合う肴（改行区切り。'' にすると非表示） / catch … キャッチコピー
                 //   keywords … 味わいのキーワード / points … ここがおいしい（3つ）
                 //   taste … { sweet: 1〜5（ドライ→甘め）, body: 1〜5（軽やか→濃厚） }
                 //   trivia … 豆知識
+                //   theme … 商品ページの色と演出 { color: 色, effect: 演出 }（書かなければ、えんじ色・演出なし）
+                //           effect: 'ripple'（波紋） / 'orange'（オレンジ） / 'bubbles'（泡） / 'strawberry'（いちご） /
+                //                   'rabbit'（うさぎ） / 'petals'（花びら） / 'steam'（湯気） / 'tealeaf'（茶葉）
                 // まだ商品が決まっていないときは name: '【準備中】' のままにしておくと「ただいま厳選中」と表示されます。
                 const resultTypes = {
                     type1: {
@@ -877,6 +981,7 @@
                             sake: {
                                 name: '【貴の特別純米・夏タイプ】',
                                 img: 'sarasaranihonsyu.webp',
+                                theme: { color: '#2a8fb0', effect: 'ripple' },   // 水色・水面の波紋
                                 description: 'さっぱりとしたクエン酸の酸味が魅力の限定酒です。軽やかな飲み口に優しい甘みと米の味わいが溶け合い、夏の和食とすいすい楽しめます。',
                                 matching: 'お刺身\nあさりの酒蒸し',
                                 catch: '夏だけの、キリッと爽快な1杯',
@@ -888,6 +993,7 @@
                             craft: {
                                 name: '【yasogin オレンジ】',
                                 img: 'sarasarajin.webp',
+                                theme: { color: '#d4661c', effect: 'orange' },   // オレンジ・オレンジが舞う
                                 description: 'オレンジピールをたっぷりと使用したジューシーでビターなジンです。甘味が強く香り高いネーブルオレンジを使用してバランス良く仕上がった一品。定番はトニックとソーダ、寒い日はお湯割りでほっとひと息つくのもおすすめ。',
                                 matching: '焼売やチーズケーキ\nショコラテリーヌ',
                                 catch: 'ジューシーでほろ苦い、オレンジのジン',
@@ -914,6 +1020,7 @@
                             sake: {
                                 name: '【産土】',
                                 img: 'ururunihonsyu.webp',
+                                theme: { color: '#5a8f3c', effect: 'bubbles' },   // 若葉色・泡が上がる
                                 description: '炭酸ガスを含んだ、メロン・洋梨・マスカットなどのもぎたてフルーツを想わせる香りと味わい。アルコール13%と軽快ながらも、旨味かつとろみのある味わいです。',
                                 matching: 'ちーずそぼろ\n秋刀魚の炭焼き',
                                 catch: 'もぎたて果実のような、シュワっと華やかな1杯',
@@ -925,6 +1032,7 @@
                             craft: {
                                 name: '【虎ノ門　いちごジン】',
                                 img: 'uruurujin.webp',
+                                theme: { color: '#c93a5a', effect: 'strawberry' },   // いちご色・いちごが舞う
                                 description: '栃木産「とちおとめ・とちあいか」の甘酸っぱい香り。この香りと風味を堪能できる飲み方はトニック割・ソーダ割がおすすめ。',
                                 matching: 'カモロース炭焼き\nラムの黒焼き',
                                 catch: '栃木いちごが香る、甘酸っぱいジン',
@@ -948,8 +1056,30 @@
                         },
                         description: '口の中で優しくとろけるような繊細で穏やかな味わい。緊張をゆるやかにほどき、日常にホッと安心をくれる優しい一杯です。',
                         products: {
-                            sake: { name: '【準備中】', img: '', description: '準備中', matching: '準備中' },
-                            craft: { name: '【準備中】', img: '', description: '準備中', matching: '準備中' }
+                            sake: {
+                                name: '【二兎　雄町四十八】',
+                                img: 'torotoronihonsyu.webp',
+                                theme: { color: '#b3122a', effect: 'rabbit' },   // ラベルの赤・うさぎが跳ねる
+                                description: '雄町の味わい深さと二兎らしい二面性を見事に表現した上質な一本。濃厚な旨味を持つ料理とのペアリングもオススメです。多面性が光る魅力たっぷりの味わいをぜひお楽しみください。',
+                                matching: '',
+                                catch: '雄町の旨みがとろりと広がる、上質な1杯',
+                                keywords: ['雄町', '純米大吟醸', '生原酒', '濃厚な旨み'],
+                                points: ['酒米「雄町」ならではの、ふくよかで深い味わい', '甘みと酸味、二面性が光る多彩な表情', '濃厚な旨みの料理と好相性'],
+                                taste: { sweet: 3, body: 3.5 },
+                                trivia: '「二兎」は愛知県岡崎市・丸石醸造（1690年創業）の銘柄。「二兎を追う者は一兎をも得ず」をあえて覆し、"酸"と"旨み"の両方を追い求めて造られています。'
+                            },
+                            craft: {
+                                name: '【アルケミエ　ラベンダージン】',
+                                img: 'torotorojin.webp',
+                                theme: { color: '#7a55a8', effect: 'petals' },   // ラベンダー色・花びらが舞う
+                                description: 'ベースに米焼酎や酒粕焼酎（吟香露）を使用していて、口当たりにはどっしりとしたお米の旨みと重みがあり、余韻にフローラルな苦味と上品な花の香りが長く続きます。ソーダ割りがおすすめです。',
+                                matching: '',
+                                catch: 'まるで飲む香水、華やかで濃厚なアロマ',
+                                keywords: ['ラベンダー', '米焼酎ベース', 'フローラル'],
+                                points: ['まるで飲む香水のような、華やかで濃厚なアロマ', 'お米由来の、どっしりとした旨みと重み', '余韻に続く、フローラルな苦味と上品な花の香り'],
+                                taste: { sweet: 2.5, body: 4 },
+                                trivia: '岐阜県郡上市の「辰巳蒸留所」が手がけるジンブランド「アルケミエ」。正式名は「Alchemiae First Essence Lavender Gin」です。'
+                            }
                         }
                     },
                     type4: {
@@ -965,8 +1095,30 @@
                         },
                         description: '時間を忘れて少しずつ味わいたい、深みとコクのある味わい。癒しの時間を彷彿させる大人の一杯です。',
                         products: {
-                            sake: { name: '【準備中】', img: '', description: '準備中', matching: '準備中' },
-                            craft: { name: '【準備中】', img: '', description: '準備中', matching: '準備中' }
+                            sake: {
+                                name: '【長珍　特別純米】',
+                                img: 'utoutonihonsyu.webp',
+                                theme: { color: '#a5652f', effect: 'steam' },   // ラベルの銅色・燗の湯気
+                                description: '金ラベルは蔵のスタンダード。約一年熟成させてから出荷されます。炊きたてのお米の香り、柔らかい飲み口でコクがあり自然と喉を通り過ぎて行きます。熟成してるので、燗もつけてみましょう。するとより旨味も広がり煮物などとも相性バツグン‼️カマスの塩焼きや豚の生姜焼きとも仲良しです。',
+                                matching: '煮物\nカマスの塩焼き\n豚の生姜焼き',
+                                catch: '約一年熟成、燗でふくらむお米の旨み',
+                                keywords: ['約一年熟成', '炊きたてのお米', '燗酒'],
+                                points: ['約一年熟成させた、まろやかなコク', '炊きたてのお米のような、やさしい香り', '燗をつけると旨みがいっそう広がる'],
+                                taste: { sweet: 3, body: 4 },
+                                trivia: '「長珍（ちょうちん）」は愛知県津島市・長珍酒造の銘柄。特別純米は蔵のスタンダードで、さらに寝かせると枯れた味わいとしまった旨み、キレが増していきます。'
+                            },
+                            craft: {
+                                name: '【ドラムシャンボ　ガンパウダージン】',
+                                img: 'utoutojin.webp',
+                                theme: { color: '#2b5797', effect: 'tealeaf' },   // ボトルの青・茶葉が舞う
+                                description: '柑橘の爽やかさと、スパイスや茶葉のほろ苦さが重なる。後味には、エキゾチックで複雑なボタニカルの余韻が残ります。ジン本来の個性や、ハーブ・スパイスが織りなす複雑な香りを楽しみたい方に！',
+                                matching: '',
+                                catch: '柑橘と茶葉、東洋のボタニカルが織りなす奥深く神秘的なジン',
+                                keywords: ['ガンパウダーティー', '柑橘', 'スパイス', 'ハーブ'],
+                                points: ['柑橘の爽やかさと、茶葉のほろ苦さ', 'スパイスとハーブが織りなす、複雑な香り', 'エキゾチックなボタニカルの長い余韻'],
+                                taste: { sweet: 2, body: 3.5 },
+                                trivia: 'アイルランド・ドラムシャンボ村の「ザ・シェッド蒸留所」で造られるアイリッシュジン（43%）。茶葉を小さな粒状に丸めた中国緑茶「ガンパウダーティー（珠茶）」がボタニカルの主役です。'
+                            }
                         }
                     }
                 };
@@ -1062,7 +1214,7 @@
                     return {
                         ...raw,
                         description: desc || type.description,
-                        matching: has(raw.matching) ? raw.matching : base.matching,
+                        matching: raw.matching !== undefined ? raw.matching : base.matching,   // '' なら「合う肴」を表示しない
                         catch: has(raw.catch) ? raw.catch : base.catch,
                         keywords: has(raw.keywords) ? raw.keywords : keywords,
                         points: has(raw.points) ? raw.points : base.points,
@@ -1143,10 +1295,10 @@
                     return finalProduct.value.name.replace(/[【】]/g, '').trim();
                 });
 
-                // ▼ 縦書きの銘柄名は空白の位置で改行（「虎ノ門｜いちごジン」「yasogin｜オレンジ」） ▼
+                // ▼ 縦書きの銘柄名は空白・「・」の位置で改行（「虎ノ門｜いちごジン」「貴の特別純米｜夏タイプ」） ▼
                 const productNameLines = computed(() => {
                     if (isPreparation.value) return ['準備中'];
-                    return productDisplayName.value.split(/[\s　]+/).filter(Boolean);
+                    return productDisplayName.value.split(/[\s　・]+/).filter(Boolean);
                 });
 
                 // ▼ 銘柄名（1行あたり）の文字数に応じて縦書きの文字サイズを調整 ▼
@@ -1156,6 +1308,92 @@
                     if (len <= 6) return 'text-2xl sm:text-3xl tracking-[0.12em] leading-snug';
                     return 'text-xl sm:text-2xl tracking-[0.1em] leading-snug';
                 });
+
+                // ▼ 商品ごとの色（--shu を差し替えると、短冊・はんこ・見出し・ボタン・写真の背景がその色になる） ▼
+                const productThemeStyle = computed(() => {
+                    const t = finalProduct.value && finalProduct.value.theme;
+                    return t && t.color ? { '--shu': t.color } : null;
+                });
+
+                // ▼ 商品ごとの演出（粒の位置・大きさ・タイミングを毎回ランダムに作る） ▼
+                const rand = (min, max) => min + Math.random() * (max - min);
+                const FX_START = 1.3;   // 暖簾が開いてから始める（秒）
+                const EFFECTS = {
+                    orange:     () => fall(9, '🍊'),
+                    strawberry: () => fall(9, '🍓'),
+                    tealeaf:    () => fall(11, '🍃'),
+                    petals:     () => fall(18, ''),
+                    bubbles:    () => Array.from({ length: 14 }, () => {
+                        const size = rand(6, 16);
+                        return { cls: 'fx-rise', style: { left: rand(2, 95) + '%', width: size + 'px', height: size + 'px', '--sx': rand(-24, 24) + 'px',
+                                 animationDelay: (FX_START + rand(0, 2.8)).toFixed(2) + 's', animationDuration: rand(2.8, 4.2).toFixed(2) + 's' } };
+                    }),
+                    steam:      () => Array.from({ length: 8 }, (_, i) => {
+                        const size = rand(40, 70);
+                        return { cls: 'fx-steam', style: { left: rand(14, 44) + '%', top: rand(32, 48) + '%', width: size + 'px', height: size * 1.3 + 'px', '--sx': rand(-20, 20) + 'px',
+                                 animationDelay: (FX_START + i * 0.45).toFixed(2) + 's', animationDuration: '3.4s' } };
+                    }),
+                    ripple:     () => Array.from({ length: 7 }, (_, i) => {
+                        const size = rand(70, 140);
+                        return { cls: 'fx-ripple', style: { left: rand(10, 90) + '%', top: rand(10, 80) + '%', width: size + 'px', height: size + 'px',
+                                 animationDelay: (FX_START + i * 0.5).toFixed(2) + 's', animationDuration: '2.4s' } };
+                    }),
+                    rabbit:     () => [0, 1].map(i => ({ cls: 'fx-hop', char: '🐇',
+                                 style: { top: (i ? 80 : 76) + '%', fontSize: (i ? 24 : 30) + 'px', animationDelay: (FX_START + i * 0.4) + 's', animationDuration: '3.6s' } }))
+                };
+                function fall(n, char) {   // 上から舞い落ちる。char が空なら花びら
+                    return Array.from({ length: n }, () => {
+                        const size = char ? rand(18, 28) : rand(7, 12);
+                        return { cls: char ? 'fx-fall' : 'fx-fall fx-petal', char,
+                                 style: { left: rand(0, 94) + '%', fontSize: size + 'px', width: char ? null : size + 'px', height: char ? null : size * 1.6 + 'px',
+                                          '--sx': rand(-50, 50) + 'px', '--rot': rand(-540, 540) + 'deg',
+                                          animationDelay: (FX_START + rand(0, 2.6)).toFixed(2) + 's', animationDuration: rand(3.6, 5.4).toFixed(2) + 's' } };
+                    });
+                }
+                const productEffect = computed(() => {
+                    const t = finalProduct.value && finalProduct.value.theme;
+                    const make = t && EFFECTS[t.effect];
+                    return make ? make() : [];
+                });
+
+                // ▼ 同じタイプのもう一方のお酒（日本酒 ⇔ ジン）を見る ▼
+                const otherDrink = computed(() => {
+                    if (!finalResult.value) return null;
+                    const d = drinks.find(x => x.id !== selectedDrink.value);
+                    const p = d && finalResult.value.products[d.id];
+                    return p && p.name && !p.name.includes('準備中') ? d : null;
+                });
+                const showOtherDrink = () => {
+                    if (!otherDrink.value) return;
+                    isTriviaOpen.value = false;
+                    selectedDrink.value = otherDrink.value.id;   // 商品カードが入れ替わる（フェードで切り替え）
+                    scrollToTop();
+                    startSpray(1700);
+                    fitProductName(900);   // 前のカードが消えるのを待ってから測る
+                };
+
+                // ▼ 長い銘柄名（「ガンパウダージン」など）が短冊に収まらないときは、1行に収まるまで文字を小さくする ▼
+                const productNameFontPx = ref(null);
+                const fitProductName = async (delay = 0) => {
+                    if (delay) await wait(delay);
+                    productNameFontPx.value = null;
+                    await nextTick();
+                    let el = null;
+                    for (let i = 0; i < 30 && !el; i++) {   // 画面が切り替わるまで待つ
+                        if (step.value !== 'product') return;
+                        el = document.getElementById('productName');
+                        if (!el) await wait(100);
+                    }
+                    if (!el) return;
+                    const cs = getComputedStyle(el);
+                    const room = el.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+                    const len = Math.max(...productNameLines.value.map(l => l.length));
+                    const need = len * (parseFloat(cs.fontSize) + (parseFloat(cs.letterSpacing) || 0));
+                    // 字間をなくした上で、1文字あたりの高さ × 文字数が短冊に収まる大きさにする
+                    if (need > room) productNameFontPx.value = Math.max(11, Math.floor(room / len * 0.96));
+                };
+                watch(step, (newStep) => { if (newStep === 'product') fitProductName(); });
+                window.addEventListener('resize', () => { if (step.value === 'product') fitProductName(); });
 
                 // ▼ 写真のスプレー演出 ▼
                 // えんじで塗った上にロゴを薄く描き、スプレーの粒で少しずつ削って写真を見せる
@@ -1181,7 +1419,7 @@
                     ctx.scale(dpr, dpr);
 
                     // えんじの塗りつぶし ＋ 中央にロゴをうっすら
-                    ctx.fillStyle = '#a63d2a';
+                    ctx.fillStyle = (productThemeStyle.value && productThemeStyle.value['--shu']) || '#a63d2a';
                     ctx.fillRect(0, 0, w, h);
                     if (sprayLogo.complete && sprayLogo.naturalWidth) {
                         const lw = w * 0.42, lh = lw * sprayLogo.naturalHeight / sprayLogo.naturalWidth;
@@ -1451,9 +1689,21 @@
                     }
                 };
 
+                // ▼ 答えたときのひとこと ▼
+                const reaction = ref('');
+                const reactionKey = ref(0);
+                let reactionTimer = null;
+                const showReaction = (text) => {
+                    clearTimeout(reactionTimer);
+                    reaction.value = text || '';
+                    reactionKey.value++;
+                    if (text) reactionTimer = setTimeout(() => { reaction.value = ''; }, 1500);
+                };
+
                 const answerQuestion = async (type, idx) => {
                     // 演出中の連打は無視
                     if (step.value !== 'quiz' || pickedIndex.value !== null) return;
+                    showReaction(currentQuestion.value.options[idx].react);
 
                     // 選んだ手応え: 光って沈む ＋（対応端末は）軽く振動
                     pickedIndex.value = idx;
@@ -1566,7 +1816,7 @@
                     step, selectedDrink, drinks, questions,
                     pickedIndex, slideDirection, pourStage, pourMessages, isResultReplay, norenStage, typeTheme, prefersReducedMotion,
                     currentQuestionIndex, currentQuestion, answersHistory, finalResult, finalProduct,
-                    isPreparation, matchingList, productDisplayName, productNameLines, productNameClass, isTriviaOpen,
+                    isPreparation, matchingList, productDisplayName, productNameLines, productNameClass, productNameFontPx, productThemeStyle, productEffect, otherDrink, showOtherDrink, reaction, reactionKey, isTriviaOpen,
                     isStaffViewOpen, openStaffView, drinkName,
                     surveyStage, surveyRating, surveyComment, surveyWobble, surveyChoices, closeSurvey, pickRating, submitSurvey,
                     startQuiz, answerQuestion, prevQuestion, goToProduct, backToResult, resetQuiz, handleImageError
