@@ -258,6 +258,34 @@
         /* 写真の背景も商品の色に。白い背景の写真は multiply で背景色になじむ */
         .photo-frame { background: #fff; background: color-mix(in srgb, var(--shu) 14%, #fff); border-color: color-mix(in srgb, var(--shu) 25%, #e3d8c3); }
         .photo-frame img { mix-blend-mode: multiply; }
+        /* ▼ 商品ページの読みやすさ（照明を落とした店内でも読めるよう、本文は大きめ・やや太め） ▼ */
+        .rd-catch { font-size: 19px; }
+        .rd-kw    { font-size: 13.5px; }
+        .rd-head  { font-size: 13px; }
+        .rd-meter { font-size: 14px; font-weight: 500; }
+        .rd-point { font-size: 15.5px; font-weight: 500; line-height: 1.45; }
+        .rd-body  { font-size: 15px; font-weight: 500; line-height: 1.9; letter-spacing: .03em; color: #3d362f; }
+        .rd-chip  { font-size: 14.5px; }
+        .rd-note  { font-size: 12.5px; color: #6b6056; }
+        /* 説明文は最初の2行だけ見せ、「続きを読む」でひらく */
+        .desc-clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+        .desc-more { display: inline-flex; align-items: center; gap: .3em; margin-top: .35rem; font-size: 13px; letter-spacing: .12em; color: var(--shu); }
+        .desc-more svg { width: 12px; height: 12px; transition: transform .3s ease; }
+        .desc-more.is-open svg { transform: rotate(180deg); }
+
+        /* ▼ 結果画面：おすすめのお酒をぼかして「答えは次で」と見せる ▼ */
+        @keyframes teaserGlow { 0%, 100% { box-shadow: 0 0 16px rgba(var(--accent-rgb), .18); } 50% { box-shadow: 0 0 30px rgba(var(--accent-rgb), .45); } }
+        .teaser {
+            position: relative; width: 92px; aspect-ratio: 4 / 5; margin: 0 auto 14px; overflow: hidden; border-radius: 3px;
+            border: 1px solid rgba(var(--accent-rgb), .45); background: rgba(255,255,255,.06);
+            animation: teaserGlow 2.6s ease-in-out infinite;
+        }
+        .teaser img { width: 100%; height: 100%; object-fit: cover; filter: blur(9px) saturate(.7) brightness(.75); transform: scale(1.2); }
+        .teaser-q {
+            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+            font-family: 'Shippori Mincho', serif; font-size: 30px; color: rgba(255,255,255,.92); text-shadow: 0 2px 12px rgba(0,0,0,.7);
+        }
+
         /* ▼ 商品ごとの演出（写真まわりに、最初の数秒だけ。日本酒は波紋、泡のあるお酒は泡） ▼ */
         .fx-layer {
             position: absolute; top: 0; left: 0; right: 0; height: 26rem; z-index: 5;
@@ -329,6 +357,7 @@
 
         @media (prefers-reduced-motion: reduce) {
             .fx-layer { display: none; }
+            .teaser { animation: none; }
             .reveal-ink, .reveal-mist, .reveal-wipe, .reveal-split { animation: none; }
             .hanko-stamp, .hanko-stamp::after { animation: none; opacity: .92; }
             .reveal-item { opacity: 1; transform: none; transition: none; }
@@ -590,6 +619,11 @@
 
                 <!-- 商品紹介への導線 -->
                 <div class="w-full fade-in-section rv-6">
+                    <!-- おすすめのお酒をぼかして見せる（商品ページで、くっきり現れる） -->
+                    <div v-if="finalProduct && finalProduct.img && !isPreparation" class="teaser" aria-hidden="true">
+                        <img :src="finalProduct.img" alt="">
+                        <span class="teaser-q">？</span>
+                    </div>
                     <p class="text-[11px] sm:text-xs text-slate-400 tracking-widest mb-2">そんなあなたにぴったりの</p>
                     <button @click="goToProduct"
                             class="btn-shimmer btn-enji w-full py-3.5 sm:py-4 px-4 font-extrabold rounded-xl text-base sm:text-lg tracking-widest flex items-center justify-center gap-2">
@@ -639,35 +673,20 @@
                     <div class="fade-in-section delay-3">
                         <template v-if="!isPreparation">
                             <!-- キャッチコピー ＋ 味わいのキーワード -->
-                            <p v-if="finalProduct.catch" class="text-center text-[17px] sm:text-lg font-extrabold tracking-wider leading-snug mb-3 text-balance">
+                            <p v-if="finalProduct.catch" class="rd-catch text-center font-extrabold tracking-wider leading-snug mb-3 text-balance">
                                 {{ finalProduct.catch }}
                             </p>
                             <ul v-if="finalProduct.keywords" class="flex flex-wrap justify-center gap-1.5 mb-5">
                                 <li v-for="k in finalProduct.keywords" :key="k"
-                                    class="kw-chip text-[12px] sm:text-[13px] px-2.5 py-0.5 rounded-sm text-[color:var(--shu)] font-semibold tracking-wide">{{ k }}</li>
+                                    class="kw-chip rd-kw px-2.5 py-0.5 rounded-sm text-[color:var(--shu)] font-semibold tracking-wide">{{ k }}</li>
                             </ul>
 
-                            <p class="text-[13px] sm:text-sm leading-[1.95] tracking-wide mb-6 text-[#4a423b]">
-                                {{ finalProduct.description }}
-                            </p>
-
-                            <!-- ここがおいしい（壱・弐・参） -->
-                            <div v-if="finalProduct.points" class="mb-6">
-                                <h3 class="wa-rule text-xs tracking-[0.4em] text-[color:var(--shu)] mb-3"><span class="pl-[0.4em]">ここがおいしい</span></h3>
-                                <ol class="space-y-2">
-                                    <li v-for="(pt, i) in finalProduct.points" :key="pt" v-reveal="i" class="flex items-start gap-2.5 text-[13.5px] sm:text-[15px] leading-snug">
-                                        <span class="shrink-0 w-6 h-6 rounded-full border border-[color:var(--shu)] text-[color:var(--shu)] text-[11px] font-bold flex items-center justify-center mt-[1px]">{{ ['壱', '弐', '参'][i] }}</span>
-                                        <span class="pt-0.5">{{ pt }}</span>
-                                    </li>
-                                </ol>
-                            </div>
-
-                            <!-- 味わいメーター -->
+                            <!-- 味わいメーター（ひと目でわかるものを先に） -->
                             <div v-if="finalProduct.taste" class="mb-6">
-                                <h3 class="wa-rule text-xs tracking-[0.4em] text-[color:var(--shu)] mb-3"><span class="pl-[0.4em]">味わい</span></h3>
+                                <h3 class="wa-rule rd-head tracking-[0.4em] text-[color:var(--shu)] mb-3"><span class="pl-[0.4em]">味わい</span></h3>
                                 <div class="space-y-3 px-1">
                                     <div v-for="m in [{ l: 'ドライ', r: '甘め', v: finalProduct.taste.sweet }, { l: '軽やか', r: '濃厚', v: finalProduct.taste.body }]" :key="m.l"
-                                         class="flex items-center gap-3 text-[12px] sm:text-[13px]">
+                                         class="rd-meter flex items-center gap-3">
                                         <span class="w-12 text-right shrink-0">{{ m.l }}</span>
                                         <div class="relative flex-1 h-[2px] bg-[#d9ccb3]">
                                             <span v-for="n in 5" :key="n" class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#d9ccb3]" :style="{ left: ((n - 1) * 25) + '%' }"></span>
@@ -678,24 +697,44 @@
                                 </div>
                             </div>
 
+                            <!-- ここがおいしい（壱・弐・参） -->
+                            <div v-if="finalProduct.points" class="mb-6">
+                                <h3 class="wa-rule rd-head tracking-[0.4em] text-[color:var(--shu)] mb-3"><span class="pl-[0.4em]">ここがおいしい</span></h3>
+                                <ol class="space-y-2">
+                                    <li v-for="(pt, i) in finalProduct.points" :key="pt" v-reveal="i" class="rd-point flex items-start gap-2.5">
+                                        <span class="shrink-0 w-6 h-6 rounded-full border border-[color:var(--shu)] text-[color:var(--shu)] text-[11px] font-bold flex items-center justify-center mt-[1px]">{{ ['壱', '弐', '参'][i] }}</span>
+                                        <span class="pt-0.5">{{ pt }}</span>
+                                    </li>
+                                </ol>
+                            </div>
+
+                            <!-- 説明文（最初は2行だけ。「続きを読む」でひらく） -->
+                            <div class="mb-6">
+                                <p class="rd-body" :class="{ 'desc-clamp': !isDescOpen }">{{ finalProduct.description }}</p>
+                                <button v-if="finalProduct.description.length > 40" @click="isDescOpen = !isDescOpen" class="desc-more" :class="{ 'is-open': isDescOpen }">
+                                    <span>{{ isDescOpen ? '閉じる' : '続きを読む' }}</span>
+                                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" /></svg>
+                                </button>
+                            </div>
+
                             <div v-if="matchingList.length" class="mb-6">
-                                <h3 class="wa-rule text-xs tracking-[0.4em] text-[color:var(--shu)] mb-3"><span class="pl-[0.4em]">合わせたい肴</span></h3>
+                                <h3 class="wa-rule rd-head tracking-[0.4em] text-[color:var(--shu)] mb-3"><span class="pl-[0.4em]">合わせたい肴</span></h3>
                                 <ul class="flex flex-wrap justify-center gap-2">
                                     <li v-for="item in matchingList" :key="item"
-                                        class="text-[13px] sm:text-sm px-3 py-1 border border-[#cdbd9f] rounded-full bg-white/50">{{ item }}</li>
+                                        class="rd-chip px-3 py-1 border border-[#cdbd9f] rounded-full bg-white/50">{{ item }}</li>
                                 </ul>
                             </div>
 
                             <!-- 豆知識（タップでひらく） -->
                             <div v-if="finalProduct.trivia" class="mb-7">
                                 <button @click="isTriviaOpen = !isTriviaOpen"
-                                        class="w-full flex items-center justify-center gap-2 py-2.5 border border-dashed border-[color:var(--shu)] rounded-sm text-[13px] tracking-widest text-[color:var(--shu)] hover:bg-white/40 transition">
+                                        class="rd-kw w-full flex items-center justify-center gap-2 py-2.5 border border-dashed border-[color:var(--shu)] rounded-sm tracking-widest text-[color:var(--shu)] hover:bg-white/40 transition">
                                     <span>豆知識をのぞく</span>
                                     <svg class="w-3.5 h-3.5 transition-transform duration-300" :class="{ 'rotate-180': isTriviaOpen }" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" /></svg>
                                 </button>
                                 <div class="grid transition-all duration-500 ease-out" :class="isTriviaOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'">
                                     <div class="overflow-hidden">
-                                        <p class="text-[13px] sm:text-sm leading-[1.9] tracking-wide px-3 pt-3 text-[#4a423b]">{{ finalProduct.trivia }}</p>
+                                        <p class="rd-body px-3 pt-3">{{ finalProduct.trivia }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -710,7 +749,7 @@
                             class="w-full mb-3 py-3.5 text-[15px] font-bold tracking-widest rounded-sm btn-enji flex items-center justify-center gap-2 fade-in-section delay-4">
                         <span>スタッフに見せる</span>
                     </button>
-                    <p v-if="!isPreparation" class="text-center text-[11px] text-[#7a6e62] tracking-wider -mt-1 mb-4 fade-in-section delay-4">タップすると、この1杯が大きく表示されます</p>
+                    <p v-if="!isPreparation" class="rd-note text-center tracking-wider -mt-1 mb-4 fade-in-section delay-4">タップすると、この1杯が大きく表示されます</p>
 
                     <!-- ボタン -->
                     <div class="flex gap-3 fade-in-section delay-4">
@@ -1476,8 +1515,9 @@
                     return d ? d.name : '';
                 });
 
-                // ▼ 豆知識の開閉 ▼
+                // ▼ 豆知識・説明文の開閉 ▼
                 const isTriviaOpen = ref(false);
+                const isDescOpen = ref(false);
 
                 // ▼ チャート用のデータ計算 ▼
                 // タイプごとの基本形（半分）＋ 実際の回答（半分）をブレンドし、同じタイプでも人によって形が変わるように
@@ -1709,6 +1749,7 @@
                         }
                     };
                     isTriviaOpen.value = false;
+                    isDescOpen.value = false;
                     isStaffViewOpen.value = false;
 
                     // 1回の診断につき1度だけ「商品紹介を見た」を記録
@@ -1774,7 +1815,7 @@
                     step, selectedDrink, drinks, questions,
                     pickedIndex, slideDirection, pourStage, pourMessages, isResultReplay, norenStage, typeTheme, prefersReducedMotion,
                     currentQuestionIndex, currentQuestion, answersHistory, finalResult, finalProduct,
-                    isPreparation, matchingList, productDisplayName, productNameLines, productNameClass, productNameFontPx, productThemeStyle, productEffect, photoReveal, reaction, reactionKey, isTriviaOpen,
+                    isPreparation, matchingList, productDisplayName, productNameLines, productNameClass, productNameFontPx, productThemeStyle, productEffect, photoReveal, reaction, reactionKey, isTriviaOpen, isDescOpen,
                     isStaffViewOpen, openStaffView, drinkName,
                     surveyStage, surveyRating, surveyComment, surveyWobble, surveyChoices, closeSurvey, pickRating, submitSurvey,
                     startQuiz, answerQuestion, prevQuestion, goToProduct, backToResult, resetQuiz, handleImageError
