@@ -174,6 +174,25 @@
             background: var(--navy); color: var(--gold);
             border: 2px solid var(--gold);
         }
+
+        /* メニューリクエスト（アンケート） */
+        .req-tab { border: 1px solid rgba(212,168,90,0.45); color: var(--muted); transition: background .2s ease, color .2s ease; }
+        .req-tab.on { background: var(--gold); color: var(--navy); border-color: var(--gold); }
+        .req-input {
+            background: rgba(13,22,38,0.8); color: var(--cream);
+            border: 1px solid rgba(242,232,213,0.2);
+            font-size: 16px; /* iOSのズーム防止 */
+        }
+        .req-input::placeholder { color: rgba(154,166,184,0.7); }
+        .req-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212,168,90,0.15); }
+        .req-overlay { background: rgba(5,9,15,0.72); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+        .popup-enter-active { transition: opacity .7s ease; }
+        .popup-leave-active { transition: opacity .6s ease .9s; } /* お礼を少し見せてから消える */
+        .popup-enter-from, .popup-leave-to { opacity: 0; }
+        .popup-enter-active .req-card { transition: transform .8s cubic-bezier(.2,1,.3,1); }
+        .popup-leave-active .req-card { transition: transform .6s ease .9s; }
+        .popup-enter-from .req-card { transform: translateY(24px) scale(.96); }
+        .popup-leave-to .req-card { transform: translateY(-12px) scale(.98); }
     </style>
 </head>
 
@@ -487,6 +506,37 @@
                 </div>
             </div>
 
+        </transition>
+
+        <!-- メニューリクエスト（アンケート）：トップ画面でふわっと表示、1人1回（12時間でリセット） -->
+        <transition name="popup">
+            <div v-if="request.show" class="req-overlay fixed inset-0 z-[60] flex items-start sm:items-center justify-center px-4 pt-[14dvh] sm:pt-0">
+                <div class="req-card panel w-full max-w-sm rounded-xl px-5 pt-5 pb-5 text-center">
+                    <template v-if="!request.sent">
+                        <div class="font-head text-gold text-[10px] tracking-[0.45em] mb-1">NEXT SEASON DRAFT</div>
+                        <h3 class="text-lg font-black tracking-wider">あったら嬉しいメニューは？</h3>
+                        <p class="text-[11px] text-muted mt-1 mb-4">次回、メニューに登場するかも…？</p>
+                        <div class="flex gap-2 mb-3">
+                            <button v-for="c in ['FOOD', 'DRINK']" :key="c" @click="request.category = c"
+                                    class="req-tab flex-1 py-2 rounded-md font-head text-sm tracking-[0.25em]"
+                                    :class="{ on: request.category === c }">{{ c }}</button>
+                        </div>
+                        <input v-model="request.text" maxlength="40" class="req-input w-full rounded-md px-3 py-2.5"
+                               :placeholder="request.category === 'FOOD' ? '例：ハンバーガー、BBQリブ' : '例：クラフトコーラ、IPA'"
+                               @keyup.enter="sendRequest">
+                        <button @click="sendRequest" :disabled="!request.text.trim()"
+                                class="btn-primary w-full mt-3 py-3 rounded-md font-bold tracking-widest disabled:opacity-40">
+                            リクエストを送る ▶
+                        </button>
+                        <button @click="skipRequest" class="text-muted text-[11px] mt-3 tracking-widest underline underline-offset-4">スキップ</button>
+                    </template>
+                    <div v-else class="py-3">
+                        <svg viewBox="0 0 24 24" class="w-8 h-8 mx-auto mb-2" aria-hidden="true"><use href="#baseball"/></svg>
+                        <div class="font-head text-gold text-xl tracking-[0.2em]">THANK YOU!</div>
+                        <p class="text-xs text-cream mt-1">リクエスト受付完了。次回の登板をお楽しみに！</p>
+                    </div>
+                </div>
+            </div>
         </transition>
     </div>
 
@@ -821,6 +871,54 @@
                     }, 2600);
                 };
 
+                // メニューリクエスト（アンケート）
+                // トップ画面が出たあとにふわっと表示。答える（またはスキップ）と12時間は出ない。
+                const REQUEST_KEY = 'america_menu_request_at';
+                const REQUEST_INTERVAL = 12 * 60 * 60 * 1000;
+                const request = reactive({ show: false, category: 'FOOD', text: '', sent: false });
+                const requestDue = () => {
+                    try {
+                        const last = Number(localStorage.getItem(REQUEST_KEY) || 0);
+                        return !last || Date.now() - last >= REQUEST_INTERVAL;
+                    } catch (e) { return true; }
+                };
+                const markRequestDone = () => {
+                    try { localStorage.setItem(REQUEST_KEY, String(Date.now())); } catch (e) {}
+                };
+                let requestChecked = false;
+                watch(step, (s) => {
+                    if (s !== 'start' || requestChecked) return;
+                    requestChecked = true;
+                    if (requestDue()) setTimeout(() => { if (step.value === 'start') request.show = true; }, 1200);
+                });
+
+                const sendRequest = () => {
+                    const text = request.text.trim();
+                    if (!text || request.sent) return;
+                    request.sent = true;
+                    markRequestDone();
+                    setTimeout(() => { request.show = false; }, 300);
+                    if (!GAS_URL) return;
+                    try {
+                        const params = new URLSearchParams({
+                            q1: '-', q2: '-', gender: '-', age: '-',
+                            type: 'menu_request', result: 'menu_request',
+                            category: `メニューリクエスト（${request.category}）：${text}`,
+                            event: 'menu_request', request_category: request.category, request_text: text,
+                            ua: navigator.userAgent
+                        });
+                        fetch(GAS_URL, {
+                            method: 'POST', mode: 'no-cors', keepalive: true,
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: params.toString()
+                        });
+                    } catch (error) {}
+                };
+                const skipRequest = () => {
+                    markRequestDone();
+                    request.show = false;
+                };
+
                 const resetQuiz = () => {
                     batRun++;
                     step.value = 'start';
@@ -832,7 +930,8 @@
 
                 return {
                     step, currentQuestionIndex, currentQuestion, answersHistory, finalResult, bat, fireworkSpots,
-                    skipIntro, startQuiz, goBack, logGameClick, answerQuestion, startReveal, finishReveal, resetQuiz
+                    skipIntro, startQuiz, goBack, logGameClick, answerQuestion, startReveal, finishReveal, resetQuiz,
+                    request, sendRequest, skipRequest
                 };
             }
         }).mount('#app');
