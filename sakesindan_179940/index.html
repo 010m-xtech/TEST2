@@ -287,6 +287,10 @@
         .rd-body  { font-size: 15px; font-weight: 500; line-height: 1.9; letter-spacing: .03em; color: #3d362f; }
         .rd-chip  { font-size: 14.5px; }
         .rd-note  { font-size: 12.5px; color: #6b6056; }
+        /* 店主からのひとこと：見出しの下に、色の細い線を添えた手紙のような囲み */
+        .owner-note > p, .owner-note > .desc-more { margin-left: .25rem; }
+        .owner-note > p { padding: .1rem 0 .1rem .9rem; border-left: 2px solid color-mix(in srgb, var(--shu) 55%, transparent); }
+        .owner-note > .desc-more { margin-left: 1.15rem; }
         /* 説明文は短く（40字前後）。長い文を入れたときだけ、最初の3行を見せて「続きを読む」でひらく */
         .desc-clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
         .desc-more { display: inline-flex; align-items: center; gap: .3em; margin-top: .35rem; font-size: 13px; letter-spacing: .12em; color: var(--shu); }
@@ -331,11 +335,11 @@
         }
         .fx-ripple { animation-name: fxRipple; animation-timing-function: ease-out; border-radius: 50%; border: 1.5px solid color-mix(in srgb, var(--shu) 55%, #fff); box-shadow: 0 0 0 5px color-mix(in srgb, var(--shu) 8%, transparent); }
 
-        /* ▼ 写真の現れ方（商品ごとに選ぶ。spray は今までのスプレー演出） ▼ */
+        /* ▼ 写真の現れ方（商品ごとに選ぶ。spray は今までのスプレー演出）
+           ※ 最後に filter（ぼかし）が残ると iPhone で写真がぼやけて見えるため、ぼかしは mist の途中だけに使う ▼ */
         @keyframes revealInk {      /* 水に落とした墨のように、中心からにじんで広がる */
-            0%   { clip-path: circle(0% at 50% 55%); filter: blur(8px); }
-            70%  { filter: blur(1px); }
-            100% { clip-path: circle(75% at 50% 55%); filter: blur(0); }
+            0%   { clip-path: circle(0% at 50% 55%); opacity: .4; }
+            100% { clip-path: circle(75% at 50% 55%); opacity: 1; }
         }
         @keyframes revealMist {     /* 霧が晴れるように、ぼんやりからピントが合う */
             0%   { opacity: 0; filter: blur(16px) brightness(1.15); transform: scale(1.06); }
@@ -346,11 +350,11 @@
             100% { clip-path: inset(0 0 0 0); }
         }
         @keyframes revealSplit {    /* 真ん中から左右へひらく */
-            0%   { clip-path: inset(0 50% 0 50%); filter: blur(4px); }
-            100% { clip-path: inset(0 0 0 0); filter: blur(0); }
+            0%   { clip-path: inset(0 50% 0 50%); }
+            100% { clip-path: inset(0 0 0 0); }
         }
         .reveal-ink   { animation: revealInk 1.6s cubic-bezier(.4,0,.2,1) 1.7s both; }
-        .reveal-mist  { animation: revealMist 2s ease-out 1.7s both; }
+        .reveal-mist  { animation: revealMist 2s ease-out 1.7s backwards; }   /* 終わったら filter を残さない（iPhoneで写真がぼやけたままになるのを防ぐ） */
         .reveal-wipe  { animation: revealWipe 1.4s cubic-bezier(.65,0,.35,1) 1.7s both; }
         .reveal-split { animation: revealSplit 1.4s cubic-bezier(.65,0,.35,1) 1.7s both; }
 
@@ -730,8 +734,9 @@
                                 </ol>
                             </div>
 
-                            <!-- 説明文（長いときだけ最初の3行。「続きを読む」でひらく） -->
-                            <div class="mb-6">
+                            <!-- 店主からのひとこと（説明文。長いときだけ最初の3行。「続きを読む」でひらく） -->
+                            <div class="owner-note mb-6">
+                                <h3 class="wa-rule rd-head tracking-[0.4em] text-[color:var(--shu)] mb-3"><span class="pl-[0.4em]">店主からのひとこと</span></h3>
                                 <p class="rd-body" :class="{ 'desc-clamp': !isDescOpen }">{{ finalProduct.description }}</p>
                                 <button v-if="finalProduct.description.length > 60" @click="isDescOpen = !isDescOpen" class="desc-more" :class="{ 'is-open': isDescOpen }">
                                     <span>{{ isDescOpen ? '閉じる' : '続きを読む' }}</span>
