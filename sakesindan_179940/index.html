@@ -261,7 +261,7 @@
         .btn-other:hover { background: color-mix(in srgb, var(--shu) 12%, transparent); }
         .btn-other:active { transform: scale(.98); }
 
-        /* ▼ 商品ごとの演出（写真まわりに、最初の数秒だけ。絵文字は使わず、波紋・湯気・香り・泡で表す） ▼ */
+        /* ▼ 商品ごとの演出（写真まわりに、最初の数秒だけ。日本酒は波紋、泡のあるお酒は泡） ▼ */
         .fx-layer {
             position: absolute; top: 0; left: 0; right: 0; height: 26rem; z-index: 5;
             pointer-events: none; overflow: hidden;
@@ -276,14 +276,6 @@
             100% { top: -10%; opacity: 0; transform: translateX(var(--sx)) scale(1); }
         }
         .fx-rise { animation-name: fxRise; animation-timing-function: ease-in; border-radius: 9999px; border: 1px solid color-mix(in srgb, var(--shu) 60%, #fff); background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.9), color-mix(in srgb, var(--shu) 12%, transparent) 60%); }
-        /* 燗の湯気／立ちのぼる香り（どちらも、ぼかした煙がゆらぎながら上がる） */
-        @keyframes fxSteam {
-            0%   { opacity: 0; transform: translate(0, 0) scale(.5, .6); }
-            30%  { opacity: var(--op, .55); }
-            100% { opacity: 0; transform: translate(var(--sx), -150px) scale(1.5, 1.8); }
-        }
-        .fx-steam { animation-name: fxSteam; animation-timing-function: ease-out; border-radius: 50%; filter: blur(9px); background: color-mix(in srgb, var(--shu) 14%, #fff); }
-        .fx-aroma { animation-name: fxSteam; animation-timing-function: cubic-bezier(.3,.2,.4,1); border-radius: 50%; filter: blur(7px); background: color-mix(in srgb, var(--shu) 45%, #fff); }
         /* 水面の波紋 */
         @keyframes fxRipple {
             0%   { opacity: 0; transform: translate(-50%, -50%) scale(.15); }
@@ -328,12 +320,10 @@
         /* ▼ 質問に答えたときのひとこと ▼ */
         .reaction-wrap { position: fixed; left: 0; right: 0; top: 36%; z-index: 40; display: flex; justify-content: center; pointer-events: none; padding: 0 16px; }
         .reaction {
-            background: rgba(22, 18, 15, .84);
-            -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
-            border: 1px solid rgba(232, 132, 108, .55);
-            color: #f4eee2; letter-spacing: .14em; font-size: 14px;
-            padding: .7rem 1.4rem; border-radius: 2px;
-            box-shadow: 0 10px 30px rgba(0,0,0,.5);
+            background: linear-gradient(to bottom, #c4563b, var(--enji));
+            color: #fff6ee; font-weight: 700; letter-spacing: .08em;
+            padding: .55rem 1.1rem; border-radius: 9999px; font-size: 15px;
+            box-shadow: 0 8px 24px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.15) inset;
         }
         .reaction-enter-active { transition: opacity .25s ease, transform .35s cubic-bezier(.3,1.5,.5,1); }
         .reaction-leave-active { transition: opacity .4s ease, transform .4s ease; }
@@ -618,7 +608,7 @@
             <div v-else-if="step === 'product' && finalResult" :key="'product-' + selectedDrink" :style="productThemeStyle" class="wa-paper font-wa shrink-0 w-full max-w-[98%] sm:max-w-lg my-auto rounded-sm shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden relative">
                 <div class="seigaiha"></div>
 
-                <!-- 商品ごとの演出（波紋・湯気・香り・泡。最初の数秒だけ） -->
+                <!-- 商品ごとの演出（波紋か泡。最初の数秒だけ） -->
                 <div v-if="productEffect.length && !prefersReducedMotion" class="fx-layer" aria-hidden="true">
                     <span v-for="(fx, i) in productEffect" :key="i" class="fx-item" :class="fx.cls" :style="fx.style"></span>
                 </div>
@@ -973,7 +963,7 @@
                 //   trivia … 豆知識
                 //   theme … 商品ページの色と演出 { color: 色, effect: 演出, reveal: 写真の現れ方 }
                 //           （書かなければ、えんじ色・演出なし・スプレー）
-                //           effect: 'ripple'（波紋） / 'steam'（燗の湯気） / 'aroma'（立ちのぼる香り） / 'bubbles'（泡）
+                //           effect: 'ripple'（波紋） / 'bubbles'（泡）
                 //           reveal: 'spray'（スプレー） / 'ink'（にじんで広がる） / 'mist'（霧が晴れる） /
                 //                   'wipe'（上からほどける） / 'split'（真ん中から左右にひらく）
                 // まだ商品が決まっていないときは name: '【準備中】' のままにしておくと「ただいま厳選中」と表示されます。
@@ -1006,7 +996,7 @@
                             craft: {
                                 name: '【yasogin オレンジ】',
                                 img: 'sarasarajin.webp',
-                                theme: { color: '#d4661c', effect: 'aroma', reveal: 'wipe' },   // オレンジ・香りが立つ・上からほどける
+                                theme: { color: '#d4661c', effect: 'bubbles', reveal: 'wipe' },   // オレンジ・泡（トニック・ソーダ割り）・上からほどける
                                 description: 'オレンジピールをたっぷりと使用したジューシーでビターなジンです。甘味が強く香り高いネーブルオレンジを使用してバランス良く仕上がった一品。定番はトニックとソーダ、寒い日はお湯割りでほっとひと息つくのもおすすめ。',
                                 matching: '焼売やチーズケーキ\nショコラテリーヌ',
                                 catch: 'ジューシーでほろ苦い、オレンジのジン',
@@ -1033,7 +1023,7 @@
                             sake: {
                                 name: '【産土】',
                                 img: 'ururunihonsyu.webp',
-                                theme: { color: '#5a8f3c', effect: 'bubbles', reveal: 'mist' },   // 若葉色・泡が上がる・霧が晴れるように
+                                theme: { color: '#5a8f3c', effect: 'bubbles', reveal: 'mist' },   // 若葉色・泡（微発泡）・霧が晴れるように
                                 description: '炭酸ガスを含んだ、メロン・洋梨・マスカットなどのもぎたてフルーツを想わせる香りと味わい。アルコール13%と軽快ながらも、旨味かつとろみのある味わいです。',
                                 matching: 'ちーずそぼろ\n秋刀魚の炭焼き',
                                 catch: 'もぎたて果実のような、シュワっと華やかな1杯',
@@ -1045,7 +1035,7 @@
                             craft: {
                                 name: '【虎ノ門　いちごジン】',
                                 img: 'uruurujin.webp',
-                                theme: { color: '#c93a5a', effect: 'aroma', reveal: 'ink' },   // いちご色・香りが立つ・にじんで広がる
+                                theme: { color: '#c93a5a', effect: 'bubbles', reveal: 'ink' },   // いちご色・泡（トニック・ソーダ割り）・にじんで広がる
                                 description: '栃木産「とちおとめ・とちあいか」の甘酸っぱい香り。この香りと風味を堪能できる飲み方はトニック割・ソーダ割がおすすめ。',
                                 matching: 'カモロース炭焼き\nラムの黒焼き',
                                 catch: '栃木いちごが香る、甘酸っぱいジン',
@@ -1084,7 +1074,7 @@
                             craft: {
                                 name: '【アルケミエ　ラベンダージン】',
                                 img: 'torotorojin.webp',
-                                theme: { color: '#7a55a8', effect: 'aroma', reveal: 'mist' },   // ラベンダー色・香りが立つ（飲む香水）・霧が晴れるように
+                                theme: { color: '#7a55a8', effect: 'bubbles', reveal: 'mist' },   // ラベンダー色・泡（ソーダ割り推奨）・霧が晴れるように
                                 description: 'ベースに米焼酎や酒粕焼酎（吟香露）を使用していて、口当たりにはどっしりとしたお米の旨みと重みがあり、余韻にフローラルな苦味と上品な花の香りが長く続きます。ソーダ割りがおすすめです。',
                                 matching: '',
                                 catch: 'まるで飲む香水、華やかで濃厚なアロマ',
@@ -1111,7 +1101,7 @@
                             sake: {
                                 name: '【長珍　特別純米】',
                                 img: 'utoutonihonsyu.webp',
-                                theme: { color: '#a5652f', effect: 'steam', reveal: 'wipe' },   // ラベルの銅色・燗の湯気・上からほどける
+                                theme: { color: '#a5652f', effect: 'ripple', reveal: 'wipe' },   // ラベルの銅色・波紋・上からほどける
                                 description: '金ラベルは蔵のスタンダード。約一年熟成させてから出荷されます。炊きたてのお米の香り、柔らかい飲み口でコクがあり自然と喉を通り過ぎて行きます。熟成してるので、燗もつけてみましょう。するとより旨味も広がり煮物などとも相性バツグン‼️カマスの塩焼きや豚の生姜焼きとも仲良しです。',
                                 matching: '煮物\nカマスの塩焼き\n豚の生姜焼き',
                                 catch: '約一年熟成、燗でふくらむお米の旨み',
@@ -1123,7 +1113,7 @@
                             craft: {
                                 name: '【ドラムシャンボ　ガンパウダージン】',
                                 img: 'utoutojin.webp',
-                                theme: { color: '#2b5797', effect: 'aroma', reveal: 'spray' },   // ボトルの青・香りが立つ・スプレー
+                                theme: { color: '#2b5797', effect: 'bubbles', reveal: 'spray' },   // ボトルの青・泡・スプレー
                                 description: '柑橘の爽やかさと、スパイスや茶葉のほろ苦さが重なる。後味には、エキゾチックで複雑なボタニカルの余韻が残ります。ジン本来の個性や、ハーブ・スパイスが織りなす複雑な香りを楽しみたい方に！',
                                 matching: '',
                                 catch: '柑橘と茶葉、東洋のボタニカルが織りなす奥深く神秘的なジン',
@@ -1337,21 +1327,12 @@
                         return { cls: 'fx-rise', style: { left: rand(2, 95) + '%', width: size + 'px', height: size + 'px', '--sx': rand(-24, 24) + 'px',
                                  animationDelay: (FX_START + rand(0, 2.8)).toFixed(2) + 's', animationDuration: rand(2.8, 4.2).toFixed(2) + 's' } };
                     }),
-                    steam:   () => smoke('fx-steam', 8, 40, 70, 0.55),
-                    aroma:   () => smoke('fx-aroma', 9, 14, 26, 0.5),
                     ripple:  () => Array.from({ length: 7 }, (_, i) => {
                         const size = rand(70, 140);
                         return { cls: 'fx-ripple', style: { left: rand(10, 90) + '%', top: rand(10, 80) + '%', width: size + 'px', height: size + 'px',
                                  animationDelay: (FX_START + i * 0.5).toFixed(2) + 's', animationDuration: '2.4s' } };
                     })
                 };
-                function smoke(cls, n, minW, maxW, op) {   // 写真のあたりから、ぼかした煙をゆらぎながら立ちのぼらせる
-                    return Array.from({ length: n }, (_, i) => {
-                        const w = rand(minW, maxW);
-                        return { cls, style: { left: rand(12, 46) + '%', top: rand(34, 52) + '%', width: w + 'px', height: w * (cls === 'fx-aroma' ? 3 : 1.3) + 'px',
-                                 '--sx': rand(-26, 26) + 'px', '--op': op, animationDelay: (FX_START + i * 0.42).toFixed(2) + 's', animationDuration: rand(3.2, 4.2).toFixed(2) + 's' } };
-                    });
-                }
                 const photoReveal = computed(() => (finalProduct.value && finalProduct.value.theme && finalProduct.value.theme.reveal) || 'spray');
                 const productEffect = computed(() => {
                     const t = finalProduct.value && finalProduct.value.theme;
