@@ -644,7 +644,7 @@
   .pt-ill svg text { font-family: var(--font-gothic); font-weight: 700; }
   .pt-txt { flex: 1; min-width: 0; text-align: left; }
   .pt-txt b { display: block; color: var(--shu); font-size: 15px; margin-bottom: 3px; }
-  .pt-txt span { display: block; font-size: 14.5px; line-height: 1.7; word-break: keep-all; overflow-wrap: anywhere; }
+  .pt-txt span { display: block; font-size: 14.5px; line-height: 1.7; word-break: keep-all; overflow-wrap: break-word; }
   .pt-bub, .an-bub { animation: anBub 2.4s ease-out infinite; }
   .pt-bar { transform-box: fill-box; transform-origin: bottom; animation: ptGrow 4.8s ease-in-out infinite; }
   .pt-step { transform-box: fill-box; transform-origin: center; animation: ptStep 3.6s ease-in-out infinite; }
@@ -774,8 +774,13 @@
   .c-steam2 { bottom: 60%; }
 
   ruby { ruby-position: over; }
-  rt { font-size: .5em; font-weight: 700; letter-spacing: 0; line-height: 1; color: inherit; opacity: .85; }
-  .guide-src rt, .intro-bubble rt { font-size: .48em; }
+  rt { font-size: .4em; font-weight: 700; letter-spacing: 0; line-height: 1; color: inherit; opacity: .85; }
+  .guide-src rt, .intro-bubble rt { font-size: .4em; }
+  .guide-src, #polishMsg, .pt-txt span { line-break: strict; text-wrap: pretty; }
+  .nw { white-space: nowrap; }
+  .pt-txt b { text-wrap: balance; }
+  ruby { ruby-align: center; }
+  rt { margin-inline: -1.4em; }
   .mdg-chips { display: flex; flex-direction: column; gap: 8px; width: 100%; }
   .mdg-chips > div { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; font-size: 14px; font-weight: 700; color: var(--ai); }
   .mdg-chips b { flex: 0 0 3.2em; font-size: 12.5px; color: var(--ai-light); }
@@ -929,6 +934,9 @@
   #introText { position: static; }
   #introText { text-wrap: balance; }
   .intro-options { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+  .intro-note { display: none; margin: 10px 16px 0; text-align: center; font-size: 12.5px; line-height: 1.7; font-weight: 700; color: #fff; opacity: .88; text-shadow: 0 1px 4px rgba(0,0,0,.6); }
+  .intro-note.show { display: block; animation: introNoteIn .5s ease both; }
+  @keyframes introNoteIn { from { opacity: 0; } to { opacity: .88; } }
   .intro-opt {
     width: 100%; padding: 14px 16px; background: #fff; color: var(--ai); border: 1px solid var(--ai-light);
     border-radius: 12px; font-family: var(--font-gothic); font-weight: 700; font-size: 15px; text-align: left; cursor: pointer;
@@ -1491,6 +1499,7 @@
       <div class="intro-bubble"><div id="introText"></div></div>
     </div>
     <div class="intro-options" id="introOptions"></div>
+    <p class="intro-note" id="introNote">※ 今後の参考にさせていただくための質問です。</p>
     <div class="intro-dots" id="introDots"><i></i><i></i></div>
   </div>
 </div>
@@ -1647,7 +1656,7 @@
 
       <div class="glass-box hook"><div class="hook-q">ウイスキーの色は、どこから来る？</div><div class="hook-ill"><div class="cine"><div class="cine-cam"><div class="cine-bg"></div><div class="cine-rays"></div><div class="cine-floor"></div><div class="cine-dust"></div><div class="cine-shot" style="--d:0s"><img class="cine-pic still" data-n="still.webp" alt="" decoding="async" style=""></div><div class="cine-shot" style="--d:1.3s"><img class="cine-pic glass" data-n="glass_clear.webp" alt="" decoding="async" style=""></div><div class="cine-shot" style="--d:2.6s"><img class="cine-pic" data-n="barrel.webp" alt="" decoding="async" style=""></div><div class="cine-shot" style="--d:3.9s"><img class="cine-pic glass" data-n="glass_amber.webp" alt="" decoding="async" style=""></div><div class="cine-shot fin" style="--d:5.2s"><div class="cine-beam"></div><div class="cine-pool"></div><img class="cine-obj tall" data-n="whisky.webp" alt="" decoding="async" style=""><div class="cine-sweep"></div></div></div><div class="cine-cap" style="--d:0s">蒸留して</div><div class="cine-cap" style="--d:1.3s">できたては、無色透明</div><div class="cine-cap" style="--d:2.6s">樽で、長い時間</div><div class="cine-cap" style="--d:3.9s">琥珀色に</div><div class="cine-cap fin" style="--d:5.6s">ウイスキー</div><div class="cine-grade"></div><div class="cine-vig"></div><div class="cine-grain"></div><div class="cine-bar t"></div><div class="cine-bar b"></div></div></div><div class="hook-a" style="animation-delay:6.2s"><strong>樽</strong>の中で、長く眠った色です。</div></div>
       <button class="hook-more" onclick="toggleMore(this)" aria-expanded="false"><span>もっと知る</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      <div class="pt-more"><div class="glass-box" style="padding: 6px 16px;"><div class="pt-row"><div class="pt-ill"><svg viewBox="0 0 120 96" aria-hidden="true"><g class="pt-step" style="animation-delay:0s"><path d="M22 72V30" stroke="#8f7a3a" stroke-width="2.6" stroke-linecap="round"/><ellipse cx="17" cy="34" rx="3.6" ry="6" fill="#e8c35a" stroke="#6b5f55" stroke-width="1.6" transform="rotate(-25 17 34)"/><ellipse cx="27" cy="34" rx="3.6" ry="6" fill="#e8c35a" stroke="#6b5f55" stroke-width="1.6" transform="rotate(25 27 34)"/><ellipse cx="17" cy="46" rx="3.6" ry="6" fill="#e8c35a" stroke="#6b5f55" stroke-width="1.6" transform="rotate(-25 17 46)"/><ellipse cx="27" cy="46" rx="3.6" ry="6" fill="#e8c35a" stroke="#6b5f55" stroke-width="1.6" transform="rotate(25 27 46)"/><ellipse cx="17" cy="58" rx="3.6" ry="6" fill="#e8c35a" stroke="#6b5f55" stroke-width="1.6" transform="rotate(-25 17 58)"/><ellipse cx="27" cy="58" rx="3.6" ry="6" fill="#e8c35a" stroke="#6b5f55" stroke-width="1.6" transform="rotate(25 27 58)"/><ellipse cx="22" cy="26" rx="3.6" ry="6" fill="#e8c35a" stroke="#6b5f55" stroke-width="1.6" transform="rotate(0 22 26)"/><text x="22" y="86" font-size="11" text-anchor="middle" fill="#3b4f73">大麦</text></g><path class="an-arr" d="M36 48h10m-4-5 5 5-5 5" fill="none" stroke="#6b5f55" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:0s"/><g class="pt-step" style="animation-delay:1.2s"><path d="M50 62c0-8 5-12 10-12s10 4 10 12v8c0 2-2 3-4 3H54c-2 0-4-1-4-3z" fill="#c7773e" stroke="#6b5f55" stroke-width="2.4"/><path d="M60 50v-8h10" fill="none" stroke="#6b5f55" stroke-width="2.6" stroke-linecap="round"/><text x="60" y="86" font-size="11" text-anchor="middle" fill="#3b4f73">蒸留</text></g><path class="an-arr" d="M76 48h10m-4-5 5 5-5 5" fill="none" stroke="#6b5f55" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:1.2s"/><g class="pt-step" style="animation-delay:2.4s"><g transform="translate(98 52) scale(1.15)"><path d="M-12 -16h24c6 6 6 26 0 32h-24c-6-6-6-26 0-32z" fill="#c58a4a" stroke="#6b5f55" stroke-width="2.4"/><path d="M-13 -8h26M-13 8h26" stroke="#4b3a2c" stroke-width="2.4"/><path d="M-6 -15c-3 8-3 22 0 30" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="2"/></g><text x="98" y="86" font-size="11" text-anchor="middle" fill="#3b4f73">樽で熟成</text></g></svg></div><div class="pt-txt"><b>① 穀物の「蒸留酒」</b><span>大麦などを発酵・蒸留し、<wbr><strong>樽で長い年月</strong><wbr>熟成させて造ります。</span></div></div><div class="pt-row"><div class="pt-ill"><svg viewBox="0 0 120 96" aria-hidden="true"><g transform="translate(34 52) scale(1.2)"><path d="M-12 -16h24c6 6 6 26 0 32h-24c-6-6-6-26 0-32z" fill="#c58a4a" stroke="#6b5f55" stroke-width="2.4"/><path d="M-13 -8h26M-13 8h26" stroke="#4b3a2c" stroke-width="2.4"/><path d="M-6 -15c-3 8-3 22 0 30" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="2"/></g><text class="pt-z" x="52" y="30" font-size="13" fill="#3b4f73" style="animation-delay:0s">z</text><text class="pt-z" x="60" y="22" font-size="13" fill="#3b4f73" style="animation-delay:0.6s">z</text><text class="pt-z" x="68" y="14" font-size="13" fill="#3b4f73" style="animation-delay:1.2s">z</text><path class="an-arr" d="M62 62h10m-4-5 5 5-5 5" fill="none" stroke="#6b5f55" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:0s"/><path d="M84 36h28l-4 38H88z" fill="#d9902f" stroke="#6b5f55" stroke-width="2.6" stroke-linejoin="round"/><path d="M90 42l2 26" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".5"/><text x="34" y="92" font-size="11" text-anchor="middle" fill="#3b4f73">樽の中で眠る</text><text x="98" y="92" font-size="11" text-anchor="middle" fill="#3b4f73">琥珀色</text></svg></div><div class="pt-txt"><b>② 透明から「琥珀色」へ</b><span>造りたては、<wbr>焼酎のように無色透明。<wbr><strong>樽の中で眠ることで</strong>、<wbr>琥珀色と甘い香りに。</span></div></div></div></div>
+      <div class="pt-more"><div class="glass-box" style="padding: 6px 16px;"><div class="pt-row"><div class="pt-ill"><svg viewBox="0 0 120 96" aria-hidden="true"><g class="pt-step" style="animation-delay:0s"><path d="M22 72V30" stroke="#8f7a3a" stroke-width="2.6" stroke-linecap="round"/><ellipse cx="17" cy="34" rx="3.6" ry="6" fill="#e8c35a" stroke="#6b5f55" stroke-width="1.6" transform="rotate(-25 17 34)"/><ellipse cx="27" cy="34" rx="3.6" ry="6" fill="#e8c35a" stroke="#6b5f55" stroke-width="1.6" transform="rotate(25 27 34)"/><ellipse cx="17" cy="46" rx="3.6" ry="6" fill="#e8c35a" stroke="#6b5f55" stroke-width="1.6" transform="rotate(-25 17 46)"/><ellipse cx="27" cy="46" rx="3.6" ry="6" fill="#e8c35a" stroke="#6b5f55" stroke-width="1.6" transform="rotate(25 27 46)"/><ellipse cx="17" cy="58" rx="3.6" ry="6" fill="#e8c35a" stroke="#6b5f55" stroke-width="1.6" transform="rotate(-25 17 58)"/><ellipse cx="27" cy="58" rx="3.6" ry="6" fill="#e8c35a" stroke="#6b5f55" stroke-width="1.6" transform="rotate(25 27 58)"/><ellipse cx="22" cy="26" rx="3.6" ry="6" fill="#e8c35a" stroke="#6b5f55" stroke-width="1.6" transform="rotate(0 22 26)"/><text x="22" y="86" font-size="11" text-anchor="middle" fill="#3b4f73">大麦</text></g><path class="an-arr" d="M36 48h10m-4-5 5 5-5 5" fill="none" stroke="#6b5f55" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:0s"/><g class="pt-step" style="animation-delay:1.2s"><path d="M50 62c0-8 5-12 10-12s10 4 10 12v8c0 2-2 3-4 3H54c-2 0-4-1-4-3z" fill="#c7773e" stroke="#6b5f55" stroke-width="2.4"/><path d="M60 50v-8h10" fill="none" stroke="#6b5f55" stroke-width="2.6" stroke-linecap="round"/><text x="60" y="86" font-size="11" text-anchor="middle" fill="#3b4f73">蒸留</text></g><path class="an-arr" d="M76 48h10m-4-5 5 5-5 5" fill="none" stroke="#6b5f55" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:1.2s"/><g class="pt-step" style="animation-delay:2.4s"><g transform="translate(98 52) scale(1.15)"><path d="M-12 -16h24c6 6 6 26 0 32h-24c-6-6-6-26 0-32z" fill="#c58a4a" stroke="#6b5f55" stroke-width="2.4"/><path d="M-13 -8h26M-13 8h26" stroke="#4b3a2c" stroke-width="2.4"/><path d="M-6 -15c-3 8-3 22 0 30" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="2"/></g><text x="98" y="86" font-size="11" text-anchor="middle" fill="#3b4f73">樽で熟成</text></g></svg></div><div class="pt-txt"><b>① 穀物の「蒸留酒」</b><span>大麦などを<wbr><i class="nw" style="font-style:normal">発酵・蒸留し、</i><wbr><strong>樽で長い年月</strong><wbr>熟成させて造ります。</span></div></div><div class="pt-row"><div class="pt-ill"><svg viewBox="0 0 120 96" aria-hidden="true"><g transform="translate(34 52) scale(1.2)"><path d="M-12 -16h24c6 6 6 26 0 32h-24c-6-6-6-26 0-32z" fill="#c58a4a" stroke="#6b5f55" stroke-width="2.4"/><path d="M-13 -8h26M-13 8h26" stroke="#4b3a2c" stroke-width="2.4"/><path d="M-6 -15c-3 8-3 22 0 30" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="2"/></g><text class="pt-z" x="52" y="30" font-size="13" fill="#3b4f73" style="animation-delay:0s">z</text><text class="pt-z" x="60" y="22" font-size="13" fill="#3b4f73" style="animation-delay:0.6s">z</text><text class="pt-z" x="68" y="14" font-size="13" fill="#3b4f73" style="animation-delay:1.2s">z</text><path class="an-arr" d="M62 62h10m-4-5 5 5-5 5" fill="none" stroke="#6b5f55" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:0s"/><path d="M84 36h28l-4 38H88z" fill="#d9902f" stroke="#6b5f55" stroke-width="2.6" stroke-linejoin="round"/><path d="M90 42l2 26" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".5"/><text x="34" y="92" font-size="11" text-anchor="middle" fill="#3b4f73">樽の中で眠る</text><text x="98" y="92" font-size="11" text-anchor="middle" fill="#3b4f73">琥珀色</text></svg></div><div class="pt-txt"><b>② 透明から「琥珀色」へ</b><span>造りたては、<wbr>焼酎のように<wbr>無色透明。<wbr><strong>樽の中で眠ることで</strong>、<wbr>琥珀色と甘い香りに。</span></div></div></div></div>
 
       <button class="primary-btn" onclick="goScreen('whisky-types')">
         ラベルの正体
@@ -1659,7 +1668,7 @@
     <section class="screen" data-screen="sake-types">
       <h2 class="title">特定名称酒の主な種類</h2>
 
-      <div class="guide" data-komeo="komeo4.webp"><div class="guide-src">基準を満たした日本酒は、<br><strong>「特定名称酒」</strong>と呼ばれます。<br>まずは、お米を削ってみましょう。</div></div>
+      <div class="guide" data-komeo="komeo4.webp"><div class="guide-src">基準を満たした日本酒は、<br><strong>「特定名称酒」</strong>と呼ばれます。<br>まずは、<span class="nw">お米を削ってみましょう。</span></div></div>
 
       <!-- 精米歩合スライダー -->
       <div class="glass-box polish-box trk" id="polishBox">
@@ -2624,7 +2633,7 @@ function goScreen(name){
   });
   
   const backBtn = document.getElementById('backBtn');
-  backBtn.classList.toggle('show', name !== 'top');
+  backBtn.classList.toggle('show', name !== 'top' && !/^our-(sake|shochu|whisky)$/.test(name));
   
   const backMap = {
     'our-sake': 'sake-methods', 'sake-methods': 'sake-types', 'sake-types': 'sake-intro', 'sake-intro': 'top',
@@ -2877,7 +2886,7 @@ function initPolish() {
 
     highlightMatrix(keep, cut);
     const st = polishStage(cut);
-    msgEl.textContent = st.msg;
+    msgEl.innerHTML = st.msg.replace('お米を削ってみましょう。','<span class="nw">お米を削ってみましょう。</span>');
     if (st.img !== lastImg) {
       komeoEl.setAttribute('src', imgSrc(st.img));
       lastImg = st.img;
@@ -3414,6 +3423,7 @@ function introSay(html, komeo, opts) {
 function introAsk(q) {
   return new Promise(resolve => {
     introSay(q.text, q.komeo, { onTyped: () => {
+      $id('introNote').classList.add('show');
       const box = $id('introOptions');
       box.innerHTML = '';
       q.options.forEach((t, i) => {
@@ -3449,6 +3459,7 @@ async function runIntro() {
   storageSet(SURVEY_CONFIG.profileKey, JSON.stringify({ gender: answers.gender, age: answers.age }));
   sendData({ type: 'survey' });
   dots.classList.remove('show');
+  $id('introNote').classList.remove('show');
   await introSay('ありがとうございます。<br>さっそく、<wbr>どうぞ。', 'komeo4.webp', { auto: 900 });
   closeIntro();
 }
