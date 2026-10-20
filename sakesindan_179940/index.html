@@ -205,6 +205,23 @@
         .tanzaku > span { opacity: 0; animation: tanzakuText .5s ease 2.1s forwards; }
         .tanzaku > span { white-space: nowrap; }   /* 1行（縦の1列）は途中で折り返さない。入りきらないときは文字を小さくする */
 
+        /* 英語表記の商品名：写真の下の横長の札（英語を大きく、下に読みがな） */
+        @keyframes plateIn { 0% { clip-path: inset(0 100% 0 0); } 100% { clip-path: inset(0 0 0 0); } }
+        .name-plate {
+            display: flex; flex-direction: column; align-items: center; gap: .3rem;
+            margin: 0 auto 1.25rem; padding: .7rem 1rem .6rem; max-width: 22rem; text-align: center; border-radius: 2px;
+            background: linear-gradient(to bottom, #b4452f, var(--enji) 40%, #8f3020);
+            background: linear-gradient(to bottom, color-mix(in srgb, var(--shu) 82%, #fff), var(--shu) 40%, color-mix(in srgb, var(--shu) 78%, #000));
+            color: #fbf4ea; box-shadow: 0 6px 14px color-mix(in srgb, var(--shu) 35%, transparent), inset 0 0 0 1px rgba(255,255,255,.12);
+            clip-path: inset(0 100% 0 0); animation: plateIn .8s cubic-bezier(.65,0,.35,1) 1.6s forwards;
+        }
+        .name-plate .name-en { font-size: 17px; font-weight: 600; letter-spacing: .1em; line-height: 1.35; text-transform: uppercase; text-wrap: balance; }
+        .name-plate .name-kana { display: flex; flex-wrap: wrap; justify-content: center; column-gap: .9em; font-size: 11.5px; letter-spacing: .16em; opacity: .85; }
+        .name-plate .name-kana > span { white-space: nowrap; }   /* 読みがなは単語の途中で改行しない */
+        .name-plate > span { opacity: 0; animation: tanzakuText .5s ease 2.2s forwards; }
+        /* 英語表記の商品は、はんこと落款を写真の横にたてに並べる */
+        .stamp-col { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .6rem; padding: .25rem 0; }
+
         /* ▼ ① タイプのはんこを「ポン」と押す ▼ */
         @keyframes hankoStamp {
             0%   { opacity: 0; transform: scale(2.4) rotate(-14deg); }
@@ -390,6 +407,7 @@
             .logo-seal::after { animation: none; }
             .reveal-item { opacity: 1; transform: none; transition: none; }
             .tanzaku, .tanzaku > span { animation: none; clip-path: none; opacity: 1; }
+            .name-plate, .name-plate > span { animation: none; clip-path: none; opacity: 1; }
             .btn-shimmer::after, .animate-nudge { animation: none; }
             .reveal-brush { animation-duration: .01s; animation-delay: 0s; }
         }
@@ -673,8 +691,8 @@
                         <span class="pl-[0.5em]">本日の1杯</span>
                     </div>
 
-                    <!-- 写真 ＋ 縦書きの銘柄名 -->
-                    <div class="flex items-stretch justify-center gap-4 sm:gap-6 mb-6 fade-in-section delay-2">
+                    <!-- 写真 ＋ 縦書きの銘柄名（nameEn がある商品は、写真の下に英語表記＋読みがなの札） -->
+                    <div class="flex items-stretch justify-center gap-4 sm:gap-6 fade-in-section delay-2" :class="finalProduct && finalProduct.nameEn ? 'mb-4' : 'mb-6'">
                         <div class="photo-frame relative w-[58%] max-w-[240px] aspect-[4/5] p-2 shadow-[0_6px_18px_rgba(60,40,20,0.18)] border overflow-hidden">
                             <img v-if="finalProduct && finalProduct.img" :src="finalProduct.img" :alt="productDisplayName" class="w-full h-full object-contain" :class="photoReveal !== 'spray' && !isPreparation ? 'reveal-' + photoReveal : ''" @error="handleImageError">
                             <!-- えんじの塗りつぶしが、スプレーを吹き付けるように少しずつ消えて写真が現れる -->
@@ -683,7 +701,12 @@
                                 <span class="tategaki text-sm tracking-[0.4em]">ただいま厳選中</span>
                             </div>
                         </div>
-                        <div class="flex flex-col items-center py-1 min-h-0">
+                        <!-- 英語表記の商品：はんこと落款だけを写真の横にたてに並べる -->
+                        <div v-if="finalProduct && finalProduct.nameEn" class="stamp-col">
+                            <span class="hanko shrink-0 text-[11px] font-semibold tracking-[0.15em] px-1 py-1.5" :class="{ 'hanko-stamp': !isPreparation }">{{ finalResult.titleRuby }}</span>
+                            <span v-if="!isPreparation" class="logo-seal" aria-hidden="true"><img src="logo_w.png" alt="" @error="handleImageError"></span>
+                        </div>
+                        <div v-else class="flex flex-col items-center py-1 min-h-0">
                             <!-- 長い銘柄名は縦書きのまま自然に2行目へ折り返す -->
                             <h2 id="productName" class="tategaki tanzaku flex-1 min-h-0 font-extrabold px-2 py-3 rounded-[2px]" :class="productNameClass" :style="productNameFontPx ? { fontSize: productNameFontPx + 'px', letterSpacing: 0 } : null">
                                 <span v-for="line in productNameLines" :key="line" class="block">{{ line }}</span>
@@ -695,6 +718,12 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- 英語表記の商品名 ＋ 読みがな（横書きの札が、左から右へ筆を引くように現れる） -->
+                    <h2 v-if="finalProduct && finalProduct.nameEn" class="name-plate">
+                        <span class="name-en">{{ finalProduct.nameEn }}</span>
+                        <span v-if="finalProduct.nameKana" class="name-kana"><span v-for="(w, i) in finalProduct.nameKana.split(/\s+/)" :key="i">{{ w }}</span></span>
+                    </h2>
 
                     <!-- 商品説明（長文を避け、見出し・タグ・メーターで「見てわかる」ように） -->
                     <div class="fade-in-section delay-3">
@@ -1025,6 +1054,7 @@
                 //   keywords … 味わいのキーワード / points … ここがおいしい（3つ）
                 //   taste … { sweet: 1〜5（ドライ→甘め）, body: 1〜5（軽やか→濃厚） }
                 //   trivia … 豆知識
+                //   nameEn / nameKana … （任意）英語の商品名と読みがな。書くと、縦書きの短冊の代わりに写真の下へ横書きで表示
                 //   theme … 商品ページの色と演出 { color: 色, effect: 演出, reveal: 写真の現れ方 }
                 //           （書かなければ、えんじ色・演出なし・スプレー）
                 //           effect: 'ripple'（波紋） / 'bubbles'（泡）
@@ -1059,6 +1089,8 @@
                             },
                             craft: {
                                 name: '【yasogin オレンジ】',
+                                nameEn: 'YASO GIN Orange',            // 商品ページでは英語表記＋読みがなで横書き
+                                nameKana: 'ヤソジン オレンジ',
                                 img: 'sarasarajin.webp',
                                 theme: { color: '#d4661c', effect: 'bubbles', reveal: 'wipe' },   // オレンジ・泡（トニック・ソーダ割り）・上からほどける
                                 description: 'ネーブルオレンジのジューシーな香りと、ほろ苦さ。トニック、ソーダ、お湯割りでも。',
@@ -1137,6 +1169,8 @@
                             },
                             craft: {
                                 name: '【アルケミエ　ラベンダージン】',
+                                nameEn: 'Alchemiae First Essence Lavender Gin',
+                                nameKana: 'アルケミエ ファーストエッセンス ラベンダージン',
                                 img: 'torotorojin.webp',
                                 theme: { color: '#7a55a8', effect: 'bubbles', reveal: 'mist' },   // ラベンダー色・泡（ソーダ割り推奨）・霧が晴れるように
                                 description: '米焼酎ベースのどっしりとした旨みに、上品な花の香りが長く続きます。ソーダ割りで。',
@@ -1176,6 +1210,8 @@
                             },
                             craft: {
                                 name: '【ドラムシャンボ　ガンパウダージン】',
+                                nameEn: 'Drumshanbo Gunpowder Irish Gin',
+                                nameKana: 'ドラムシャンボ ガンパウダー アイリッシュジン',
                                 img: 'utoutojin.webp',
                                 theme: { color: '#2b5797', effect: 'bubbles', reveal: 'spray' },   // ボトルの青・泡・スプレー
                                 description: '柑橘の爽やかさに、スパイスと茶葉のほろ苦さ。エキゾチックな余韻が続くジンです。',
