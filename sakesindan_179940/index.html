@@ -203,6 +203,7 @@
             animation: tanzakuIn .7s cubic-bezier(.65,0,.35,1) 1.6s forwards;
         }
         .tanzaku > span { opacity: 0; animation: tanzakuText .5s ease 2.1s forwards; }
+        .tanzaku > span { white-space: nowrap; }   /* 1行（縦の1列）は途中で折り返さない。入りきらないときは文字を小さくする */
 
         /* ▼ ① タイプのはんこを「ポン」と押す ▼ */
         @keyframes hankoStamp {
@@ -1415,13 +1416,20 @@
                         if (!el) await wait(100);
                     }
                     if (!el) return;
-                    const cs = getComputedStyle(el);
-                    const room = el.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
-                    const len = Math.max(...productNameLines.value.map(l => l.length));
-                    const need = len * (parseFloat(cs.fontSize) + (parseFloat(cs.letterSpacing) || 0));
-                    // 字間をなくした上で、1文字あたりの高さ × 文字数が短冊に収まる大きさにする
-                    if (need > room) productNameFontPx.value = Math.max(11, Math.floor(room / len * 0.96));
+                    // 1行（縦の1列）ずつ、実際に表示された長さを測り、はみ出す間は1pxずつ小さくする
+                    // （各行は折り返さない設定なので、はみ出し＝短冊に入りきらない）
+                    const fits = () => [...el.children].every(line => line.scrollHeight <= line.clientHeight + 1);
+                    let size = parseFloat(getComputedStyle(el).fontSize);
+                    while (!fits() && size > 10) {
+                        size -= 1;
+                        productNameFontPx.value = size;   // 小さくするときは字間もなくす
+                        await nextTick();
+                    }
                 };
+                // Webフォント（明朝体）が読み込まれると文字の幅が変わるので、そのあとにもう一度合わせる
+                if (document.fonts && document.fonts.ready) {
+                    document.fonts.ready.then(() => { if (step.value === 'product') fitProductName(); });
+                }
                 watch(step, (newStep) => { if (newStep === 'product') fitProductName(); });
                 window.addEventListener('resize', () => { if (step.value === 'product') fitProductName(); });
 
