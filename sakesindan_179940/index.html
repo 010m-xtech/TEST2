@@ -188,38 +188,55 @@
         .noren-open .noren-half.left  { transform: translateX(-102%) skewY(-4deg) rotate(-2deg); }
         .noren-open .noren-half.right { transform: translateX(102%) skewY(4deg) rotate(2deg); }
 
+        /* ▼ 最初の暖簾 ▼ */
+        .intro-noren { cursor: pointer; }
+        .intro-skip {   /* 右上の「スキップ」：すぐに暖簾をひらく */
+            position: absolute; z-index: 3; top: max(14px, env(safe-area-inset-top)); right: 14px;
+            padding: .4rem .9rem; font-size: 12px; letter-spacing: .25em; color: #f4eee2;
+            border: 1px solid rgba(244,238,226,.5); border-radius: 9999px; background: rgba(0,0,0,.18);
+            transition: opacity .3s ease;
+        }
+        .noren-open .intro-skip { opacity: 0; pointer-events: none; }
+        .intro-mark { gap: 26px; }
+        .noren-mark p.intro-copy { color: #f4eee2; font-size: clamp(19px, 5.6vw, 26px); font-weight: 600; letter-spacing: .22em; line-height: 1.9; text-align: center; padding-left: .22em; }
+        @keyframes introCh {   /* 筆で書くように、1文字ずつ（最後に filter を残さない） */
+            0%   { opacity: 0; transform: translateY(5px); filter: blur(4px); }
+            100% { opacity: 1; transform: none; filter: none; }
+        }
+        .intro-ch { display: inline-block; opacity: 0; animation: introCh .55s ease-out both; }
+        @keyframes introStamp {   /* ロゴを、はんこのようにぽんっと押す */
+            0%   { opacity: 0; transform: scale(2.2); }
+            55%  { opacity: 1; transform: scale(.9); }
+            75%  { transform: scale(1.05); }
+            100% { opacity: 1; transform: none; }
+        }
+        .noren-mark img.intro-logo { width: clamp(84px, 24vw, 118px); opacity: 0; animation: introStamp .5s cubic-bezier(.3,1.4,.5,1) both; }
+        @keyframes introHint { 0% { opacity: 0; } 100% { opacity: .9; } }
+        @keyframes introPulse { 0%, 100% { opacity: .9; } 50% { opacity: .45; } }
+        .intro-hint {
+            color: #f4eee2; font-size: 13px; letter-spacing: .5em; padding: .55rem 1.2rem .55rem 1.7rem;
+            border-top: 1px solid rgba(244,238,226,.45); border-bottom: 1px solid rgba(244,238,226,.45);
+            opacity: 0; animation: introHint .6s ease both, introPulse 2.4s ease-in-out 1.2s infinite;
+        }
+
         /* ▼ 商品紹介：写真のスプレー演出 ＆ 銘柄名の短冊 ▼ */
         .spray-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; background: var(--enji); transition: opacity .6s ease; }
         .spray-canvas.is-drawn { background: transparent; }
         .spray-canvas.is-done { opacity: 0; }
-        /* 銘柄名：えんじの短冊が上から下へ、筆を引くように現れる */
-        @keyframes tanzakuIn { 0% { clip-path: inset(0 0 100% 0); } 100% { clip-path: inset(0 0 0 0); } }
-        @keyframes tanzakuText { 0% { opacity: 0; transform: translateY(-6px); } 100% { opacity: 1; transform: translateY(0); } }
-        .tanzaku {
-            background: linear-gradient(to bottom, #b4452f, var(--enji) 40%, #8f3020);
-            color: #fbf4ea;
-            box-shadow: 0 6px 14px rgba(110, 36, 22, .3), inset 0 0 0 1px rgba(255,255,255,.12);
-            clip-path: inset(0 0 100% 0);
-            animation: tanzakuIn .7s cubic-bezier(.65,0,.35,1) 1.6s forwards;
+        /* ▼ 商品名：黒字に、手書きのラインマーカー（色は商品ごと。--marker に筆の形の画像が入る） ▼ */
+        @keyframes markerDraw { to { background-size: 100% 62%; } }
+        .pname { display: flex; flex-direction: column; align-items: center; margin: 0 auto 1.25rem; text-align: center; color: #2b2622; }
+        .pname-main { font-size: 24px; font-weight: 800; letter-spacing: .06em; line-height: 1.65; text-wrap: balance; }
+        .pname.is-en .pname-main { font-size: 18px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+        .marker {
+            padding: 0 .35em; background-image: var(--marker); background-repeat: no-repeat;
+            background-position: 0 92%; background-size: 0% 62%;
+            -webkit-box-decoration-break: clone; box-decoration-break: clone;   /* 2行になっても、行ごとにマーカーを引く */
+            animation: markerDraw .9s cubic-bezier(.6,0,.3,1) 1.8s forwards;
         }
-        .tanzaku > span { opacity: 0; animation: tanzakuText .5s ease 2.1s forwards; }
-        .tanzaku > span { white-space: nowrap; }   /* 1行（縦の1列）は途中で折り返さない。入りきらないときは文字を小さくする */
-
-        /* 英語表記の商品名：写真の下の横長の札（英語を大きく、下に読みがな） */
-        @keyframes plateIn { 0% { clip-path: inset(0 100% 0 0); } 100% { clip-path: inset(0 0 0 0); } }
-        .name-plate {
-            display: flex; flex-direction: column; align-items: center; gap: .3rem;
-            margin: 0 auto 1.25rem; padding: .7rem 1rem .6rem; max-width: 22rem; text-align: center; border-radius: 2px;
-            background: linear-gradient(to bottom, #b4452f, var(--enji) 40%, #8f3020);
-            background: linear-gradient(to bottom, color-mix(in srgb, var(--shu) 82%, #fff), var(--shu) 40%, color-mix(in srgb, var(--shu) 78%, #000));
-            color: #fbf4ea; box-shadow: 0 6px 14px color-mix(in srgb, var(--shu) 35%, transparent), inset 0 0 0 1px rgba(255,255,255,.12);
-            clip-path: inset(0 100% 0 0); animation: plateIn .8s cubic-bezier(.65,0,.35,1) 1.6s forwards;
-        }
-        .name-plate .name-en { font-size: 17px; font-weight: 600; letter-spacing: .1em; line-height: 1.35; text-transform: uppercase; text-wrap: balance; }
-        .name-plate .name-kana { display: flex; flex-wrap: wrap; justify-content: center; column-gap: .9em; font-size: 11.5px; letter-spacing: .16em; opacity: .85; }
-        .name-plate .name-kana > span { white-space: nowrap; }   /* 読みがなは単語の途中で改行しない */
-        .name-plate > span { opacity: 0; animation: tanzakuText .5s ease 2.2s forwards; }
-        /* 英語表記の商品は、はんこと落款を写真の横にたてに並べる */
+        .pname-kana { display: flex; flex-wrap: wrap; justify-content: center; column-gap: .9em; margin-top: .2rem; font-size: 12px; letter-spacing: .16em; color: #6b6056; }
+        .pname-part, .pname-kana > span { white-space: nowrap; }   /* 商品名・読みがなは、単語の途中で改行しない */
+        /* はんこと落款は、写真の横にたてに並べる */        /* 英語表記の商品は、はんこと落款を写真の横にたてに並べる */
         .stamp-col { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .6rem; padding: .25rem 0; }
 
         /* ▼ ① タイプのはんこを「ポン」と押す ▼ */
@@ -279,10 +296,6 @@
         @keyframes staffPop { 0% { transform: scale(.92); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
         /* ▼ 商品ごとのテーマカラー（--shu を商品の色に差し替える。color-mix 非対応の端末は今までのえんじ色のまま） ▼ */
-        .wa-paper .tanzaku {
-            background: linear-gradient(to bottom, color-mix(in srgb, var(--shu) 82%, #fff), var(--shu) 40%, color-mix(in srgb, var(--shu) 78%, #000));
-            box-shadow: 0 6px 14px color-mix(in srgb, var(--shu) 35%, transparent), inset 0 0 0 1px rgba(255,255,255,.12);
-        }
         .wa-paper .spray-canvas { background: var(--shu); }
         .wa-paper .spray-canvas.is-drawn { background: transparent; }
         .wa-paper .btn-enji {
@@ -294,7 +307,11 @@
         .kw-chip { background: rgba(166, 61, 42, .10); background: color-mix(in srgb, var(--shu) 11%, transparent); }
         .meter-dot { box-shadow: 0 0 0 3px color-mix(in srgb, var(--shu) 20%, transparent); }
         /* 写真の背景も商品の色に。白い背景の写真は multiply で背景色になじむ */
-        .photo-frame { background: #fff; background: color-mix(in srgb, var(--shu) 14%, #fff); border-color: color-mix(in srgb, var(--shu) 25%, #e3d8c3); }
+        .photo-frame {
+            background: #fff; background: color-mix(in srgb, var(--shu) 14%, #fff);
+            box-shadow: 0 10px 24px rgba(60, 40, 20, .16);
+            -webkit-mask-image: -webkit-radial-gradient(white, black);   /* iPhoneでも角の形どおりに写真を切り抜く */
+        }
         .photo-frame img { mix-blend-mode: multiply; }
         /* ▼ 商品ページの読みやすさ（照明を落とした店内でも読めるよう、本文は大きめ・やや太め） ▼ */
         .rd-catch { font-size: 19px; }
@@ -406,8 +423,8 @@
             .logo-seal { animation: none; opacity: .92; transform: rotate(6deg); }
             .logo-seal::after { animation: none; }
             .reveal-item { opacity: 1; transform: none; transition: none; }
-            .tanzaku, .tanzaku > span { animation: none; clip-path: none; opacity: 1; }
-            .name-plate, .name-plate > span { animation: none; clip-path: none; opacity: 1; }
+            .marker { animation: none; background-size: 100% 62%; }
+            .intro-ch, .noren-mark img.intro-logo, .intro-hint { animation: none; opacity: 1; transform: none; }
             .btn-shimmer::after, .animate-nudge { animation: none; }
             .reveal-brush { animation-duration: .01s; animation-delay: 0s; }
         }
@@ -487,15 +504,8 @@
         
         <transition name="fade" mode="out-in" appear>
             <!-- ▼ 0. オープニング演出（3秒間） ▼ -->
-            <div v-if="step === 'opening'" key="opening" class="flex flex-col items-center justify-center text-center px-6 min-h-[60vh] my-auto animate-opening-text">
-                <p class="text-2xl sm:text-3xl md:text-4xl text-white font-serif tracking-widest leading-relaxed drop-shadow-lg opacity-90 mb-8">
-                    今日のお客様に<br>ちょうどいい一杯を。
-                </p>
-                <!-- ▼ ロゴ画像 ▼ -->
-                <div class="w-32 sm:w-40 md:w-48 opacity-85">
-                    <img src="logo_w.png" alt="かごや ロゴ" class="w-full h-auto object-contain drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]" @error="handleImageError">
-                </div>
-            </div>
+            <!-- 最初の画面は、上にかかった暖簾（introStage）で見せる。暖簾をくぐるとトップ画面へ -->
+            <div v-if="step === 'opening'" key="opening"></div>
 
             <!-- ▼ 1. トップ画面 ▼ -->
             <div v-else-if="step === 'start'" key="start" class="w-full max-w-lg my-auto p-5 sm:p-8 bg-slate-900/80 backdrop-blur-md border border-white/20 rounded-2xl flex flex-col items-center text-center shadow-2xl">
@@ -691,38 +701,27 @@
                         <span class="pl-[0.5em]">本日の1杯</span>
                     </div>
 
-                    <!-- 写真 ＋ 縦書きの銘柄名（nameEn がある商品は、写真の下に英語表記＋読みがなの札） -->
-                    <div class="flex items-stretch justify-center gap-4 sm:gap-6 fade-in-section delay-2" :class="finalProduct && finalProduct.nameEn ? 'mb-4' : 'mb-6'">
-                        <div class="photo-frame relative w-[58%] max-w-[240px] aspect-[4/5] p-2 shadow-[0_6px_18px_rgba(60,40,20,0.18)] border overflow-hidden">
+                    <!-- 写真（手で切り抜いたような形） ＋ タイプのはんこ・お店のロゴの落款 -->
+                    <div class="flex items-center justify-center gap-4 sm:gap-6 mb-4 fade-in-section delay-2">
+                        <div class="photo-frame relative w-[58%] max-w-[240px] aspect-[4/5] overflow-hidden" :style="{ borderRadius: photoShape }">
                             <img v-if="finalProduct && finalProduct.img" :src="finalProduct.img" :alt="productDisplayName" class="w-full h-full object-contain" :class="photoReveal !== 'spray' && !isPreparation ? 'reveal-' + photoReveal : ''" @error="handleImageError">
                             <!-- えんじの塗りつぶしが、スプレーを吹き付けるように少しずつ消えて写真が現れる -->
                             <canvas v-if="finalProduct && finalProduct.img && !isPreparation && !prefersReducedMotion && photoReveal === 'spray'" id="sprayCanvas" class="spray-canvas"></canvas>
-                            <div v-else-if="!finalProduct || !finalProduct.img || isPreparation" class="w-full h-full flex flex-col items-center justify-center border border-dashed border-[#cdbd9f] text-[color:var(--kin)]">
+                            <div v-else-if="!finalProduct || !finalProduct.img || isPreparation" class="w-full h-full flex flex-col items-center justify-center text-[color:var(--kin)]">
                                 <span class="tategaki text-sm tracking-[0.4em]">ただいま厳選中</span>
                             </div>
                         </div>
-                        <!-- 英語表記の商品：はんこと落款だけを写真の横にたてに並べる -->
-                        <div v-if="finalProduct && finalProduct.nameEn" class="stamp-col">
+                        <!-- タイプのはんこ ＋ お店のロゴの落款（タイプのあとに、ぽんっと押される） -->
+                        <div class="stamp-col">
                             <span class="hanko shrink-0 text-[11px] font-semibold tracking-[0.15em] px-1 py-1.5" :class="{ 'hanko-stamp': !isPreparation }">{{ finalResult.titleRuby }}</span>
                             <span v-if="!isPreparation" class="logo-seal" aria-hidden="true"><img src="logo_w.png" alt="" @error="handleImageError"></span>
                         </div>
-                        <div v-else class="flex flex-col items-center py-1 min-h-0">
-                            <!-- 長い銘柄名は縦書きのまま自然に2行目へ折り返す -->
-                            <h2 id="productName" class="tategaki tanzaku flex-1 min-h-0 font-extrabold px-2 py-3 rounded-[2px]" :class="productNameClass" :style="productNameFontPx ? { fontSize: productNameFontPx + 'px', letterSpacing: 0 } : null">
-                                <span v-for="line in productNameLines" :key="line" class="block">{{ line }}</span>
-                            </h2>
-                            <!-- タイプのはんこ ＋ お店のロゴの落款（タイプのあとに、ぽんっと押される） -->
-                            <div class="flex items-start gap-1.5 mt-3 shrink-0">
-                                <span class="hanko shrink-0 text-[11px] font-semibold tracking-[0.15em] px-1 py-1.5" :class="{ 'hanko-stamp': !isPreparation }">{{ finalResult.titleRuby }}</span>
-                                <span v-if="!isPreparation" class="logo-seal" aria-hidden="true"><img src="logo_w.png" alt="" @error="handleImageError"></span>
-                            </div>
-                        </div>
                     </div>
 
-                    <!-- 英語表記の商品名 ＋ 読みがな（横書きの札が、左から右へ筆を引くように現れる） -->
-                    <h2 v-if="finalProduct && finalProduct.nameEn" class="name-plate">
-                        <span class="name-en">{{ finalProduct.nameEn }}</span>
-                        <span v-if="finalProduct.nameKana" class="name-kana"><span v-for="(w, i) in finalProduct.nameKana.split(/\s+/)" :key="i">{{ w }}</span></span>
+                    <!-- 商品名：黒字に、お酒の色の手書きラインマーカー（英語表記の商品は、下に読みがな） -->
+                    <h2 class="pname fade-in-section delay-2" :class="{ 'is-en': finalProduct && finalProduct.nameEn }">
+                        <span class="pname-main"><span class="marker" :style="markerStyle"><template v-for="(part, i) in productTitleParts" :key="i"><span class="pname-part">{{ part.text }}</span>{{ part.space }}</template></span></span>
+                        <span v-if="finalProduct && finalProduct.nameKana" class="pname-kana"><span v-for="(w, i) in finalProduct.nameKana.split(/\s+/)" :key="i">{{ w }}</span></span>
                     </h2>
 
                     <!-- 商品説明（長文を避け、見出し・タグ・メーターで「見てわかる」ように） -->
@@ -906,6 +905,24 @@
             </div>
         </transition>
 
+        <!-- ▼ 最初の暖簾：ひとことが筆で書かれ、ロゴがぽんっと押される。タップ（または数秒待つ）で左右にひらいて始まる ▼ -->
+        <div v-if="introStage" class="noren intro-noren font-wa fixed inset-0 z-50 flex overflow-hidden" :class="'noren-' + introStage"
+             role="button" tabindex="0" aria-label="暖簾をくぐって始める" @click="openIntro" @keydown.enter="openIntro">
+            <div class="noren-rod"></div>
+            <button type="button" class="intro-skip" @click.stop="openIntro">スキップ</button>
+            <div v-for="side in ['left', 'right']" :key="side" class="noren-half" :class="side">
+                <div class="noren-mark intro-mark">
+                    <p class="intro-copy">
+                        <span v-for="(line, li) in introGreeting" :key="li" class="block">
+                            <span v-for="(ch, ci) in line" :key="ci" class="intro-ch" :style="{ animationDelay: (0.4 + introCharIndex(li, ci) * 0.06) + 's' }">{{ ch }}</span>
+                        </span>
+                    </p>
+                    <img src="logo_w.png" alt="" class="intro-logo" :style="{ animationDelay: introLogoDelay + 's' }">
+                    <span class="intro-hint" :style="{ animationDelay: (introLogoDelay + 0.45) + 's' }">暖簾をくぐる</span>
+                </div>
+            </div>
+        </div>
+
         <!-- ▼ 暖簾（結果 → 商品紹介 の切り替え演出） ▼ -->
         <div v-if="norenStage" class="noren font-wa fixed inset-0 z-50 flex overflow-hidden pointer-events-none" :class="'noren-' + norenStage" aria-hidden="true">
             <div class="noren-rod"></div>
@@ -976,10 +993,36 @@
                     ].filter(Boolean);
                     new Set(preload).forEach(src => { const img = new Image(); img.src = src; });
 
-                    setTimeout(() => {
-                        if (step.value === 'opening') step.value = 'start';
-                    }, 1200); // ロゴを見せる時間（1.2秒）
+                    // 暖簾を上から下ろし、しばらくタップがなければ自動でひらく
+                    requestAnimationFrame(() => requestAnimationFrame(() => { if (introStage.value === 'ready') introStage.value = 'drop'; }));
+                    introTimer = setTimeout(openIntro, (introLogoDelay.value + 1.8) * 1000);   // 全体で3〜4秒ほど
                 });
+
+                // ▼ 最初の暖簾 ▼
+                // 開いた時間でひとことを変える（営業時間 16〜23時に合わせて。from〜to時、lines は1行ずつ）
+                const INTRO_GREETINGS = [
+                    { from: 16, to: 18, lines: ['おつかれさまです。', '今日の一杯を、ここで。'] },
+                    { from: 18, to: 20, lines: ['今宵のあなたに', 'ちょうどいい一杯を。'] },
+                    { from: 20, to: 23, lines: ['夜はこれから。', 'もう一杯、いかがですか。'] }
+                ];
+                const INTRO_GREETING_OTHER = ['今日のお客様に', 'ちょうどいい一杯を。'];   // 営業時間外（準備中の確認など）
+                const introGreeting = (() => {
+                    const h = new Date().getHours();
+                    const g = INTRO_GREETINGS.find(x => h >= x.from && h < x.to);
+                    return (g ? g.lines : INTRO_GREETING_OTHER).map(l => [...l]);
+                })();
+                const introCharIndex = (li, ci) => introGreeting.slice(0, li).reduce((n, l) => n + l.length, 0) + ci;
+                const introLogoDelay = computed(() => 0.4 + introCharIndex(introGreeting.length, 0) * 0.06 + 0.2);
+                const introStage = ref(prefersReducedMotion ? 'drop' : 'ready');   // 'ready'（上に隠れている）→ 'drop' → 'open' → null
+                let introTimer = null;
+                const openIntro = () => {
+                    if (introStage.value !== 'drop') return;
+                    clearTimeout(introTimer);
+                    if (navigator.vibrate) navigator.vibrate(12);
+                    introStage.value = 'open';
+                    step.value = 'start';
+                    setTimeout(() => { introStage.value = null; }, prefersReducedMotion ? 0 : 1100);
+                };
                 
                 const drinks = [
                     { id: 'sake', name: '日本酒', img: 'nihonsyu.webp' },
@@ -1398,21 +1441,7 @@
                     return finalProduct.value.name.replace(/[【】]/g, '').trim();
                 });
 
-                // ▼ 縦書きの銘柄名は空白・「・」の位置で改行（「虎ノ門｜いちごジン」「貴の特別純米｜夏タイプ」） ▼
-                const productNameLines = computed(() => {
-                    if (isPreparation.value) return ['準備中'];
-                    return productDisplayName.value.split(/[\s　・]+/).filter(Boolean);
-                });
-
-                // ▼ 銘柄名（1行あたり）の文字数に応じて縦書きの文字サイズを調整 ▼
-                const productNameClass = computed(() => {
-                    const len = Math.max(...productNameLines.value.map(l => l.length));
-                    if (len <= 3) return 'text-3xl sm:text-4xl tracking-[0.25em] leading-tight';
-                    if (len <= 6) return 'text-2xl sm:text-3xl tracking-[0.12em] leading-snug';
-                    return 'text-xl sm:text-2xl tracking-[0.1em] leading-snug';
-                });
-
-                // ▼ 商品ごとの色（--shu を差し替えると、短冊・はんこ・見出し・ボタン・写真の背景がその色になる） ▼
+                // ▼ 商品ごとの色（--shu を差し替えると、商品名のマーカー・はんこ・見出し・ボタン・写真の背景がその色になる） ▼
                 const productThemeStyle = computed(() => {
                     const t = finalProduct.value && finalProduct.value.theme;
                     return t && t.color ? { '--shu': t.color } : null;
@@ -1440,34 +1469,41 @@
                     return make ? make() : [];
                 });
 
-                // ▼ 長い銘柄名（「ガンパウダージン」など）が短冊に収まらないときは、1行に収まるまで文字を小さくする ▼
-                const productNameFontPx = ref(null);
-                const fitProductName = async () => {
-                    productNameFontPx.value = null;
-                    await nextTick();
-                    let el = null;
-                    for (let i = 0; i < 30 && !el; i++) {   // 画面が切り替わるまで待つ
-                        if (step.value !== 'product') return;
-                        el = document.getElementById('productName');
-                        if (!el) await wait(100);
-                    }
-                    if (!el) return;
-                    // 1行（縦の1列）ずつ、実際に表示された長さを測り、はみ出す間は1pxずつ小さくする
-                    // （各行は折り返さない設定なので、はみ出し＝短冊に入りきらない）
-                    const fits = () => [...el.children].every(line => line.scrollHeight <= line.clientHeight + 1);
-                    let size = parseFloat(getComputedStyle(el).fontSize);
-                    while (!fits() && size > 10) {
-                        size -= 1;
-                        productNameFontPx.value = size;   // 小さくするときは字間もなくす
-                        await nextTick();
-                    }
-                };
-                // Webフォント（明朝体）が読み込まれると文字の幅が変わるので、そのあとにもう一度合わせる
-                if (document.fonts && document.fonts.ready) {
-                    document.fonts.ready.then(() => { if (step.value === 'product') fitProductName(); });
-                }
-                watch(step, (newStep) => { if (newStep === 'product') fitProductName(); });
-                window.addEventListener('resize', () => { if (step.value === 'product') fitProductName(); });
+
+                // ▼ 商品名（日本語は『』でくくる。英語表記がある商品は英語） ▼
+                const productTitle = computed(() => {
+                    if (isPreparation.value) return '準備中';
+                    const p = finalProduct.value;
+                    return p && p.nameEn ? p.nameEn : `『${productDisplayName.value}』`;
+                });
+                // 長い名前は、空白や「・」の位置でだけ改行する（「貴の特別純米・｜夏タイプ」）
+                // 空白は改行できる位置として単語の外に出し、「・」は前の単語にくっつける
+                const productTitleParts = computed(() => {
+                    const parts = [];
+                    productTitle.value.split(/([\s　]+)/).forEach((t, i) => {
+                        if (i % 2) { if (parts.length) parts[parts.length - 1].space = t; return; }
+                        t.split(/(?<=・)/).filter(Boolean).forEach(w => parts.push({ text: w, space: '' }));
+                    });
+                    return parts;
+                });
+                // 手書きのラインマーカー（筆で引いたような形を、商品の色で塗る）
+                const markerStyle = computed(() => {
+                    const color = (productThemeStyle.value && productThemeStyle.value['--shu']) || '#a63d2a';
+                    const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 40' preserveAspectRatio='none'><path fill='${color}' fill-opacity='.38' d='M5 13C42 6 92 10 141 8s99-4 154 3c4 7 3 15-1 21-55 4-124-1-185 3S30 38 7 33C2 26 1 19 5 13z'/></svg>`;
+                    return { '--marker': `url("data:image/svg+xml,${encodeURIComponent(svg)}")` };
+                });
+                // 写真の形：手で切り抜いたような、少しいびつな角丸（商品ごとに形を変える）
+                const PHOTO_SHAPES = [
+                    '46% 54% 42% 58% / 52% 44% 56% 48%',
+                    '58% 42% 55% 45% / 45% 58% 42% 55%',
+                    '38% 62% 58% 42% / 56% 46% 54% 44%',
+                    '30% 70% 45% 55% / 40% 35% 65% 60%'
+                ];
+                const photoShape = computed(() => {
+                    const key = (finalProduct.value && finalProduct.value.img) || '';
+                    const n = [...key].reduce((a, c) => a + c.charCodeAt(0), 0);
+                    return PHOTO_SHAPES[n % PHOTO_SHAPES.length];
+                });
 
                 // ▼ 写真のスプレー演出 ▼
                 // えんじで塗った上にロゴを薄く描き、スプレーの粒で少しずつ削って写真を見せる
@@ -1890,9 +1926,9 @@
 
                 return {
                     step, selectedDrink, drinks, questions,
-                    pickedIndex, slideDirection, pourStage, pourMessages, isResultReplay, norenStage, typeTheme, prefersReducedMotion,
+                    pickedIndex, slideDirection, pourStage, pourMessages, isResultReplay, norenStage, introStage, introGreeting, introCharIndex, introLogoDelay, openIntro, typeTheme, prefersReducedMotion,
                     currentQuestionIndex, currentQuestion, answersHistory, finalResult, finalProduct,
-                    isPreparation, matchingList, productDisplayName, productNameLines, productNameClass, productNameFontPx, productThemeStyle, productEffect, photoReveal, reaction, reactionKey, isTriviaOpen, isDescOpen,
+                    isPreparation, matchingList, productDisplayName, productTitle, productTitleParts, markerStyle, photoShape, productThemeStyle, productEffect, photoReveal, reaction, reactionKey, isTriviaOpen, isDescOpen,
                     isStaffViewOpen, openStaffView, drinkName,
                     surveyStage, surveyRating, surveyComment, surveyWobble, surveyChoices, closeSurvey, pickRating, submitSurvey,
                     startQuiz, answerQuestion, prevQuestion, goToProduct, backToResult, resetQuiz, handleImageError
