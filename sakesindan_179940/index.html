@@ -203,14 +203,14 @@
             0%   { opacity: 0; transform: translateY(5px); filter: blur(4px); }
             100% { opacity: 1; transform: none; filter: none; }
         }
-        .intro-ch { display: inline-block; opacity: 0; animation: introCh .55s ease-out both; }
+        .intro-ch { display: inline-block; opacity: 0; animation: introCh .9s cubic-bezier(.25,.6,.3,1) both; }
         @keyframes introStamp {   /* ロゴを、はんこのようにぽんっと押す */
             0%   { opacity: 0; transform: scale(2.2); }
             55%  { opacity: 1; transform: scale(.9); }
             75%  { transform: scale(1.05); }
             100% { opacity: 1; transform: none; }
         }
-        .noren-mark img.intro-logo { width: clamp(84px, 24vw, 118px); opacity: 0; animation: introStamp .5s cubic-bezier(.3,1.4,.5,1) both; }
+        .noren-mark img.intro-logo { width: clamp(84px, 24vw, 118px); opacity: 0; animation: introStamp .6s cubic-bezier(.3,1.4,.5,1) both; }
         @keyframes introHint { 0% { opacity: 0; } 100% { opacity: .9; } }
         @keyframes introPulse { 0%, 100% { opacity: .9; } 50% { opacity: .45; } }
         .intro-hint {
@@ -914,11 +914,11 @@
                 <div class="noren-mark intro-mark">
                     <p class="intro-copy">
                         <span v-for="(line, li) in introGreeting" :key="li" class="block">
-                            <span v-for="(ch, ci) in line" :key="ci" class="intro-ch" :style="{ animationDelay: (0.4 + introCharIndex(li, ci) * 0.06) + 's' }">{{ ch }}</span>
+                            <span v-for="(ch, ci) in line" :key="ci" class="intro-ch" :style="{ animationDelay: introCharDelay(li, ci) + 's' }">{{ ch }}</span>
                         </span>
                     </p>
                     <img src="logo_w.png" alt="" class="intro-logo" :style="{ animationDelay: introLogoDelay + 's' }">
-                    <span class="intro-hint" :style="{ animationDelay: (introLogoDelay + 0.45) + 's' }">暖簾をくぐる</span>
+                    <span class="intro-hint" :style="{ animationDelay: INTRO_HINT_AT + 's' }">暖簾をくぐる</span>
                 </div>
             </div>
         </div>
@@ -995,7 +995,7 @@
 
                     // 暖簾を上から下ろし、しばらくタップがなければ自動でひらく
                     requestAnimationFrame(() => requestAnimationFrame(() => { if (introStage.value === 'ready') introStage.value = 'drop'; }));
-                    introTimer = setTimeout(openIntro, (introLogoDelay.value + 1.8) * 1000);   // 全体で3〜4秒ほど
+                    introTimer = setTimeout(openIntro, INTRO_OPEN_AT * 1000);
                 });
 
                 // ▼ 最初の暖簾 ▼
@@ -1012,7 +1012,13 @@
                     return (g ? g.lines : INTRO_GREETING_OTHER).map(l => [...l]);
                 })();
                 const introCharIndex = (li, ci) => introGreeting.slice(0, li).reduce((n, l) => n + l.length, 0) + ci;
-                const introLogoDelay = computed(() => 0.4 + introCharIndex(introGreeting.length, 0) * 0.06 + 0.2);
+                // 時間配分（秒）：文字はゆっくり筆で書くように、最後の文字が 3 秒ごろに書き終わる。
+                // ロゴは文字の途中で押し、3.5 秒で暖簾が自動でひらく
+                const INTRO_TEXT_FROM = 0.3, INTRO_TEXT_LAST = 2.1;          // 1文字目と最後の文字が書き始める時刻（1文字は .9 秒かけて現れる）
+                const INTRO_HINT_AT = 2.2, INTRO_OPEN_AT = 3.5;
+                const introLogoDelay = 1.1;
+                const introCharCount = introCharIndex(introGreeting.length, 0);
+                const introCharDelay = (li, ci) => INTRO_TEXT_FROM + introCharIndex(li, ci) * (INTRO_TEXT_LAST - INTRO_TEXT_FROM) / Math.max(1, introCharCount - 1);
                 const introStage = ref(prefersReducedMotion ? 'drop' : 'ready');   // 'ready'（上に隠れている）→ 'drop' → 'open' → null
                 let introTimer = null;
                 const openIntro = () => {
@@ -1926,7 +1932,7 @@
 
                 return {
                     step, selectedDrink, drinks, questions,
-                    pickedIndex, slideDirection, pourStage, pourMessages, isResultReplay, norenStage, introStage, introGreeting, introCharIndex, introLogoDelay, openIntro, typeTheme, prefersReducedMotion,
+                    pickedIndex, slideDirection, pourStage, pourMessages, isResultReplay, norenStage, introStage, introGreeting, introCharDelay, introLogoDelay, INTRO_HINT_AT, openIntro, typeTheme, prefersReducedMotion,
                     currentQuestionIndex, currentQuestion, answersHistory, finalResult, finalProduct,
                     isPreparation, matchingList, productDisplayName, productTitle, productTitleParts, markerStyle, photoShape, productThemeStyle, productEffect, photoReveal, reaction, reactionKey, isTriviaOpen, isDescOpen,
                     isStaffViewOpen, openStaffView, drinkName,
