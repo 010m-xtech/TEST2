@@ -774,8 +774,7 @@ var tok=0,pending=null,reduced=matchMedia("(prefers-reduced-motion:reduce)").mat
 var AC=function(t){return '<span style="color:var(--acc)">'+t+'</span>'};
 var S=[
 {t:'<b>ご来店ありがとうございます。<br>大将の江田です。</b>'},
-{t:'<b>お料理の提供まで、<br>「まずはこれを食べてほしい」と思う<br>'+AC(String(D.length).replace(/\d/g,function(c){return String.fromCharCode(c.charCodeAt(0)+65248)})+'本の焼き鳥')+'を紹介させてください。</b>'},
-{t:'<b>お待ちいただく間に、<br>少しでも'+AC('こだわり')+'を知っていただき、<br>より美味しくお召し上がり<br>いただけたら幸いです。</b>'},
+{t:'<b>お待ちいただく間に、<br>「まずはこれを食べてほしい」と思う<br>'+AC(String(D.length).replace(/\d/g,function(c){return String.fromCharCode(c.charCodeAt(0)+65248)})+'本の焼き鳥')+'を<br>紹介させてください。</b>'},
 {t:'<b>最初に、'+AC('2つだけ')+'<br>聞かせてください。<br>まず、性別は？</b>',q:"gender",o:["男性","女性","秘密"]},
 {t:'<b>ありがとうございます。<br>続いて、年齢は？</b>',q:"age",o:["34歳以下","35歳以上"]},
 {t:'<b>ありがとうございます！<br>実は今、'+AC('ニワトリ')+'が<br>走り回っています。</b>'},
@@ -793,7 +792,7 @@ function typeIn(el,html,my,cb){
     if(fin||my!==tok)return;
     if(i>=arr.length){finish();return}
     var c=arr[i++];cur+=c;el.innerHTML=cur;
-    t=setTimeout(step,c.charAt(0)==="<"?0:35+Math.random()*45)
+    t=setTimeout(step,c.charAt(0)==="<"?0:16+Math.random()*16)
   }
   pending=finish;
   if(reduced)finish();else t=setTimeout(step,150)
@@ -822,7 +821,7 @@ function scene(i,my){if(my!==tok)return;
     }else{
       mo.className="mo opt-in";
       mo.innerHTML='<p class="small" style="opacity:.6">タップで次へ</p>';
-      after(1600,function(){scene(i+1,my)},my)
+      after(800,function(){scene(i+1,my)},my)
     }
   },my)
 }
@@ -837,7 +836,7 @@ function intro(){
       '<div class="msg-window chat" id="mw" aria-live="polite"></div>'+
     '</div>';
   document.getElementById("mw").onclick=function(){if(pending)pending()};
-  setTimeout(function(){scene(seenIntro?(ccount()>0&&ccount()<D.length?8:7):0,my)},seenIntro?300:900)
+  setTimeout(function(){scene(seenIntro?(ccount()>0&&ccount()<D.length?7:6):0,my)},seenIntro?300:900)
 }
 document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest(".vz,.ck");if(!b||e.target.closest(".pl"))return;b.classList.remove("hop");void b.offsetWidth;b.classList.add("hop");setTimeout(function(){b.classList.remove("hop")},750)});
 function ttAn(d){var k=d.n==="豚ネギマ"?"p":"r";return '<span class="ttan '+k+'" aria-hidden="true"><span class="an '+k+'">'+anHTML(k)+'</span></span>'}
