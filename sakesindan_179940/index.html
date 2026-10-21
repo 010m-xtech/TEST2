@@ -204,13 +204,12 @@
             100% { opacity: 1; transform: none; }
         }
         .noren-mark img.intro-logo { width: clamp(84px, 24vw, 118px); opacity: 0; animation: introStamp .6s cubic-bezier(.3,1.4,.5,1) both; }
-        @keyframes introHint { 0% { opacity: 0; } 100% { opacity: .9; } }
         @keyframes introPulse { 0%, 100% { opacity: .9; } 50% { opacity: .45; } }
         .intro-hint {   /* 画面の下のほうに、ボタンの形で（暖簾といっしょに左右に割れる） */
             position: absolute; left: 50%; bottom: calc(max(24px, env(safe-area-inset-bottom)) + 9vh); transform: translateX(-50%);
             white-space: nowrap; color: #f4eee2; font-size: 13px; letter-spacing: .25em; padding: .65rem 1.4rem .65rem 1.65rem;
             border: 1px solid rgba(244,238,226,.5); border-radius: 9999px; background: rgba(0,0,0,.18);
-            opacity: 0; animation: introHint .6s ease both, introPulse 2.4s ease-in-out 1.2s infinite;
+            opacity: .9; animation: introPulse 2.4s ease-in-out 1.2s infinite;
         }
 
         /* ▼ 商品紹介：写真のスプレー演出 ＆ 銘柄名の短冊 ▼ */
@@ -911,7 +910,7 @@
                         </span>
                     </p>
                     <img src="logo_w.png" alt="" class="intro-logo" :style="{ animationDelay: introLogoDelay + 's' }">
-                    <span class="intro-hint" :style="{ animationDelay: INTRO_HINT_AT + 's' }">タップして暖簾をくぐる</span>
+                    <span class="intro-hint">タップして暖簾をくぐる</span>
                 </div>
             </div>
         </div>
@@ -1008,7 +1007,7 @@
                 // 時間配分（秒）：文字はゆっくり筆で書くように、最後の文字が 3 秒ごろに書き終わる。
                 // ロゴは文字の途中で押し、3.5 秒で暖簾が自動でひらく
                 const INTRO_TEXT_FROM = 0.3, INTRO_TEXT_LAST = 2.1;          // 1文字目と最後の文字が書き始める時刻（1文字は .9 秒かけて現れる）
-                const INTRO_HINT_AT = 2.2, INTRO_OPEN_AT = 3.5;
+                const INTRO_OPEN_AT = 3.5;   // 「タップして暖簾をくぐる」は最初から出ていて、いつでも押せる
                 const introLogoDelay = 1.1;
                 const introCharCount = introCharIndex(introGreeting.length, 0);
                 const introCharDelay = (li, ci) => INTRO_TEXT_FROM + introCharIndex(li, ci) * (INTRO_TEXT_LAST - INTRO_TEXT_FROM) / Math.max(1, introCharCount - 1);
@@ -1925,7 +1924,7 @@
 
                 return {
                     step, selectedDrink, drinks, questions,
-                    pickedIndex, slideDirection, pourStage, pourMessages, isResultReplay, norenStage, introStage, introGreeting, introCharDelay, introLogoDelay, INTRO_HINT_AT, openIntro, typeTheme, prefersReducedMotion,
+                    pickedIndex, slideDirection, pourStage, pourMessages, isResultReplay, norenStage, introStage, introGreeting, introCharDelay, introLogoDelay, openIntro, typeTheme, prefersReducedMotion,
                     currentQuestionIndex, currentQuestion, answersHistory, finalResult, finalProduct,
                     isPreparation, matchingList, productDisplayName, productTitle, productTitleParts, markerStyle, photoShape, productThemeStyle, productEffect, photoReveal, reaction, reactionKey, isTriviaOpen, isDescOpen,
                     isStaffViewOpen, openStaffView, drinkName,
