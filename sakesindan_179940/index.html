@@ -193,11 +193,15 @@
         .intro-noren { cursor: pointer; }
         .intro-mark { gap: 26px; }
         .noren-mark p.intro-copy { color: #f4eee2; font-size: clamp(19px, 5.6vw, 26px); font-weight: 600; letter-spacing: .22em; line-height: 1.9; text-align: center; padding-left: .22em; }
-        @keyframes introCh {   /* 筆で書くように、1文字ずつ（最後に filter を残さない） */
-            0%   { opacity: 0; transform: translateY(5px); filter: blur(4px); }
-            100% { opacity: 1; transform: none; filter: none; }
+        /* 筆で書くように1文字ずつ、左から右へ墨がのっていく。
+           ぼかし（filter）や移動を使うとiPhoneで文字がぼやけたままになるため、切り抜きと透明度だけで表す。
+           書き終わったら animation の値を残さない（backwards）ので、ふつうの文字としてくっきり表示される */
+        @keyframes introCh {
+            0%   { opacity: 0; clip-path: inset(0 100% 0 0); }
+            35%  { opacity: 1; }
+            100% { opacity: 1; clip-path: inset(0 0 0 0); }
         }
-        .intro-ch { display: inline-block; opacity: 0; animation: introCh .9s cubic-bezier(.25,.6,.3,1) both; }
+        .intro-ch { display: inline-block; animation: introCh .9s cubic-bezier(.3,.5,.3,1) backwards; }
         @keyframes introStamp {   /* ロゴを、はんこのようにぽんっと押す */
             0%   { opacity: 0; transform: scale(2.2); }
             55%  { opacity: 1; transform: scale(.9); }
@@ -205,12 +209,15 @@
             100% { opacity: 1; transform: none; }
         }
         .noren-mark img.intro-logo { width: clamp(84px, 24vw, 118px); opacity: 0; animation: introStamp .6s cubic-bezier(.3,1.4,.5,1) both; }
-        @keyframes introPulse { 0%, 100% { opacity: .9; } 50% { opacity: .45; } }
+        @keyframes introPulse {   /* 文字はそのまま、枠と地だけをゆっくり明滅させる（文字がぼやけないように） */
+            0%, 100% { border-color: rgba(244,238,226,.6); background-color: rgba(0,0,0,.18); }
+            50%      { border-color: rgba(244,238,226,.18); background-color: rgba(0,0,0,.04); }
+        }
         .intro-hint {   /* 画面の下のほうに、ボタンの形で（暖簾といっしょに左右に割れる） */
             position: absolute; left: 50%; bottom: calc(max(24px, env(safe-area-inset-bottom)) + 9vh); transform: translateX(-50%);
             white-space: nowrap; color: #f4eee2; font-size: 13px; letter-spacing: .25em; padding: .65rem 1.4rem .65rem 1.65rem;
             border: 1px solid rgba(244,238,226,.5); border-radius: 9999px; background: rgba(0,0,0,.18);
-            opacity: .9; animation: introPulse 2.4s ease-in-out 1.2s infinite;
+            animation: introPulse 2.4s ease-in-out 1.2s infinite;
         }
 
         /* ▼ 商品紹介：写真のスプレー演出 ＆ 銘柄名の短冊 ▼ */
