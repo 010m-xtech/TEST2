@@ -1509,6 +1509,27 @@
     /* 長い商品名は2行まで */
     .mf-clamp2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
+
+    /* ===== 全体を少しコンパクトに ===== */
+    /* 季節の表示（秋・月見など）は出さない */
+    #seasonTag { display: none !important; }
+    /* 上のメーター */
+    #meterPanel { padding: 4px 10px 4px !important; }
+    #meterPanel .lantern-string { height: 42px; }
+    #meterPanel .lantern { scale: 0.8; transform-origin: 50% 0; }
+    #meterPanel > div:first-child > span:first-child { font-size: 9.5px !important; }
+    #meterPanel .mf-logo { width: 17px; height: 17px; }
+    #meterPanel #meterHint { font-size: 8.5px !important; }
+    /* 下のボタン類：間隔をつめて、一回り小さく */
+    #uiElements { gap: 6px !important; padding-bottom: 8px !important; }
+    #uiElements > div:first-of-type { padding: 4px 12px !important; font-size: 10px !important; }
+    .menu-toggle { padding: 6px 12px !important; }
+    .menu-toggle .text-\[13px\] { font-size: 12px !important; }
+    .menu-toggle.text-\[11px\] { font-size: 10px !important; }
+    .cta-camera { padding: 10px 12px 9px !important; gap: 2px !important; border-radius: 15px !important; }
+    .cta-camera > span:first-child { font-size: 14.5px !important; }
+    .cta-camera #ctaSub { font-size: 9.5px !important; }
+
     /* トラックの荷台に貼ったお店の看板 */
     .sky-truck-img { display: block; width: 100%; height: auto; }
     .sky-truck-sign {
@@ -3350,7 +3371,7 @@
       const n = Math.round(70 * scale);
       if (SHAPE_POINTS[kind]) {
         // 形に開く（ジョッキ・桜・星・紅葉・雪の結晶）
-        const size = (kind === 'beer' || kind === 'wine' ? 120 : 112) * scale;
+        const size = ({ beer: 92, wine: 92, cuore: 80 }[kind] || 112) * scale;
         SHAPE_POINTS[kind]().forEach(([px, py, col]) => {
           for (let k = 0; k < 2; k++) {
             const dx = px * size + (Math.random() - 0.5) * 3, dy = py * size + (Math.random() - 0.5) * 3;
@@ -3397,13 +3418,13 @@
     let nextLogoAt = 0;
     function logoBurst(x, y, scale = 1) {
       const cols = ['#2fbf6a', '#ffffff', '#ff3048'];
-      const n = Math.round(90 * scale);
+      const n = Math.round(70 * scale);
       for (let i = 0; i < n; i++) {
         const a = (i / n) * Math.PI * 2;
-        const sp = (2.6 + Math.random() * 0.4) * scale;
+        const sp = (1.9 + Math.random() * 0.3) * scale;
         addFwParticle(x, y, Math.cos(a) * sp, Math.sin(a) * sp, cols[Math.floor(i / n * 3)], { glitter: Math.random() < 0.3 });
       }
-      mainLogoBlooms.push({ x, y, t0: performance.now(), r: Math.min(width, 430) * 0.12 * scale });
+      mainLogoBlooms.push({ x, y, t0: performance.now(), r: Math.min(width, 430) * 0.075 * scale });
       mainFlash(x, y, 0.6 * scale);
     }
     function drawLogoBlooms(now) {
