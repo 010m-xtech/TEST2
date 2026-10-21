@@ -1478,9 +1478,7 @@
     }
     .cta-camera::before { inset: 5px 9.5% !important; border: 1.5px dashed rgba(215, 38, 61, 0.45) !important; border-radius: 10px !important; }
     .cta-camera #ctaSub { color: #1f6b40 !important; font-weight: 700 !important; letter-spacing: 0.04em !important; }
-    .cta-camera > span:first-child { letter-spacing: 0.06em !important; font-size: 14px !important; }
-    .cta-camera { padding: 9px 12px 8px !important; gap: 1px !important; border-radius: 15px !important; }
-    .cta-camera #ctaSub { font-size: 9.5px !important; }
+    .cta-camera > span:first-child { letter-spacing: 0.06em !important; }
     /* イタリアの街並み（ピサの斜塔など）が見えるように、背景の街を高くする */
     .main-scene { height: 46% !important; }
 
@@ -3227,7 +3225,7 @@
     const TRUCK_RATIO = 178 / 430;
     const MF_BANNER_SRC = document.querySelector('.mf-banner')?.src || '';
     class SkyTruck {
-      constructor(container, cw, y, w, dur, dir = Math.random() < 0.5 ? -1 : 1, kind = Math.random() < 0.5 ? 'sign' : 'plain') {
+      constructor(container, cw, y, w, dur, dir = Math.random() < 0.5 ? -1 : 1, kind = Math.random() < 0.65 ? 'sign' : 'plain') { // もふもふの看板トラックを多めに
         this.el = document.createElement('div');
         this.el.className = 'sky-truck';
         if (kind === 'sign') {
@@ -3442,9 +3440,9 @@
     let mainTrucks = [];
     let nextTruckAt = 0;
     function updateMainTrucks(now) {
-      if (!nextTruckAt) nextTruckAt = now + 5000;
+      if (!nextTruckAt) nextTruckAt = now + 2500;
       if (!isShowPlaying && !storyActive && now > nextTruckAt) {
-        nextTruckAt = now + 9000 + Math.random() * 12000;
+        nextTruckAt = now + 4500 + Math.random() * 4500; // トラックは5〜9秒に1台くらい
         const w = Math.min(width, 430) * 0.32;
         // 提灯の下〜ボタンの上のあいだの、どこかの高さをランダムに
         mainTrucks.push(new SkyTruck(appContainer, width, height * (0.17 + Math.random() * 0.45), w, 6500 + Math.random() * 2000));
@@ -3476,9 +3474,9 @@
         }
       }
       // ときどき、お店の丸ロゴが打ち上がる
-      if (!nextLogoAt) nextLogoAt = now + 4000;
+      if (!nextLogoAt) nextLogoAt = now + 2000;
       if (!isShowPlaying && !storyActive && now > nextLogoAt) {
-        nextLogoAt = now + 6000 + Math.random() * 6000;
+        nextLogoAt = now + 3500 + Math.random() * 3500; // ロゴの花火は3.5〜7秒に1回くらい
         mainLaunch(width * (0.25 + Math.random() * 0.5), height * (0.26 + Math.random() * 0.16), 1, 'logo');
       }
       ctx.lineCap = 'round';
