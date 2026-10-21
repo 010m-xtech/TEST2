@@ -1707,7 +1707,7 @@
 
       <div class="flex gap-2.5 w-full">
         <button onclick="closeCaptureModal()" class="flex-1 py-2.5 rounded-full border border-white/30 text-white/85 text-xs font-bold tracking-wider transition active:scale-95">撮り直す</button>
-        <button onclick="submitCapturedBubble()" class="btn-chic flex-1 py-2.5 rounded-full text-xs font-bold tracking-[0.14em] active:scale-95 transition">提灯に灯す</button>
+        <button id="submitCaptureBtn" onclick="submitCapturedBubble()" class="btn-chic flex-1 py-2.5 rounded-full text-xs font-bold tracking-[0.14em] active:scale-95 transition">提灯に灯す</button>
       </div>
     </div>
   </div>
@@ -1849,6 +1849,7 @@
           currentUser = cred.user;
         }
         startCloudListener();
+        cleanupLegacyBubbles();
       } catch (err) {
         console.warn("Auth initialization failed:", err);
         // クラウドに繋がらない時はこの端末だけでメーターを動かす
@@ -4069,22 +4070,38 @@
     setInterval(() => { checkShowTrigger(); checkStaleMeter(); }, 5000);
 
     // ---------- Firestore リスナー ----------
+    // 接続が切れても、この端末だけのメーターに切り替えず、少し待ってつなぎ直す
+    // （切り替えると、この端末の写真がほかの席に飛ばなくなるため）
+    let unsubState = null;
+    let unsubMemories = null;
+    let listenerRetryTimer = null;
+    let cloudStateReceived = false;
     function startCloudListener() {
       if (!isCloudReady || !db) return;
-      onSnapshot(stateDocRef(), (snap) => {
+      if (unsubState) unsubState();
+      if (unsubMemories) unsubMemories();
+      unsubState = onSnapshot(stateDocRef(), (snap) => {
+        cloudStateReceived = true;
         handleState(snap.exists() ? snap.data() : null);
       }, (error) => {
         console.warn('Meter state snapshot error:', error);
-        useLocalMeter = true;
+        scheduleListenerRetry();
       });
-      onSnapshot(memoriesColRef(), (snapshot) => {
+      unsubMemories = onSnapshot(memoriesColRef(), (snapshot) => {
         const list = [];
         snapshot.forEach((d) => list.push({ id: d.id, ...d.data() }));
         handleMemories(list);
       }, (error) => {
         console.warn('Memories snapshot error:', error);
+        scheduleListenerRetry();
       });
-      cleanupLegacyBubbles();
+    }
+    function scheduleListenerRetry() {
+      if (listenerRetryTimer) return;
+      listenerRetryTimer = setTimeout(() => {
+        listenerRetryTimer = null;
+        startCloudListener();
+      }, 5000);
     }
 
     // 旧バージョン（bubbles コレクション）の写真が残っていたら片付ける
@@ -4099,7 +4116,10 @@
     }
 
     // ---------- 投稿 ----------
-    // 戻り値: 'ok' | 'full' | 'error'
+    // 戻り値: 'ok' | 'full' | 'error' | 'offline' | 'quota'
+    // 混み合い・電波の揺らぎで失敗したら、少しずらして自動で送り直す
+    const RETRYABLE_POST_ERRORS = ['aborted', 'failed-precondition', 'unavailable', 'deadline-exceeded', 'internal', 'unknown'];
+    const POST_ATTEMPTS = 3;
     async function postMemory(img, caption) {
       const now = Date.now();
       const id = `memory_${now}_${Math.random().toString(36).slice(2, 8)}`;
@@ -4115,42 +4135,66 @@
         return 'ok';
       }
 
-      try {
-        return await runTransaction(db, async (tx) => {
-          const snap = await tx.get(stateDocRef());
-          const s = snap.exists() ? snap.data() : {};
-          let round = s.round || 1;
-          let count = s.count || 0;
-          let totalShows = s.totalShows || 0;
-          // 6時間以上放置されていたら新しいメーターとして始める
-          if (count < METER_GOAL && s.updatedAt && now - s.updatedAt > STALE_RESET_MS) {
-            round += 1;
-            count = 0;
+      // 花火の準備中・演出中は送らずに案内する（リーチ時の取り合いを減らす）
+      if (cloudStateReceived && meterState.count >= METER_GOAL) return 'full';
+
+      for (let attempt = 1; attempt <= POST_ATTEMPTS; attempt++) {
+        try {
+          return await postMemoryTransaction(id, now, userId, img, caption);
+        } catch (err) {
+          const code = (err && err.code) || '';
+          console.warn(`Post memory failed (${attempt}/${POST_ATTEMPTS}, ${code || 'no code'}):`, err);
+          if (code === 'resource-exhausted') return 'quota';
+          if (code === 'permission-denied' || code === 'unauthenticated') {
+            // ログインが切れていたら、ログインし直して送り直す
+            try {
+              const cred = await signInAnonymously(auth);
+              currentUser = cred.user;
+            } catch (e) {}
+          } else if (!RETRYABLE_POST_ERRORS.includes(code)) {
+            return 'error';
           }
-          if (count >= METER_GOAL) return 'full';
-          const newCount = count + 1;
-          tx.set(doc(memoriesColRef(), id), {
-            round, img, caption, userId, timestamp: now,
-            // 演出後に消し損ねても、Firestore の TTL で自動削除されるように
-            expireAt: Timestamp.fromMillis(now + MEMORY_TTL_MS)
-          });
-          tx.set(stateDocRef(), {
-            round,
-            count: newCount,
-            totalShows,
-            updatedAt: now,
-            showStartAt: newCount >= METER_GOAL ? now + SHOW_LEAD_MS : 0,
-            // 5枚目の瞬間に演出を決める（3種類を同じ確率で）→ 全席で同じ演出になる
-            showTheme: newCount >= METER_GOAL ? pickShowTheme() : '',
-            upgraded: false,
-            cheers: 0
-          });
-          return 'ok';
-        });
-      } catch (err) {
-        console.warn('Post memory failed:', err);
-        return 'error';
+          if (attempt < POST_ATTEMPTS) await sleep(400 * attempt + Math.random() * 600);
+        }
       }
+      return navigator.onLine === false ? 'offline' : 'error';
+    }
+
+    function postMemoryTransaction(id, now, userId, img, caption) {
+      return runTransaction(db, async (tx) => {
+        // 前回の送信が実は届いていた場合は、二重に数えない
+        const sent = await tx.get(doc(memoriesColRef(), id));
+        if (sent.exists()) return 'ok';
+        const snap = await tx.get(stateDocRef());
+        const s = snap.exists() ? snap.data() : {};
+        let round = s.round || 1;
+        let count = s.count || 0;
+        let totalShows = s.totalShows || 0;
+        // 6時間以上放置されていたら新しいメーターとして始める
+        if (count < METER_GOAL && s.updatedAt && now - s.updatedAt > STALE_RESET_MS) {
+          round += 1;
+          count = 0;
+        }
+        if (count >= METER_GOAL) return 'full';
+        const newCount = count + 1;
+        tx.set(doc(memoriesColRef(), id), {
+          round, img, caption, userId, timestamp: now,
+          // 演出後に消し損ねても、Firestore の TTL で自動削除されるように
+          expireAt: Timestamp.fromMillis(now + MEMORY_TTL_MS)
+        });
+        tx.set(stateDocRef(), {
+          round,
+          count: newCount,
+          totalShows,
+          updatedAt: now,
+          showStartAt: newCount >= METER_GOAL ? now + SHOW_LEAD_MS : 0,
+          // 5枚目の瞬間に演出を決める（3種類を同じ確率で）→ 全席で同じ演出になる
+          showTheme: newCount >= METER_GOAL ? pickShowTheme() : '',
+          upgraded: false,
+          cheers: 0
+        });
+        return 'ok';
+      });
     }
 
     // ---------- 自分の写真の削除（花火前のみ） ----------
@@ -5317,6 +5361,7 @@
     const cheerWrap = document.getElementById('cheerWrap');
     const cheerHint = document.getElementById('cheerHint');
     let pendingCheers = 0;
+    const CHEER_FLUSH_MS = 2000; // 乾杯をまとめて送る間隔
     let cheerFlushTimer = null;
 
     function totalCheers() {
@@ -5378,8 +5423,9 @@
       const x = rand(SW * 0.15, SW * 0.85), y = rand(SH * 0.15, SH * 0.5);
       if (showTheme.key === 'beer') spawnConfetti(x, y, 10, Math.PI * 2, 0, 0.5);
       else burstParticles(x, y, { count: 18, power: 0.5, colors: showTheme.key === 'rainbow' ? RAINBOW : ['#fde68a', '#fbbf24', '#ffffff'], particle: { decay: 0.03 } });
-      // 確定演出中は早めに送る（昇格判定に間に合わせる）
-      if (!cheerFlushTimer) cheerFlushTimer = setTimeout(flushCheers, inUpgradeWindow() ? 250 : 700);
+      // 押した回数は端末に貯めて、まとめて送る（全席の書き込み・読み取りを減らして無料枠を守る）
+      // 確定演出中は昇格判定の直前に1回だけ送る
+      if (!cheerFlushTimer) cheerFlushTimer = setTimeout(flushCheers, inUpgradeWindow() ? Math.max(150, UPGRADE_DEADLINE - 400 - showNow) : CHEER_FLUSH_MS);
     });
     function cheerBoost() {
       return Math.min(30, Math.floor(totalCheers() / 3));
@@ -6219,27 +6265,54 @@
     let isSubmitting = false;
     async function submitCapturedBubble() {
       if (isSubmitting || !currentCapturedPhotoData) return;
+      if (navigator.onLine === false) {
+        showToast('電波が届いていないようです。つながる場所で、もう一度「提灯に灯す」を押してください', 3500);
+        return;
+      }
       isSubmitting = true;
+      const submitBtn = document.getElementById('submitCaptureBtn');
+      const submitLabel = submitBtn.textContent;
+      submitBtn.textContent = '送信中…';
+      submitBtn.disabled = true;
+      submitBtn.classList.add('opacity-60');
       const captionText = (capturedCaptionInput.value || '').trim().slice(0, 10);
 
-      if (isCloudReady && db && !currentUser && !useLocalMeter) {
+      // 最初のログインに失敗していた端末も、ここでもう一度つなぎ直す
+      if (isCloudReady && db && !currentUser) {
         try {
           const cred = await signInAnonymously(auth);
           currentUser = cred.user;
-        } catch (e) {}
+          if (useLocalMeter) {
+            useLocalMeter = false;
+            startCloudListener();
+          }
+        } catch (e) {
+          console.warn('Sign-in retry failed:', e);
+        }
       }
 
       const result = await postMemory(currentCapturedPhotoData, captionText);
       if (result === 'ok') sendToSheet(currentCapturedPhotoData, captionText);
       isSubmitting = false;
+      submitBtn.textContent = submitLabel;
+      submitBtn.disabled = false;
+      submitBtn.classList.remove('opacity-60');
 
       if (result === 'full') {
         // 花火の演出中：モーダルは閉じずに、終わってからもう一度押してもらう
         showToast('いま花火の真っ最中です。終わったら、もう一度「提灯に灯す」を押してください', 3500);
         return;
       }
+      if (result === 'quota') {
+        showToast('ただいま混み合っていて送れません。少し時間をおいて、お試しください', 3500);
+        return;
+      }
+      if (result === 'offline') {
+        showToast('電波が途切れたようです。つながる場所で、もう一度「提灯に灯す」を押してください', 3500);
+        return;
+      }
       if (result === 'error') {
-        showToast('送信できませんでした。電波の良い場所で、もう一度お試しください', 3500);
+        showToast('送信できませんでした。もう一度「提灯に灯す」を押してください', 3500);
         return;
       }
 
