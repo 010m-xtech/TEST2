@@ -852,13 +852,11 @@
                     <!-- ② ひとこと（任意・10文字まで） -->
                     <div v-else-if="surveyStage === 'comment'" class="px-5 pt-4 pb-5">
                         <p class="text-[15px] font-bold tracking-wide text-center mb-1">ありがとうございます！</p>
-                        <p class="text-[12px] opacity-90 text-center leading-relaxed mb-1">お店にひとこと、または<br>飲んでみたいお酒があれば教えてください</p>
-                        <p class="text-[11px] opacity-75 text-center mb-3">例）美味しかった！・甘めのお酒が飲みたい など</p>
+                        <p class="text-[12px] opacity-90 text-center leading-relaxed mb-3">お店に一言・飲みたいお酒・<br>食べたい料理等あれば教えてください</p>
                         <div class="relative mb-3">
-                            <input v-model="surveyComment" maxlength="10" type="text" enterkeyhint="send" @keydown.enter="submitSurvey"
-                                   placeholder="例：美味しかった！"
+                            <input v-model="surveyComment" maxlength="15" type="text" enterkeyhint="send" @keydown.enter="submitSurvey"
                                    class="w-full rounded-sm bg-[#fbf4ea] text-[#2b2622] text-base px-3 py-2.5 pr-14 outline-none focus:ring-2 focus:ring-white/70 placeholder:text-[#a89c8e]">
-                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-[#8a7d70]">{{ surveyComment.length }}/10</span>
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-[#8a7d70]">{{ surveyComment.length }}/15</span>
                         </div>
                         <div class="flex gap-2">
                             <button @click="submitSurvey(true)" class="flex-1 py-2.5 text-sm tracking-widest border border-white/50 rounded-sm hover:bg-white/10">とばす</button>
@@ -993,11 +991,11 @@
                 // ▼ 最初の暖簾 ▼
                 // 開いた時間でひとことを変える（営業時間 16〜23時に合わせて。from〜to時、lines は1行ずつ）
                 const INTRO_GREETINGS = [
-                    { from: 16, to: 18, lines: ['おつかれさまです。', '今日の一杯を、ここで。'] },
-                    { from: 18, to: 20, lines: ['今宵のあなたに', 'ちょうどいい一杯を。'] },
-                    { from: 20, to: 23, lines: ['夜はこれから。', 'もう一杯、いかがですか。'] }
+                    { from: 16, to: 18, lines: ['おつかれさまです。', '今日の1杯を、ここで。'] },
+                    { from: 18, to: 20, lines: ['今宵のあなたに', 'ちょうどいい1杯を。'] },
+                    { from: 20, to: 23, lines: ['夜はこれから。', 'もう1杯、いかがですか。'] }
                 ];
-                const INTRO_GREETING_OTHER = ['今日のお客様に', 'ちょうどいい一杯を。'];   // 営業時間外（準備中の確認など）
+                const INTRO_GREETING_OTHER = ['今日のお客様に', 'ちょうどいい1杯を。'];   // 営業時間外（準備中の確認など）
                 const introGreeting = (() => {
                     const h = new Date().getHours();
                     const g = INTRO_GREETINGS.find(x => h >= x.from && h < x.to);
@@ -1057,7 +1055,7 @@
                         ]
                     },
                     {
-                        text: 'ふと嗅ぎたい惹かれる香りは？',
+                        text: 'ふと嗅ぎたい、惹かれる香りは？',
                         options: [
                             { text: 'みずみずしい柑橘やフルーティーな香り', img: '3-1.webp', type: 'A', react: '柑橘・フルーツ派ですね！' },
                             { text: 'スパイシーな香辛料やハーブ・木の香り', img: '3-2.webp', type: 'B', react: 'スパイス・ハーブ派、通ですね' }
@@ -1066,8 +1064,8 @@
                     {
                         text: '今の口が一番求めているのは？',
                         options: [
-                            { text: 'やさしい甘みフルーティーな甘酸っぱさ', img: '4-1.webp', type: 'A', react: 'やさしい甘み、癒やされます' },
-                            { text: 'キリッとした苦みドライで控えめな甘さ', img: '4-2.webp', type: 'B', react: 'キリッとドライ、大人ですね' }
+                            { text: 'やさしい甘み、フルーティーな甘酸っぱさ', img: '4-1.webp', type: 'A', react: 'やさしい甘み、癒やされます' },
+                            { text: 'キリッとした苦み、ドライで控えめな甘さ', img: '4-2.webp', type: 'B', react: 'キリッとドライ、大人ですね' }
                         ]
                     },
                     {
@@ -1108,13 +1106,13 @@
                         titleRuby: 'サラサラ',
                         titleRomaji: 'Sara Sara',
                         icon: '🥂',
-                        shortDescription: '1日の疲れをさらっと洗い流す爽快な一杯。',
+                        shortDescription: '1日の疲れをさらっと洗い流す爽快な1杯。',
                         recommendations: {
                             wine: 'スパークリングワイン全般\nスッキリとした辛口の白ワイン\n（ソーヴィニヨン・ブランやシャブリなど）',
                             sake: '淡麗辛口、生酒、本醸造\n（水のようにスッキリ飲めるキレのある爽酒）',
                             craft: '【ビール】ピルスナー、ラガー、セッションIPA\n【ジン】シトラス・柑橘系ジン'
                         },
-                        description: '1日の疲れやモヤモヤをスッキリと洗い流してくれる、淀みなくクリアな味わい。喉を潤す爽快感が今日を新しくリセットしてくれる一杯です。',
+                        description: '1日の疲れやモヤモヤをスッキリと洗い流してくれる、淀みなくクリアな味わい。喉を潤す爽快感が今日を新しくリセットしてくれる1杯です。',
                         products: {
                             sake: {
                                 name: '【貴の特別純米・夏タイプ】',
@@ -1129,7 +1127,7 @@
                                 trivia: '「貴（たか）」は山口県宇部市・永山本家酒造場の銘柄。この夏タイプは、暑い時期だけ出回る季節限定のお酒です。'
                             },
                             craft: {
-                                name: '【yasogin オレンジ】',
+                                name: '【ヤソジン　オレンジ】',
                                 nameEn: 'YASO GIN Orange',            // 商品ページでは英語表記＋読みがなで横書き
                                 nameKana: 'ヤソジン オレンジ',
                                 img: 'sarasarajin.webp',
@@ -1149,13 +1147,13 @@
                         titleRuby: 'ウルウル',
                         titleRomaji: 'Uru Uru',
                         icon: '🍊',
-                        shortDescription: 'ひと口でうるっと心潤う、華やかな一杯。',
+                        shortDescription: 'ひと口でうるっと心潤う、華やかな1杯。',
                         recommendations: {
                             wine: '樽熟成のリッチな白ワイン（シャルドネなど）\n香り高い白（ゲヴュルツトラミネール）\n華やかなロゼワイン',
                             sake: '大吟醸、吟醸酒\n（メロンやリンゴのようなフルーティーな薫酒）',
                             craft: '【ビール】フルーツエール、ヘイジーIPA\n【ジン】フローラル系、ベリー系ジン'
                         },
-                        description: '果実やボタニカルの豊かな香りが、心と体をたっぷりと潤すリッチな味わい。ひと口飲むと気分がパッと明るくなるような一杯です。',
+                        description: '果実やボタニカルの豊かな香りが、心と体をたっぷりと潤すリッチな味わい。ひと口飲むと気分がパッと明るくなるような1杯です。',
                         products: {
                             sake: {
                                 name: '【産土】',
@@ -1167,7 +1165,7 @@
                                 keywords: ['メロン', '洋梨', 'マスカット', '微発泡'],
                                 points: ['炭酸ガスを含んだ、ほのかなシュワっと感', 'アルコール13%の軽やかさ', 'とろみのある旨みで、満足感もしっかり'],
                                 taste: { sweet: 3.5, body: 3 },
-                                trivia: '熊本県・花の香酒造のお酒。「産土（うぶすな）」は"生まれた土地"という意味で、その土地の米と風土を映す酒づくりを大切にしています。'
+                                trivia: '熊本県・花の香酒造のお酒。「産土（うぶすな）」は“生まれた土地”という意味で、その土地の米と風土を映す酒づくりを大切にしています。'
                             },
                             craft: {
                                 name: '【虎ノ門　いちごジン】',
@@ -1188,13 +1186,13 @@
                         titleRuby: 'トロトロ',
                         titleRomaji: 'Toro Toro',
                         icon: '🍷',
-                        shortDescription: '口の中でとろっとほどけ、日常の緊張を癒やす一杯。',
+                        shortDescription: '口の中でとろっとほどけ、日常の緊張を癒やす1杯。',
                         recommendations: {
                             wine: '軽め〜ミディアムボディの赤ワイン\n（ピノ・ノワールなど）\n食事に合わせやすいオレンジワイン',
                             sake: '純米酒、生酛、山廃\n（お米本来のふくよかな旨みと甘みを持つ醇酒）',
                             craft: '【ビール】ペールエール、アンバーエール\n【ジン】お茶・ハーブ・スパイス系ジン'
                         },
-                        description: '口の中で優しくとろけるような繊細で穏やかな味わい。緊張をゆるやかにほどき、日常にホッと安心をくれる優しい一杯です。',
+                        description: '口の中で優しくとろけるような繊細で穏やかな味わい。緊張をゆるやかにほどき、日常にホッと安心をくれる優しい1杯です。',
                         products: {
                             sake: {
                                 name: '【二兎　雄町四十八】',
@@ -1206,7 +1204,7 @@
                                 keywords: ['雄町', '純米大吟醸', '生原酒', '濃厚な旨み'],
                                 points: ['酒米「雄町」ならではの、ふくよかで深い味わい', '甘みと酸味、二面性が光る多彩な表情', '濃厚な旨みの料理と好相性'],
                                 taste: { sweet: 3, body: 3.5 },
-                                trivia: '「二兎」は愛知県岡崎市・丸石醸造（1690年創業）の銘柄。「二兎を追う者は一兎をも得ず」をあえて覆し、"酸"と"旨み"の両方を追い求めて造られています。'
+                                trivia: '「二兎」は愛知県岡崎市・丸石醸造（1690年創業）の銘柄。「二兎を追う者は一兎をも得ず」をあえて覆し、“酸”と“旨み”の両方を追い求めて造られています。'
                             },
                             craft: {
                                 name: '【アルケミエ　ラベンダージン】',
@@ -1229,13 +1227,13 @@
                         titleRuby: 'ウトウト',
                         titleRomaji: 'Uto Uto',
                         icon: '🥃',
-                        shortDescription: '深い味わいにうとうと夢見心地になる、大人の贅沢な一杯。',
+                        shortDescription: '深い味わいにうとうと夢見心地になる、大人の贅沢な1杯。',
                         recommendations: {
                             wine: 'フルボディの重厚な赤ワイン\n（カベルネ・ソーヴィニヨンなど）\n極甘口の貴腐ワイン、ポートワイン',
                             sake: '古酒、長期熟成酒、貴醸酒\n（熟成による複雑な香りと深みを持つ熟酒）',
                             craft: '【ビール】スタウト、ポーター、バーレイワイン\n【ジン】樽熟成ジン、ウッディ系ジン'
                         },
-                        description: '時間を忘れて少しずつ味わいたい、深みとコクのある味わい。癒しの時間を彷彿させる大人の一杯です。',
+                        description: '時間を忘れて少しずつ味わいたい、深みとコクのある味わい。癒やしの時間を彷彿とさせる大人の1杯です。',
                         products: {
                             sake: {
                                 name: '【長珍　特別純米】',
@@ -1603,7 +1601,7 @@
                 };
                 const submitSurvey = (skip) => {
                     if (surveyStage.value !== 'comment') return;
-                    const comment = skip === true ? '' : surveyComment.value.trim().slice(0, 10);
+                    const comment = skip === true ? '' : surveyComment.value.trim().slice(0, 15);
                     postToGas({ ...buildPayload('survey'), rating: surveyRating.value, comment });
                     surveyStage.value = 'thanks';
                     setTimeout(() => { if (surveyStage.value === 'thanks') surveyStage.value = null; }, 2200);
