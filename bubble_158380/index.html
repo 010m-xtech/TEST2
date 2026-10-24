@@ -9,7 +9,7 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;700;800&family=Zen+Maru+Gothic:wght@400;500;700;900&family=M+PLUS+Rounded+1c:wght@500;700;800;900&family=Pacifico&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;700;800&family=Zen+Maru+Gothic:wght@400;500;700;900&family=M+PLUS+Rounded+1c:wght@500;700;800;900&family=Pacifico&family=Playfair+Display:ital,wght@0,600;1,500;1,700&display=swap');
 
     /* スマホ画面向けのベースリセット */
     html, body {
@@ -1536,6 +1536,252 @@
     #storyIntro .mf-f1-small { font-size: min(16px, 4.2vw) !important; letter-spacing: 0.06em !important; line-height: 1.75 !important; white-space: nowrap; }
     #storyIntro .mf-one-line { font-size: min(13px, 3.4vw) !important; letter-spacing: 0.06em !important; white-space: nowrap; }
 
+
+    /* ===== 朝・昼・夕方・夜の空 ===== */
+    .mf-sky { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+    .mf-sky i { position: absolute; inset: 0; opacity: 0; transition: opacity 1.6s ease; }
+    .mf-sky-0 { background: linear-gradient(180deg, #7fb8ef 0%, #b9dcf7 45%, #ffe2c4 82%, #ffd1a8 100%); }
+    .mf-sky-1 { background: linear-gradient(180deg, #2f8fe8 0%, #6db8f5 50%, #c7e7fb 100%); }
+    .mf-sky-2 { background: linear-gradient(180deg, #3b3f7a 0%, #b45a7a 38%, #f08a4b 70%, #ffc46b 100%); }
+    .mf-sky-3 { background: linear-gradient(180deg, #0f1033 0%, #2a1840 50%, #5a2340 100%); }
+    #appContainer[data-tod="0"] .mf-sky-0, #appContainer[data-tod="1"] .mf-sky-1,
+    #appContainer[data-tod="2"] .mf-sky-2, #appContainer[data-tod="3"] .mf-sky-3 { opacity: 1; }
+    /* 星と月は夜だけ、太陽は朝と昼 */
+    .night-sky::before, .season-moon { transition: opacity 1.6s ease; }
+    #appContainer:not([data-tod="3"]):not([data-tod="4"]) .night-sky::before { opacity: 0 !important; }
+    #appContainer:not([data-tod="3"]):not([data-tod="4"]) .season-moon { opacity: 0 !important; }
+    .mf-sun {
+      position: absolute;
+      right: 16%;
+      top: 22%;
+      width: 64px;
+      height: 64px;
+      border-radius: 9999px;
+      background: radial-gradient(circle, #fffbe6 0%, #ffe07a 55%, #ffb84d 100%);
+      box-shadow: 0 0 40px rgba(255, 220, 120, 0.9), 0 0 90px rgba(255, 200, 90, 0.5);
+      opacity: 0;
+      transition: opacity 1.6s ease, transform 1.6s ease;
+      pointer-events: none;
+      z-index: 0;
+    }
+    #appContainer[data-tod="0"] .mf-sun { opacity: 1; transform: translate(-40px, 60px); }
+    #appContainer[data-tod="1"] .mf-sun { opacity: 1; transform: translate(0, -20px); }
+    #appContainer[data-tod="2"] .mf-sun { opacity: 0.9; transform: translate(20px, 130px) scale(1.15); background: radial-gradient(circle, #fff1c9 0%, #ff9a4d 60%, #e8553a 100%); }
+    /* 街の色：昼は明るいテラコッタ、夜はシルエット */
+    .main-scene .mf-far, .main-scene .mf-near, .main-scene .mf-colo, .main-scene .mf-tree, .main-scene .mf-ground { transition: fill 1.6s ease; }
+    .main-scene .mf-win, .main-scene .mf-bulbs, .main-scene .mf-pisa-glow { transition: opacity 1.6s ease; }
+    #appContainer[data-tod="0"] .main-scene .mf-far, #appContainer[data-tod="1"] .main-scene .mf-far { fill: #d9946a; }
+    #appContainer[data-tod="0"] .main-scene .mf-near, #appContainer[data-tod="1"] .main-scene .mf-near { fill: #b8673f; }
+    #appContainer[data-tod="0"] .main-scene .mf-colo, #appContainer[data-tod="1"] .main-scene .mf-colo { fill: #e9c79c; }
+    #appContainer[data-tod="0"] .main-scene .mf-tree, #appContainer[data-tod="1"] .main-scene .mf-tree { fill: #3f6b35; }
+    #appContainer[data-tod="0"] .main-scene .mf-ground, #appContainer[data-tod="1"] .main-scene .mf-ground { fill: #7a4a2c; }
+    #appContainer[data-tod="2"] .main-scene .mf-far { fill: #8a4a4a; }
+    #appContainer[data-tod="2"] .main-scene .mf-near { fill: #5e2e36; }
+    #appContainer[data-tod="2"] .main-scene .mf-colo { fill: #a8645a; }
+    #appContainer[data-tod="2"] .main-scene .mf-tree { fill: #2a2a1e; }
+    #appContainer[data-tod="2"] .main-scene .mf-ground { fill: #3a1e22; }
+    #appContainer[data-tod="0"] .main-scene .mf-win, #appContainer[data-tod="1"] .main-scene .mf-win,
+    #appContainer[data-tod="0"] .main-scene .mf-bulbs, #appContainer[data-tod="1"] .main-scene .mf-bulbs,
+    #appContainer[data-tod="0"] .main-scene .mf-pisa-glow, #appContainer[data-tod="1"] .main-scene .mf-pisa-glow { opacity: 0 !important; }
+    #appContainer[data-tod="2"] .main-scene .mf-win { opacity: 0.35 !important; }
+    /* 昼のあいだは、夜のもやと暗い縁取りを弱める */
+    .main-vignette, .horizon-haze { transition: opacity 1.6s ease; }
+    #appContainer[data-tod="0"] .main-vignette, #appContainer[data-tod="1"] .main-vignette { opacity: 0.25; }
+    #appContainer[data-tod="0"] .horizon-haze, #appContainer[data-tod="1"] .horizon-haze { opacity: 0; }
+    /* 昼の空では、文字の案内を読みやすく */
+    #appContainer[data-tod="0"] #uiElements > div:first-of-type, #appContainer[data-tod="1"] #uiElements > div:first-of-type { background: rgba(40, 20, 10, 0.55) !important; }
+
+    /* ===== 洗濯ロープとポラロイド ===== */
+    .mf-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(env(safe-area-inset-top) + 118px);
+      height: 120px;
+      z-index: 12;
+      pointer-events: none;
+    }
+    .mf-rope { position: absolute; left: 0; top: 0; width: 100%; height: 22px; overflow: visible; }
+    .mf-pins { position: absolute; inset: 0; }
+    .mf-slot { position: absolute; width: 0; height: 0; }
+    .mf-clip {
+      position: absolute;
+      left: 50%;
+      top: -4px;
+      width: 6px;
+      height: 13px;
+      margin-left: -3px;
+      border-radius: 2px;
+      background: linear-gradient(90deg, #c9935a, #f0c890, #b07a45);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+      z-index: 2;
+    }
+    .mf-slot > .mf-clip { opacity: 0.7; }
+    .mf-polaroid {
+      position: absolute;
+      left: -31px;
+      top: 0;
+      width: 62px;
+      padding: 5px 5px 0;
+      border-radius: 2px;
+      background: #ffffff;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
+      transform-origin: 50% 0;
+      animation: mfSway 3.2s ease-in-out infinite alternate;
+      pointer-events: auto;
+      cursor: pointer;
+    }
+    .mf-polaroid .mf-pol-img { display: block; width: 52px; height: 52px; object-fit: cover; background: #ddd; }
+    .mf-pol-cap {
+      display: block;
+      height: 17px;
+      padding-top: 2px;
+      font-family: 'M PLUS Rounded 1c', 'Zen Maru Gothic', sans-serif;
+      font-size: 8.5px;
+      font-weight: 800;
+      line-height: 15px;
+      color: #4a3020;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    /* 額縁の色（5種類） */
+    .mf-pol-white { background: #ffffff; }
+    .mf-pol-red { background: #e2394f; }
+    .mf-pol-red .mf-pol-cap { color: #fff; }
+    .mf-pol-green { background: #2a9d5c; }
+    .mf-pol-green .mf-pol-cap { color: #fff; }
+    .mf-pol-gold { background: linear-gradient(135deg, #fff1b8, #e8b93a 45%, #fff3c4 70%, #c9921f); }
+    .mf-pol-gold .mf-pol-cap { color: #5a3a05; }
+    .mf-pol-sky { background: #8fd0f2; }
+    .mf-pol-sky .mf-pol-cap { color: #123a52; }
+    @keyframes mfSway { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
+    /* 届いたとき：ひらひら舞い降りて、パチッと留まる */
+    .mf-polaroid.mf-new { animation: mfDrop 1.1s cubic-bezier(0.3, 1.3, 0.5, 1) both, mfSway 3.2s ease-in-out 1.1s infinite alternate; }
+    @keyframes mfDrop {
+      0% { transform: translateY(-120px) rotate(-30deg) scale(0.6); opacity: 0; }
+      55% { transform: translateY(8px) rotate(10deg) scale(1.05); opacity: 1; }
+      75% { transform: translateY(-3px) rotate(-6deg); }
+      100% { transform: translateY(0) rotate(-4deg); }
+    }
+
+
+    /* ===== イタリア1日旅 ===== */
+    .mf-city { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+    .mf-city img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1.2s ease; }
+    .mf-city img.on { opacity: 1; }
+    .mf-city::after { content: ''; position: absolute; inset: 0; background: linear-gradient(rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0) 22%, rgba(0, 0, 0, 0) 58%, rgba(0, 0, 0, 0.55) 100%); }
+    /* 写真が出ているあいだは、イラストの街・太陽・月・落ち葉を隠す */
+    #appContainer.mf-photo-on .main-scene, #appContainer.mf-photo-on .mf-sun, #appContainer.mf-photo-on .season-moon,
+    #appContainer.mf-photo-on #seasonCanvas, #appContainer.mf-photo-on .horizon-haze, #appContainer.mf-photo-on .night-sky::before { opacity: 0 !important; visibility: hidden; }
+    #appContainer.mf-photo-on .main-vignette { opacity: 0.35; }
+
+    .mf-stage { position: absolute; inset: 0; z-index: 14; pointer-events: none; opacity: 0; transition: opacity 0.4s ease; }
+    .mf-stage.show { opacity: 1; }
+    .mf-truck { position: absolute; left: 5%; bottom: var(--mf-ground, 190px); width: min(44%, 190px); filter: drop-shadow(0 8px 8px rgba(0, 0, 0, 0.45)); }
+    .mf-truck .sky-truck-img { display: block; width: 100%; height: auto; }
+    #mfParked { transform: translateX(-160%); opacity: 0; }
+    #mfParked.drive-in { animation: mfDriveIn 1.3s cubic-bezier(0.2, 0.7, 0.3, 1) forwards; }
+    #mfParked.parked { transform: none; opacity: 1; animation: mfIdle 1.6s ease-in-out infinite alternate; }
+    #mfParked.drive-out { opacity: 1; animation: mfDriveOut 0.7s cubic-bezier(0.6, 0, 0.9, 0.5) forwards; }
+    @keyframes mfDriveIn { 0% { transform: translateX(-160%); opacity: 1; } 80% { transform: translateX(4%); } 100% { transform: none; opacity: 1; } }
+    @keyframes mfIdle { from { transform: translateY(0); } to { transform: translateY(-1.5px); } }
+    @keyframes mfDriveOut { from { transform: none; } to { transform: translateX(260%); } }
+
+    /* 吹き出し：トラックの上に、ガラスのカード */
+    .mf-bubble {
+      position: absolute;
+      left: 4%;
+      right: 4%;
+      bottom: calc(var(--mf-ground, 190px) + min(18vw, 82px));
+      max-width: 340px;
+      padding: 12px 14px 11px;
+      border-radius: 18px;
+      color: #fff;
+      background: linear-gradient(180deg, rgba(20, 14, 12, 0.62), rgba(20, 14, 12, 0.86));
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+      transform-origin: 18% 100%;
+      transform: scale(0.6) translateY(20px);
+      opacity: 0;
+      transition: transform 0.45s cubic-bezier(0.3, 1.4, 0.5, 1), opacity 0.3s ease;
+      pointer-events: none;
+    }
+    .mf-bubble.show { transform: none; opacity: 1; pointer-events: auto; }
+    .mf-bubble::after { content: ''; position: absolute; left: 18%; bottom: -9px; width: 16px; height: 16px; background: rgba(20, 14, 12, 0.86); border-right: 1px solid rgba(255, 255, 255, 0.2); border-bottom: 1px solid rgba(255, 255, 255, 0.2); transform: rotate(45deg); }
+    .mf-bubble-x { position: absolute; right: 8px; top: 6px; width: 26px; height: 26px; border-radius: 9999px; color: rgba(255, 255, 255, 0.8); font-size: 16px; line-height: 26px; }
+    .mf-b-no { font-family: 'Playfair Display', 'Shippori Mincho', serif; font-size: 9.5px; letter-spacing: 0.35em; opacity: 0.7; }
+    .mf-b-it { font-family: 'Playfair Display', serif; font-style: italic; font-weight: 700; font-size: 28px; line-height: 1.05; margin-top: 2px; }
+    .mf-b-jp { font-family: 'Shippori Mincho', serif; font-size: 10px; letter-spacing: 0.3em; opacity: 0.85; margin-top: 2px; }
+    .mf-b-line { height: 1px; margin: 8px 0; background: linear-gradient(90deg, #1f9a55 0 33%, #fff 33% 66%, #d7263d 66%); }
+    .mf-b-copy { font-family: 'Shippori Mincho', serif; font-size: 13px; font-weight: 700; line-height: 1.5; }
+    .mf-b-desc { font-size: 10px; line-height: 1.65; opacity: 0.82; margin-top: 3px; }
+    .mf-b-menu { display: flex; align-items: center; gap: 9px; width: 100%; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255, 255, 255, 0.16); text-align: left; color: #fff; }
+    .mf-b-menu img { width: 36px; height: 36px; border-radius: 9999px; object-fit: cover; border: 1.5px solid rgba(255, 255, 255, 0.7); flex-shrink: 0; }
+    .mf-b-menu span { flex: 1; min-width: 0; }
+    .mf-b-menu small { display: block; font-family: 'Playfair Display', serif; font-style: italic; font-size: 9px; opacity: 0.7; }
+    .mf-b-menu b { display: block; font-size: 11px; }
+    .mf-b-menu i { font-style: normal; font-size: 18px; opacity: 0.7; }
+    /* たたんだあとの小さな札 */
+    .mf-pill {
+      position: absolute;
+      left: 4%;
+      bottom: calc(var(--mf-ground, 190px) + min(18vw, 82px));
+      max-width: 92%;
+      padding: 6px 12px;
+      border-radius: 9999px;
+      background: rgba(20, 14, 12, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #fff;
+      font-size: 10.5px;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      pointer-events: none;
+    }
+    .mf-pill.show { opacity: 1; transform: none; pointer-events: auto; }
+
+    /* 次の街へ走る場面 */
+    .mf-road { position: absolute; inset: 0; z-index: 15; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; background: #9fc9ee; }
+    .mf-road.show { opacity: 1; }
+    .mf-road::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--mf-ground, 190px) - 34px); background: #2e2a26; }
+    .mf-road-view { position: absolute; left: 0; right: 0; top: 0; bottom: calc(var(--mf-ground, 190px) - 34px); overflow: hidden; }
+    .mf-road-far, .mf-road-near { position: absolute; left: 0; bottom: 0; height: 100%; }
+    .mf-road-far svg, .mf-road-near svg { height: 100%; width: auto; display: block; }
+    .mf-road-far, .mf-road-near { height: min(100%, 520px) !important; }
+    .mf-road-far { opacity: 0.85; filter: blur(0.6px); animation: mfScroll 9s linear infinite; }
+    .mf-road-near { animation: mfScroll 2.6s linear infinite; }
+    @keyframes mfScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    .mf-road-truck { left: 22%; bottom: calc(var(--mf-ground, 190px) - 30px); animation: mfBump 0.32s ease-in-out infinite alternate; }
+    @keyframes mfBump { from { transform: translateY(0) rotate(0); } to { transform: translateY(-2px) rotate(-0.4deg); } }
+    .mf-road-truck::before { content: ''; position: absolute; left: -30%; top: 55%; width: 34%; height: 3px; border-radius: 3px; background: rgba(255, 255, 255, 0.75); box-shadow: 4px -9px 0 rgba(255, 255, 255, 0.5), 10px 9px 0 rgba(255, 255, 255, 0.45); }
+    .mf-road-sign {
+      position: absolute;
+      top: calc(env(safe-area-inset-top) + 160px);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 5px 16px 6px;
+      border-radius: 8px;
+      background: #1f6fb2;
+      border: 2px solid #fff;
+      color: #fff;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+      white-space: nowrap;
+    }
+    .mf-road-sign b { font-size: 13px; letter-spacing: 0.08em; }
+    .mf-road-sign span { font-size: 10px; font-weight: 800; }
+
     /* トラックの荷台に貼ったお店の看板 */
     .sky-truck-img { display: block; width: 100%; height: auto; }
     .sky-truck-sign {
@@ -1672,6 +1918,11 @@
     <!-- 背景：オープニング・ショーと同じ夜空（旧：ビールの泡の動画） -->
     <div class="night-sky z-0"></div>
     <div id="mainSkyFlash"></div>
+    <!-- 1枚撮るごとに、朝 → 昼 → 夕方 → 夜 と時間が進む空 -->
+    <div class="mf-sky" aria-hidden="true"><i class="mf-sky-0"></i><i class="mf-sky-1"></i><i class="mf-sky-2"></i><i class="mf-sky-3"></i></div>
+    <!-- 旅の背景：いまいる街の写真（全席共通） -->
+    <div id="mfCity" class="mf-city" aria-hidden="true"><img id="mfCityA" alt=""><img id="mfCityB" alt=""></div>
+    <div class="mf-sun" aria-hidden="true"></div>
     <div class="season-moon" aria-hidden="true"></div>
     <div class="horizon-haze"></div>
     <video id="bgVideo" muted playsinline preload="none" class="hidden"></video>
@@ -1694,17 +1945,17 @@
         <linearGradient id="mfPisaStone" x1="0" x2="1"><stop offset="0" stop-color="#c9a678"/><stop offset="0.45" stop-color="#f6e2bb"/><stop offset="1" stop-color="#a98256"/></linearGradient>
           <radialGradient id="mfPisaGlow"><stop offset="0" stop-color="#ffd38a" stop-opacity="0.35"/><stop offset="1" stop-color="#ffd38a" stop-opacity="0"/></radialGradient>
         </defs>
-        <path d="M0 300 V128 h22 v-14 l14 -10 l14 10 v14 h18 v-22 h26 v22 h12 V70 l9 -12 l9 12 v40 h16 v-16 a26 26 0 0 1 52 0 v16 h18 v-26 h24 v26 h20 v-18 l13 -10 l13 10 v18 h22 v-30 h28 v30 h24 V300 Z" fill="#2a1420"/><g fill="#ffcf6b" opacity="0.75"><rect x="30" y="118" width="5" height="7" rx="2"/><rect x="74" y="112" width="5" height="7" rx="2"/><rect x="84" y="112" width="5" height="7" rx="2"/><rect x="117" y="80" width="5" height="9" rx="2.5"/><rect x="172" y="104" width="6" height="8" rx="3"/><rect x="186" y="104" width="6" height="8" rx="3"/><rect x="232" y="94" width="5" height="7" rx="2"/><rect x="290" y="108" width="5" height="7" rx="2"/><rect x="333" y="96" width="5" height="7" rx="2"/><rect x="345" y="96" width="5" height="7" rx="2"/></g>
+        <path d="M0 300 V128 h22 v-14 l14 -10 l14 10 v14 h18 v-22 h26 v22 h12 V70 l9 -12 l9 12 v40 h16 v-16 a26 26 0 0 1 52 0 v16 h18 v-26 h24 v26 h20 v-18 l13 -10 l13 10 v18 h22 v-30 h28 v30 h24 V300 Z" fill="#2a1420" class="mf-far"/><g fill="#ffcf6b" opacity="0.75" class="mf-win"><rect x="30" y="118" width="5" height="7" rx="2"/><rect x="74" y="112" width="5" height="7" rx="2"/><rect x="84" y="112" width="5" height="7" rx="2"/><rect x="117" y="80" width="5" height="9" rx="2.5"/><rect x="172" y="104" width="6" height="8" rx="3"/><rect x="186" y="104" width="6" height="8" rx="3"/><rect x="232" y="94" width="5" height="7" rx="2"/><rect x="290" y="108" width="5" height="7" rx="2"/><rect x="333" y="96" width="5" height="7" rx="2"/><rect x="345" y="96" width="5" height="7" rx="2"/></g>
         <g class="mf-italy" aria-hidden="true">
-          <g fill="#4a2234">
+          <g fill="#4a2234" class="mf-colo">
             <path d="M12 152 V120 Q58 104 106 120 V152 Z"/>
           </g>
-          <g fill="#ffcf6b" opacity="0.55">
+          <g fill="#ffcf6b" opacity="0.55" class="mf-win">
             <path d="M20 128 h6 v-3 a3 3 0 0 0 -6 0 z M33 126 h6 v-3 a3 3 0 0 0 -6 0 z M46 125 h6 v-3 a3 3 0 0 0 -6 0 z M59 125 h6 v-3 a3 3 0 0 0 -6 0 z M72 125 h6 v-3 a3 3 0 0 0 -6 0 z M85 126 h6 v-3 a3 3 0 0 0 -6 0 z M98 128 h5 v-3 a2.5 2.5 0 0 0 -5 0 z"/>
             <path d="M20 140 h6 v-4 a3 3 0 0 0 -6 0 z M33 140 h6 v-4 a3 3 0 0 0 -6 0 z M46 140 h6 v-4 a3 3 0 0 0 -6 0 z M59 140 h6 v-4 a3 3 0 0 0 -6 0 z M72 140 h6 v-4 a3 3 0 0 0 -6 0 z M85 140 h6 v-4 a3 3 0 0 0 -6 0 z M98 140 h5 v-4 a2.5 2.5 0 0 0 -5 0 z"/>
           </g>
           <!-- ピサの斜塔（ライトアップ） -->
-          <ellipse cx="302" cy="96" rx="46" ry="74" fill="url(#mfPisaGlow)"/>
+          <ellipse cx="302" cy="96" rx="46" ry="74" fill="url(#mfPisaGlow)" class="mf-pisa-glow"/>
           <g transform="translate(298 158) rotate(6) scale(1.5)">
             <rect x="-11" y="-88" width="22" height="88" rx="2" fill="url(#mfPisaStone)"/>
             <rect x="-8" y="-100" width="16" height="13" rx="2" fill="url(#mfPisaStone)"/>
@@ -1722,17 +1973,17 @@
               <path d="M-5.5 -88 v-8 a1.5 1.5 0 0 1 3 0 v8 z M2.5 -88 v-8 a1.5 1.5 0 0 1 3 0 v8 z"/>
             </g>
           </g>
-          <g fill="#14100c">
+          <g fill="#14100c" class="mf-tree">
             <ellipse cx="128" cy="146" rx="4.5" ry="20"/><ellipse cx="138" cy="150" rx="3.5" ry="15"/>
             <ellipse cx="268" cy="146" rx="4.5" ry="21"/><ellipse cx="279" cy="151" rx="3.5" ry="14"/>
             <ellipse cx="362" cy="148" rx="4" ry="18"/>
           </g>
         </g>
-        <path d="M0 300 V158 h30 v-12 h34 v12 h20 v-20 l16 -12 l16 12 v20 h28 v-10 h40 v10 h24 v-18 h30 v18 h22 v-14 l15 -10 l15 10 v14 h30 v-8 h38 v8 h12 V300 Z" fill="#1a0b13"/>
+        <path d="M0 300 V158 h30 v-12 h34 v12 h20 v-20 l16 -12 l16 12 v20 h28 v-10 h40 v10 h24 v-18 h30 v18 h22 v-14 l15 -10 l15 10 v14 h30 v-8 h38 v8 h12 V300 Z" fill="#1a0b13" class="mf-near"/>
         <g aria-hidden="true"><circle class="city-light" cx="126.3" cy="172.4" r="0.6" fill="#ffd9a0" style="animation-delay:-1.97s"/><circle class="city-light" cx="36.7" cy="184.9" r="0.7" fill="#ffd9a0" style="animation-delay:-0.21s"/><circle class="city-light" cx="163.1" cy="175.0" r="1.1" fill="#ffd9a0" style="animation-delay:-1.98s"/><circle class="city-light" cx="48.3" cy="174.5" r="0.6" fill="#fff4dc" style="animation-delay:-0.12s"/><circle class="city-light" cx="86.2" cy="184.1" r="0.7" fill="#ffc070" style="animation-delay:-1.01s"/><circle class="city-light" cx="210.9" cy="184.6" r="0.7" fill="#ffd9a0" style="animation-delay:-1.40s"/><circle class="city-light" cx="249.2" cy="178.8" r="0.6" fill="#ffd9a0" style="animation-delay:-1.49s"/><circle class="city-light" cx="193.6" cy="183.4" r="0.9" fill="#fff4dc" style="animation-delay:-1.41s"/><circle class="city-light" cx="176.7" cy="176.7" r="0.7" fill="#ffe9c4" style="animation-delay:-0.20s"/><circle class="city-light" cx="117.1" cy="182.4" r="0.9" fill="#fff4dc" style="animation-delay:-0.69s"/><circle class="city-light" cx="382.3" cy="171.4" r="1.1" fill="#ffe9c4" style="animation-delay:-1.82s"/><circle class="city-light" cx="59.3" cy="182.2" r="0.6" fill="#ffd9a0" style="animation-delay:-1.83s"/><circle class="city-light" cx="223.5" cy="193.4" r="0.9" fill="#ffc070" style="animation-delay:-1.67s"/><circle class="city-light" cx="231.8" cy="184.8" r="1.1" fill="#ffd9a0" style="animation-delay:-2.02s"/><circle class="city-light" cx="368.4" cy="181.7" r="0.6" fill="#ffd9a0" style="animation-delay:-1.75s"/><circle class="city-light" cx="120.7" cy="184.8" r="1.1" fill="#ffc070" style="animation-delay:-1.72s"/><circle class="city-light" cx="345.9" cy="178.1" r="1.1" fill="#ffc070" style="animation-delay:-0.40s"/><circle class="city-light" cx="45.7" cy="169.7" r="0.9" fill="#ffe9c4" style="animation-delay:-1.77s"/><circle class="city-light" cx="155.2" cy="194.6" r="1.1" fill="#ffd9a0" style="animation-delay:-0.40s"/><circle class="city-light" cx="156.6" cy="176.1" r="0.7" fill="#fff4dc" style="animation-delay:-2.07s"/><circle class="city-light" cx="108.6" cy="180.0" r="0.9" fill="#fff4dc" style="animation-delay:-2.30s"/><circle class="city-light" cx="58.9" cy="173.1" r="0.7" fill="#ffe9c4" style="animation-delay:-0.03s"/><circle class="city-light" cx="324.1" cy="173.3" r="0.9" fill="#ffd9a0" style="animation-delay:-0.35s"/><circle class="city-light" cx="208.5" cy="185.7" r="0.9" fill="#ffe9c4" style="animation-delay:-1.66s"/><circle class="city-light" cx="201.0" cy="185.9" r="0.6" fill="#fff4dc" style="animation-delay:-2.16s"/><circle class="city-light" cx="304.2" cy="193.4" r="1.1" fill="#fff4dc" style="animation-delay:-0.96s"/><circle class="city-light" cx="40.4" cy="186.4" r="0.6" fill="#ffe9c4" style="animation-delay:-0.16s"/><circle class="city-light" cx="81.4" cy="172.7" r="0.9" fill="#ffd9a0" style="animation-delay:-0.25s"/><circle class="city-light" cx="221.0" cy="183.6" r="0.9" fill="#ffd9a0" style="animation-delay:-0.17s"/><circle class="city-light" cx="81.1" cy="178.9" r="0.9" fill="#ffc070" style="animation-delay:-1.45s"/><circle class="city-light" cx="184.9" cy="171.3" r="1.1" fill="#fff4dc" style="animation-delay:-1.15s"/><circle class="city-light" cx="121.6" cy="172.2" r="0.9" fill="#ffc070" style="animation-delay:-1.15s"/><circle class="city-light" cx="269.9" cy="183.0" r="0.7" fill="#ffc070" style="animation-delay:-0.35s"/><circle class="city-light" cx="211.8" cy="168.8" r="0.9" fill="#ffd9a0" style="animation-delay:-1.67s"/><circle class="city-light" cx="101.8" cy="178.6" r="0.7" fill="#ffc070" style="animation-delay:-1.85s"/><circle class="city-light" cx="207.7" cy="190.6" r="0.9" fill="#ffe9c4" style="animation-delay:-1.47s"/><circle class="city-light" cx="307.5" cy="190.0" r="0.7" fill="#ffe9c4" style="animation-delay:-1.96s"/><circle class="city-light" cx="288.6" cy="174.6" r="1.1" fill="#ffc070" style="animation-delay:-1.75s"/><circle class="city-light" cx="385.9" cy="190.9" r="1.1" fill="#ffc070" style="animation-delay:-0.46s"/><circle class="city-light" cx="236.0" cy="178.0" r="0.9" fill="#ffc070" style="animation-delay:-0.19s"/><circle class="city-light" cx="39.8" cy="181.6" r="0.9" fill="#ffe9c4" style="animation-delay:-1.16s"/><circle class="city-light" cx="384.2" cy="185.7" r="0.6" fill="#fff4dc" style="animation-delay:-2.18s"/><circle class="city-light" cx="134.2" cy="186.7" r="0.6" fill="#fff4dc" style="animation-delay:-1.88s"/><circle class="city-light" cx="292.6" cy="181.9" r="0.7" fill="#fff4dc" style="animation-delay:-1.89s"/><circle class="city-light" cx="129.7" cy="191.2" r="1.1" fill="#fff4dc" style="animation-delay:-0.96s"/><circle class="city-light" cx="369.3" cy="189.0" r="0.7" fill="#ffe9c4" style="animation-delay:-0.07s"/><circle class="city-light" cx="230.4" cy="181.5" r="0.7" fill="#fff4dc" style="animation-delay:-1.58s"/><circle class="city-light" cx="136.7" cy="183.9" r="0.7" fill="#ffd9a0" style="animation-delay:-0.03s"/><circle class="city-light" cx="378.6" cy="186.8" r="0.7" fill="#fff4dc" style="animation-delay:-2.37s"/><circle class="city-light" cx="76.0" cy="193.3" r="0.6" fill="#ffc070" style="animation-delay:-0.51s"/><circle class="city-light" cx="195.5" cy="190.1" r="0.9" fill="#ffc070" style="animation-delay:-1.31s"/><circle class="city-light" cx="325.3" cy="169.8" r="0.9" fill="#fff4dc" style="animation-delay:-1.59s"/><circle class="city-light" cx="317.9" cy="183.0" r="0.7" fill="#ffe9c4" style="animation-delay:-1.26s"/><circle class="city-light" cx="7.3" cy="180.8" r="0.7" fill="#ffd9a0" style="animation-delay:-1.86s"/><circle class="city-light" cx="58.4" cy="172.1" r="0.6" fill="#ffd9a0" style="animation-delay:-0.78s"/><circle class="city-light" cx="202.2" cy="184.1" r="0.6" fill="#ffd9a0" style="animation-delay:-0.60s"/><circle class="city-light" cx="108.0" cy="190.4" r="1.1" fill="#ffd9a0" style="animation-delay:-1.82s"/><circle class="city-light" cx="355.9" cy="180.9" r="0.7" fill="#ffc070" style="animation-delay:-1.09s"/><circle class="city-light" cx="208.0" cy="181.9" r="0.7" fill="#ffc070" style="animation-delay:-2.21s"/><circle class="city-light" cx="348.2" cy="173.9" r="1.1" fill="#ffe9c4" style="animation-delay:-1.00s"/><circle class="city-light" cx="153.0" cy="177.2" r="0.7" fill="#fff4dc" style="animation-delay:-0.18s"/><circle class="city-light" cx="261.1" cy="190.7" r="0.7" fill="#ffc070" style="animation-delay:-0.34s"/><circle class="city-light" cx="344.3" cy="196.1" r="0.7" fill="#ffd9a0" style="animation-delay:-0.96s"/><circle class="city-light" cx="190.0" cy="196.7" r="0.7" fill="#ffe9c4" style="animation-delay:-1.70s"/><circle class="city-light" cx="387.7" cy="179.7" r="1.1" fill="#ffe9c4" style="animation-delay:-0.86s"/><circle class="city-light" cx="36.0" cy="178.6" r="0.9" fill="#fff4dc" style="animation-delay:-1.06s"/><circle class="city-light" cx="7.1" cy="177.6" r="0.9" fill="#ffd9a0" style="animation-delay:-0.27s"/><circle class="city-light" cx="358.2" cy="174.6" r="0.6" fill="#ffd9a0" style="animation-delay:-0.64s"/><circle class="city-light" cx="15.4" cy="190.6" r="0.9" fill="#ffe9c4" style="animation-delay:-1.97s"/><circle class="city-light" cx="331.3" cy="187.6" r="0.9" fill="#fff4dc" style="animation-delay:-0.36s"/></g>
-        <rect x="0" y="198" width="390" height="102" fill="url(#mainGround)"/>
+        <rect x="0" y="198" width="390" height="102" fill="url(#mainGround)" class="mf-ground"/>
         <path d="M-10 192 Q 95 172 195 186 T 400 182" fill="none" stroke="rgba(255,220,170,0.5)" stroke-width="1"/>
-        <g class="lanterns">
+        <g class="lanterns mf-bulbs">
           <circle cx="20" cy="189" r="9" fill="url(#mainGlow)"/><circle cx="20" cy="189" r="2.4" fill="#ffd38a"/>
           <circle cx="62" cy="183" r="9" fill="url(#mainGlow)"/><circle cx="62" cy="183" r="2.4" fill="#ffd38a"/>
           <circle cx="104" cy="179" r="9" fill="url(#mainGlow)"/><circle cx="104" cy="179" r="2.4" fill="#ffb86a"/>
@@ -1760,6 +2011,27 @@
     </div>
 
     <div class="main-vignette"></div>
+
+    <!-- イタリアの路地の洗濯ロープ：投稿された写真がポラロイドで吊るされる -->
+    <div id="mfLine" class="mf-line" aria-label="みんなの写真">
+      <svg class="mf-rope" viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M-2 2 Q50 22 102 2" fill="none" stroke="rgba(255, 246, 229, 0.75)" stroke-width="0.8" vector-effect="non-scaling-stroke"/>
+      </svg>
+      <div id="mfPins" class="mf-pins"></div>
+    </div>
+
+    <!-- 旅：街に停まるトラックと、吹き出しの街の紹介 -->
+    <div id="mfStage" class="mf-stage">
+      <div id="mfParked" class="mf-truck"></div>
+      <div id="mfBubble" class="mf-bubble" role="dialog" aria-live="polite"></div>
+      <button id="mfPill" type="button" class="mf-pill"></button>
+    </div>
+    <!-- 旅：次の街へ走る（約4秒） -->
+    <div id="mfRoad" class="mf-road" aria-hidden="true">
+      <div class="mf-road-view"><div class="mf-road-far"></div><div class="mf-road-near"></div></div>
+      <div id="mfRoadTruck" class="mf-truck mf-road-truck"></div>
+      <div id="mfRoadSign" class="mf-road-sign"></div>
+    </div>
     <div class="film-grain" id="filmGrain"></div>
 
     <!-- 浮遊する写真バブルの親レイヤー（スマホ枠内を安全に泳ぐ） -->
@@ -1803,7 +2075,7 @@
 
         <div class="self-center px-4 py-1.5 rounded-full bg-black/35 backdrop-blur-md border border-white/20 text-[11px] font-bold text-white/90 flex items-center gap-2">
           <span class="w-1.5 h-1.5 rounded-full bg-amber-300 animate-ping"></span>
-          夜空にふれると、花火が上がります
+          <span id="mfHint">夜空にふれると、花火が上がります</span>
         </div>
 
         <div class="w-full">
@@ -2766,6 +3038,7 @@
       const cb = onStoryEnd;
       onStoryEnd = null;
       if (cb) cb();
+      setTimeout(() => { if (mfCityIdx !== null && !isShowPlaying) mfArrive(mfCityIdx, true); }, 700);
     }
 
     storyIntro.addEventListener('click', (e) => {
@@ -3492,9 +3765,11 @@
       }
       mainLastNow = now;
       // 何もしていない時も、夜空のあちこちで打ち上がる
-      if (!isShowPlaying && !storyActive && now > nextMainFwAt) {
-        nextMainFwAt = now + 260 + Math.random() * 300;
-        const volley = Math.random() < 0.45 ? 2 + Math.floor(Math.random() * 3) : 1;
+      const tod = timeOfDay();
+      if (!isShowPlaying && !storyActive && tod >= 3 && now > nextMainFwAt) {
+        // 夕方：ときどき1発 ／ 夜：だんだん増える ／ リーチの夜：いっぱい
+        nextMainFwAt = now + (tod === 3 ? 1500 + Math.random() * 1500 : 400 + Math.random() * 400);
+        const volley = tod === 3 ? 1 : Math.random() < 0.4 ? 2 + Math.floor(Math.random() * 2) : 1;
         for (let k = 0; k < volley; k++) {
           setTimeout(() => mainLaunch(width * (-0.02 + Math.random() * 1.04), height * (0.22 + Math.random() * 0.3), (0.55 + Math.random() * 0.65) * mainFwQuality, fwPick(MAIN_FW_KINDS)), k * 120);
         }
@@ -4305,9 +4580,278 @@
     const meterPanelEl = document.getElementById('meterPanel');
     const meterGlassEl = document.getElementById('meterGlass');
 
+
+
+    // ==============================================
+    // イタリア1日旅：写真が1枚届くごとに、みんなで次の街へ
+    // 0枚＝ヴェネツィア（朝）→ 1枚＝フィレンツェ（昼）→ 2枚＝ピサ（昼すぎ）
+    // → 3枚＝ローマ（夕方）→ 4枚＝ナポリ（夜）→ 5枚目で花火ショー
+    // 枚数は全席共通なので、どの席でも同じ街・同じ演出になる
+    // ==============================================
+    const MF_CITIES = [
+      { key: 'venezia', it: 'Venezia', jp: 'ヴェネツィア', img: 'city-venezia.webp', copy: '水の都で、旅のはじまりに乾杯。', desc: '運河をゴンドラが行き交う、水の上の街。名物は、地元のスパークリングワイン。', menuId: 'default_2', menuName: '時間無制限！蛇口からワイン' },
+      { key: 'firenze', it: 'Firenze', jp: 'フィレンツェ', img: 'city-firenze.webp', copy: '花の都で、ルネサンスに乾杯。', desc: '赤い丸屋根の大聖堂ドゥオーモが見守る街。名物は、炭火で焼く豪快なステーキ。', menuId: 'default_0', menuName: 'Ａ５ランク飛騨牛ももステーキ' },
+      { key: 'pisa', it: 'Pisa', jp: 'ピサ', img: 'city-pisa.webp', copy: '傾いた塔に、まっすぐ乾杯。', desc: '800年以上傾いたまま立つ、白い大理石の斜塔。トスカーナの恵みが集まる街。', menuId: 'default_3', menuName: '秋鮭ときのこのカルボナーラ' },
+      { key: 'roma', it: 'Roma', jp: 'ローマ', img: 'city-roma.webp', copy: '永遠の都は、カルボナーラの故郷。', desc: '夕日に染まるテヴェレ川とサン・ピエトロ大聖堂。カルボナーラは、ここローマ生まれ。', menuId: 'default_1', menuName: '本場ローマ風カルボナーラ' },
+      { key: 'napoli', it: 'Napoli', jp: 'ナポリ', img: 'city-napoli.webp', copy: 'ピザの故郷で、旅の終わりに乾杯。', desc: 'ヴェスヴィオ火山を望む港町。ピザ発祥の地で、今夜の旅もフィナーレへ。', menuId: 'default_6', menuName: 'はちみつレモンピザ' }
+    ];
+    MF_CITIES.forEach(c => { const im = new Image(); im.src = c.img; });
+    const MF_TRAVEL_MS = 4000;      // 次の街まで走る時間
+    const MF_BUBBLE_MS = 7000;      // 吹き出しを開いておく時間（そのあと小さくたたむ）
+    let mfCityIdx = null;
+    let mfTimers = [];
+    const mfLater = (fn, ms) => mfTimers.push(setTimeout(fn, ms));
+    const mfStage = document.getElementById('mfStage');
+    const mfParked = document.getElementById('mfParked');
+    const mfBubble = document.getElementById('mfBubble');
+    const mfPill = document.getElementById('mfPill');
+    const mfRoad = document.getElementById('mfRoad');
+
+    function mfTruckHTML() {
+      return `<img class="sky-truck-img" src="${TRUCK_SRC_RIGHT}" alt=""><div class="sky-truck-sign is-right"><span>生ビール速達中！</span><img src="${MF_BANNER_SRC}" alt=""></div>`;
+    }
+    mfParked.innerHTML = mfTruckHTML();
+    document.getElementById('mfRoadTruck').innerHTML = mfTruckHTML();
+
+    // トラックが止まる高さ：下のボタンのすぐ上
+    function mfMeasureGround() {
+      const ui = document.getElementById('uiElements');
+      if (!ui) return;
+      const g = appContainer.getBoundingClientRect().bottom - ui.getBoundingClientRect().top + 6;
+      appContainer.style.setProperty('--mf-ground', `${Math.max(120, Math.round(g))}px`);
+      const w = Math.min(appContainer.clientWidth, 430) * 0.44;
+      document.querySelectorAll('.mf-truck .sky-truck-sign').forEach(el => { el.style.fontSize = `${(w * 0.05).toFixed(1)}px`; });
+    }
+    window.addEventListener('resize', mfMeasureGround);
+
+    // 背景の写真をふわっと切り替える
+    let mfFront = 'A';
+    function mfShowPhoto(idx) {
+      const c = MF_CITIES[idx];
+      const front = document.getElementById('mfCity' + mfFront);
+      if (front.dataset.src === c.img) return;
+      const back = document.getElementById('mfCity' + (mfFront === 'A' ? 'B' : 'A'));
+      back.onload = () => {
+        back.classList.add('on');
+        front.classList.remove('on');
+        mfFront = mfFront === 'A' ? 'B' : 'A';
+        appContainer.classList.add('mf-photo-on');
+      };
+      back.onerror = () => { if (!front.classList.contains('on')) appContainer.classList.remove('mf-photo-on'); };
+      back.dataset.src = c.img;
+      back.src = c.img;
+    }
+
+    function mfBubbleHTML(idx) {
+      const c = MF_CITIES[idx];
+      const m = menuData.find(x => x.id === c.menuId);
+      return `<button type="button" class="mf-bubble-x" aria-label="閉じる">×</button>
+        <p class="mf-b-no">TAPPA ${String(idx + 1).padStart(2, '0')} / 05</p>
+        <p class="mf-b-it">${c.it}</p>
+        <p class="mf-b-jp">${c.jp}</p>
+        <div class="mf-b-line"></div>
+        <p class="mf-b-copy">${c.copy}</p>
+        <p class="mf-b-desc">${c.desc}</p>
+        <button type="button" class="mf-b-menu">${m ? `<img src="${m.mainImg}" alt="">` : ''}<span><small>il sapore di ${c.it}</small><b>${c.menuName}</b></span><i>›</i></button>`;
+    }
+    function mfPillText(idx) {
+      const c = MF_CITIES[idx];
+      if (idx >= MF_CITIES.length - 1) return `📍 ${c.it}　あと1枚で、ナポリの夜空に花火！`;
+      return `📍 ${c.it}　次は${MF_CITIES[idx + 1].jp}へ（あと1枚）`;
+    }
+    function mfOpenBubble() {
+      if (mfCityIdx === null) return;
+      mfBubble.innerHTML = mfBubbleHTML(mfCityIdx);
+      mfBubble.querySelector('.mf-bubble-x').addEventListener('click', mfCloseBubble);
+      mfBubble.querySelector('.mf-b-menu').addEventListener('click', () => openProductModalById(MF_CITIES[mfCityIdx].menuId));
+      mfPill.classList.remove('show');
+      mfBubble.classList.add('show');
+    }
+    function mfCloseBubble() {
+      mfBubble.classList.remove('show');
+      mfPill.textContent = mfPillText(mfCityIdx);
+      mfPill.classList.add('show');
+    }
+    mfPill.addEventListener('click', mfOpenBubble);
+
+    // 街に着く：写真だけ見せる → トラックが入ってきて止まる → 吹き出しで紹介
+    function mfArrive(idx, animate) {
+      mfTimers.forEach(clearTimeout); mfTimers = [];
+      mfCityIdx = idx;
+      mfMeasureGround();
+      mfShowPhoto(idx);
+      mfRoad.classList.remove('show');
+      mfBubble.classList.remove('show');
+      mfPill.classList.remove('show');
+      mfStage.classList.add('show');
+      if (!animate) {
+        mfParked.className = 'mf-truck parked';
+        mfPill.textContent = mfPillText(idx);
+        mfPill.classList.add('show');
+        return;
+      }
+      mfParked.className = 'mf-truck';
+      mfLater(() => { mfParked.className = 'mf-truck drive-in'; }, 1300);
+      mfLater(() => { mfParked.className = 'mf-truck parked'; try { playPopSound(); } catch (e) {} mfOpenBubble(); }, 2600);
+      mfLater(mfCloseBubble, 2600 + MF_BUBBLE_MS);
+    }
+
+    // 次の街へ：トラックが出発 → 街並みを走る（約4秒）→ 到着
+    function mfTravel(from, to) {
+      mfTimers.forEach(clearTimeout); mfTimers = [];
+      mfCityIdx = to;
+      mfMeasureGround();
+      mfBubble.classList.remove('show');
+      mfPill.classList.remove('show');
+      mfParked.className = 'mf-truck drive-out';
+      mfLater(() => {
+        mfStage.classList.remove('show');
+        mfBuildRoad(to - 1);
+        mfRoad.classList.add('show');
+        const sign = document.getElementById('mfRoadSign');
+        const dest = MF_CITIES[to];
+        const t0 = performance.now();
+        const total = [18, 80, 300, 220][to - 1] || 50;
+        const tick = () => {
+          if (!mfRoad.classList.contains('show')) return;
+          const q = Math.min(1, (performance.now() - t0) / MF_TRAVEL_MS);
+          const left = total * Math.pow(1 - q, 1.6);
+          sign.innerHTML = `<b>${dest.it.toUpperCase()} →</b><span>${dest.jp}まで あと ${left >= 1 ? Math.ceil(left) + 'km' : Math.max(100, Math.round(left * 1000 / 100) * 100) + 'm'}</span>`;
+          if (q < 1) requestAnimationFrame(tick);
+        };
+        tick();
+      }, 700);
+      mfLater(() => mfArrive(to, true), 700 + MF_TRAVEL_MS);
+    }
+
+    // 枚数に合わせて街を決める（renderMeter から毎回呼ばれる）
+    function updateJourney(n) {
+      const idx = Math.max(0, Math.min(MF_CITIES.length - 1, n));
+      if (mfCityIdx === null || storyActive || isShowPlaying) {
+        if (mfCityIdx !== idx || !mfStage.classList.contains('show')) mfArrive(idx, false);
+        return;
+      }
+      if (idx === mfCityIdx) return;
+      if (idx > mfCityIdx) mfTravel(mfCityIdx, idx);
+      else mfArrive(idx, true); // 花火のあと：新しい旅のはじまり
+    }
+
+    // ---------- 走る場面の街並み（区間ごとに景色が変わる） ----------
+    // 0：ヴェネツィア→フィレンツェ（朝の運河）／1：フィレンツェ→ピサ（昼の街とドゥオーモ）
+    // 2：ピサ→ローマ（昼すぎのトスカーナの丘と斜塔）／3：ローマ→ナポリ（夕方のローマ）
+    function mfBuildings(base, cols, shut, lit, seed, minH, maxH) {
+      let s = '', x = 0, i = 0;
+      while (x < 440) {
+        let w = 52 + ((i * 29 + seed) % 26);
+        if (440 - (x + w) < 40) w = 440 - x;
+        const h = minH + ((i * 53 + seed * 7) % (maxH - minH));
+        const col = cols[(i + seed) % cols.length];
+        s += `<rect x="${x}" y="${base - h}" width="${w}" height="${h}" fill="${col}"/><rect x="${x - 2}" y="${base - h - 4}" width="${w + 4}" height="5" fill="#8a4a2a"/>`;
+        const rows = Math.floor((h - 34) / 28), cn = Math.max(1, Math.floor(w / 20));
+        for (let r = 0; r < rows; r++) for (let c = 0; c < cn; c++) {
+          const wx = x + (w - cn * 20) / 2 + c * 20 + 5, wy = base - h + 12 + r * 28;
+          const on = lit && ((r * 7 + c * 3 + i) % 3 !== 0);
+          s += `<rect x="${wx}" y="${wy}" width="10" height="15" rx="1" fill="${on ? '#ffd36b' : '#3a2a2a'}"/><rect x="${wx - 3}" y="${wy}" width="3" height="15" fill="${shut}"/><rect x="${wx + 10}" y="${wy}" width="3" height="15" fill="${shut}"/>`;
+          if ((r + c + i) % 3 === 0) s += `<rect x="${wx - 4}" y="${wy + 15}" width="18" height="2.5" fill="#2a2a2a"/><circle cx="${wx}" cy="${wy + 14}" r="2" fill="#e2394f"/><circle cx="${wx + 5}" cy="${wy + 13}" r="2" fill="#ff8fb0"/><circle cx="${wx + 10}" cy="${wy + 14}" r="2" fill="#e2394f"/>`;
+        }
+        s += `<path d="M${x + w / 2 - 8} ${base} v-18 a8 8 0 0 1 16 0 v18z" fill="#4a2e1e"/>`;
+        x += w; i++;
+      }
+      return s;
+    }
+    function mfLamps(base, lit) {
+      let s = '';
+      for (let k = 0; k < 4; k++) { const x = 40 + k * 110; s += `<rect x="${x}" y="${base - 66}" width="3" height="66" fill="#2a2a2a"/><path d="M${x - 6} ${base - 68} h15 l-3 -12 h-9z" fill="#2a2a2a"/><circle cx="${x + 1.5}" cy="${base - 72}" r="4" fill="#ffd36b" opacity="${lit ? 1 : 0.3}"/>`; }
+      return s;
+    }
+    function mfCobble(y, dark) {
+      let s = `<rect x="0" y="${y}" width="440" height="${474 - y}" fill="${dark ? '#3a342e' : '#7a746a'}"/>`;
+      for (let r = 0; r < 6; r++) for (let c = 0; c < 28; c++) s += `<rect x="${c * 16 - (r % 2) * 8}" y="${y + 4 + r * 9}" width="14" height="7" rx="2" fill="${dark ? ((r + c) % 3 ? '#46403a' : '#4e4842') : ((r + c) % 3 ? '#8a8478' : '#9a9488')}"/>`;
+      return s;
+    }
+    function mfSvg(content) {
+      return `<svg viewBox="0 0 880 474" preserveAspectRatio="xMinYMax meet">${content}<g transform="translate(440 0)">${content}</g></svg>`;
+    }
+    function mfBuildRoad(seg) {
+      const B = 420; // 道路の高さ（下端が画面の下のボタンのすぐ上）
+      const scenes = [
+        { sky: 'linear-gradient(#a9cdf0, #f8dcc0 75%, #ffd1a8)',
+          far: `<rect x="300" y="250" width="18" height="170" fill="#e8c4a0" opacity=".8"/><path d="M297 252 L309 222 L321 252Z" fill="#c99a78"/>` + mfBuildings(B, ['#efd2c0', '#f3e2c8'], '#9fb8a0', false, 2, 90, 140).replace(/<rect/g, '<rect opacity=".55"'),
+          near: mfBuildings(B - 40, ['#f2b9a6', '#f0d7a0', '#e9a07a', '#f6cfa8'], '#2f6b3e', false, 0, 150, 220) + `<rect x="0" y="${B - 40}" width="440" height="40" fill="#4a9ac2"/><path d="M60 ${B - 22} q40 10 80 0 l-6 5 q-34 7 -68 0z" fill="#111"/><path d="M260 ${B - 30} q40 10 80 0 l-6 5 q-34 7 -68 0z" fill="#111"/>` + mfCobble(B, false) },
+        { sky: 'linear-gradient(#3b8ee6, #a8d4f5)',
+          far: `<path d="M120 ${B - 60} V${B - 150} h120 v90" fill="#e9dcc4"/><path d="M134 ${B - 150} a46 54 0 0 1 92 0z" fill="#c9502f"/><rect x="172" y="${B - 222}" width="14" height="20" fill="#e9dcc4"/><rect x="270" y="${B - 230}" width="22" height="170" fill="#e9dcc4"/>`,
+          near: mfBuildings(B, ['#e9b36a', '#d8a35c', '#f0d7a0', '#c96a4a'], '#2f6b3e', false, 3, 170, 240) + mfLamps(B, false) + mfCobble(B, false) },
+        { sky: 'linear-gradient(#5aa0de, #f7e3b0)',
+          far: `<path d="M0 ${B - 70} Q110 ${B - 140} 220 ${B - 90} T440 ${B - 100} V${B}H0Z" fill="#9cbf6a"/><path d="M0 ${B - 40} Q150 ${B - 100} 300 ${B - 50} T440 ${B - 60} V${B}H0Z" fill="#7aa64e"/><g transform="translate(250 ${B - 70}) rotate(6)"><rect x="-16" y="-170" width="32" height="170" fill="#f1dcb2"/>${[-30, -58, -86, -114, -142].map(y => `<line x1="-16" x2="16" y1="${y}" y2="${y}" stroke="#b48c5a"/>`).join('')}<rect x="-12" y="-188" width="24" height="18" fill="#f1dcb2"/></g>`,
+          near: [30, 70, 150, 200, 330, 380].map(x => `<ellipse cx="${x}" cy="${B - 40}" rx="8" ry="38" fill="#2f5a2a"/>`).join('') + `<rect x="0" y="${B - 16}" width="440" height="16" fill="#c9b080"/>` + mfCobble(B, false) },
+        { sky: 'linear-gradient(#3b3f7a, #c0607a 40%, #f59a4b 75%, #ffcf6b)',
+          far: `<path d="M80 ${B} V${B - 130} Q220 ${B - 170} 360 ${B - 130} V${B}Z" fill="#a85a4a"/>${[0, 1, 2].map(r => Array.from({ length: 12 }, (_, i) => `<path d="M${94 + i * 22} ${B - 96 + r * 30} v-12 a5 5 0 0 1 10 0 v12z" fill="#ffd38a" opacity=".8"/>`).join('')).join('')}`,
+          near: [20, 400].map(x => `<rect x="${x + 8}" y="${B - 120}" width="4" height="120" fill="#3a2a1a"/><ellipse cx="${x + 10}" cy="${B - 122}" rx="34" ry="12" fill="#3f5a2a"/>`).join('') + mfBuildings(B, ['#c96a4a', '#b8573e', '#d98a5a', '#a8502f'], '#3a2a1a', true, 5, 110, 170).replace(/<rect x="(\d+)" y="(\d+)" width="(\d+)" height="(\d+)" fill="#(c96a4a|b8573e)"/g, (m) => m) + mfLamps(B, true) + mfCobble(B, true) }
+      ];
+      const sc = scenes[Math.max(0, Math.min(scenes.length - 1, seg))];
+      mfRoad.style.background = sc.sky;
+      mfRoad.querySelector('.mf-road-far').innerHTML = mfSvg(sc.far);
+      mfRoad.querySelector('.mf-road-near').innerHTML = mfSvg(sc.near);
+    }
+
+    // ---------- 朝・昼・夕方・夜（写真の枚数で時間が進む） ----------
+    // 0枚＝朝 / 1枚＝昼 / 2枚＝夕方 / 3枚＝夜 / 4枚＝夜（リーチ・花火いっぱい）
+    function setTimeOfDay(n) {
+      const tod = Math.max(0, Math.min(4, n));
+      if (appContainer.dataset.tod !== String(tod)) appContainer.dataset.tod = String(tod);
+      const hint = document.getElementById('mfHint');
+      if (hint) hint.textContent = tod < 3 ? '1枚撮るごとに、みんなで次の街へ旅します' : '夜空にふれると、花火が上がります';
+      updateJourney(n);
+    }
+    function timeOfDay() { return +(appContainer.dataset.tod || 0); }
+
+    // ---------- 洗濯ロープのポラロイド ----------
+    // 額縁の色は5種類から（写真ごとに決まるので、どの席でも同じ色になる）
+    const POLAROID_COLORS = ['white', 'red', 'green', 'gold', 'sky'];
+    function polaroidColor(id) {
+      let h = 0;
+      for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+      return POLAROID_COLORS[h % POLAROID_COLORS.length];
+    }
+    const shownPolaroids = new Set();
+    function renderLine(list) {
+      const pins = document.getElementById('mfPins');
+      if (!pins) return;
+      const SLOT_X = [11, 30.5, 50, 69.5, 89];
+      const SLOT_Y = [3, 12, 15, 12, 3];
+      pins.innerHTML = '';
+      for (let i = 0; i < METER_GOAL; i++) {
+        const m = list[i];
+        const slot = document.createElement('div');
+        slot.className = 'mf-slot';
+        slot.style.left = `${SLOT_X[i]}%`;
+        slot.style.top = `${SLOT_Y[i]}px`;
+        if (!m) {
+          slot.innerHTML = '<span class="mf-clip"></span>';
+          pins.appendChild(slot);
+          continue;
+        }
+        const flying = pendingFlightIds.has(m.id);
+        const isNew = !flying && !shownPolaroids.has(m.id);
+        if (!flying) shownPolaroids.add(m.id);
+        const pol = document.createElement('button');
+        pol.type = 'button';
+        pol.className = `mf-polaroid mf-pol-${polaroidColor(m.id)}${isNew ? ' mf-new' : ''}`;
+        pol.dataset.id = m.id;
+        pol.style.animationDelay = isNew ? '0s' : `-${i * 0.6}s`;
+        pol.innerHTML = `<span class="mf-clip"></span><img class="mf-pol-img" src="${m.img}" alt=""${flying ? ' style="opacity:0"' : ''}><span class="mf-pol-cap"></span>`;
+        pol.querySelector('.mf-pol-cap').textContent = m.caption || '';
+        pol.addEventListener('click', () => openUserPhotoModal(toBubbleData(m)));
+        slot.appendChild(pol);
+        pins.appendChild(slot);
+      }
+    }
+
     function renderMeter(popId = null) {
       const list = memoriesOfRound(meterState.round);
       const n = list.length;
+      setTimeOfDay(list.filter(m => !pendingFlightIds.has(m.id)).length);
+      renderLine(list);
 
       // 5つの提灯。写真が届くと、その写真が入って灯る
       const SAG = [2, 4, 5, 4, 2];
@@ -4373,7 +4917,7 @@
     function flyIntoMeter(m, opts = {}) {
       pendingFlightIds.add(m.id);
       renderMeter();
-      const target = meterSlotsEl.querySelector(`[data-id="${m.id}"] .lantern-window`) || meterSlotsEl.querySelector(`[data-id="${m.id}"]`);
+      const target = document.querySelector(`#mfPins [data-id="${m.id}"] .mf-pol-img`) || meterSlotsEl.querySelector(`[data-id="${m.id}"] .lantern-window`) || meterSlotsEl.querySelector(`[data-id="${m.id}"]`);
       const land = () => {
         pendingFlightIds.delete(m.id);
         renderMeter(m.id);
