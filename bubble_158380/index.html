@@ -1782,6 +1782,32 @@
     .mf-road-sign b { font-size: 13px; letter-spacing: 0.08em; }
     .mf-road-sign span { font-size: 10px; font-weight: 800; }
 
+
+    /* 何で乾杯？ */
+    .mf-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+    .mf-chip { padding: 5px 9px; border-radius: 9999px; border: 1px solid rgba(255, 255, 255, 0.3); background: rgba(255, 255, 255, 0.08); color: #fff; font-size: 10.5px; font-weight: 800; }
+    .mf-chip.on { background: #ffcf4a; border-color: #ffe08a; color: #4a2a05; box-shadow: 0 0 0 2px rgba(255, 207, 74, 0.35); }
+    /* ビールのポラロイド：金の額縁にジョッキの印 */
+    .mf-beer-pol::after { content: '🍺'; position: absolute; right: -6px; top: -6px; font-size: 14px; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5)); }
+    .mf-beer-pol { box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4), 0 0 14px rgba(255, 207, 74, 0.85); }
+    /* 生ビール速達便：いつもより速く走る */
+    .mf-road.express .mf-road-near { animation-duration: 1.2s; }
+    .mf-road.express .mf-road-far { animation-duration: 4.5s; }
+    .mf-road.express .mf-road-truck { animation-duration: 0.18s; }
+    .mf-road-sign em { font-style: normal; font-size: 10px; font-weight: 900; color: #4a2a05; background: #ffcf4a; border-radius: 9999px; padding: 1px 8px; margin-bottom: 3px; }
+    /* 真っ暗になる演出 */
+    .mf-night { position: absolute; inset: 0; z-index: 79; background: #000; opacity: 0; pointer-events: none; transition: opacity 1.2s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; text-align: center; }
+    .mf-night.show { opacity: 1; }
+    .mf-night p { opacity: 0; transform: translateY(8px); transition: opacity 0.8s ease 0.5s, transform 0.8s ease 0.5s; }
+    .mf-night.show p { opacity: 1; transform: none; }
+    .mf-night.rise p { opacity: 0; transition-delay: 0s; }
+    .mf-night-en { font-family: 'Playfair Display', serif; font-size: 11px; letter-spacing: 0.5em; opacity: 0.7; }
+    .mf-night-jp { font-family: 'Shippori Mincho', serif; font-size: 20px; font-weight: 700; margin-top: 8px; letter-spacing: 0.1em; }
+    .mf-night-sub { font-size: 10.5px; margin-top: 10px; color: rgba(255, 255, 255, 0.6); }
+    .mf-night-rocket { position: absolute; left: 50%; bottom: -60px; width: 3px; height: 60px; margin-left: -1.5px; border-radius: 3px; background: linear-gradient(transparent, #ffe08a); opacity: 0; }
+    .mf-night.rise .mf-night-rocket { animation: mfRise 0.9s cubic-bezier(0.2, 0.6, 0.4, 1) forwards; }
+    @keyframes mfRise { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0.9; transform: translateY(-62vh); } }
+
     /* トラックの荷台に貼ったお店の看板 */
     .sky-truck-img { display: block; width: 100%; height: auto; }
     .sky-truck-sign {
@@ -2025,6 +2051,13 @@
       <div id="mfParked" class="mf-truck"></div>
       <div id="mfBubble" class="mf-bubble" role="dialog" aria-live="polite"></div>
       <button id="mfPill" type="button" class="mf-pill"></button>
+    </div>
+    <!-- 5枚目：真っ暗になってから花火 -->
+    <div id="mfNight" class="mf-night" aria-hidden="true">
+      <p class="mf-night-en">NAPOLI</p>
+      <p class="mf-night-jp">ナポリに、夜がきた…</p>
+      <p class="mf-night-sub">みんなの5枚がそろいました</p>
+      <i class="mf-night-rocket"></i>
     </div>
     <!-- 旅：次の街へ走る（約4秒） -->
     <div id="mfRoad" class="mf-road" aria-hidden="true">
@@ -2272,13 +2305,26 @@
   <div id="photoPreviewModal" class="absolute inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
     <div class="w-full max-w-[320px] bg-gradient-to-b from-gray-800 via-gray-900 to-black rounded-3xl p-5 border border-white/30 text-center flex flex-col items-center shadow-2xl text-white">
       <h3 class="text-[15px] font-bold mb-1 font-serif-luxury tracking-[0.14em]">この一枚で、乾杯！</h3>
-      <p class="text-[10.5px] text-white/75 mb-3 tracking-wide">ひとことを添えてください。5杯そろうと、夜空に何かが起こります。</p>
+      <p class="text-[10.5px] text-white/75 mb-3 tracking-wide">ひとことを添えてください。1枚ごとに、みんなで次の街へ。</p>
 
       <!-- プレビュー枠 -->
       <div class="w-36 h-36 rounded-full overflow-hidden border-3 border-amber-300 shadow-xl mb-3 relative bubble-frame-user">
         <img id="capturedImgPreview" src="" class="w-full h-full object-cover">
       </div>
 
+
+      <!-- 何で乾杯？（ビールを選ぶと「生ビール速達便」のおまけ） -->
+      <div class="w-full mb-2.5 text-left">
+        <p class="text-[10px] font-bold text-amber-200 px-1 mb-1">何で乾杯？</p>
+        <div id="mfDrinkChips" class="mf-chips">
+          <button type="button" data-drink="beer" class="mf-chip on">🍺 ビール</button>
+          <button type="button" data-drink="wine" class="mf-chip">🍷 ワイン</button>
+          <button type="button" data-drink="other" class="mf-chip">🍹 その他のドリンク</button>
+          <button type="button" data-drink="food" class="mf-chip">🍝 料理・お店</button>
+        </div>
+        <p id="mfDrinkNote" class="text-[9px] text-amber-100/80 px-1 mt-1">🍺 ビールの一枚は、金の額縁＆「生ビール速達便」で出発！</p>
+        <p class="text-[9px] text-white/55 px-1 mt-0.5">※料理やお店の雰囲気など、写真はなんでもOKです</p>
+      </div>
 
       <!-- 一言入力欄（10文字以内） -->
       <div class="w-full mb-3 text-left">
@@ -2290,7 +2336,7 @@
           type="text" 
           id="capturedCaptionInput" 
           maxlength="10" 
-          placeholder="例：美味しい！ / 楽しい！" 
+          placeholder="例：美味しい！" 
           class="w-full px-3 py-2 rounded-xl bg-white/10 border border-white/30 text-white text-xs placeholder-white/40 focus:outline-none focus:border-amber-400 focus:bg-white/15 transition tracking-wider"
         >
       </div>
@@ -4597,7 +4643,7 @@
     ];
     MF_CITIES.forEach(c => { const im = new Image(); im.src = c.img; });
     const MF_TRAVEL_MS = 4000;      // 次の街まで走る時間
-    const MF_BUBBLE_MS = 7000;      // 吹き出しを開いておく時間（そのあと小さくたたむ）
+    const MF_BUBBLE_MS = 4000;      // 吹き出しを開いておく時間（そのあと小さくたたむ）
     let mfCityIdx = null;
     let mfTimers = [];
     const mfLater = (fn, ms) => mfTimers.push(setTimeout(fn, ms));
@@ -4699,6 +4745,11 @@
     // 次の街へ：トラックが出発 → 街並みを走る（約4秒）→ 到着
     function mfTravel(from, to) {
       mfTimers.forEach(clearTimeout); mfTimers = [];
+      const lastPhoto = memoriesOfRound(meterState.round)[to - 1];
+      const express = !!(lastPhoto && lastPhoto.drink === 'beer');
+      const travelMs = express ? 2800 : MF_TRAVEL_MS;
+      mfRoad.classList.toggle('express', express);
+      if (express) showToast('<span class="toast-dot"></span><span class="truncate">🍺 生ビール速達便！ビールの一枚で、特急出発！</span>', 2600);
       mfCityIdx = to;
       mfMeasureGround();
       mfBubble.classList.remove('show');
@@ -4714,14 +4765,14 @@
         const total = [18, 80, 300, 220][to - 1] || 50;
         const tick = () => {
           if (!mfRoad.classList.contains('show')) return;
-          const q = Math.min(1, (performance.now() - t0) / MF_TRAVEL_MS);
+          const q = Math.min(1, (performance.now() - t0) / travelMs);
           const left = total * Math.pow(1 - q, 1.6);
-          sign.innerHTML = `<b>${dest.it.toUpperCase()} →</b><span>${dest.jp}まで あと ${left >= 1 ? Math.ceil(left) + 'km' : Math.max(100, Math.round(left * 1000 / 100) * 100) + 'm'}</span>`;
+          sign.innerHTML = `${express ? '<em>🍺 生ビール速達便</em>' : ''}<b>${dest.it.toUpperCase()} →</b><span>${dest.jp}まで あと ${left >= 1 ? Math.ceil(left) + 'km' : Math.max(100, Math.round(left * 1000 / 100) * 100) + 'm'}</span>`;
           if (q < 1) requestAnimationFrame(tick);
         };
         tick();
       }, 700);
-      mfLater(() => mfArrive(to, true), 700 + MF_TRAVEL_MS);
+      mfLater(() => mfArrive(to, true), 700 + travelMs);
     }
 
     // 枚数に合わせて街を決める（renderMeter から毎回呼ばれる）
@@ -4808,10 +4859,12 @@
     // ---------- 洗濯ロープのポラロイド ----------
     // 額縁の色は5種類から（写真ごとに決まるので、どの席でも同じ色になる）
     const POLAROID_COLORS = ['white', 'red', 'green', 'gold', 'sky'];
-    function polaroidColor(id) {
+    function polaroidColor(m) {
+      if (m.drink === 'beer') return 'gold';
+      const others = POLAROID_COLORS.filter(c => c !== 'gold');
       let h = 0;
-      for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
-      return POLAROID_COLORS[h % POLAROID_COLORS.length];
+      for (let i = 0; i < m.id.length; i++) h = (h * 31 + m.id.charCodeAt(i)) >>> 0;
+      return others[h % others.length];
     }
     const shownPolaroids = new Set();
     function renderLine(list) {
@@ -4836,7 +4889,7 @@
         if (!flying) shownPolaroids.add(m.id);
         const pol = document.createElement('button');
         pol.type = 'button';
-        pol.className = `mf-polaroid mf-pol-${polaroidColor(m.id)}${isNew ? ' mf-new' : ''}`;
+        pol.className = `mf-polaroid mf-pol-${polaroidColor(m)}${m.drink === 'beer' ? ' mf-beer-pol' : ''}${isNew ? ' mf-new' : ''}`;
         pol.dataset.id = m.id;
         pol.style.animationDelay = isNew ? '0s' : `-${i * 0.6}s`;
         pol.innerHTML = `<span class="mf-clip"></span><img class="mf-pol-img" src="${m.img}" alt=""${flying ? ' style="opacity:0"' : ''}><span class="mf-pol-cap"></span>`;
@@ -5189,7 +5242,7 @@
     // 混み合い・電波の揺らぎで失敗したら、少しずらして自動で送り直す
     const RETRYABLE_POST_ERRORS = ['aborted', 'failed-precondition', 'unavailable', 'deadline-exceeded', 'internal', 'unknown'];
     const POST_ATTEMPTS = 3;
-    async function postMemory(img, caption) {
+    async function postMemory(img, caption, drink = '') {
       const now = Date.now();
       const id = `memory_${now}_${Math.random().toString(36).slice(2, 8)}`;
       const userId = currentUserId();
@@ -5199,7 +5252,7 @@
         const count = meterState.count + 1;
         const round = meterState.round;
         if (knownMemoryIds === null) knownMemoryIds = new Set(allMemories.map(m => m.id));
-        handleMemories([...allMemories, { id, round, img, caption, userId, timestamp: now }]);
+        handleMemories([...allMemories, { id, round, img, caption, drink, userId, timestamp: now }]);
         handleState({ ...meterState, count, updatedAt: now, showStartAt: count >= METER_GOAL ? now + SHOW_LEAD_MS : 0, showTheme: count >= METER_GOAL ? pickShowTheme() : '', upgraded: false, cheers: 0 });
         return 'ok';
       }
@@ -5209,7 +5262,7 @@
 
       for (let attempt = 1; attempt <= POST_ATTEMPTS; attempt++) {
         try {
-          return await postMemoryTransaction(id, now, userId, img, caption);
+          return await postMemoryTransaction(id, now, userId, img, caption, drink);
         } catch (err) {
           const code = (err && err.code) || '';
           console.warn(`Post memory failed (${attempt}/${POST_ATTEMPTS}, ${code || 'no code'}):`, err);
@@ -5229,7 +5282,7 @@
       return navigator.onLine === false ? 'offline' : 'error';
     }
 
-    function postMemoryTransaction(id, now, userId, img, caption) {
+    function postMemoryTransaction(id, now, userId, img, caption, drink) {
       return runTransaction(db, async (tx) => {
         // 前回の送信が実は届いていた場合は、二重に数えない
         const sent = await tx.get(doc(memoriesColRef(), id));
@@ -5247,7 +5300,7 @@
         if (count >= METER_GOAL) return 'full';
         const newCount = count + 1;
         tx.set(doc(memoriesColRef(), id), {
-          round, img, caption, userId, timestamp: now,
+          round, img, caption, drink, userId, timestamp: now,
           // 演出後に消し損ねても、Firestore の TTL で自動削除されるように
           expireAt: Timestamp.fromMillis(now + MEMORY_TTL_MS)
         });
@@ -7102,6 +7155,19 @@
       });
     }
 
+    // ナポリに着いたら、画面がすーっと真っ暗に → 光が1本昇って「ドン」→ 花火ショーへ
+    async function mfNightIntro() {
+      const el = document.getElementById('mfNight');
+      mfBubble.classList.remove('show');
+      mfPill.classList.remove('show');
+      el.classList.add('show');
+      await sleep(1700);
+      el.classList.add('rise');
+      try { initAudio(); playWhistle(0.9); } catch (e) {}
+      await sleep(900);
+      try { playBoom(1.2); } catch (e) {}
+    }
+
     async function startFireworkShow(round, delayMs) {
       if (isShowPlaying) return;
       isShowPlaying = true;
@@ -7159,8 +7225,10 @@
       resizeShowCanvas();
       tctx.clearRect(0, 0, SW, SH);
       sctx.clearRect(0, 0, SW, SH);
+      await mfNightIntro();
       showOverlay.classList.remove('hidden');
       requestAnimationFrame(() => showOverlay.classList.remove('opacity-0'));
+      setTimeout(() => document.getElementById('mfNight').classList.remove('show', 'rise'), 900);
 
       await runShow(items, { showNo, mvp });
 
@@ -7483,6 +7551,15 @@
     }
 
     // スプレッドシートへ一言と写真を送る（失敗してもアプリの動きには影響しない）
+    // 何で乾杯？の選択
+    const MF_DRINK_LABELS = { beer: 'ビール', wine: 'ワイン', other: 'その他のドリンク', food: '料理・お店' };
+    let mfDrink = 'beer';
+    document.querySelectorAll('#mfDrinkChips .mf-chip').forEach(ch => ch.addEventListener('click', () => {
+      mfDrink = ch.dataset.drink;
+      document.querySelectorAll('#mfDrinkChips .mf-chip').forEach(c => c.classList.toggle('on', c === ch));
+      document.getElementById('mfDrinkNote').style.visibility = mfDrink === 'beer' ? 'visible' : 'hidden';
+    }));
+
     function sendToSheet(img, caption) {
       if (!SHEET_WEBHOOK_URL) return;
       try {
@@ -7490,7 +7567,7 @@
           method: 'POST',
           mode: 'no-cors',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ secret: SHEET_SECRET, caption, img, timestamp: Date.now(), showNo: (meterState.totalShows || 0) + 1 })
+          body: JSON.stringify({ secret: SHEET_SECRET, caption, drink: MF_DRINK_LABELS[mfDrink] || '', img, timestamp: Date.now(), showNo: (meterState.totalShows || 0) + 1 })
         }).catch(() => {});
       } catch (e) {}
     }
@@ -7524,7 +7601,7 @@
         }
       }
 
-      const result = await postMemory(currentCapturedPhotoData, captionText);
+      const result = await postMemory(currentCapturedPhotoData, captionText, mfDrink);
       if (result === 'ok') sendToSheet(currentCapturedPhotoData, captionText);
       isSubmitting = false;
       submitBtn.textContent = submitLabel;
