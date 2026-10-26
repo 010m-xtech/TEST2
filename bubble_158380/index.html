@@ -1970,6 +1970,44 @@
     .mf-op-truck2 { position: relative !important; left: auto !important; bottom: auto !important; width: min(42%, 170px); margin-top: auto; }
     .mf-op-go { width: 100%; max-width: 360px; margin-top: 12px; padding: 15px; border-radius: 16px; font-size: 16px; font-weight: 900; color: #8a1424; border: 2px solid #fff; background: linear-gradient(90deg, #1f9a55 0 6%, #fff 6% 94%, #d7263d 94%); box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2); }
 
+
+    /* ===== 花火ショー：写真を1枚ずつ大きく ===== */
+    .mf-spot-show { position: absolute; inset: 0; z-index: 7; pointer-events: none; display: flex; align-items: center; justify-content: center; }
+    .mf-spot-card { width: min(66%, 270px); padding: 10px 10px 0; background: #fff; border-radius: 4px; box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55), 0 0 40px rgba(255, 220, 140, 0.45); opacity: 0; transform: scale(0.3) rotate(var(--tilt)); }
+    .mf-spot-card img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
+    .mf-spot-card p { font-family: 'M PLUS Rounded 1c', sans-serif; font-weight: 900; font-size: 18px; color: #3a1a0c; text-align: center; padding: 8px 4px 2px; }
+    .mf-spot-card span { display: block; text-align: center; font-size: 10px; font-weight: 800; color: #9a7a5a; padding-bottom: 8px; letter-spacing: 0.2em; }
+    .mf-spot-show.show .mf-spot-card { animation: mfSpotIn 1.25s cubic-bezier(0.3, 1.4, 0.5, 1) forwards; }
+    @keyframes mfSpotIn {
+      0% { opacity: 0; transform: scale(0.3) rotate(calc(var(--tilt) * 3)); }
+      22% { opacity: 1; transform: scale(1.04) rotate(var(--tilt)); }
+      30% { transform: scale(1) rotate(var(--tilt)); }
+      78% { opacity: 1; transform: scale(1) rotate(var(--tilt)); }
+      100% { opacity: 0; transform: scale(0.55) translateY(-30%) rotate(var(--tilt)); }
+    }
+    /* ===== MVP：ドカンと ===== */
+    .mf-mvp { position: absolute; inset: 0; z-index: 8; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; }
+    .mf-mvp.show { opacity: 1; animation: mfMvpFlash 0.6s ease-out; }
+    @keyframes mfMvpFlash { 0% { background: rgba(255, 255, 255, 0.95); } 100% { background: rgba(0, 0, 0, 0.35); } }
+    .mf-mvp.show { background: rgba(0, 0, 0, 0.35); }
+    .mf-mvp-rays { position: absolute; left: 50%; top: 50%; width: 180vmax; height: 180vmax; margin: -90vmax 0 0 -90vmax; background: repeating-conic-gradient(rgba(255, 207, 74, 0.28) 0 6deg, transparent 6deg 18deg); animation: mfRays 8s linear infinite; }
+    @keyframes mfRays { to { transform: rotate(360deg); } }
+    .mf-mvp-title { position: relative; font-family: 'Playfair Display', serif; font-style: italic; font-weight: 700; font-size: 84px; line-height: 1; color: #ffcf4a; text-shadow: 0 0 24px rgba(255, 207, 74, 0.9), 0 6px 0 #a8740c, 0 10px 24px rgba(0, 0, 0, 0.6); transform: scale(3); opacity: 0; }
+    .mf-mvp.show .mf-mvp-title { animation: mfMvpSlam 0.55s cubic-bezier(0.2, 1.6, 0.4, 1) forwards; }
+    @keyframes mfMvpSlam { 0% { transform: scale(3); opacity: 0; } 60% { transform: scale(0.9); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+    .mf-mvp-sub { position: relative; color: #fff; font-weight: 900; font-size: 14px; margin-top: 6px; text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8); opacity: 0; }
+    .mf-mvp.show .mf-mvp-sub { animation: mfFadeUp 0.5s ease 0.45s forwards; }
+    .mf-mvp-card { position: relative; width: min(72%, 300px); margin-top: 18px; padding: 12px 12px 0; border-radius: 6px; background: linear-gradient(135deg, #fff1b8, #e8b93a 45%, #fff3c4 70%, #c9921f); box-shadow: 0 0 0 4px #fff, 0 0 60px rgba(255, 207, 74, 0.9), 0 20px 40px rgba(0, 0, 0, 0.6); transform: scale(0.2) rotate(-12deg); opacity: 0; }
+    .mf-mvp.show .mf-mvp-card { animation: mfMvpCard 0.7s cubic-bezier(0.3, 1.5, 0.5, 1) 0.25s forwards; }
+    @keyframes mfMvpCard { to { transform: scale(1) rotate(-3deg); opacity: 1; } }
+    .mf-mvp-card img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
+    .mf-mvp-card p { font-weight: 900; font-size: 20px; color: #4a2a05; text-align: center; padding: 8px 4px 10px; }
+    .mf-mvp-crown { position: absolute; left: 50%; top: -42px; margin-left: -28px; font-size: 56px; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5)); animation: mfCrown 1.2s ease-in-out infinite alternate; }
+    @keyframes mfCrown { from { transform: rotate(-10deg) translateY(0); } to { transform: rotate(10deg) translateY(-6px); } }
+    .mf-mvp-who { position: relative; margin-top: 16px; padding: 8px 18px; border-radius: 9999px; background: #d7263d; color: #fff; font-weight: 900; font-size: 15px; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4); opacity: 0; }
+    .mf-mvp.show .mf-mvp-who { animation: mfFadeUp 0.5s ease 0.8s forwards; }
+    @keyframes mfFadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
     /* トラックの荷台に貼ったお店の看板 */
     .sky-truck-img { display: block; width: 100%; height: auto; }
     .sky-truck-sign {
@@ -2598,6 +2636,8 @@
   <!-- 5枚達成時の花火ショー（約15秒・全席同時） -->
   <!-- ========================================================== -->
   <div id="showOverlay" class="absolute inset-0 z-[80] hidden opacity-0 transition-opacity duration-700 overflow-hidden">
+    <div id="mfSpot" class="mf-spot-show" aria-hidden="true"></div>
+    <div id="mfMvp" class="mf-mvp" aria-hidden="true"></div>
     <canvas id="showTrailCanvas" class="absolute inset-0 w-full h-full"></canvas>
     <canvas id="showCanvas" class="absolute inset-0 w-full h-full"></canvas>
     <div class="absolute inset-x-0 top-[9%] flex flex-col items-center pointer-events-none px-4 text-center">
@@ -5085,6 +5125,11 @@
       document.getElementById('mfMapPins').innerHTML = html;
       document.querySelectorAll('#mfMapPins .mf-spot').forEach(g => g.addEventListener('click', () => {
         const i = +g.dataset.i;
+        // まだ行っていない街は、着くまでのおたのしみ（紹介は見せない）
+        if (!g.classList.contains('visited')) {
+          showToast(`<span class="toast-dot"></span><span class="truncate">${g.classList.contains('next') ? `写真を撮ると、${MF_CITIES[i].jp}へ出発！着いたら紹介が見られます` : `${MF_CITIES[i].jp}は、まだ先。着くまでのおたのしみ`}</span>`, 2400);
+          return;
+        }
         mfOpenBubble(i, true);
       }));
       const pill = document.getElementById('mfMapPill');
@@ -5094,8 +5139,9 @@
     function mfPlaceMapTruck([x, y]) {
       const [sx, sy] = mfMapXY(x, y);
       const tw = mfMapTruck.offsetWidth || 50;
-      mfMapTruck.style.left = `${sx - tw * 0.55}px`;
-      mfMapTruck.style.top = `${sy - tw * 0.48}px`;
+      // ピンの真下に置く（上の「START」などの文字にかぶらないように）
+      mfMapTruck.style.left = `${sx - tw * 0.5}px`;
+      mfMapTruck.style.top = `${sy + 5}px`;
       mfMapTruck.style.bottom = 'auto';
     }
     function mfShowMap(pos) {
@@ -5345,17 +5391,17 @@
       const ctaBtn = document.getElementById('openCameraBtn');
       const ctaSub = document.getElementById('ctaSub');
       if (ctaBtn) ctaBtn.classList.toggle('reach-call', reach);
-      if (ctaSub) ctaSub.textContent = reach ? `あと1枚でナポリへ。本日${(meterState.totalShows || 0) + 1}発目の花火ショー` : '写真を1枚撮るごとに、次の街へ旅します';
+      if (ctaSub) ctaSub.textContent = reach ? `あと1枚で、ゴールのナポリへ…！` : '写真を1枚撮るごとに、次の街へ旅します';
 
       const nextShow = (meterState.totalShows || 0) + 1;
       if (n >= METER_GOAL) {
-        meterHintEl.textContent = `5つ灯りました。本日${nextShow}発目のショーが始まります`;
+        meterHintEl.textContent = `5枚そろいました。ナポリで…`;
       } else if (n === METER_GOAL - 1) {
-        meterHintEl.textContent = `リーチ。あと1杯で、本日${nextShow}発目`;
+        meterHintEl.textContent = `あと1枚で、ゴールのナポリへ`;
       } else if (n === 0) {
         meterHintEl.textContent = `最初の1枚で、1杯目が注がれます`;
       } else {
-        meterHintEl.textContent = `あと${METER_GOAL - n}杯そろうと、本日${nextShow}発目…何が出る？`;
+        meterHintEl.textContent = `あと${METER_GOAL - n}枚で、ゴールのナポリへ`;
       }
     }
 
@@ -5551,7 +5597,7 @@
     function triggerReach() {
       if (isShowPlaying || memoriesOfRound(meterState.round).length !== METER_GOAL - 1) return;
       const banner = document.getElementById('reachBanner');
-      document.getElementById('reachSub').textContent = `あと1枚で、本日${(meterState.totalShows || 0) + 1}発目のショー`;
+      document.getElementById('reachSub').textContent = 'あと1枚で、ゴールのナポリへ…何かが起こる！？';
       meterPanelEl.classList.remove('reach-shake');
       void meterPanelEl.offsetWidth;
       meterPanelEl.classList.add('reach-shake');
@@ -6603,6 +6649,15 @@
     const revealLabel = document.getElementById('revealLabel');
     const revealName = document.getElementById('revealName');
     const revealSub = document.getElementById('revealSub');
+    // コルクが抜けた時点では演出名は出さず、シャンパンをタップしたあとに発表する
+    function mfRevealTease(upgraded) {
+      revealName.textContent = upgraded ? '昇格…！？' : '準備完了…';
+      revealName.className = 'reveal-name';
+      revealSub.textContent = upgraded ? 'みんなの乾杯で、なにかが変わった！' : '何が出るかは、打ち上げてのおたのしみ';
+      revealLabel.classList.remove('reveal-in');
+      void revealLabel.offsetWidth;
+      revealLabel.classList.add('reveal-in');
+    }
     function showRevealLabel(theme, upgraded) {
       revealName.textContent = theme.revealName || theme.name;
       revealName.className = `reveal-name reveal-${theme.key}`;
@@ -6759,7 +6814,7 @@
         burstParticles(cx, cy, { count: 140, colors: [first.color, '#ffffff', '#fde68a'], power: 1.4, ring: true });
       }
       showOverlay.style.background = first.bg;
-      showRevealLabel(first, false);
+      mfRevealTease(false);
       playFanfare(reveal.baseKey === 'rainbow');
       if (reveal.baseKey === 'rainbow') { reveal.rainbowAt = showNow; reveal.cracks = buildCracks(); playCrackle(20); }
     }
@@ -6776,7 +6831,7 @@
       playBoom(1.4);
       playCrackle(24);
       playFanfare(true);
-      showRevealLabel(SHOW_THEMES.rainbow, true);
+      mfRevealTease(true);
     }
 
     // ---------- 黄金の大輪しだれ柳 ----------
@@ -7127,6 +7182,37 @@
     }
 
     // ---------- タイムライン ----------
+
+    // ---------- 花火ショー：写真を1枚ずつ大きく ／ MVPをドカンと ----------
+    const mfSpotEl = document.getElementById('mfSpot');
+    const mfMvpEl = document.getElementById('mfMvp');
+    function mfSpotlight(item, i, total) {
+      if (!item || !item.img) return;
+      const tilt = [-4, 3, -2, 4, -3][i % 5];
+      mfSpotEl.innerHTML = `<div class="mf-spot-card" style="--tilt:${tilt}deg"><img src="${item.img.src}" alt=""><p></p><span>${i + 1} / ${total}</span></div>`;
+      mfSpotEl.querySelector('p').textContent = item.caption ? `「${item.caption}」` : '乾杯！';
+      mfSpotEl.classList.remove('show');
+      void mfSpotEl.offsetWidth;
+      mfSpotEl.classList.add('show');
+    }
+    function mfShowMvp(mvp) {
+      const it = mvp.item;
+      mfMvpEl.innerHTML = `<div class="mf-mvp-rays"></div><p class="mf-mvp-title">MVP</p><p class="mf-mvp-sub">最後の一枚で、みんなをナポリへ</p>
+        <div class="mf-mvp-card"><div class="mf-mvp-crown">👑</div><img src="${it.img.src}" alt=""><p></p></div>
+        <p class="mf-mvp-who">${mvp.isMe ? 'おめでとう！MVPはあなたです！' : 'MVPの方に、みんなで乾杯！'}</p>`;
+      mfMvpEl.querySelector('.mf-mvp-card p').textContent = it.caption ? `「${it.caption}」` : '乾杯！';
+      mfMvpEl.classList.remove('show');
+      void mfMvpEl.offsetWidth;
+      mfMvpEl.classList.add('show');
+      try { playBoom(1.6); playCrackle(26); playFanfare(true); } catch (e) {}
+      buzz([80, 40, 80, 40, 200]);
+      shakeOverlay(500, 10);
+      flashSky(SW / 2, SH * 0.4, 1);
+      spawnConfetti(SW / 2, SH * 0.35, 140, Math.PI * 2, 0, 1.4);
+      for (let k = 0; k < 4; k++) setTimeout(() => burstParticles(SW * [0.2, 0.8, 0.3, 0.7][k], SH * [0.2, 0.22, 0.7, 0.68][k], { count: 90, power: 1.2, ring: true, colors: ['#ffcf4a', '#ffffff', '#fde68a'] }), 150 + k * 220);
+    }
+    function mfHideMvp() { mfMvpEl.classList.remove('show'); }
+
     function buildShowTimeline(items, info) {
       const ev = [];
       const at = (t, fn) => ev.push({ at: t, fn, done: false });
@@ -7157,12 +7243,12 @@
       // ===== 本編 =====
       at(O, () => {
         showTheme = SHOW_THEMES[reveal.finalKey];
-        setHeadline(showTheme.name, `本日${info.showNo}発目`);
+        showRevealLabel(showTheme, reveal.upgraded);
         if (showTheme.key === 'beer') { beerTarget = 0.34; beerPour = { from: O, until: O + 1900, width: Math.min(SW, 430) * 0.09 }; }
         if (showTheme.key === 'willow') goldRainUntil = O + 1500;
         cheerHint.textContent = '連打でフィナーレが豪華に！';
       });
-      at(O + 1700, hideHeadline);
+      at(O + 2100, hideRevealLabel);
       // ビールのトラックが夜空をかける ＋ ジョッキの花火
       at(O + 4800, () => spawnShowTruck());
       at(O + 8900, () => fireBeerRocket(SW * 0.5, SH * 0.16, Math.min(SW, 430) * 0.42));
@@ -7174,6 +7260,7 @@
       const spots = [[0.28, 0.34], [0.72, 0.46], [0.3, 0.56], [0.7, 0.32], [0.5, 0.45]];
       items.forEach((item, i) => {
         const t = O + 2000 + i * 1450;
+        at(t + 650, () => mfSpotlight(item, i, items.length));
         at(t, () => {
           if (showTheme.key === 'beer') showBursts.push(new PhotoRise(item, SW * [0.3, 0.7, 0.4, 0.62, 0.5][i % 5]));
           else {
@@ -7258,14 +7345,18 @@
 
       // ===== KANPAI! 全員の写真の輪（中央はラストの1枚＝MVP） =====
       at(O + 11800, () => {
+        if (info.mvp) mfShowMvp(info.mvp);
+      });
+      at(O + 14300, () => {
+        mfHideMvp();
         const mvpLine = info.mvp ? (info.mvp.isMe ? 'MVPは、最後の一枚を撮ったあなたです' : 'MVPは、最後の一枚を撮ってくれた方です') : 'みんなの思い出、ありがとう';
         setHeadline('KANPAI & SALUTE!', mvpLine);
         playChime();
         buzz([40, 40, 80]);
-        if (items.length) finaleRing = { items, mvp: info.mvp ? info.mvp.item : null, born: showNow };
+        if (items.length) finaleRing = { items, mvp: info.mvp ? info.mvp.item : null, born: showNow - 1000 };
       });
-      at(O + 14400, () => { showSub.textContent = 'ありがとうございました！'; showSub.style.opacity = '1'; });
-      at(O + 16300, () => { showSub.textContent = '次は何が出るかな？ また乾杯しよう！'; showSub.style.opacity = '1'; });
+      at(O + 15600, () => { showSub.textContent = 'ありがとうございました！'; showSub.style.opacity = '1'; });
+      at(O + 16500, () => { showSub.textContent = 'また乾杯しよう！'; showSub.style.opacity = '1'; });
       at(O + 17100, () => showOverlay.classList.add('opacity-0'));
       };
       return { ev, scheduleMain };
@@ -7626,6 +7717,7 @@
       beerBubbles = []; confetti = []; photoFlowers = [];
       beerLevel = 0; beerTarget = 0; beerPour = null; clinkAnim = null; goldRainUntil = 0;
       finaleRing = null;
+      mfSpotEl.classList.remove('show'); mfMvpEl.classList.remove('show');
       launch = { state: 'idle' };
       mainStartAt = 0;
       nextAmbientAt = 0;
