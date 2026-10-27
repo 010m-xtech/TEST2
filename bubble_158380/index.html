@@ -2008,6 +2008,34 @@
     .mf-mvp.show .mf-mvp-who { animation: mfFadeUp 0.5s ease 0.8s forwards; }
     @keyframes mfFadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
+
+    /* オープニング：余白をなくして、まん中にまとめる */
+    .mf-op-center { justify-content: center; gap: 2px; }
+    .mf-op-center .mf-op-h:first-of-type { margin-top: 8px; }
+    .mf-op-dark.mf-op-center .mf-op-mystery { width: min(62%, 250px); margin-top: 18px; }
+    .mf-op-dark.mf-op-center .mf-op-mystery span { font-size: 110px; }
+    .mf-op-dark.mf-op-center .mf-op-big { margin-top: 16px; }
+    .mf-op-dark::after { content: ''; position: absolute; inset: 0; pointer-events: none; background-image: radial-gradient(1.6px 1.6px at 12% 22%, #ffe8a8 50%, transparent 51%), radial-gradient(1.2px 1.2px at 84% 18%, #fff 50%, transparent 51%), radial-gradient(2px 2px at 20% 78%, #ffe8a8 50%, transparent 51%), radial-gradient(1.4px 1.4px at 78% 70%, #fff 50%, transparent 51%), radial-gradient(1.8px 1.8px at 90% 46%, #ffe8a8 50%, transparent 51%), radial-gradient(1.2px 1.2px at 8% 52%, #fff 50%, transparent 51%), radial-gradient(1.6px 1.6px at 50% 90%, #ffe8a8 50%, transparent 51%); animation: starTwinkle 2.4s ease-in-out infinite alternate; }
+    .mf-op-center .mf-op-ticket { margin-top: 14px; }
+    .mf-op-depart { display: flex; align-items: flex-end; justify-content: center; gap: 10px; margin-top: 16px; }
+    .mf-op-mug { width: min(22%, 90px); filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.25)); transform: rotate(-8deg); }
+    .mf-op-center .mf-op-truck2 { margin-top: 0; width: min(46%, 190px); }
+    .mf-op-center .mf-op-go { margin-top: 16px; }
+    .mf-op-phone div img { width: 78%; height: auto; filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.5)); }
+
+
+    .mf-op-first { padding-top: calc(env(safe-area-inset-top) + 13vh); }
+    .mf-op-first .mf-op-logo { width: 104px; }
+    .mf-op-first .mf-op-h { font-size: clamp(22px, 6.6vw, 28px); }
+    .mf-op-first .mf-op-p { font-size: 15px; }
+    .mf-op-mug1 { position: absolute; left: 8%; bottom: calc(30% - 8px); width: min(20%, 84px); transform: rotate(-6deg); filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.3)); z-index: 2; }
+    .mf-op-first .mf-op-truck { left: 58%; }
+    .mf-op-center .mf-op-phone { margin-top: 14px; }
+
+
+    /* オープニング3枚目：地図を大きく */
+    .mf-op-s .mf-op-map { width: calc(100% + 40px); max-width: none; margin: 10px -20px 4px; border-radius: 0; flex: 1 1 auto; }
+
     /* トラックの荷台に貼ったお店の看板 */
     .sky-truck-img { display: block; width: 100%; height: auto; }
     .sky-truck-sign {
@@ -2282,21 +2310,22 @@
     <div id="mfOpening" class="mf-op hidden" role="dialog" aria-label="遊び方">
       <div class="mf-op-top"><div class="mf-op-dots"><i></i><i></i><i></i><i></i><i></i></div><button type="button" class="mf-op-skip">スキップ ›</button></div>
 
-      <section class="mf-op-s">
+      <section class="mf-op-s mf-op-first">
         <div class="mf-op-flag"></div>
         <img src="logo-round.webp" alt="イタリアン酒場もふもふ" class="mf-op-logo">
         <p class="mf-op-h">ようこそ、<br><b>もふもふ号</b>へ。</p>
         <p class="mf-op-p">今夜は店内のみんなで<br><b class="mf-op-em">イタリア1日旅</b>に出発します</p>
         <div class="mf-op-ground"></div>
+        <img src="beer-mug.webp" alt="" class="mf-op-mug1">
         <div class="mf-truck mf-op-truck"></div>
         <p class="mf-op-foot">タップで次へ</p>
       </section>
 
-      <section class="mf-op-s">
+      <section class="mf-op-s mf-op-center">
         <span class="mf-op-num">1</span>
         <p class="mf-op-h">ビールやワインを<b>撮って</b>、<br><b>ひとこと添えて乾杯！</b></p>
         <p class="mf-op-p">例：「美味しい！」</p>
-        <div class="mf-op-phone"><div>🍺</div></div>
+        <div class="mf-op-phone"><div><img src="beer-mug.webp" alt="ビール"></div></div>
         <div class="mf-op-say">例：美味しい！</div>
         <div class="mf-op-beer">🍺 ビールの一枚は「生ビール速達便」で特急出発！</div>
         <p class="mf-op-foot">料理やお店の雰囲気など、写真はなんでもOK</p>
@@ -2305,11 +2334,11 @@
       <section class="mf-op-s">
         <span class="mf-op-num">2</span>
         <p class="mf-op-h">1枚ごとに、店内<b>みんな</b>で<br><b>次の街</b>へ。</p>
-        <svg class="mf-op-map" viewBox="6 0 274 352" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
+        <svg class="mf-op-map" viewBox="4 -20 282 392" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
         <p class="mf-op-p mf-op-small">ヴェネツィア → フィレンツェ → ピサ → ローマ → ナポリ<br>街に着くと、名所と<b class="mf-op-em">この街の名物メニュー</b>が見られます</p>
       </section>
 
-      <section class="mf-op-s mf-op-dark">
+      <section class="mf-op-s mf-op-dark mf-op-center">
         <span class="mf-op-num">3</span>
         <p class="mf-op-h">5枚目で、ゴールの<b class="mf-op-gold">ナポリ</b>へ。</p>
         <div class="mf-op-mystery"><span>？</span></div>
@@ -2318,7 +2347,7 @@
         <p class="mf-op-foot">ドキドキしながら、旅を進めよう</p>
       </section>
 
-      <section class="mf-op-s">
+      <section class="mf-op-s mf-op-center">
         <p class="mf-op-h">旅のチケットを、どうぞ。</p>
         <div class="mf-op-ticket">
           <div class="mf-op-t-hd"><span>MOFUMOFU EXPRESS</span><span>✈ ITALIA</span></div>
@@ -2326,7 +2355,7 @@
           <div class="mf-op-t-perf"></div>
           <ol class="mf-op-t-st"><li>ドリンクを撮って、ひとこと添えて乾杯！</li><li>1枚ごとに、みんなで次の街へ</li><li>5枚目のナポリで…何かが起こる！？</li></ol>
         </div>
-        <div class="mf-truck mf-op-truck2"></div>
+        <div class="mf-op-depart"><img src="beer-mug.webp" alt="" class="mf-op-mug"><div class="mf-truck mf-op-truck2"></div></div>
         <button type="button" class="mf-op-go">旅に出る ›</button>
       </section>
     </div>
@@ -2622,6 +2651,7 @@
       <!-- 注意書き（赤色） -->
       <p class="text-[9px] text-red-400 font-bold mb-3.5 leading-snug px-1 text-center tracking-tight">
         ※誹謗中傷のコメントやモラルのない写真はやめてください。<br>
+        <span class="text-amber-200 font-bold">※写真と一言は、店内のみんなの画面に表示されます。</span><br>
         <span class="text-white/55 font-medium">※写真と一言は、お店の思い出記録として保存される場合があります。</span>
       </p>
 
@@ -3342,7 +3372,7 @@
       const pts = [MF_START.pin, ...MF_CITIES.map(c => MF_SPOT[c.key].pin)];
       let d = `M${pts[0][0]} ${pts[0][1]}`;
       for (let i = 1; i < pts.length; i++) { const [x0, y0] = pts[i - 1], [x1, y1] = pts[i]; d += ` Q${(x0 + x1) / 2 + (i % 2 ? 12 : -12)} ${(y0 + y1) / 2} ${x1} ${y1}`; }
-      let h = `<rect x="0" y="0" width="300" height="352" fill="#8fd0ea"/><path d="${land ? land.getAttribute('d') : ''}" fill="#d6e7a8" stroke="#6f8f45" stroke-width=".8"/><path d="${d}" fill="none" stroke="#fff" stroke-width="4" opacity=".85"/><path d="${d}" fill="none" stroke="#d7263d" stroke-width="2" stroke-dasharray="5 4"/>`;
+      let h = `<rect x="-20" y="-60" width="340" height="480" fill="#8fd0ea"/><path d="${land ? land.getAttribute('d') : ''}" fill="#d6e7a8" stroke="#6f8f45" stroke-width=".8"/><path d="${d}" fill="none" stroke="#fff" stroke-width="4" opacity=".85"/><path d="${d}" fill="none" stroke="#d7263d" stroke-width="2" stroke-dasharray="5 4"/>`;
       MF_CITIES.forEach((c, i) => {
         const [px, py] = MF_SPOT[c.key].pin, [cx, cy] = MF_SPOT[c.key].c;
         h += `<line x1="${px}" y1="${py}" x2="${cx}" y2="${cy}" stroke="#fff" stroke-dasharray="2 2"/><circle cx="${cx}" cy="${cy}" r="30" fill="${i === 0 ? '#d7263d' : '#fff'}"/><clipPath id="mfOpC${i}"><circle cx="${cx}" cy="${cy}" r="27.5"/></clipPath><image href="${c.img}" x="${cx - 28}" y="${cy - 28}" width="56" height="56" preserveAspectRatio="xMidYMid slice" clip-path="url(#mfOpC${i})"/><circle cx="${px}" cy="${py}" r="3.5" fill="#d7263d" stroke="#fff"/>`;
