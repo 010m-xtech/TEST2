@@ -2088,6 +2088,69 @@
     .mf-op-phone > .bt-phone-food { position: absolute; left: -26%; bottom: -8%; width: 72%; filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.35)); transform: rotate(4deg); }
     .bt-food.is-7 { animation-delay: -12s; }
     .bt-food { animation-duration: 14s !important; }
+    /* オープニング3・4枚目：上下の余白をなくして中央に */
+    .mf-op-s:has(.bt-op-mapnum), .mf-op-s:has(.bt-op-shotnum), .bt-op-center { justify-content: center; padding-top: calc(env(safe-area-inset-top) + 40px) !important; padding-bottom: calc(env(safe-area-inset-bottom) + 48px) !important; }
+    .mf-op-map { flex: 0 0 auto !important; width: 100% !important; max-width: 380px; height: auto !important; aspect-ratio: 300 / 318; max-height: 52vh; margin: 14px 0 6px !important; box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18); }
+    .bt-op-route { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px 3px; max-width: 380px; margin-top: 8px; }
+    .bt-op-route span { padding: 3px 9px; border-radius: 9999px; background: #fff; border: 2px solid #f47c2c; color: #6b3514; font-family: var(--bt-jp); font-size: 11px; }
+    .bt-op-route span.is-goal { background: #f47c2c; color: #fff; }
+    .bt-op-route i { font-style: normal; color: #f47c2c; font-weight: 900; }
+    .bt-op-center .mf-op-mystery { width: min(42%, 170px); margin-top: 18px; }
+    /* 乾杯の写真：スマホを横向きにして、写真が切れないように */
+    .mf-op-phone { width: min(84%, 330px) !important; aspect-ratio: 3 / 2 !important; border-radius: 22px !important; padding: 7px !important; margin: 30px 0 54px !important; }
+    .bt-phone-photo { object-fit: cover; object-position: center 60%; border-radius: 16px !important; }
+    .mf-op-phone > .bt-phone-food { left: -10% !important; bottom: -30% !important; width: 44% !important; }
+    .mf-op-say { top: 39% !important; right: 5% !important; z-index: 2; }
+    /* 5枚目：ぼてこちゃんはチケットとトラックのあいだの真ん中に */
+    .bt-op-buddy.is-ticket { position: relative !important; top: auto !important; left: auto !important; right: auto !important; bottom: auto !important; margin: auto 0 !important; align-items: center !important; flex-direction: column !important; }
+    .bt-op-buddy.is-ticket img { width: min(34vw, 130px) !important; }
+    .bt-op-buddy.is-ticket span { margin: 0 0 10px !important; font-size: 14px; padding: 6px 14px; }
+    .bt-op-buddy.is-ticket span::after { left: 50% !important; margin-left: -6px; }
+    .mf-op-s.on .bt-op-buddy.is-ticket { animation: btPop 0.5s cubic-bezier(0.3, 1.5, 0.5, 1) 0.4s both; }
+    .bt-op-buddy.is-ticket ~ .mf-op-truck2 { margin-top: 0 !important; }
+    /* 小さい画面（iPhone SE など）：オープニングのトラックとぼてこちゃんを小さく、下に寄せる */
+    @media (max-height: 740px) {
+      .bt-op-banner { width: min(66%, 260px) !important; }
+      .mf-op-h { margin-top: 10px !important; font-size: clamp(18px, 5.4vw, 22px) !important; }
+      .bt-op-beer { margin-top: 8px; padding: 6px 12px 6px 8px; }
+      .bt-op-beer img { width: 26px; }
+      .mf-op-ground { height: 20% !important; }
+      .mf-op-truck { bottom: calc(20% - 10px) !important; width: min(54%, 220px) !important; }
+      .bt-op-buddy.is-big { bottom: calc(20% + 52px) !important; right: 8px; }
+      .bt-op-buddy.is-big img { width: 62px !important; }
+      .bt-op-buddy.is-big span { font-size: 11px; padding: 4px 9px; }
+      /* 地図のページは見出しと重なるので、ぼてこちゃんを小さく左上へ */
+      .mf-op-s:has(.bt-op-mapnum) .bt-op-buddy span { display: none; }
+      .mf-op-s:has(.bt-op-mapnum) .bt-op-buddy { top: calc(env(safe-area-inset-top) + 14px); right: auto; left: 10px; }
+      .mf-op-s:has(.bt-op-mapnum) .bt-op-buddy img { width: 40px; }
+      .mf-op-map { max-height: 46vh; }
+      .bt-op-buddy.is-ticket { margin: 14px 0 auto !important; }
+      .bt-op-buddy.is-ticket img { width: 76px !important; }
+      .bt-op-buddy.is-ticket span { font-size: 12px; padding: 4px 11px; margin-bottom: 6px !important; }
+    }
+    /* とても小さい画面（高さ600px以下）：ぼてこちゃんの吹き出しは出さない */
+    @media (max-height: 600px) {
+      .bt-op-buddy.is-big span { display: none; }
+      .bt-op-buddy.is-big { bottom: calc(20% + 40px) !important; }
+      .bt-op-buddy.is-big img { width: 52px !important; }
+      /* 見出しと重なるので、2〜4枚目の右上のぼてこちゃんは出さない／5枚目はトラックを出さずにチケットを全部見せる */
+      .bt-op-buddy:not(.is-big):not(.is-ticket) { display: none !important; }
+      .bt-op-buddy.is-ticket ~ .mf-op-truck2 { display: none !important; }
+      .bt-op-buddy.is-ticket { margin: 10px 0 auto !important; }
+      .mf-op-ticket { margin-top: 10px !important; }
+      .mf-op-t-bd { padding: 8px 12px !important; gap: 4px 10px !important; }
+      .mf-op-t-st { padding: 8px 12px 10px !important; gap: 4px !important; }
+    }
+    /* 幅のせまい画面：下のボタンと案内の札の文字を少し小さく */
+    @media (max-width: 360px) {
+      .cta-camera > span:first-child { font-size: 13px !important; letter-spacing: 0.02em !important; white-space: nowrap; }
+      .cta-camera #ctaSub { font-size: 10.5px !important; }
+      .bt-cta-mug { width: 24px; }
+      .mf-pill-logo { height: 24px !important; }
+      .mf-pill-txt { font-size: 11.5px; }
+      .mf-op-t-st li { font-size: 11px !important; }
+    }
+    .mf-op-ticket { flex-shrink: 0; }
     /* お好み焼き・焼きそばのイラスト */
     /* トラックの吹き出し */
     .bt-say { position: absolute; left: 50%; bottom: 100%; margin-bottom: 8px; transform: translateX(-30%) scale(0.6); transform-origin: 30% 100%; padding: 6px 12px; border-radius: 16px; background: #fff; border: 2.5px solid #f47c2c; color: #3a2418; font-family: var(--bt-jp); font-size: 12.5px; line-height: 1.3; white-space: nowrap; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); opacity: 0; pointer-events: none; transition: opacity 0.25s ease, transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1); z-index: 3; }
@@ -2441,7 +2504,7 @@
       </section>
 
       <section class="mf-op-s">
-        <span class="mf-op-num">1</span>
+        <span class="mf-op-num bt-op-shotnum">1</span>
         <p class="mf-op-h">ビールやお好み焼きを<b>撮って</b>、<br><b>ひとこと添えて乾杯！</b></p>
         <p class="mf-op-p">例：「美味しい！」</p>
         <div class="mf-op-phone"><div><img class="bt-phone-photo" src="kanpai.webp" alt="乾杯の写真"></div><img class="bt-phone-food" src="okonomi.webp" alt=""></div>
@@ -2452,14 +2515,15 @@
       </section>
 
       <section class="mf-op-s">
-        <span class="mf-op-num">2</span>
+        <span class="mf-op-num bt-op-mapnum">2</span>
         <p class="mf-op-h">1枚ごとに、店内<b>みんな</b>で<br><b>次の名所</b>へ。</p>
         <svg class="mf-op-map" viewBox="0 0 300 318" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
-        <p class="mf-op-p mf-op-small">東岡崎 → 八丁味噌 → 岡崎城 → 本光寺 → 幸田中央公園 → ぼてこ幸田<br>着くと、名所の紹介と<b class="mf-op-em">おすすめメニュー</b>が見られます</p>
+        <div class="bt-op-route"><span>東岡崎</span><i>›</i><span>八丁味噌</span><i>›</i><span>岡崎城</span><i>›</i><span>本光寺</span><i>›</i><span>幸田中央公園</span><i>›</i><span class="is-goal">ぼてこ幸田</span></div>
+        <p class="mf-op-p mf-op-small">着くと、名所の紹介と<b class="mf-op-em">おすすめメニュー</b>が見られます</p>
         <div class="bt-op-buddy"><span>みんなで行こう！</span><img src="chara.webp" alt=""></div>
       </section>
 
-      <section class="mf-op-s mf-op-dark">
+      <section class="mf-op-s mf-op-dark bt-op-center">
         <span class="mf-op-num">3</span>
         <p class="mf-op-h">5枚目で、ゴールの<b class="mf-op-gold">ぼてこ幸田</b>へ。</p>
         <div class="mf-op-mystery"><span>？</span></div>
@@ -2477,8 +2541,8 @@
           <div class="mf-op-t-perf"></div>
           <ol class="mf-op-t-st"><li>ドリンクを撮って、ひとこと添えて乾杯！</li><li>各地で乾杯して、みんなで次の名所へ！！</li><li>5枚目のぼてこ幸田で…何かが起こる！？</li></ol>
         </div>
-        <div class="mf-truck mf-op-truck2"></div>
         <div class="bt-op-buddy is-ticket"><span>いってらっしゃい！</span><img src="chara.webp" alt=""></div>
+        <div class="mf-truck mf-op-truck2"></div>
         <button type="button" class="mf-op-go">旅に出る ›</button>
       </section>
     </div>
@@ -3209,6 +3273,8 @@
         v.addEventListener('ended', () => {
           if (storyActive && storyFrames[storyIndex] === f) showStoryFrame(storyIndex + 1);
         });
+        // 動画の指定が無い枠は読み込まない（「undefined」というファイルを探しに行かないように）
+        if (!f.dataset.video) return;
         v.src = f.dataset.video;
         try { v.load(); } catch (e) {}
       });
