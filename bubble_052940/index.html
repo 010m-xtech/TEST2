@@ -5314,7 +5314,6 @@
         <div class="mf-b-body">
         <button type="button" class="mf-b-fold">写真を見る ︾</button>
         <img class="bt-b-chara" src="chara.webp" alt="">
-        <p class="bt-day">🍺 ${c.day}</p>
         <p class="mf-b-no">STOP ${String(ci + 1).padStart(2, '0')} / 05</p>
         <p class="mf-b-it">${c.it}<span class="mf-b-jp">${c.jp}</span></p>
         <div class="mf-b-line"></div>
@@ -5324,7 +5323,6 @@
         ${c.parts ? c.parts.map(p => `<div class="bt-part"><p class="bt-part-h">${p.h}</p><p>${p.t}</p></div>`).join('') : ''}
         ${(c.creditNote || c.credit) ? `<p class="bt-credit-l">${c.creditNote || c.credit}</p>` : ''}
         <div class="mf-b-tips"><p class="mf-b-tips-h">💡 豆知識</p><ul>${c.trivia.map(t => `<li>${t}</li>`).join('')}</ul></div>
-        <button type="button" class="mf-b-menu">${m ? `<img src="${m.mainImg}" alt="">` : ''}<span><small>${c.jp}のあとは　おすすめの一品</small><b>${c.menuName}</b></span><i>›</i></button>
         ${go}
         </div>`;
     }
@@ -5340,14 +5338,13 @@
       mfBubble.scrollTop = 0;
       const tap = (sel, fn) => { const el = mfBubble.querySelector(sel); if (el) el.addEventListener('click', (e) => { e.stopPropagation(); fn(); }); };
       tap('.mf-bubble-x', mfCloseBubble);
-      tap('.mf-b-menu', () => openProductModalById(MF_CITIES[ci].menuId));
       tap('.mf-b-go', () => { if (MF_CITIES[mfPos]) mfCloseBubble(); });
       // 紹介はいつでもたたんだり開いたりできる（写真を大きく見たいとき）
       tap('.mf-b-fold', () => { mfBubble.classList.add('folded'); requestAnimationFrame(mfLiftTruck); });
       tap('.mf-b-bar', () => { mfBubble.classList.remove('folded'); mfBubble.scrollTop = 0; requestAnimationFrame(mfLiftTruck); });
       mfBubble.classList.remove('folded');
       mfStage.classList.add('show');
-      if (fromMap) mfParked.className = 'mf-truck parked';
+      if (fromMap) { mfSetTruck(mfParked, ci === 0 ? 'yellow' : 'boteko'); mfParked.className = 'mf-truck parked'; }
       mfBubble.classList.add('show');
       requestAnimationFrame(mfLiftTruck);
     }
@@ -5384,9 +5381,9 @@
           <line x1="${px}" y1="${py}" x2="${cx}" y2="${cy}" stroke="${visited ? '#fff' : 'rgba(255,255,255,.7)'}" stroke-width="1.2" stroke-dasharray="${visited ? '0' : '2 2'}"/>
           <circle cx="${px}" cy="${py}" r="3.6" fill="${visited ? '#e2603c' : '#fff'}" stroke="${visited ? '#fff' : '#e2603c'}" stroke-width="1.4"/>
           ${next ? `<circle cx="${cx}" cy="${cy}" r="${R}" class="mf-spot-pulse"/>` : ''}
-          <circle cx="${cx}" cy="${cy}" r="${R + 2.5}" fill="${visited ? '#f2c14e' : next ? '#e2603c' : '#fff'}"/>
-          ${visited || next ? `<image href="${c.img}" x="${cx - R}" y="${cy - R}" width="${R * 2}" height="${R * 2}" preserveAspectRatio="xMidYMid slice" clip-path="url(#mfClip${i})"/>` : ''}
-          ${visited || next ? '' : `<circle cx="${cx}" cy="${cy}" r="${R}" fill="#8f8580"/><text x="${cx}" y="${cy + 6}" font-size="18" text-anchor="middle" fill="#fff" font-weight="900">?</text>`}
+          <circle cx="${cx}" cy="${cy}" r="${R + 2.5}" fill="${visited ? '#fff' : next ? '#f47c2c' : '#fff'}"/>
+          ${visited ? `<clipPath id="mfSpotClip${i}"><circle cx="${cx}" cy="${cy}" r="${R}"/></clipPath><image href="${c.img}" x="${cx - R}" y="${cy - R}" width="${R * 2}" height="${R * 2}" preserveAspectRatio="xMidYMid slice" clip-path="url(#mfSpotClip${i})"/>` : ''}
+          ${visited ? '' : `<circle cx="${cx}" cy="${cy}" r="${R}" fill="#8f8580"/><text x="${cx}" y="${cy + 6}" font-size="18" text-anchor="middle" fill="#fff" font-weight="900">?</text>`}
           ${visited ? `<g transform="translate(${cx + R * 0.72} ${cy - R * 0.72})"><circle r="7" fill="#4b8b3b" stroke="#fff" stroke-width="1.5"/><path d="M-3 0 l2 2.4 l4 -4.6" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round"/></g>` : ''}
           ${next ? `<g transform="translate(${cx} ${cy - R - 5})"><rect x="-16" y="-7" width="32" height="12" rx="6" fill="#e2603c"/><text y="2" font-size="7" font-weight="900" text-anchor="middle" fill="#fff">NEXT</text></g>` : ''}
           <g transform="translate(${cx} ${cy + R + 11})"><rect x="-36" y="-8" width="72" height="13" rx="6.5" fill="#fff" opacity=".96"/><text y="2" font-size="7.5" font-weight="900" text-anchor="middle" fill="${visited ? '#e2603c' : next ? '#e2603c' : '#888'}">${String(p).padStart(2, '0')} ${c.short || c.jp}</text></g>
