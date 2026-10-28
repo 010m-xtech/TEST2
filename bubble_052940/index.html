@@ -2109,7 +2109,7 @@
     .mf-op-s.on .bt-op-buddy.is-ticket { animation: btPop 0.5s cubic-bezier(0.3, 1.5, 0.5, 1) 0.4s both; }
     .bt-op-buddy.is-ticket ~ .mf-op-truck2 { margin-top: 0 !important; }
     /* アサヒビール名古屋工場のカード・何日目か・写真の引用元 */
-    .bt-asahi { position: absolute; left: 50%; top: auto; bottom: calc(var(--mf-ground, 190px) + 70px); width: min(88%, 360px); transform: translate(-50%, 10px); display: flex; gap: 10px; align-items: center; padding: 10px 30px 10px 10px; border-radius: 16px; background: #fffaf0; border: 3px solid #f5b417; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); opacity: 0; pointer-events: none; transition: opacity 0.4s ease, transform 0.4s ease; z-index: 4; }
+    .bt-asahi { position: absolute; left: 50%; top: calc(env(safe-area-inset-top) + 136px); bottom: auto; width: min(88%, 360px); transform: translate(-50%, 10px); display: flex; gap: 10px; align-items: center; padding: 10px 30px 10px 10px; border-radius: 16px; background: #fffaf0; border: 3px solid #f5b417; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); opacity: 0; pointer-events: none; transition: opacity 0.4s ease, transform 0.4s ease; z-index: 4; }
     .bt-asahi.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
     .bt-asahi-ill { width: 92px; flex-shrink: 0; }
     .bt-asahi-tx b { display: block; font-family: var(--bt-jp); font-weight: 400; font-size: 12px; color: #b8501a; }
@@ -2122,6 +2122,9 @@
     #appContainer.mf-map-on .bt-credit { opacity: 0 !important; }
     .bt-credit-l { margin: -2px 0 8px; font-size: 9.5px; color: rgba(255, 246, 229, 0.6); }
     .bt-op-route span.is-start { background: #ffd21f; border-color: #f5b417; }
+    .bt-part { margin-top: 8px; padding: 8px 10px; border-radius: 12px; background: rgba(255, 246, 229, 0.08); border-left: 3px solid #f47c2c; }
+    .bt-part p { font-size: 12px; line-height: 1.6; color: rgba(255, 246, 229, 0.88); }
+    .bt-part .bt-part-h { font-family: var(--bt-jp); font-size: 12.5px; color: #ffb347; margin-bottom: 2px; }
     /* 小さい画面（iPhone SE など）：オープニングのトラックとぼてこちゃんを小さく、下に寄せる */
     @media (max-height: 740px) {
       .bt-op-banner { width: min(66%, 260px) !important; }
@@ -2542,7 +2545,7 @@
         <span class="mf-op-num bt-op-mapnum">2</span>
         <p class="mf-op-h">1枚ごとに、店内<b>みんな</b>で<br><b>次の名所</b>へ。</p>
         <svg class="mf-op-map" viewBox="0 0 300 318" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
-        <div class="bt-op-route"><span class="is-start">アサヒビール</span><i>›</i><span>マルト水谷</span><i>›</i><span>岡崎城</span><i>›</i><span>幸田中央公園</span><i>›</i><span>本光寺</span><i>›</i><span class="is-goal">ぼてこ幸田</span></div>
+        <div class="bt-op-route"><span class="is-start">アサヒビール</span><i>›</i><span>マルト水谷</span><i>›</i><span>岡崎城</span><i>›</i><span>幸田の公園</span><i>›</i><span>本光寺</span><i>›</i><span class="is-goal">ぼてこ幸田</span></div>
         <p class="mf-op-p mf-op-small">着くと、名所の紹介と<b class="mf-op-em">おすすめメニュー</b>が見られます</p>
         <div class="bt-op-buddy"><span>みんなで行こう！</span><img src="chara.webp" alt=""></div>
       </section>
@@ -5176,15 +5179,15 @@
     // ==============================================
     // 岡崎めぐり乾杯旅：写真が1枚届くごとに、みんなで次の名所へ
     // 0枚＝出発（アサヒビール名古屋工場）→ 1枚目＝マルト水谷 → 2枚目＝岡崎城
-    // → 3枚目＝幸田中央公園 → 4枚目＝本光寺 → 5枚目＝ぼてこ幸田（夜）→ 真っ暗になって花火ショー
+    // → 3枚目＝幸田の公園（幸田中央公園・幸田文化公園） → 4枚目＝本光寺 → 5枚目＝ぼてこ幸田（夜）→ 真っ暗になって花火ショー
     // 枚数は全席共通なので、どの席でも同じ街・同じ演出になる
     // 位置（pos）＝届いた写真の枚数。pos 1〜5 が MF_CITIES[pos - 1]
     // ==============================================
     const MF_CITIES = [
       { key: 'maruto', day: '1日目　マルト水谷に到着', trivia: ["春日井市を拠点に、飲食店向けのお酒や業務用食品を届けている会社です", "「生ビール」は、熱で殺菌していないビールのこと。だからこそ鮮度がいのち", "樽詰めの生ビールは、朝いちばんに集荷して、その日のうちにお店へ向かいます"], it: 'Maruto Mizutani', jp: 'マルト水谷', img: 'city-maruto.webp', credit: '', copy: '樽詰めしたての生ビールが、マルト水谷に到着！', desc: 'アサヒビール名古屋工場で樽詰めされた新鮮な生ビールが、マルト水谷へ。朝いちばんに集荷して、岡崎へ出発します。', menuId: 'default_2', menuName: '生ビール' },
       { key: 'castle', day: '2日目　朝　岡崎へ', trivia: ["徳川家康は1542年、この岡崎城で生まれました", "いまの天守は、1959年に復元されたもの", "岡崎公園は「日本さくら名所100選」に選ばれています"], it: 'Okazaki Castle', jp: '岡崎城', img: 'city-castle.webp', credit: '', copy: '天下人のふるさとで、乾杯。', desc: '徳川家康が生まれた城。乙川のほとりの岡崎公園に、白い天守がそびえます。', menuId: 'default_0', menuName: 'お好み焼き' },
-      { key: 'park', day: '2日目　昼　幸田町へ', trivia: ["幸田中央公園は幸田町役場のとなり。JR幸田駅から歩いて7分ほどです", "幸田文化公園には約20種・500本の桜。そのうち約350本が、花笠のように垂れるしだれ桜です", "4月上旬から中旬は「幸田しだれ桜まつり」。夜はライトアップも楽しめます"], it: 'Kota Park', jp: '幸田中央公園', img: 'city-park.webp', credit: '写真：幸田町観光協会（幸田町ホームページ）より', img2: 'city-park2.webp', credit2: '写真：幸田町観光協会（幸田町ホームページ）より', copy: '公園の桜の下で、ひと休みの乾杯。', desc: '幸田町役場のとなりの幸田中央公園と、しだれ桜で知られる幸田文化公園。町のみんなの憩いの場です。', menuId: 'default_1', menuName: '焼きそば' },
-      { key: 'honkoji', day: '2日目　夕方　本光寺へ', trivia: ["「三河のあじさい寺」。6月の紫陽花まつりには、約1万本のあじさいが咲きます", "山門に掲げられた「瑞雲山」は、本光寺の山号です", "深溝（ふこうず）松平家の菩提寺。宝物館は、紫陽花まつりの期間だけ公開されます"], it: 'Honkoji', jp: '本光寺', img: 'city-honkoji.webp', credit: '写真：幸田町観光協会（幸田町ホームページ）より', copy: 'あじさいの参道で、乾杯。', desc: '幸田町深溝にある、深溝松平家ゆかりのお寺。石畳の参道の両側に、あじさいがあふれるように咲きます。', menuId: 'default_1', menuName: '焼きそば' },
+      { key: 'park', day: '2日目　昼　幸田町へ', trivia: ["幸田中央公園は、JR幸田駅から歩いて7分ほど", "幸田文化公園の桜の見ごろは、例年4月上旬から中旬", "しだれ桜の品種は、ヤエベニシダレザクラやウジョウシダレザクラなど"], it: 'Kota Parks', jp: '幸田中央公園・幸田文化公園', short: '幸田の公園', img: 'city-park.webp', credit: '幸田中央公園（写真：幸田町観光協会）', img2: 'city-park2.webp', credit2: '幸田文化公園のしだれ桜（写真：幸田町観光協会）', creditNote: '写真：幸田町観光協会', copy: '2つの公園で、ひと休みの乾杯。', desc: '幸田町の真ん中にある、2つの公園をめぐります。', parts: [{ h: '幸田中央公園', t: '幸田町役場のとなりにある、町の真ん中の公園。長いすべり台もあって、町のみんなの憩いの場です。' }, { h: '幸田文化公園', t: '約20種・500本の桜が植えられ、そのうち約350本が花笠のように垂れるしだれ桜。4月上旬〜中旬には「幸田しだれ桜まつり」が開かれます。' }], menuId: 'default_1', menuName: '焼きそば' },
+      { key: 'honkoji', day: '2日目　夕方　本光寺へ', trivia: ["「三河のあじさい寺」。6月の紫陽花まつりには、約1万本のあじさいが咲きます", "山門に掲げられた「瑞雲山」は、本光寺の山号です", "深溝（ふこうず）松平家の菩提寺。宝物館は、紫陽花まつりの期間だけ公開されます"], it: 'Honkoji', jp: '本光寺', img: 'city-honkoji.webp', credit: '写真：幸田町観光協会', copy: 'あじさいの参道で、乾杯。', desc: '幸田町深溝にある、深溝松平家ゆかりのお寺。石畳の参道の両側に、あじさいがあふれるように咲きます。', menuId: 'default_1', menuName: '焼きそば' },
       { key: 'boteko', day: '2日目　夜　ぼてこ幸田に到着！', trivia: ["お好み焼一筋に、五十年", "工場出荷から2日以内の、美味しい生ビールがここに届きます", "店頭のぼてこちゃんと、写真を撮ろう！"], it: 'BOTECO Kota', jp: 'ぼてこ幸田', img: 'city-boteko.webp', credit: '', copy: 'ゴール！工場出荷から2日以内の生ビールで、乾杯！', desc: 'アサヒビール名古屋工場から、マルト水谷を通って届いた新鮮な生ビール。アツアツの鉄板のお好み焼きと一緒にどうぞ。', menuId: 'default_0', menuName: 'お好み焼き' }
     ];
     // 名所の写真がまだ無いときは、名前入りの仮の絵にする（city-◯◯.webp を置けば差し替わる）
@@ -5304,7 +5307,7 @@
       const next = MF_CITIES[mfPos];
       const notYet = ci + 1 > mfPos;
       const go = next
-        ? `<button type="button" class="mf-b-go">🗺 MAPに戻って、次の目的地へ<small>次の目的地：${next.jp}</small></button>`
+        ? `<button type="button" class="mf-b-go">🗺 MAPに戻って、次の目的地へ<small>次の目的地：${next.short || next.jp}</small></button>`
         : `<div class="mf-b-go is-wait">🎆 旅のゴール！まもなく花火ショー</div>`;
       return `<button type="button" class="mf-bubble-x" aria-label="閉じて地図を見る">✕</button>
         <button type="button" class="mf-b-bar"><span>📖 ${c.jp}の紹介を見る</span><i>︽</i></button>
@@ -5318,7 +5321,8 @@
         ${notYet ? `<p class="mf-b-notyet">まだ到着していません。写真を撮って、旅を進めよう</p>` : ''}
         <p class="mf-b-copy">${c.copy}</p>
         <p class="mf-b-desc">${c.desc}</p>
-        ${c.credit ? `<p class="bt-credit-l">${c.credit}</p>` : ''}
+        ${c.parts ? c.parts.map(p => `<div class="bt-part"><p class="bt-part-h">${p.h}</p><p>${p.t}</p></div>`).join('') : ''}
+        ${(c.creditNote || c.credit) ? `<p class="bt-credit-l">${c.creditNote || c.credit}</p>` : ''}
         <div class="mf-b-tips"><p class="mf-b-tips-h">💡 豆知識</p><ul>${c.trivia.map(t => `<li>${t}</li>`).join('')}</ul></div>
         <button type="button" class="mf-b-menu">${m ? `<img src="${m.mainImg}" alt="">` : ''}<span><small>${c.jp}のあとは　おすすめの一品</small><b>${c.menuName}</b></span><i>›</i></button>
         ${go}
@@ -5385,7 +5389,7 @@
           ${visited || next ? '' : `<circle cx="${cx}" cy="${cy}" r="${R}" fill="#8f8580"/><text x="${cx}" y="${cy + 6}" font-size="18" text-anchor="middle" fill="#fff" font-weight="900">?</text>`}
           ${visited ? `<g transform="translate(${cx + R * 0.72} ${cy - R * 0.72})"><circle r="7" fill="#4b8b3b" stroke="#fff" stroke-width="1.5"/><path d="M-3 0 l2 2.4 l4 -4.6" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round"/></g>` : ''}
           ${next ? `<g transform="translate(${cx} ${cy - R - 5})"><rect x="-16" y="-7" width="32" height="12" rx="6" fill="#e2603c"/><text y="2" font-size="7" font-weight="900" text-anchor="middle" fill="#fff">NEXT</text></g>` : ''}
-          <g transform="translate(${cx} ${cy + R + 11})"><rect x="-36" y="-8" width="72" height="13" rx="6.5" fill="#fff" opacity=".96"/><text y="2" font-size="7.5" font-weight="900" text-anchor="middle" fill="${visited ? '#e2603c' : next ? '#e2603c' : '#888'}">${String(p).padStart(2, '0')} ${c.jp}</text></g>
+          <g transform="translate(${cx} ${cy + R + 11})"><rect x="-36" y="-8" width="72" height="13" rx="6.5" fill="#fff" opacity=".96"/><text y="2" font-size="7.5" font-weight="900" text-anchor="middle" fill="${visited ? '#e2603c' : next ? '#e2603c' : '#888'}">${String(p).padStart(2, '0')} ${c.short || c.jp}</text></g>
           <circle cx="${cx}" cy="${cy}" r="${R + 6}" fill="transparent"/>
         </g>`;
       });
@@ -5394,13 +5398,13 @@
         const i = +g.dataset.i;
         // まだ行っていない街は、着くまでのおたのしみ（紹介は見せない）
         if (!g.classList.contains('visited')) {
-          showToast(`<span class="toast-dot"></span><span class="truncate">${g.classList.contains('next') ? `写真を撮ると、${MF_CITIES[i].jp}へ出発！着いたら紹介が見られます` : `${MF_CITIES[i].jp}は、まだ先。着くまでのおたのしみ`}</span>`, 2400);
+          showToast(`<span class="toast-dot"></span><span class="truncate">${g.classList.contains('next') ? `写真を撮ると、${(MF_CITIES[i].short || MF_CITIES[i].jp)}へ出発！着いたら紹介が見られます` : `${(MF_CITIES[i].short || MF_CITIES[i].jp)}は、まだ先。着くまでのおたのしみ`}</span>`, 2400);
           return;
         }
         mfOpenBubble(i, true);
       }));
       const pill = document.getElementById('mfMapPill');
-      mfSetPill(pill, pos >= MF_CITIES.length ? '🎆 ぼてこ幸田に到着！まもなく花火' : pos === 0 ? `樽詰めしたて！次は <b>${MF_CITIES[0].jp}</b> へ` : `次は <b>${MF_CITIES[pos].jp}</b> へ！`);
+      mfSetPill(pill, pos >= MF_CITIES.length ? '🎆 ぼてこ幸田に到着！まもなく花火' : pos === 0 ? `樽詰めしたて！次は <b>${MF_CITIES[0].jp}</b> へ` : `次は <b>${MF_CITIES[pos].short || MF_CITIES[pos].jp}</b> へ！`);
       mfPlaceMapTruck(mfPinXY(pos));
     }
     // 地図の下の案内：ぼてこのロゴと一体の札（ぼてこちゃんがのぞく）
@@ -5420,7 +5424,16 @@
         mfMap.appendChild(el);
         el.querySelector('.bt-asahi-x').addEventListener('click', (e) => { e.stopPropagation(); el.classList.add('closed'); });
       }
-      el.classList.toggle('show', !!on && !el.classList.contains('closed'));
+      const show = !!on && !el.classList.contains('closed');
+      // 左上の小窓（アサヒビール・マルト水谷）を隠さないよう、そのすぐ下に置く
+      if (show) {
+        const inset = document.getElementById('mfInset');
+        if (inset) {
+          const r = inset.getBoundingClientRect(), a = appContainer.getBoundingClientRect();
+          if (r.height) el.style.top = `${Math.round(r.bottom - a.top + 10)}px`;
+        }
+      }
+      el.classList.toggle('show', show);
     }
     function mfPlaceMapTruck([x, y]) {
       const [sx, sy] = mfMapXY(x, y);
@@ -5441,7 +5454,7 @@
       appContainer.classList.add('mf-map-on');
       mfSetTruck(mfMapTruck, pos === 0 ? 'yellow' : 'boteko');
       mfRenderMap(pos);
-      mfShowAsahi(pos === 0);
+      requestAnimationFrame(() => mfShowAsahi(pos === 0));
     }
 
     // ---------- 街に着く：名所の写真だけ → トラックが入ってきて停車 → 紹介 → 地図へ ----------
@@ -5484,7 +5497,7 @@
         mfPlaceMapTruck([a[0] + (b[0] - a[0]) * 0.45, a[1] + (b[1] - a[1]) * 0.45]);
       });
       const dest = MF_CITIES[to - 1];
-      mfSetPill(document.getElementById('mfMapPill'), to === 2 ? `🚚 朝いちで集荷！<b>${dest.jp}</b> へ` : `🚚 <b>${dest.jp}</b> へ出発！`);
+      mfSetPill(document.getElementById('mfMapPill'), to === 2 ? `🚚 朝いちで集荷！<b>${dest.short || dest.jp}</b> へ` : `🚚 <b>${dest.short || dest.jp}</b> へ出発！`);
       mfLater(() => {
         mfMapTruck.classList.remove('moving');
         appContainer.classList.remove('mf-map-on');
@@ -5499,7 +5512,7 @@
           if (!mfRoad.classList.contains('show')) return;
           const q = Math.min(1, (performance.now() - t0) / travelMs);
           const left = total * Math.pow(1 - q, 1.6);
-          sign.innerHTML = `${express ? '<em>🍺 生ビール速達便</em>' : ''}<b>${dest.it.toUpperCase()} →</b><span>${dest.jp}まで あと ${left >= 1 ? Math.ceil(left) + 'km' : Math.max(100, Math.round(left * 1000 / 100) * 100) + 'm'}</span>`;
+          sign.innerHTML = `${express ? '<em>🍺 生ビール速達便</em>' : ''}<b>${dest.it.toUpperCase()} →</b><span>${dest.short || dest.jp}まで あと ${left >= 1 ? Math.ceil(left) + 'km' : Math.max(100, Math.round(left * 1000 / 100) * 100) + 'm'}</span>`;
           if (q < 1) requestAnimationFrame(tick);
         };
         tick();
@@ -5583,11 +5596,11 @@
         { sky: 'linear-gradient(#3b8ee6, #a8d4f5)',
           far: `<path d="M150 ${B - 40} L172 ${B - 112} L308 ${B - 112} L330 ${B - 40}Z" fill="#a39d92"/><rect x="190" y="${B - 172}" width="100" height="60" fill="#f6f3ec"/><path d="M174 ${B - 170} L240 ${B - 198} L306 ${B - 170}Z" fill="#3b4a5a"/><rect x="206" y="${B - 220}" width="68" height="26" fill="#f6f3ec"/><path d="M194 ${B - 218} L240 ${B - 240} L286 ${B - 218}Z" fill="#3b4a5a"/><rect x="220" y="${B - 256}" width="40" height="20" fill="#f6f3ec"/><path d="M210 ${B - 254} L240 ${B - 274} L270 ${B - 254}Z" fill="#3b4a5a"/><path d="M226 ${B - 274} l-4 -10 l6 4z M254 ${B - 274} l4 -10 l-6 4z" fill="#e8b830"/>${[200, 222, 244, 266].map(x => `<rect x="${x}" y="${B - 152}" width="10" height="12" fill="#3b4a5a"/>`).join('')}${[40, 100, 380].map(x => `<ellipse cx="${x}" cy="${B - 70}" rx="34" ry="16" fill="#3f6a3a"/><rect x="${x - 3}" y="${B - 62}" width="6" height="62" fill="#5a4030"/>`).join('')}`,
           near: `<rect x="0" y="${B - 46}" width="440" height="30" fill="#6fa7b8"/><rect x="0" y="${B - 16}" width="440" height="16" fill="#8a857c"/>` + [20, 150, 300].map(x => `<rect x="${x + 28}" y="${B - 150}" width="8" height="110" fill="#4a3424"/><ellipse cx="${x + 20}" cy="${B - 150}" rx="40" ry="14" fill="#2f5a2a"/><ellipse cx="${x + 46}" cy="${B - 122}" rx="30" ry="11" fill="#2f5a2a"/>`).join('') + mfCobble(B, false) },
-        // 幸田中央公園 → 本光寺：昼の公園、桜と長いすべり台
+        // 岡崎城 → 幸田の公園：昼の公園、桜と長いすべり台
         { sky: 'linear-gradient(#5aa8ee, #cfe8ff 70%, #f6efe0)',
           far: `<path d="M0 ${B - 70} Q110 ${B - 120} 220 ${B - 80} T440 ${B - 90} V${B}H0Z" fill="#c9d89a"/><path d="M60 ${B - 40} C140 ${B - 120} 260 ${B - 30} 360 ${B - 110}" fill="none" stroke="#f5c400" stroke-width="12" stroke-linecap="round"/>${[90, 150, 210, 270, 330].map((x, k) => `<rect x="${x}" y="${B - 70 + (k % 2) * 10}" width="3" height="40" fill="#3a6ad0"/>`).join('')}`,
           near: [10, 120, 230, 340].map(x => `<rect x="${x + 36}" y="${B - 110}" width="8" height="110" fill="#3a2a1a"/><circle cx="${x + 20}" cy="${B - 118}" r="30" fill="#f6b4cb"/><circle cx="${x + 54}" cy="${B - 124}" r="32" fill="#f9c8d8"/><circle cx="${x + 38}" cy="${B - 146}" r="28" fill="#f3a6c0"/>`).join('') + `<rect x="0" y="${B - 14}" width="440" height="14" fill="#8a9a6a"/>` + mfCobble(B, false) },
-        // 幸田中央公園 → 本光寺：田んぼと山、筆柿とあじさい
+        // 幸田の公園 → 本光寺：田んぼと山、筆柿とあじさい
         { sky: 'linear-gradient(#5aa0de, #f7e3b0)',
           far: `<path d="M0 ${B - 60} L80 ${B - 150} L160 ${B - 100} L260 ${B - 180} L360 ${B - 90} L440 ${B - 130} V${B}H0Z" fill="#86ab7c"/><path d="M0 ${B - 40} Q150 ${B - 80} 300 ${B - 45} T440 ${B - 50} V${B}H0Z" fill="#b8d27a"/><g transform="translate(330 ${B - 52})"><rect x="-30" y="-34" width="60" height="34" fill="#c9a57a"/><path d="M-44 -32 Q0 -60 44 -32Z" fill="#4a4a52"/></g>`,
           near: [0, 1].map(k => { const x = k * 220; return `<rect x="${x + 48}" y="${B - 120}" width="8" height="120" fill="#5a4030"/><ellipse cx="${x + 52}" cy="${B - 128}" rx="44" ry="30" fill="#4f7d3a"/>${[[30, -132], [60, -118], [72, -140], [40, -112], [52, -146]].map(([dx, dy]) => `<ellipse cx="${x + dx}" cy="${B + dy}" rx="4" ry="6" fill="#f08a24"/>`).join('')}${[110, 140, 170, 200].map((dx, i) => `<g transform="translate(${x + dx} ${B - 22})"><circle r="18" fill="#3f6a34"/>${[[-7, -6], [6, -8], [0, 4], [-9, 6], [9, 5]].map(([a, b]) => `<circle cx="${a}" cy="${b}" r="7" fill="${['#7aa0e8', '#a98be0', '#e897c8', '#8fc1f0'][i]}"/>`).join('')}</g>`).join('')}`; }).join('') + `<rect x="0" y="${B - 8}" width="440" height="8" fill="#c9b080"/>` + mfCobble(B, false) },
