@@ -777,6 +777,12 @@
   .guide-src rt, .intro-bubble rt { font-size: .4em; }
   .guide-src, #polishMsg, .pt-txt span { line-break: strict; text-wrap: pretty; }
   .nw { white-space: nowrap; }
+  .polish-stage { position: relative; }
+  .polish-stage.has3d > svg { display: none; }
+  .polish-stage .grain3d { display: block; width: 132px; height: 158px; cursor: grab; }
+  .polish-stage .grain3d:active { cursor: grabbing; }
+  .polish-stage { flex-direction: column; align-items: center; }
+  .grain3d-hint { margin-top: 2px; font-size: 11px; font-weight: 700; color: var(--ai-light); letter-spacing: .04em; }
   .polish-say { padding: 10px; gap: 6px; }
   .polish-say img { width: 40px; height: 60px; }
   .polish-say p, #polishMsg { font-size: min(14px, 3.6vw) !important; letter-spacing: 0 !important; line-height: 1.75 !important; }
@@ -936,13 +942,13 @@
   .intro-bubble strong { color: var(--shu); }
   #introText { position: static; }
   #introText { text-wrap: balance; }
-  .intro-options { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+  .intro-options { display: flex; flex-direction: row; gap: 10px; min-height: 0; }
   .intro-note { display: none; margin: 10px 16px 0; text-align: center; font-size: 12.5px; line-height: 1.7; font-weight: 700; color: #fff; opacity: .88; text-shadow: 0 1px 4px rgba(0,0,0,.6); }
   .intro-note.show { display: block; animation: introNoteIn .5s ease both; }
   @keyframes introNoteIn { from { opacity: 0; } to { opacity: .88; } }
   .intro-opt {
-    width: 100%; padding: 14px 16px; background: #fff; color: var(--ai); border: 1px solid var(--ai-light);
-    border-radius: 12px; font-family: var(--font-gothic); font-weight: 700; font-size: 15px; text-align: left; cursor: pointer;
+    flex: 1 1 0; min-width: 0; padding: 14px 6px; background: #fff; color: var(--ai); border: 1px solid var(--ai-light);
+    border-radius: 12px; font-family: var(--font-gothic); font-weight: 700; font-size: 15px; text-align: center; white-space: nowrap; cursor: pointer;
     animation: fadeUp .45s ease both; transition: background .2s ease, color .2s ease, transform .15s ease;
   }
   .intro-opt:hover:not(:disabled) { background: var(--ai-pale); }
@@ -1477,6 +1483,163 @@
   .flag-chip img { width: 34px; height: 34px; object-fit: contain; display: block; margin: 0 auto 3px; }
   .flag-chip b { display: block; font-size: 12px; color: var(--ai); line-height: 1.3; }
   .flag-chip span { display: block; font-size: 11.5px; color: var(--shu); font-weight: 700; line-height: 1.35; }
+
+  /* ===== カメラワークの画面切り替え ===== */
+  #camGhost{position:fixed;inset:0;z-index:8000;overflow:hidden;pointer-events:none;display:none}
+  #camGhost > .ghost-in{position:absolute;left:0;right:0;top:0;transform-origin:50% 42%;will-change:transform,opacity}
+  #camGhost.f > .ghost-in{animation:camOutF .6s cubic-bezier(.55,0,.8,.4) both}
+  #camGhost.b > .ghost-in{animation:camOutB .6s cubic-bezier(.4,0,.2,1) both}
+  body.cam-f .screen.active{animation:camInF .62s cubic-bezier(.2,.7,.2,1) both;transform-origin:50% 30%}
+  body.cam-b .screen.active{animation:camInB .62s cubic-bezier(.2,.7,.2,1) both;transform-origin:50% 30%}
+  @keyframes camOutF{from{transform:scale(1);opacity:1}to{transform:scale(1.55);opacity:0}}
+  @keyframes camOutB{from{transform:scale(1);opacity:1}to{transform:scale(.82);opacity:0}}
+  @keyframes camInF{0%{transform:scale(.88);opacity:0}35%{opacity:1}100%{transform:scale(1);opacity:1}}
+  @keyframes camInB{0%{transform:scale(1.18);opacity:0}35%{opacity:1}100%{transform:scale(1);opacity:1}}
+  @media (prefers-reduced-motion: reduce){ #camGhost{display:none!important} body.cam-f .screen.active,body.cam-b .screen.active{animation:none} }
+
+  /* ===== ウイスキー樽の断面3D ===== */
+  .mdg-vis .cask3d{width:100%;max-width:330px;display:grid;grid-template-columns:58% 42%;grid-template-rows:auto auto;align-items:center;column-gap:0}
+  .cask3d canvas{width:100%;height:auto;aspect-ratio:200/280;display:block;touch-action:pan-y;cursor:grab;border-radius:14px;background:radial-gradient(ellipse at 50% 35%,#34456c 0%,#1a2344 60%,#10172e 100%)}
+  .cask3d .cchips span{transition:opacity .4s}
+  .cask3d .cask-yr{grid-column:1 / -1;margin:12px 4px 0}
+  .cask3d .cask-yr .yl{display:flex;justify-content:space-between;align-items:baseline;font-weight:800;color:var(--ai);font-size:min(14px,3.7vw);margin-bottom:2px}
+  .cask3d .cask-yr .yl b{font-family:var(--font-mincho);font-size:24px;color:var(--shu)}
+  .cask3d .cask-yr .ye{display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:#7a6f5e;margin-top:2px}
+  .cask3d .cchips{display:flex;flex-direction:column;gap:9px;align-items:flex-start;padding-left:4px}
+  .cask3d .cchips span{font-weight:800;font-size:min(13.5px,3.6vw);border:1.5px solid;border-radius:999px;padding:4px 12px;white-space:nowrap;animation:caskFlt 3.2s ease-in-out var(--d,0s) infinite}
+  .cask3d .cask-angel{grid-column:1 / -1;margin:10px 4px 0;padding:10px 12px;border-radius:10px;background:rgba(201,160,74,.14);border:1px solid rgba(201,160,74,.45);font-weight:800;color:#6b4e16;font-size:min(13.5px,3.6vw);line-height:1.75;text-align:center;white-space:pre-line}
+  @keyframes caskFlt{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+  @media (prefers-reduced-motion: reduce){ .cask3d .cchips span{animation:none} }
+
+  /* お米のキャラクターは日本酒の画面だけ。それ以外は吹き出しのみ */
+  .guide.no-chara{display:block}
+  .guide.no-chara .guide-bubble{border-radius:12px;margin-bottom:0;border-left:4px solid var(--ai)}
+  .guide.no-chara .guide-bubble::before{display:none}
+  .screen[data-screen*="shochu"] .guide.no-chara .guide-bubble{border-left-color:#c8854a;background:rgba(255,250,242,.96)}
+  .screen[data-screen*="whisky"] .guide.no-chara .guide-bubble{border-left-color:#c9a04a;background:rgba(255,251,240,.96)}
+  #introKomeo{display:none!important}
+  .intro-bubble{border-radius:16px}
+  .intro-bubble::before{display:none}
+  .quiz-komeo{display:none!important}
+
+  /* ===== 吹き出し・見出しの質感アップ ===== */
+  .guide-bubble{
+    background:
+      radial-gradient(120% 90% at 0% 0%, rgba(255,255,255,.75) 0, rgba(255,255,255,0) 60%),
+      repeating-linear-gradient(0deg, rgba(120,95,60,.018) 0 1px, rgba(255,255,255,0) 1px 3px),
+      #fbf6ea;
+    border:1px solid rgba(150,120,70,.35);
+    box-shadow:0 1px 0 rgba(255,255,255,.9) inset, 0 6px 16px rgba(0,0,0,.18);
+    letter-spacing:.04em;
+  }
+  .guide-bubble::before{border-right-color:#fbf6ea;filter:drop-shadow(-1px 0 0 rgba(150,120,70,.35))}
+  .guide-bubble strong,.guide-bubble .hl-red{color:var(--shu)}
+  .guide.no-chara .guide-bubble{border-left-width:4px}
+  .screen[data-screen*="shochu"] .guide.no-chara .guide-bubble{background:radial-gradient(120% 90% at 0% 0%,rgba(255,255,255,.7) 0,rgba(255,255,255,0) 60%),repeating-linear-gradient(0deg,rgba(150,95,50,.02) 0 1px,rgba(255,255,255,0) 1px 3px),#fbf1e2}
+  .screen[data-screen*="whisky"] .guide.no-chara .guide-bubble{background:radial-gradient(120% 90% at 0% 0%,rgba(255,255,255,.7) 0,rgba(255,255,255,0) 60%),repeating-linear-gradient(0deg,rgba(150,120,50,.02) 0 1px,rgba(255,255,255,0) 1px 3px),#fbf3de}
+  .intro-bubble{
+    background:radial-gradient(120% 90% at 0% 0%,rgba(255,255,255,.75) 0,rgba(255,255,255,0) 60%),repeating-linear-gradient(0deg,rgba(120,95,60,.018) 0 1px,rgba(255,255,255,0) 1px 3px),#fbf6ea;
+    border:1px solid rgba(150,120,70,.4);letter-spacing:.05em;line-height:1.95;
+  }
+
+  /* ===== 押せるものを立体に（縁の厚み＋押すと沈む） ===== */
+  .seg button:not(.on), .topic-tab:not(.on), .shelf-tab:not(.on), .intro-opt:not(.picked), .quiz-btn:not(.correct):not(.incorrect), .hook-more, .mcell:not(.sel), .back-btn, .shelf-item {
+    box-shadow: 0 1px 0 #fff inset, 0 3px 0 rgba(86,70,50,.30), 0 6px 9px rgba(0,0,0,.12);
+    transition: transform .12s ease, box-shadow .12s ease, background .2s ease, color .2s ease, border-color .2s ease;
+  }
+  .seg button.on, .topic-tab.on, .shelf-tab.on, .mcell.sel, .intro-opt.picked {
+    box-shadow: 0 2px 6px rgba(0,0,0,.32) inset, 0 1px 0 rgba(255,255,255,.55);
+    transform: translateY(2px);
+    transition: transform .12s ease, box-shadow .12s ease, background .2s ease, color .2s ease;
+  }
+  .primary-btn, #nextBar {
+    box-shadow: 0 1px 0 rgba(255,255,255,.32) inset, 0 4px 0 #8c2d1e, 0 9px 14px rgba(0,0,0,.28);
+  }
+  @keyframes pulse-btn {
+    0%   { box-shadow: 0 1px 0 rgba(255,255,255,.32) inset, 0 4px 0 #8c2d1e, 0 9px 14px rgba(0,0,0,.28), 0 0 0 0 rgba(189,70,48,.5); }
+    70%  { box-shadow: 0 1px 0 rgba(255,255,255,.32) inset, 0 4px 0 #8c2d1e, 0 9px 14px rgba(0,0,0,.28), 0 0 0 10px rgba(189,70,48,0); }
+    100% { box-shadow: 0 1px 0 rgba(255,255,255,.32) inset, 0 4px 0 #8c2d1e, 0 9px 14px rgba(0,0,0,.28), 0 0 0 0 rgba(189,70,48,0); }
+  }
+  .primary-btn:active, #nextBar:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(255,255,255,.32) inset, 0 1px 0 #8c2d1e, 0 3px 6px rgba(0,0,0,.25); animation: none; }
+  .seg button:not(.on):active, .topic-tab:not(.on):active, .shelf-tab:not(.on):active, .intro-opt:not(.picked):active, .quiz-btn:not(:disabled):active, .hook-more:active, .mcell:not(.sel):active, .back-btn:active, .shelf-item:active {
+    transform: translateY(3px); box-shadow: 0 1px 0 #fff inset, 0 0 0 rgba(0,0,0,0), 0 1px 3px rgba(0,0,0,.15);
+  }
+  @media (prefers-reduced-motion: reduce){ .primary-btn:active, #nextBar:active { transform: none; } }
+
+  .shelf-note:not(:empty){display:inline-block;margin:2px 0 12px;padding:5px 14px;border-radius:999px;background:#fbf6ea;border:1px solid rgba(150,120,70,.4);color:var(--ai);font-size:13.5px;font-weight:800;letter-spacing:.04em;box-shadow:0 1px 0 #fff inset,0 2px 0 rgba(86,70,50,.25)}
+  .fold-title.fit{white-space:nowrap;font-size:min(16.5px,4.2vw)}
+
+  .intro-options{flex-direction:column;gap:16px}
+  .intro-group{display:flex;flex-direction:column;gap:6px}
+  .intro-glabel{font-weight:800;font-size:13.5px;letter-spacing:.1em;color:#f3e7cc;text-shadow:0 1px 4px rgba(0,0,0,.6)}
+  .intro-grow{display:flex;gap:10px}
+  #openingHint{position:absolute;left:0;right:0;bottom:calc(7% + env(safe-area-inset-bottom));text-align:center;font-weight:700;font-size:13px;letter-spacing:.14em;color:rgba(255,255,255,.78);text-shadow:0 1px 4px rgba(0,0,0,.7);opacity:0;pointer-events:none;animation:openHint 1s ease 1.2s forwards,openHintPulse 2.4s ease-in-out 2.2s infinite}
+  #openingScreen:not(.vid) #openingHint{color:rgba(70,52,34,.85);text-shadow:0 1px 0 rgba(255,255,255,.7)}
+  @keyframes openHint{to{opacity:.85}}
+  @keyframes openHintPulse{0%,100%{opacity:.85}50%{opacity:.4}}
+
+  /* ===== ウイスキー冒頭アニメ v2（連続した流れ） ===== */
+  .cine.v2 .cine-cam{animation-duration:12s}
+  .cine.v2 .cine-shot{animation-name:cShotV;animation-timing-function:ease}
+  .cine.v2 .cine-shot.fin{animation-name:cFin;animation-duration:1.4s}
+  .cine.v2 .cine-cap{animation-name:cCapV;bottom:8.6%;line-height:1.5;font-size:17px}
+  .cine.v2 .cine-cap.fin{animation-name:cCapFin;animation-duration:1s}
+  .cine.v2 .cine-cap small{display:block;margin-top:3px;font-size:12px;letter-spacing:.05em;padding-left:0;font-weight:700;color:#ecd9b4;text-shadow:0 1px 5px rgba(0,0,0,.95)}
+  @keyframes cShotV{0%{opacity:0;transform:scale(.96);filter:blur(6px)}10%{opacity:1;transform:scale(.985);filter:blur(0)}88%{opacity:1;transform:scale(1.03);filter:blur(0)}100%{opacity:0;transform:scale(1.05);filter:blur(4px)}}
+  @keyframes cCapV{0%{opacity:0;transform:translateY(6px)}10%,88%{opacity:1;transform:none}100%{opacity:0}}
+  .cv-stack{position:relative;height:60%;margin-bottom:14%}
+  .cv-stack.glass{height:52%}
+  .cv-img{height:100%;width:auto;display:block;filter:drop-shadow(0 0 16px rgba(255,190,110,.28)) drop-shadow(0 14px 16px rgba(0,0,0,.72)) contrast(1.06)}
+  .cv-vp,.cv-dr{position:absolute;inset:0;pointer-events:none}
+  .cv-vp i{position:absolute;left:53%;bottom:52%;width:26%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.6),rgba(255,255,255,0) 70%);filter:blur(3px);opacity:0;animation:cvUp 2.6s ease-in infinite;animation-delay:calc(var(--k)*.85s)}
+  @keyframes cvUp{0%{opacity:0;transform:translate(-50%,20%) scale(.5)}25%{opacity:.85}100%{opacity:0;transform:translate(-10%,-230%) scale(1.5)}}
+  .cv-dr i{position:absolute;left:94%;top:8%;width:4%;aspect-ratio:1/1.5;border-radius:50% 50% 50% 50%/65% 65% 35% 35%;background:rgba(235,246,255,.92);box-shadow:0 0 6px rgba(255,255,255,.6);opacity:0;animation:cvDrip 1.7s ease-in infinite;animation-delay:calc(var(--k)*.55s + .6s)}
+  @keyframes cvDrip{0%{opacity:0;transform:translateY(0)}12%{opacity:1}85%{opacity:1;transform:translateY(560%)}100%{opacity:0;transform:translateY(620%)}}
+  .cv-caskshot{flex-direction:row;gap:4%}
+  .cv-cask{height:66%;width:auto;aspect-ratio:200/280;margin-bottom:15%}
+  .cv-yr{display:flex;flex-direction:column;align-items:center;color:#f6e6c4;font-family:var(--font-mincho);text-shadow:0 0 14px rgba(255,186,100,.7),0 2px 6px rgba(0,0,0,.85);margin-bottom:15%}
+  .cv-yr small{font-size:13px;letter-spacing:.2em;font-weight:700}
+  .cv-yr b{font-size:46px;line-height:1.05;font-weight:700;min-width:1.4em;text-align:center}
+  .cv-prog{position:absolute;left:0;bottom:0;height:3px;width:100%;transform-origin:0 50%;background:linear-gradient(90deg,#c9a04a,#f1d58a);z-index:9;animation:cvProg 11.2s linear both}
+  @keyframes cvProg{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+  .cine-ctl{display:flex;justify-content:center;gap:10px;margin:2px 0 10px}
+  .cine-ctl button{font:inherit;font-weight:700;font-size:13px;padding:7px 16px;border-radius:999px;border:1px solid var(--ai-light);background:#fff;color:var(--ai);cursor:pointer}
+  @media (prefers-reduced-motion: reduce){ .cine-ctl{display:none} .cv-prog{display:none} .cine.v2 .cine-cap small{display:none} }
+
+  .cine.v2 .cine-obj,.cine.v2 .cine-pic{margin-bottom:14%}
+  .cine.v2 .cine-obj{height:58%}
+  .cine.v2 .cine-obj.tall{height:76%;margin-bottom:9%}
+  .cine.v2 .cine-pic.koji{width:78%;max-width:78%;height:auto}
+  .cine.v2 .cine-trio{height:50%;margin-bottom:14%}
+  .cine.v2 .c-water{height:50%;margin-bottom:22%}
+  .cv-fire{position:absolute;left:50%;bottom:-4%;width:120%;height:26%;transform:translateX(-50%);background:radial-gradient(ellipse at 50% 100%,rgba(255,150,50,.85),rgba(255,100,20,.35) 45%,rgba(255,100,20,0) 72%);animation:cFire .5s ease-in-out infinite alternate;filter:blur(3px)}
+  .cv-jar{position:relative;height:56%;aspect-ratio:3/4;margin-bottom:14%;border:2px solid rgba(255,255,255,.42);border-top:none;border-radius:2% 2% 16% 16%;background:linear-gradient(90deg,rgba(255,255,255,.10),rgba(255,255,255,.02) 40%,rgba(255,255,255,.14));box-shadow:0 0 18px rgba(255,200,120,.22),inset 0 0 14px rgba(255,255,255,.08);overflow:hidden}
+  .cv-jar::before{content:"";position:absolute;left:0;right:0;bottom:0;height:78%;background:linear-gradient(#f7f0df,#e9ddc2 65%,#d8c8a0)}
+  .cv-jar::after{content:"";position:absolute;left:0;right:0;bottom:74%;height:9%;background:radial-gradient(ellipse at 50% 100%,rgba(255,255,255,.95),rgba(255,255,255,0) 72%);filter:blur(1px)}
+  .cv-jar i{position:absolute;bottom:4%;left:calc(var(--x)*1%);width:8%;aspect-ratio:1;border-radius:50%;background:rgba(255,255,255,.92);border:1px solid rgba(190,170,130,.65);opacity:0;z-index:2;animation:cvBub 2.2s ease-in infinite;animation-delay:calc(var(--k)*.31s)}
+  @keyframes cvBub{0%{opacity:0;transform:translateY(0) scale(.6)}15%{opacity:.95}85%{opacity:.9}100%{opacity:0;transform:translateY(-1000%) scale(1.1)}}
+
+  .gl { font-weight: 800; color: var(--ai); border-bottom: 2px dotted var(--ai); cursor: pointer; -webkit-tap-highlight-color: transparent; padding-bottom: 1px; }
+  #glSheet { position: fixed; inset: 0; z-index: 90; display: flex; align-items: flex-end; justify-content: center; background: rgba(20,14,8,.28); opacity: 0; pointer-events: none; transition: opacity .25s ease; }
+  #glSheet.show { opacity: 1; pointer-events: auto; }
+  #glSheet .gl-card { width: min(100%, 520px); margin: 0 12px calc(14px + env(safe-area-inset-bottom)); padding: 16px 18px 14px; border-radius: 18px; background: #fffdf7; border: 1px solid #d8c9a8; box-shadow: 0 -2px 0 #fff inset, 0 10px 28px rgba(0,0,0,.35); transform: translateY(24px); transition: transform .3s ease; font-weight: 700; }
+  #glSheet.show .gl-card { transform: translateY(0); }
+  .gl-t { font-size: 20px; font-weight: 800; color: var(--ai); letter-spacing: .08em; margin-bottom: 6px; }
+  .gl-d { margin: 0 0 12px; font-size: 15.5px; line-height: 1.75; color: #3a2f26; font-weight: 700; }
+  .gl-b { display: flex; gap: 10px; }
+  .gl-b button { flex: 1; font: inherit; font-weight: 800; font-size: 15px; padding: 12px 8px; border-radius: 12px; border: 1px solid var(--ai); background: #fff; color: var(--ai); cursor: pointer; box-shadow: 0 3px 0 rgba(59,79,115,.35); }
+  .gl-b .gl-more { background: var(--ai); color: #fff; }
+
+
+  /* 図解の「舞台」：イラストを、やわらかく浮かぶ台の上に載せる */
+  .mdg-vis > svg, .wd-ill, .pt-ill {
+    background: radial-gradient(ellipse at 50% 0%, #fffdf6 0%, #f6ecd8 70%, #efe2c6 100%);
+    border: 1px solid #dfcfae; border-radius: 14px; padding: 10px 8px;
+    box-shadow: inset 0 2px 7px rgba(120,90,40,.16), inset 0 -1px 0 #fff, 0 2px 0 rgba(255,255,255,.8);
+  }
+  .mdg-vis > svg { box-sizing: border-box; width: 100%; max-width: 330px; height: auto; }
+  .wd-ill { box-sizing: border-box; }
+  .pt-ill { box-sizing: border-box; padding: 6px 4px; }
 </style>
 </head>
 <body class="opening intro-wait">
@@ -1532,7 +1695,7 @@
   <main>
     <!-- Screen: トップ(お酒選択) -->
     <section class="screen active" data-screen="top">
-      <div class="guide" data-komeo="komeo1.webp"><div class="guide-src"><span class="hl-red">気になるお酒を、<wbr>タップ</span>してください。</div></div>
+      <div class="guide" data-komeo="komeo1.webp"><div class="guide-src">お酒の種類を選ぶと、<br>基本の知識と当店の銘柄が見られます。<br><span class="hl-red">気になるお酒を、タップ</span>してください。</div></div>
 
       <div class="top-categories-wrap">
         <div class="top-categories-row">
@@ -1557,9 +1720,10 @@
     <!-- Screen: 日本酒・導入 -->
     <section class="screen" data-screen="sake-intro">
       <h3 class="section-title">日本酒ってどんなお酒？</h3>
-      <div class="guide" data-komeo="komeo1.webp"><div class="guide-src">まずは、<wbr>ひとつ問いかけから。<wbr>絵の動きに<wbr>注目してください。</div></div>
+      <div class="guide" data-komeo="komeo1.webp"><div class="guide-src">日本酒の基本を、<br>アニメーションで学べます。<br>まずは、材料の話から。<br>動きに注目してください。</div></div>
 
-      <div class="glass-box hook"><div class="hook-q">日本酒は、何からできている？</div><div class="hook-ill"><div class="cine"><div class="cine-cam"><div class="cine-bg"></div><div class="cine-rays"></div><div class="cine-floor"></div><div class="cine-dust"></div><div class="cine-shot" style="--d:0s"><img class="cine-obj" data-n="kome.webp" alt="" decoding="async" style="transform:rotate(-8deg)"></div><div class="cine-shot" style="--d:1.4s"><div class="c-water"><svg viewBox="0 0 120 150" aria-hidden="true"><defs><radialGradient id="wf-w" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#cfe8fb" stop-opacity=".55"/><stop offset="1" stop-color="#cfe8fb" stop-opacity="0"/></radialGradient></defs><ellipse cx="60" cy="126" rx="46" ry="11" fill="url(#wf-w)"/><ellipse cx="60" cy="126" rx="30" ry="6" fill="none" stroke="#d8ecfa" stroke-opacity=".5"/><ellipse class="c-rip" cx="60" cy="126" rx="30" ry="6.5" fill="none" stroke="#e8f4ff" stroke-width="1.6"/><ellipse class="c-rip" style="animation-delay:.15s" cx="60" cy="126" rx="22" ry="5" fill="none" stroke="#e8f4ff" stroke-width="1.2"/></svg><img class="c-dropimg" data-n="water_drop.webp" alt="" decoding="async"></div></div><div class="cine-shot" style="--d:2.8s"><img class="cine-pic koji" data-n="koji.webp" alt="" decoding="async"></div><div class="cine-shot fin" style="--d:4.2s"><div class="cine-beam"></div><div class="cine-pool"></div><img class="cine-obj tall" data-n="sake.webp" alt="" decoding="async" style=""><div class="cine-sweep"></div></div></div><div class="cine-cap" style="--d:0s">お米</div><div class="cine-cap" style="--d:1.4s">水</div><div class="cine-cap" style="--d:2.8s">麹</div><div class="cine-cap fin" style="--d:4.6s">日本酒</div><div class="cine-grade"></div><div class="cine-vig"></div><div class="cine-grain"></div><div class="cine-bar t"></div><div class="cine-bar b"></div></div></div><div class="hook-a" style="animation-delay:5.2s">お米と水。そこに<strong>麹</strong>が働きます。</div></div>
+      <div class="glass-box hook"><div class="hook-q">日本酒は、何からできている？</div><div class="hook-ill"><div class="cine v2" data-ctl="1"><div class="cine-cam"><div class="cine-bg"></div><div class="cine-rays"></div><div class="cine-floor"></div><div class="cine-dust"></div><div class="cine-shot" style="--d:0s;animation-duration:2.4s"><img class="cine-obj" data-n="kome.webp" alt="" decoding="async" style="transform:rotate(-8deg)"></div><div class="cine-shot" style="--d:2.2s;animation-duration:2.4s"><div class="c-water"><svg viewBox="0 0 120 150" aria-hidden="true"><defs><radialGradient id="wf-w2" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#cfe8fb" stop-opacity=".55"/><stop offset="1" stop-color="#cfe8fb" stop-opacity="0"/></radialGradient></defs><ellipse cx="60" cy="126" rx="46" ry="11" fill="url(#wf-w2)"/><ellipse cx="60" cy="126" rx="30" ry="6" fill="none" stroke="#d8ecfa" stroke-opacity=".5"/><ellipse class="c-rip" cx="60" cy="126" rx="30" ry="6.5" fill="none" stroke="#e8f4ff" stroke-width="1.6"/><ellipse class="c-rip" style="animation-delay:.15s" cx="60" cy="126" rx="22" ry="5" fill="none" stroke="#e8f4ff" stroke-width="1.2"/></svg><img class="c-dropimg" data-n="water_drop.webp" alt="" decoding="async"></div></div><div class="cine-shot" style="--d:4.4s;animation-duration:2.6s"><img class="cine-pic koji" data-n="koji.webp" alt="" decoding="async"></div><div class="cine-shot" style="--d:6.8s;animation-duration:2.8s"><div class="cv-jar"><i style="--x:12;--k:0"></i><i style="--x:30;--k:2"></i><i style="--x:48;--k:1"></i><i style="--x:66;--k:3"></i><i style="--x:80;--k:4"></i><i style="--x:22;--k:5"></i><i style="--x:58;--k:6"></i></div></div><div class="cine-shot fin" style="--d:9.4s"><div class="cine-beam"></div><div class="cine-pool"></div><img class="cine-obj tall" data-n="sake.webp" alt="" decoding="async"><div class="cine-sweep"></div></div></div><div class="cine-cap" style="--d:.2s;animation-duration:2.1s">お米<small>日本酒の主役は、お米です。</small></div><div class="cine-cap" style="--d:2.4s;animation-duration:2.1s">水<small>お酒の大半は水。水が、味を支えます。</small></div><div class="cine-cap" style="--d:4.6s;animation-duration:2.3s">麹<small>麹の力で、お米のでんぷんが糖に変わります。</small></div><div class="cine-cap" style="--d:7.0s;animation-duration:2.5s">発酵<small>酵母が糖を、お酒に変えていきます。</small></div><div class="cine-cap fin" style="--d:9.7s">日本酒</div><div class="cine-grade"></div><div class="cine-vig"></div><div class="cine-grain"></div><div class="cine-bar t"></div><div class="cine-bar b"></div><div class="cv-prog" style="animation-duration:10.6s"></div></div>
+<div class="cine-ctl"><button type="button" data-act="pp">一時停止</button><button type="button" data-act="re">もう一度見る</button></div><div class="hook-a" style="animation-delay:11.5s">お米と水。そこに<strong>麹</strong>が働きます。</div></div>
       <button class="hook-more" onclick="toggleMore(this)" aria-expanded="false"><span>もっと知る</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <div class="pt-more"><div class="glass-box" style="padding: 6px 16px;"><div class="pt-row"><div class="pt-ill"><svg viewBox="0 0 120 96" aria-hidden="true"><g class="pt-step" style="animation-delay:0s"><ellipse cx="17" cy="44" rx="6" ry="9" fill="#fff" stroke="#6b5f55" stroke-width="2" transform="rotate(-20 17 44)"/><ellipse cx="27" cy="50" rx="6" ry="9" fill="#fff" stroke="#6b5f55" stroke-width="2" transform="rotate(15 27 50)"/><text x="22" y="82" font-size="11" text-anchor="middle" fill="#3b4f73">お米</text></g><path class="an-arr" d="M38 48h10m-4-5 5 5-5 5" fill="none" stroke="#6b5f55" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:0s"/><text x="43" y="32" font-size="11" text-anchor="middle" fill="#bd4630">麹</text><g class="pt-step" style="animation-delay:1.2s"><circle cx="60" cy="48" r="13" fill="#f6d98a" stroke="#6b5f55" stroke-width="2.4"/><text x="60" y="53" font-size="14" text-anchor="middle" fill="#bd4630">甘</text><text x="60" y="82" font-size="11" text-anchor="middle" fill="#3b4f73">甘く</text></g><path class="an-arr" d="M76 48h10m-4-5 5 5-5 5" fill="none" stroke="#6b5f55" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:1.2s"/><g class="pt-step" style="animation-delay:2.4s"><path d="M86 34h24l-3 24a9 9 0 0 1-18 0z" fill="#cfe2f5" stroke="#6b5f55" stroke-width="2.4" stroke-linejoin="round"/><text x="98" y="82" font-size="11" text-anchor="middle" fill="#3b4f73">お酒</text></g></svg></div><div class="pt-txt"><b>① 麹が生む「醸造酒」</b><span>米・水・麹で造る、日本の伝統的なお酒。<br><strong>麹の力で、甘くしながら<wbr>お酒に変える</strong>、<wbr>世界でも珍しい技術。</span></div></div><div class="pt-row"><div class="pt-ill"><svg viewBox="0 0 120 96" aria-hidden="true"><path d="M6 78h108" stroke="#6b5f55" stroke-width="2.5" stroke-linecap="round"/><rect class="pt-bar" x="12" y="58" width="24" height="20" rx="4" fill="#e8c25a" style="animation-delay:0s"/><rect class="pt-bar" x="48" y="42" width="24" height="36" rx="4" fill="#a24b68" style="animation-delay:0.3s"/><rect class="pt-bar" x="84" y="22" width="24" height="56" rx="4" fill="#bd4630" style="animation-delay:0.6s"/><text class="pt-star" x="96" y="18" font-size="15" text-anchor="middle" fill="#bd4630">★</text><text x="24" y="92" font-size="10.5" text-anchor="middle" fill="#3b4f73">ビール</text><text x="60" y="92" font-size="10.5" text-anchor="middle" fill="#3b4f73">ワイン</text><text x="96" y="92" font-size="10.5" text-anchor="middle" fill="#3b4f73">日本酒</text></svg></div><div class="pt-txt"><b>② 世界一の「高い度数」</b><span>ビールやワインと同じ<wbr>発酵酒の中で、<wbr><strong>世界一</strong><wbr>度数が高いお酒。</span></div></div></div></div>
 
@@ -1619,9 +1783,10 @@
     <!-- Screen: 焼酎・導入 -->
     <section class="screen" data-screen="shochu-intro">
       <h3 class="section-title">焼酎ってどんなお酒？</h3>
-      <div class="guide" data-komeo="komeo4.webp"><div class="guide-src">まずは、<wbr>ひとつ問いかけから。<wbr>絵の動きに<wbr>注目してください。</div></div>
+      <div class="guide" data-komeo="komeo4.webp"><div class="guide-src">焼酎の基本を、<br>アニメーションで学べます。<br>まずは「ほかのお酒との違い」。<br>絵の動きに注目してください。</div></div>
 
-      <div class="glass-box hook"><div class="hook-q">焼酎は、ほかのお酒と何が違う？</div><div class="hook-ill"><div class="cine"><div class="cine-cam"><div class="cine-bg"></div><div class="cine-rays"></div><div class="cine-floor"></div><div class="cine-dust"></div><div class="cine-shot" style="--d:0s"><div class="cine-trio"><img class="" data-n="kome.webp" alt="" decoding="async" style=""><img class="" data-n="mugi.webp" alt="" decoding="async" style=""><img class="" data-n="satsumaimo.webp" alt="" decoding="async" style=""></div></div><div class="cine-shot" style="--d:1.4s"><div class="c-fire"></div><img class="cine-pic still" data-n="still.webp" alt="" decoding="async" style=""><div class="c-steam c-steam2" style="left:58%;width:26%;aspect-ratio:1"></div><div class="c-steam c-steam2" style="left:66%;width:22%;aspect-ratio:1;animation-delay:.8s"></div><div class="c-steam c-steam2" style="left:50%;width:22%;aspect-ratio:1;animation-delay:1.6s"></div></div><div class="cine-shot" style="--d:2.8s"><div class="c-water"><svg viewBox="0 0 120 150" aria-hidden="true"><defs><radialGradient id="wf-w" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#cfe8fb" stop-opacity=".55"/><stop offset="1" stop-color="#cfe8fb" stop-opacity="0"/></radialGradient></defs><ellipse cx="60" cy="126" rx="46" ry="11" fill="url(#wf-w)"/><ellipse cx="60" cy="126" rx="30" ry="6" fill="none" stroke="#d8ecfa" stroke-opacity=".5"/><ellipse class="c-rip" cx="60" cy="126" rx="30" ry="6.5" fill="none" stroke="#e8f4ff" stroke-width="1.6"/><ellipse class="c-rip" style="animation-delay:.15s" cx="60" cy="126" rx="22" ry="5" fill="none" stroke="#e8f4ff" stroke-width="1.2"/></svg><img class="c-dropimg" data-n="water_drop.webp" alt="" decoding="async"></div></div><div class="cine-shot fin" style="--d:4.2s"><div class="cine-beam"></div><div class="cine-pool"></div><img class="cine-obj tall" data-n="syotyu.webp" alt="" decoding="async" style=""><div class="cine-sweep"></div></div></div><div class="cine-cap" style="--d:0s">米・麦・芋など</div><div class="cine-cap" style="--d:1.4s">熱して、蒸気に</div><div class="cine-cap" style="--d:2.8s">冷やして、集める</div><div class="cine-cap fin" style="--d:4.6s">焼酎</div><div class="cine-grade"></div><div class="cine-vig"></div><div class="cine-grain"></div><div class="cine-bar t"></div><div class="cine-bar b"></div></div></div><div class="hook-a" style="animation-delay:5.2s">つくった酒を、<strong>蒸留</strong>してあります。</div></div>
+      <div class="glass-box hook"><div class="hook-q">焼酎は、ほかのお酒と何が違う？</div><div class="hook-ill"><div class="cine v2" data-ctl="1"><div class="cine-cam"><div class="cine-bg"></div><div class="cine-rays"></div><div class="cine-floor"></div><div class="cine-dust"></div><div class="cine-shot" style="--d:0s;animation-duration:2.6s"><div class="cine-trio"><img class="" data-n="kome.webp" alt="" decoding="async"><img class="" data-n="mugi.webp" alt="" decoding="async"><img class="" data-n="satsumaimo.webp" alt="" decoding="async"></div></div><div class="cine-shot" style="--d:2.4s;animation-duration:3.4s"><div class="cv-stack still"><div class="cv-fire"></div><img class="cv-img" data-n="still.webp" alt="" decoding="async"><div class="cv-vp"><i style="--k:0"></i><i style="--k:1"></i><i style="--k:2"></i></div><div class="cv-dr"><i style="--k:0"></i><i style="--k:1"></i><i style="--k:2"></i></div></div></div><div class="cine-shot" style="--d:5.6s;animation-duration:2.6s"><div class="c-water"><svg viewBox="0 0 120 150" aria-hidden="true"><defs><radialGradient id="wf-w2" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#cfe8fb" stop-opacity=".55"/><stop offset="1" stop-color="#cfe8fb" stop-opacity="0"/></radialGradient></defs><ellipse cx="60" cy="126" rx="46" ry="11" fill="url(#wf-w2)"/><ellipse cx="60" cy="126" rx="30" ry="6" fill="none" stroke="#d8ecfa" stroke-opacity=".5"/><ellipse class="c-rip" cx="60" cy="126" rx="30" ry="6.5" fill="none" stroke="#e8f4ff" stroke-width="1.6"/><ellipse class="c-rip" style="animation-delay:.15s" cx="60" cy="126" rx="22" ry="5" fill="none" stroke="#e8f4ff" stroke-width="1.2"/></svg><img class="c-dropimg" data-n="water_drop.webp" alt="" decoding="async"></div></div><div class="cine-shot fin" style="--d:8.0s"><div class="cine-beam"></div><div class="cine-pool"></div><img class="cine-obj tall" data-n="syotyu.webp" alt="" decoding="async"><div class="cine-sweep"></div></div></div><div class="cine-cap" style="--d:.2s;animation-duration:2.3s">米・麦・芋など<small>焼酎は、さまざまな原料から造られます。</small></div><div class="cine-cap" style="--d:2.6s;animation-duration:3.0s">熱して、蒸気に<small>発酵させた液を熱すると、蒸気になります。</small></div><div class="cine-cap" style="--d:5.8s;animation-duration:2.2s">冷やして、集める<small>蒸気を冷やして、お酒を集めます。</small></div><div class="cine-cap fin" style="--d:8.3s">焼酎</div><div class="cine-grade"></div><div class="cine-vig"></div><div class="cine-grain"></div><div class="cine-bar t"></div><div class="cine-bar b"></div><div class="cv-prog" style="animation-duration:9.6s"></div></div>
+<div class="cine-ctl"><button type="button" data-act="pp">一時停止</button><button type="button" data-act="re">もう一度見る</button></div><div class="hook-a" style="animation-delay:10.5s">つくった酒を、<strong>蒸留</strong>してあります。</div></div>
       <button class="hook-more" onclick="toggleMore(this)" aria-expanded="false"><span>もっと知る</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <div class="pt-more">
       <div class="glass-box diagram">
@@ -1655,9 +1820,21 @@
     <!-- Screen: ウイスキー・導入 -->
     <section class="screen" data-screen="whisky-intro">
       <h3 class="section-title">ウイスキーってどんなお酒？</h3>
-      <div class="guide" data-komeo="komeo1.webp"><div class="guide-src">まずは、<wbr>ひとつ問いかけから。<wbr>絵の動きに<wbr>注目してください。</div></div>
+      <div class="guide" data-komeo="komeo1.webp"><div class="guide-src">ウイスキーの基本を、<br>アニメーションで学べます。<br>まずは「色の出どころ」。<br>絵の動きに注目してください。</div></div>
 
-      <div class="glass-box hook"><div class="hook-q">ウイスキーの色は、どこから来る？</div><div class="hook-ill"><div class="cine"><div class="cine-cam"><div class="cine-bg"></div><div class="cine-rays"></div><div class="cine-floor"></div><div class="cine-dust"></div><div class="cine-shot" style="--d:0s"><img class="cine-pic still" data-n="still.webp" alt="" decoding="async" style=""></div><div class="cine-shot" style="--d:1.3s"><img class="cine-pic glass" data-n="glass_clear.webp" alt="" decoding="async" style=""></div><div class="cine-shot" style="--d:2.6s"><img class="cine-pic" data-n="barrel.webp" alt="" decoding="async" style=""></div><div class="cine-shot" style="--d:3.9s"><img class="cine-pic glass" data-n="glass_amber.webp" alt="" decoding="async" style=""></div><div class="cine-shot fin" style="--d:5.2s"><div class="cine-beam"></div><div class="cine-pool"></div><img class="cine-obj tall" data-n="whisky.webp" alt="" decoding="async" style=""><div class="cine-sweep"></div></div></div><div class="cine-cap" style="--d:0s">蒸留して</div><div class="cine-cap" style="--d:1.3s">できたては、無色透明</div><div class="cine-cap" style="--d:2.6s">樽で、長い時間</div><div class="cine-cap" style="--d:3.9s">琥珀色に</div><div class="cine-cap fin" style="--d:5.6s">ウイスキー</div><div class="cine-grade"></div><div class="cine-vig"></div><div class="cine-grain"></div><div class="cine-bar t"></div><div class="cine-bar b"></div></div></div><div class="hook-a" style="animation-delay:6.2s"><strong>樽</strong>の中で、長く眠った色です。</div></div>
+      <div class="glass-box hook"><div class="hook-q">ウイスキーの色は、どこから来る？</div><div class="hook-ill"><div class="cine v2" data-ctl="1"><div class="cine-cam"><div class="cine-bg"></div><div class="cine-rays"></div><div class="cine-floor"></div><div class="cine-dust"></div>
+<div class="cine-shot" style="--d:0s;animation-duration:2.5s"><div class="cv-stack still"><img class="cv-img" data-n="still.webp" alt="" decoding="async"><div class="cv-vp"><i style="--k:0"></i><i style="--k:1"></i><i style="--k:2"></i></div><div class="cv-dr"><i style="--k:0"></i><i style="--k:1"></i><i style="--k:2"></i></div></div></div>
+<div class="cine-shot" style="--d:2.3s;animation-duration:2.1s"><div class="cv-stack glass"><img class="cv-img" data-n="glass_clear.webp" alt="" decoding="async"></div></div>
+<div class="cine-shot cv-caskshot" style="--d:4.1s;animation-duration:4.4s"><canvas class="cv-cask" aria-hidden="true"></canvas><div class="cv-yr"><small>熟成</small><b>0</b><small>年</small></div></div>
+<div class="cine-shot" style="--d:8.1s;animation-duration:2.1s"><div class="cv-stack glass"><img class="cv-img" data-n="glass_amber.webp" alt="" decoding="async"></div></div>
+<div class="cine-shot fin" style="--d:9.8s"><div class="cine-beam"></div><div class="cine-pool"></div><img class="cine-obj tall" data-n="whisky.webp" alt="" decoding="async"><div class="cine-sweep"></div></div></div>
+<div class="cine-cap" style="--d:.2s;animation-duration:2.3s">蒸留して<small>発酵した麦の液を熱し、蒸気を冷やして集めます。</small></div>
+<div class="cine-cap" style="--d:2.5s;animation-duration:1.9s">できたては、無色透明<small>この時点では、まだ色はついていません。</small></div>
+<div class="cine-cap" style="--d:4.3s;animation-duration:4.0s">樽で、長い時間<small>樽の木から、色と香りがゆっくり溶け出します。</small></div>
+<div class="cine-cap" style="--d:8.3s;animation-duration:1.9s">琥珀色に<small>年月を重ねて、深い色になりました。</small></div>
+<div class="cine-cap fin" style="--d:10.1s">ウイスキー</div>
+<div class="cine-grade"></div><div class="cine-vig"></div><div class="cine-grain"></div><div class="cine-bar t"></div><div class="cine-bar b"></div><div class="cv-prog"></div></div>
+<div class="cine-ctl"><button type="button" data-act="pp">一時停止</button><button type="button" data-act="re">もう一度見る</button></div><div class="hook-a" style="animation-delay:10.9s"><strong>樽</strong>の中で、長く眠った色です。</div></div>
       <button class="hook-more" onclick="toggleMore(this)" aria-expanded="false"><span>もっと知る</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <div class="pt-more"><div class="glass-box" style="padding: 6px 16px;"><div class="pt-row"><div class="pt-ill"><svg viewBox="0 0 120 96" aria-hidden="true"><g class="pt-step" style="animation-delay:0s"><path d="M22 72V30" stroke="#8f7a3a" stroke-width="2.6" stroke-linecap="round"/><ellipse cx="17" cy="34" rx="3.6" ry="6" fill="#e8c35a" stroke="#6b5f55" stroke-width="1.6" transform="rotate(-25 17 34)"/><ellipse cx="27" cy="34" rx="3.6" ry="6" fill="#e8c35a" stroke="#6b5f55" stroke-width="1.6" transform="rotate(25 27 34)"/><ellipse cx="17" cy="46" rx="3.6" ry="6" fill="#e8c35a" stroke="#6b5f55" stroke-width="1.6" transform="rotate(-25 17 46)"/><ellipse cx="27" cy="46" rx="3.6" ry="6" fill="#e8c35a" stroke="#6b5f55" stroke-width="1.6" transform="rotate(25 27 46)"/><ellipse cx="17" cy="58" rx="3.6" ry="6" fill="#e8c35a" stroke="#6b5f55" stroke-width="1.6" transform="rotate(-25 17 58)"/><ellipse cx="27" cy="58" rx="3.6" ry="6" fill="#e8c35a" stroke="#6b5f55" stroke-width="1.6" transform="rotate(25 27 58)"/><ellipse cx="22" cy="26" rx="3.6" ry="6" fill="#e8c35a" stroke="#6b5f55" stroke-width="1.6" transform="rotate(0 22 26)"/><text x="22" y="86" font-size="11" text-anchor="middle" fill="#3b4f73">大麦</text></g><path class="an-arr" d="M36 48h10m-4-5 5 5-5 5" fill="none" stroke="#6b5f55" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:0s"/><g class="pt-step" style="animation-delay:1.2s"><path d="M50 62c0-8 5-12 10-12s10 4 10 12v8c0 2-2 3-4 3H54c-2 0-4-1-4-3z" fill="#c7773e" stroke="#6b5f55" stroke-width="2.4"/><path d="M60 50v-8h10" fill="none" stroke="#6b5f55" stroke-width="2.6" stroke-linecap="round"/><text x="60" y="86" font-size="11" text-anchor="middle" fill="#3b4f73">蒸留</text></g><path class="an-arr" d="M76 48h10m-4-5 5 5-5 5" fill="none" stroke="#6b5f55" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:1.2s"/><g class="pt-step" style="animation-delay:2.4s"><g transform="translate(98 52) scale(1.15)"><path d="M-12 -16h24c6 6 6 26 0 32h-24c-6-6-6-26 0-32z" fill="#c58a4a" stroke="#6b5f55" stroke-width="2.4"/><path d="M-13 -8h26M-13 8h26" stroke="#4b3a2c" stroke-width="2.4"/><path d="M-6 -15c-3 8-3 22 0 30" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="2"/></g><text x="98" y="86" font-size="11" text-anchor="middle" fill="#3b4f73">樽で熟成</text></g></svg></div><div class="pt-txt"><b>① 穀物の「蒸留酒」</b><span>大麦などを<wbr><i class="nw" style="font-style:normal">発酵・蒸留し、</i><wbr><strong>樽で長い年月</strong><wbr>熟成させて造ります。</span></div></div><div class="pt-row"><div class="pt-ill"><svg viewBox="0 0 120 96" aria-hidden="true"><g transform="translate(34 52) scale(1.2)"><path d="M-12 -16h24c6 6 6 26 0 32h-24c-6-6-6-26 0-32z" fill="#c58a4a" stroke="#6b5f55" stroke-width="2.4"/><path d="M-13 -8h26M-13 8h26" stroke="#4b3a2c" stroke-width="2.4"/><path d="M-6 -15c-3 8-3 22 0 30" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="2"/></g><text class="pt-z" x="52" y="30" font-size="13" fill="#3b4f73" style="animation-delay:0s">z</text><text class="pt-z" x="60" y="22" font-size="13" fill="#3b4f73" style="animation-delay:0.6s">z</text><text class="pt-z" x="68" y="14" font-size="13" fill="#3b4f73" style="animation-delay:1.2s">z</text><path class="an-arr" d="M62 62h10m-4-5 5 5-5 5" fill="none" stroke="#6b5f55" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:0s"/><path d="M84 36h28l-4 38H88z" fill="#d9902f" stroke="#6b5f55" stroke-width="2.6" stroke-linejoin="round"/><path d="M90 42l2 26" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".5"/><text x="34" y="92" font-size="11" text-anchor="middle" fill="#3b4f73">樽の中で眠る</text><text x="98" y="92" font-size="11" text-anchor="middle" fill="#3b4f73">琥珀色</text></svg></div><div class="pt-txt"><b>② 透明から「琥珀色」へ</b><span>造りたては、<wbr>焼酎のように<wbr>無色透明。<br><strong class="nw">樽の中で眠ることで、</strong><wbr>琥珀色と甘い香りに。</span></div></div></div></div>
 
@@ -1757,7 +1934,6 @@
     <section class="screen" data-screen="sake-methods">
       <h2 class="title">さまざまな「造り」</h2>
       
-      <div class="guide" data-komeo="komeo2.webp"><div class="guide-src">造りで、<wbr>味は変わります。<br>難しい言葉は、<wbr><strong>ひとことだけ</strong><wbr>読めば十分です。</div></div>
 
       <div class="sub-heading">酵母の育て方による違い（酒母造り）</div>
 
@@ -1824,7 +2000,6 @@
     <!-- Screen: 吾熊の日本酒 -->
     <section class="screen" data-screen="our-sake">
       <h2 class="title">吾熊の日本酒</h2>
-      <div class="guide" data-komeo="komeo1.webp"><div class="guide-src">気になる銘柄を<wbr>タップすると、<wbr>豆知識が開きます。</div></div>
 
             
       <div class="glass-box" style="padding: 16px 20px;">
@@ -1857,14 +2032,7 @@
     <!-- Screen: 焼酎・何からできている？ -->
     <section class="screen" data-screen="shochu-materials">
       <h2 class="title" style="font-size: clamp(17px, 5vw, 20px);">原材料による「味」の違い</h2>
-      <div class="guide" data-komeo="komeo1.webp"><div class="guide-src">原料のアイコンを、<wbr><strong>タップ</strong>してみてください。</div></div>
-
-            
-      <div class="glass-box" style="padding: 16px 20px;">
-        <p class="article-text">
-          原料で、<wbr>香りも味わいも変わります。<br>
-        </p>
-      </div>
+      <div class="guide" data-komeo="komeo1.webp"><div class="guide-src">焼酎は、原料で味が変わります。<br>原料のアイコンをタップすると、<br>それぞれの味の特徴が分かります。</div></div>
 
       <div class="floating-wrap">
         <div class="floating-item" onclick="showMaterialDetail('imo', this)">
@@ -1939,7 +2107,6 @@
         </p>
       </div>
 
-      <div class="guide" data-komeo="komeo4.webp"><div class="guide-src"><strong>ひとこと</strong>だけでも<wbr>十分です。<br>気になったら、<wbr>タップしてください。</div></div>
 
       <div class="sub-heading mt-24">種類を表すことば</div>
 
@@ -1993,7 +2160,6 @@
     <!-- Screen: 吾熊の焼酎 -->
     <section class="screen" data-screen="our-shochu">
       <h2 class="title">吾熊の焼酎</h2>
-      <div class="guide" data-komeo="komeo4.webp"><div class="guide-src">気になる銘柄を<wbr>タップすると、<wbr>豆知識が開きます。</div></div>
 
             
       <div class="glass-box" style="padding: 16px 20px;">
@@ -2033,7 +2199,6 @@
         </p>
       </div>
 
-      <div class="guide" data-komeo="komeo1.webp"><div class="guide-src">覚える言葉は、<wbr>たった3つ。<br>最後に、<wbr>クイズもあります。</div></div>
 
       <div class="sub-heading mt-24 no-fold">原料による違い</div>
 
@@ -2091,7 +2256,7 @@
       
       <div class="glass-box" style="padding: 6px 16px;"><div class="pt-row"><div class="pt-ill"><svg viewBox="0 0 120 96" aria-hidden="true"><circle cx="60" cy="48" r="34" fill="#cfe2f5" stroke="#6b5f55" stroke-width="3"/><ellipse cx="60" cy="48" rx="14" ry="34" fill="none" stroke="#6b5f55" stroke-opacity=".3" stroke-width="2"/><path d="M26 48h68" stroke="#6b5f55" stroke-opacity=".3" stroke-width="2"/><circle class="pt-step" style="animation-delay:0.0s" cx="44" cy="30" r="5.5" fill="#bd4630"/><circle class="pt-step" style="animation-delay:0.7s" cx="76" cy="34" r="5.5" fill="#bd4630"/><circle class="pt-step" style="animation-delay:1.4s" cx="86" cy="56" r="5.5" fill="#bd4630"/><circle class="pt-step" style="animation-delay:2.0999999999999996s" cx="54" cy="66" r="5.5" fill="#bd4630"/><circle class="pt-step" style="animation-delay:2.8s" cx="34" cy="52" r="5.5" fill="#bd4630"/><text x="60" y="94" font-size="11" text-anchor="middle" fill="#3b4f73">5つの産地</text></svg></div><div class="pt-txt"><b>① 世界の「5大産地」</b><span>有名な5つの産地は<wbr><strong>「世界5大ウイスキー」</strong><wbr>と呼ばれます。</span></div></div><div class="pt-row"><div class="pt-ill"><svg viewBox="0 0 120 96" aria-hidden="true"><circle cx="14" cy="42" r="10" fill="#ece5d6" stroke="#6b5f55" stroke-width="2"/><circle cx="38" cy="42" r="10" fill="#ece5d6" stroke="#6b5f55" stroke-width="2"/><circle cx="86" cy="42" r="10" fill="#ece5d6" stroke="#6b5f55" stroke-width="2"/><circle cx="110" cy="42" r="10" fill="#ece5d6" stroke="#6b5f55" stroke-width="2"/><g class="pt-step" style="animation-delay:0s"><circle cx="62" cy="42" r="12" fill="#fff" stroke="#6b5f55" stroke-width="2.4"/><circle cx="62" cy="42" r="6" fill="#bd4630"/></g><g transform="translate(62 17)"><path class="pt-star" d="M0-8 2-2 8 0 2 2 0 8-2 2-8 0-2-2z" fill="#e8b84a"/></g><text x="62" y="70" font-size="11" text-anchor="middle" fill="#bd4630">日本</text><text x="62" y="90" font-size="11" text-anchor="middle" fill="#3b4f73">世界トップ5</text></svg></div><div class="pt-txt"><b>② 日本もその1つ！</b><span><strong>本場と並ぶトップ5。</strong><wbr>繊細な技術が評価され、<wbr>今はブームです。</span></div></div></div>
 
-      <div class="guide" data-komeo="komeo5.webp"><div class="guide-src"><span class="red-t">気になる国旗を<wbr>タップしてみてください。</span><wbr>味の個性が<wbr>表示されます。</div></div>
+      <div class="guide" data-komeo="komeo5.webp"><div class="guide-src">ウイスキーは、<br>産地で個性が違います。<br><span class="red-t">気になる国旗をタップすると、</span><br>味の個性が表示されます。</div></div>
 
       <div class="flag-strip"><div class="flag-strip-t">国旗をタップすると、味の個性が見られます</div><div class="flag-row"><div class="flag-chip" role="button" tabindex="0" data-i="0"><span class="fl-svg"><svg viewBox="0 0 36 36"><rect width="36" height="36" rx="5" fill="#2b5aa8"/><path d="M3 3L33 33M33 3L3 33" stroke="#fff" stroke-width="5"/></svg></span><b>スコッチ</b><span>スモーキー</span></div><div class="flag-chip" role="button" tabindex="0" data-i="1"><span class="fl-svg"><svg viewBox="0 0 36 36"><rect width="36" height="36" rx="5" fill="#fff"/><g fill="#c8312b"><rect y="4" width="36" height="4"/><rect y="12" width="36" height="4"/><rect y="20" width="36" height="4"/><rect y="28" width="36" height="4"/></g><rect width="17" height="18" rx="3" fill="#2b4a86"/><g fill="#fff"><circle cx="5" cy="5" r="1.3"/><circle cx="11" cy="5" r="1.3"/><circle cx="8" cy="9" r="1.3"/><circle cx="5" cy="13" r="1.3"/><circle cx="11" cy="13" r="1.3"/></g></svg></span><b>バーボン</b><span>甘く力強い</span></div><div class="flag-chip" role="button" tabindex="0" data-i="2"><span class="fl-svg"><svg viewBox="0 0 36 36"><rect width="36" height="36" rx="5" fill="#fff" stroke="#d8cdb8"/><circle cx="18" cy="18" r="9" fill="#c8312b"/></svg></span><b>ジャパニーズ</b><span>繊細・バランス</span></div><div class="flag-chip" role="button" tabindex="0" data-i="3"><span class="fl-svg"><svg viewBox="0 0 36 36"><rect width="36" height="36" rx="5" fill="#fff"/><path d="M0 5a5 5 0 015-5h7v36H5a5 5 0 01-5-5z" fill="#2e9a5b"/><path d="M24 0h7a5 5 0 015 5v26a5 5 0 01-5 5h-7z" fill="#f08a2c"/></svg></span><b>アイリッシュ</b><span>なめらか</span></div><div class="flag-chip" role="button" tabindex="0" data-i="4"><span class="fl-svg"><svg viewBox="0 0 36 36"><rect width="36" height="36" rx="5" fill="#fff"/><path d="M0 5a5 5 0 015-5h6v36H5a5 5 0 01-5-5z" fill="#d23b33"/><path d="M25 0h6a5 5 0 015 5v26a5 5 0 01-5 5h-6z" fill="#d23b33"/><path d="M18 8l2 4 3-1-1 5 3-2 1 3-5 3 .5 2-3.5-.5v4h-1v-4l-3.5.5.5-2-5-3 1-3 3 2-1-5 3 1z" fill="#d23b33"/></svg></span><b>カナディアン</b><span>軽快</span></div></div></div>
       <div class="flag-detail" id="flagDetail"><div class="fd-hint">▲ 気になる国旗をタップ</div></div>
@@ -2106,7 +2271,6 @@
     <section class="screen" data-screen="whisky-deep">
       <h2 class="title">さまざまな個性</h2>
       
-      <div class="guide" data-komeo="komeo4.webp"><div class="guide-src">ここから少し、<wbr><strong>マニアックな話</strong>です。<br>ひとことだけでも、<wbr>十分です。</div></div>
 
       <div class="sub-heading mt-24 no-fold">好き嫌いが分かれる！？<br>「ピート（泥炭）」の秘密</div>
 
@@ -2136,7 +2300,6 @@
     <!-- Screen: 吾熊のウイスキー -->
     <section class="screen" data-screen="our-whisky">
       <h2 class="title">吾熊のウイスキー</h2>
-      <div class="guide" data-komeo="komeo1.webp"><div class="guide-src">気になる銘柄を<wbr>タップすると、<wbr>豆知識が開きます。</div></div>
 
             
       <div class="glass-box" style="padding: 16px 20px;">
@@ -2175,20 +2338,22 @@ const openingScreen = document.getElementById('openingScreen');
 let hasSkipped = false;
 let openingTimer = null;
 
-function endOpening() {
+function endOpening(ev) {
   if (hasSkipped) return;
   hasSkipped = true;
+  const quick = !!(ev && ev.type === 'click');
+  if (quick) openingScreen.style.transition = 'opacity .45s ease';
   clearTimeout(openingTimer);
   if (typeof flushInits === 'function') flushInits();
   document.body.classList.remove('opening');          // 裏の画面を先に表示し、ゆっくり重ねて切り替える
   openingScreen.classList.add('leaving');
   openingScreen.style.opacity = '0';
-  setTimeout(() => { openingScreen.style.display = 'none'; openingScreen.classList.remove('leaving'); }, 1600);
+  setTimeout(() => { openingScreen.style.display = 'none'; openingScreen.classList.remove('leaving'); if (quick) openingScreen.style.transition = ''; }, quick ? 600 : 1600);
   setTimeout(() => {
     document.body.classList.remove('intro-wait');
     startIntro();
     resumeGuides();
-  }, 1000);
+  }, quick ? 350 : 1000);
 }
 
 function startOpening() {
@@ -2207,6 +2372,7 @@ function startOpening() {
 }
 
 openingScreen.addEventListener('click', endOpening);
+(function(){ const h = document.createElement('div'); h.id = 'openingHint'; h.textContent = 'タップで進みます'; openingScreen.appendChild(h); })();
 openingTimer = setTimeout(endOpening, (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 1800 : 5300);
 
 
@@ -2375,7 +2541,7 @@ const RUBY_DICT = {
 };
 const RUBY_RE = new RegExp(Object.keys(RUBY_DICT).sort((a, b) => b.length - a.length).join('|'), 'g');
 const RUBY_SKIP = 'ruby, rt, svg, script, style, textarea, input, .topic-tab, .cine, .shelf-tab, .pv-bar, .pv-toggle, .tap-hint, .what-btn, .region-label, [data-noruby]';
-function rubyNode(n) {
+function rubyNode0(n) {
   if (n.nodeType === 3) {
     const p = n.parentElement;
     if (!p || p.closest(RUBY_SKIP) || (p.closest('button') && !p.closest('.seg')) || !RUBY_RE.test(n.nodeValue)) { RUBY_RE.lastIndex = 0; return; }
@@ -2397,6 +2563,69 @@ function rubyNode(n) {
     list.forEach(rubyNode);
   }
 }
+
+/* ============ 用語のことば解説（本文中の言葉をタップ → ひとこと解説） ============ */
+const GL_DEF = {
+  '麹': { d: '蒸したお米などに、麹菌（こうじきん）を育てたもの。お米のでんぷんを、糖に変える働きをします。', j: '黒麹' },
+  '酵母': { d: '糖を食べて、アルコールと香りを生み出す微生物。お酒造りの主役のひとつです。', j: '生酛' },
+  '発酵': { d: '酵母が糖を、アルコールに変えていくこと。お酒は、ここで生まれます。' },
+  '醸造': { d: '原料を発酵させてお酒を造ること。日本酒・ワイン・ビールは「醸造酒」です。' },
+  '蒸留': { d: '発酵させた液を熱し、出てきた蒸気を冷やして集めること。アルコール分と香りの成分が、濃く集まります。', j: '常圧蒸留' },
+  '熟成': { d: '蒸留したお酒を、樽の中でじっくり寝かせること。無色透明から琥珀色になり、甘い香りが育ちます。', j: 'バーボン樽' },
+  '精米歩合': { d: 'お米の外側を削ったあとに、残った部分の割合。「60%」なら、外側を40%削り落としています。', j: '精米歩合' },
+  'ピート': { d: '泥炭（でいたん）のこと。麦芽を乾かすときの煙が、スモーキーな香りのもとになります。', j: 'ピート' }
+};
+const GL_RE = /(?<![黒白黄])麹|(?<!圧)蒸留(?!所)|発酵|(?<!六号)酵母|(?<!本)醸造|熟成|精米歩合|ピート/g;
+const GL_SCOPE = '.pt-txt, .diagram-text, .diagram-note, .hook-a, .article-text, .tv, .ts, .matrix-cap';
+const GL_NO = '.cine, button, .tag, .gl, .accordion-header, .fold-head, .what-btn, ruby, rt, svg, .intro-bubble, .region-label, [data-noruby]';
+function glossNode(n) {
+  const p = n.parentElement;
+  if (!p || !GL_RE.test(n.nodeValue)) { GL_RE.lastIndex = 0; return; }
+  GL_RE.lastIndex = 0;
+  if (!p.closest(GL_SCOPE) || p.closest(GL_NO)) return;
+  const sec = p.closest('.screen'); if (!sec) return;
+  sec._gl = sec._gl || {};
+  const t = n.nodeValue; let last = 0, m, hit = false; const frag = document.createDocumentFragment(), made = [];
+  while ((m = GL_RE.exec(t))) {
+    if (sec._gl[m[0]]) continue;
+    sec._gl[m[0]] = 1; hit = true;
+    if (m.index > last) { const a = document.createTextNode(t.slice(last, m.index)); frag.appendChild(a); made.push(a); }
+    const s = document.createElement('span'); s.className = 'gl'; s.dataset.k = m[0]; s.setAttribute('role', 'button');
+    const x = document.createTextNode(m[0]); s.appendChild(x); frag.appendChild(s); made.push(x);
+    last = m.index + m[0].length;
+  }
+  GL_RE.lastIndex = 0;
+  if (!hit) return;
+  if (last < t.length) { const a = document.createTextNode(t.slice(last)); frag.appendChild(a); made.push(a); }
+  n.parentNode.replaceChild(frag, n);
+  made.forEach(rubyNode0);
+}
+function rubyNode(n) { if (n.nodeType === 3) glossNode(n); rubyNode0(n); }
+
+let glSheetEl = null;
+function closeGl() { if (glSheetEl) glSheetEl.classList.remove('show'); }
+function openGl(k) {
+  const g = GL_DEF[k]; if (!g) return;
+  if (!glSheetEl) {
+    glSheetEl = document.createElement('div'); glSheetEl.id = 'glSheet';
+    glSheetEl.innerHTML = '<div class="gl-card" role="dialog" aria-live="polite"><div class="gl-t"></div><p class="gl-d"></p><div class="gl-b"><button type="button" class="gl-more">くわしく見る</button><button type="button" class="gl-x">とじる</button></div></div>';
+    document.body.appendChild(glSheetEl);
+    glSheetEl.addEventListener('click', e => { if (e.target === glSheetEl || e.target.closest('.gl-x')) closeGl(); });
+    glSheetEl.querySelector('.gl-more').addEventListener('click', () => { const j = glSheetEl._j; closeGl(); if (j) jumpToTerm(j); });
+  }
+  glSheetEl.querySelector('.gl-t').textContent = k;
+  glSheetEl.querySelector('.gl-d').textContent = g.d;
+  glSheetEl._j = g.j || null;
+  glSheetEl.querySelector('.gl-more').style.display = g.j ? '' : 'none';
+  glSheetEl.classList.add('show');
+  logCard('用語：' + k);
+}
+document.addEventListener('click', e => {
+  const g = e.target.closest && e.target.closest('.gl');
+  if (!g) return;
+  e.preventDefault(); e.stopPropagation(); openGl(g.dataset.k);
+}, true);
+
 (function initRuby() {
   const run = () => {
     document.querySelectorAll('.screen, #brandSheet').forEach(rubyNode);
@@ -2600,7 +2829,7 @@ const whiskyGroups = [
       { name: "<span class='region-label'>[サントリー]</span>白州", desc: "<span class='tv'><b>豆知識</b>蒸溜所は、南アルプスのふもと、標高約700mの森の中にあります。</span><span class='ts'><b>味わい</b>森の若葉のような爽やかな香りと、軽快なキレ。ハイボールがおすすめです。</span>" },
       { name: "<span class='region-label'>[ニッカ]</span>余市", desc: "<span class='tv'><b>豆知識</b>今も石炭をくべて、直火で蒸溜する、世界でも珍しい蒸溜所です。</span><span class='ts'><b>味わい</b>力強くどっしりした味わい。ピートのスモーキーな香りと、海辺ならではの潮の風味。</span>" },
       { name: "<span class='region-label'>[ニッカ]</span>竹鶴", desc: "<span class='tv'><b>豆知識</b>名前は、ニッカの創業者・竹鶴政孝から。</span><span class='ts'><b>味わい</b>複数の蒸留所のモルトだけをブレンド。華やかな香りと、力強くなめらかな味わい。</span>" },
-      { name: "<span class='region-label'>[桜尾]</span>戸河内 シングルモルト", desc: "<span class='tv'><b>豆知識</b>熟成庫のひとつは、広島県の、かつての鉄道トンネルです。</span><span class='ts'><b>味わい</b>1918年創業の酒蔵「サクラオ」のシングルモルト。新緑のような爽やかな香りと、軽快な味わい。</span>" }
+      { name: "<span class='region-label'>[桜尾]</span>戸河内 <span class='nw'>シングルモルト</span>", desc: "<span class='tv'><b>豆知識</b>熟成庫のひとつは、広島県の、かつての鉄道トンネルです。</span><span class='ts'><b>味わい</b>1918年創業の酒蔵「サクラオ」のシングルモルト。新緑のような爽やかな香りと、軽快な味わい。</span>" }
     ]
   },
   {
@@ -2671,7 +2900,7 @@ function logOnce(type, detail) {
 }
 
 /* ===== 入口：アニメ後の自動スクロール／タップで最後までスキップ ===== */
-const AUTO_SCROLL_MS = { 'sake-intro': 6300, 'shochu-intro': 6300, 'whisky-intro': 7300 };
+const AUTO_SCROLL_MS = { 'sake-intro': 12000, 'shochu-intro': 11000, 'whisky-intro': 12500 };
 function scheduleAutoScroll(name, ms) {
   clearTimeout(window.__autoScrollTm);
   window.__autoScrollTm = setTimeout(() => {
@@ -2690,10 +2919,35 @@ document.addEventListener('click', e => {
   });
   if (AUTO_SCROLL_MS[currentScreen]) scheduleAutoScroll(currentScreen, 900);
 });
+
+/* カメラワークの画面切り替え：今の画面が手前へ迫って消え、次の画面が奥から寄ってくる */
+function camStart(prev, name){
+  try{
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const old = document.querySelector('.screen.active');
+    if (!old) return;
+    const order = ['top','sake-intro','sake-types','sake-methods','our-sake','shochu-intro','shochu-materials','shochu-labels','our-shochu','whisky-intro','whisky-types','world-whisky','whisky-deep','our-whisky'];
+    const pi = order.indexOf(prev), ni = order.indexOf(name);
+    const isBack = name === 'top' || (pi >= 0 && ni >= 0 && ni < pi);
+    let g = document.getElementById('camGhost');
+    if (!g){ g = document.createElement('div'); g.id='camGhost'; g.setAttribute('aria-hidden','true'); document.body.appendChild(g); }
+    const y = window.scrollY, clone = old.cloneNode(true);
+    clone.removeAttribute('id'); clone.classList.add('active'); clone.style.animation='none';
+    clone.querySelectorAll('[id]').forEach(e=>e.removeAttribute('id'));
+    const w = document.createElement('div'); w.className='ghost-in'; w.style.top = (-y)+'px'; w.appendChild(clone);
+    g.innerHTML=''; g.appendChild(w);
+    g.className = isBack ? 'b' : 'f'; g.style.display='block';
+    document.body.classList.remove('cam-f','cam-b'); void document.body.offsetWidth;
+    document.body.classList.add(isBack ? 'cam-b' : 'cam-f');
+    clearTimeout(window.__camTm);
+    window.__camTm = setTimeout(()=>{ g.style.display='none'; g.innerHTML=''; }, 700);
+  }catch(e){}
+}
 function goScreen(name){
   // トップ画面でお酒のアイコンを選んだときだけ記録する（「戻る」操作では記録しない）
   const prevScreen = currentScreen;
   if (prevScreen === 'top' && drinkByScreen[name]) sendData({ type: 'select', drink: drinkByScreen[name] });
+  if (prevScreen !== '' && prevScreen !== name) camStart(prevScreen, name);
   currentScreen = name;
   if (prevScreen !== '' && prevScreen !== name) sendData({ type: 'view' });   // どの画面を見たか
   document.querySelectorAll('.screen').forEach(el=>{
@@ -2949,6 +3203,7 @@ function initPolish() {
     core.setAttribute('transform', `translate(100 120) scale(${s}) translate(-100 -120)`);
     cutEl.textContent = cut;
     keepEl.textContent = keep;
+    if (window.__setGrainKeep) window.__setGrainKeep(keep);
     range.style.setProperty('--p', (cut / 80 * 100) + '%');
     range.setAttribute('aria-valuetext', `削る量${cut}%、精米歩合${keep}%`);
 
@@ -2965,7 +3220,146 @@ function initPolish() {
   }
   range.addEventListener('input', () => { markDone(document.getElementById('polishBox')); update(); });
   update();
+  try { initGrain3D(() => 100 - Number(range.value)); } catch (e) {}
 }
+
+/* ============ 精米の立体表示（お米を削る様子を、回して見られる） ============ */
+function initGrain3D(getKeep) {
+  const stage = document.querySelector('#polishBox .polish-stage');
+  if (!stage) return;
+  const cv = document.createElement('canvas');
+  cv.className = 'grain3d';
+  cv.setAttribute('role', 'img');
+  cv.setAttribute('aria-label', 'お米を削るイメージ（指で回せます）');
+  const ctx = cv.getContext && cv.getContext('2d');
+  if (!ctx) return;
+  stage.appendChild(cv);
+  stage.classList.add('has3d');
+  const hint = document.createElement('div'); hint.className = 'grain3d-hint'; hint.textContent = '指で回せます'; stage.appendChild(hint);
+
+  const CW = 132, CH = 158;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const W = Math.round(CW * dpr), H = Math.round(CH * dpr);
+  cv.width = W; cv.height = H;
+  const img = ctx.createImageData(W, H);
+  const buf = img.data;
+
+  // 米粒の大きさ（横・縦・厚み）。縦長のだ円体
+  const RX = 0.78, RY = 1.02, RZ = 0.56;
+  const SCALE = H / 2.5;                         // 画面の半分の高さ＝1.25
+  const L = (() => { const v = [-0.45, 0.62, 0.64], n = Math.hypot(...v); return v.map(x => x / n); })();
+  const reduce = REDUCED_MOTION;
+
+  let curS = Math.cbrt(getKeep() / 100), tgtS = curS;
+  let yaw = 0, pitch = -0.18, drag = 0, dragging = false, lastX = 0, t0 = performance.now(), running = false, raf = 0, vis = true;
+
+  // だ円体との交点（正射影、カメラは手前から奥へ）
+  function hit(ox, oy, r00, r01, r02, r10, r11, r12, r20, r21, r22, a, b, c) {
+    // 視線 d=(0,0,-1)、始点 o=(ox,oy,5) を、だ円体の座標へ戻す（R^T）
+    const px = r00 * ox + r10 * oy + r20 * 5, py = r01 * ox + r11 * oy + r21 * 5, pz = r02 * ox + r12 * oy + r22 * 5;
+    const dx = -r20, dy = -r21, dz = -r22;
+    const A = (dx / a) * (dx / a) + (dy / b) * (dy / b) + (dz / c) * (dz / c);
+    const B = 2 * ((px * dx) / (a * a) + (py * dy) / (b * b) + (pz * dz) / (c * c));
+    const C = (px / a) * (px / a) + (py / b) * (py / b) + (pz / c) * (pz / c) - 1;
+    const disc = B * B - 4 * A * C;
+    if (disc < 0) return null;
+    const t = (-B - Math.sqrt(disc)) / (2 * A);
+    return [px + dx * t, py + dy * t, pz + dz * t];     // だ円体の座標での交点
+  }
+
+  function frame(now) {
+    raf = 0;
+    const tt = (now - t0) / 1000;
+    curS += (tgtS - curS) * 0.14;
+    if (Math.abs(tgtS - curS) < 0.0005) curS = tgtS;
+    if (!dragging) drag *= 0.93;
+    const osc = reduce ? 0 : Math.sin(tt * 0.9) * 0.55 * (dragging ? 0.2 : 1);
+    yaw = drag + osc;
+
+    const cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
+    // 回転行列 R = Rx(pitch) * Ry(yaw)
+    const r00 = cy, r01 = 0, r02 = -sy;
+    const r10 = sp * sy, r11 = cp, r12 = sp * cy;
+    const r20 = cp * sy, r21 = -sp, r22 = cp * cy;
+
+    const s = curS, ca = RX * s, cb = RY * s, cc = RZ * s;
+    const showShell = s < 0.995;
+    let p = 0;
+    for (let j = 0; j < H; j++) {
+      const oy = (H / 2 - j) / SCALE;
+      for (let i = 0; i < W; i++, p += 4) {
+        const ox = (i - W / 2) / SCALE;
+        let R = 0, G = 0, B = 0, A = 0;
+        const hc = hit(ox, oy, r00, r01, r02, r10, r11, r12, r20, r21, r22, ca, cb, cc);
+        if (hc) {
+          const [x, y, z] = hc;
+          // 法線（だ円体の座標）→ 画面の座標
+          const nx = x / (ca * ca), ny = y / (cb * cb), nz = z / (cc * cc);
+          const nl = Math.hypot(nx, ny, nz);
+          const lx = nx / nl, ly = ny / nl, lz = nz / nl;
+          const vx = r00 * lx + r01 * ly + r02 * lz, vy = r10 * lx + r11 * ly + r12 * lz, vz = r20 * lx + r21 * ly + r22 * lz;
+          const dif = Math.max(0, vx * L[0] + vy * L[1] + vz * L[2]);
+          const hx = L[0], hy = L[1], hz = L[2] + 1, hl = Math.hypot(hx, hy, hz);
+          const spec = Math.pow(Math.max(0, (vx * hx + vy * hy + vz * hz) / hl), 28) * 0.22;
+          const rim = Math.pow(1 - Math.max(0, vz), 2.2) * 0.22;
+          let k = 0.62 + 0.46 * dif - rim * 0.6;
+          // 表面のうっすらした筋（お米らしさ）
+          k += Math.sin(x / ca * 16 + Math.sin(y / cb * 3) * 1.2) * 0.012;
+          let r = 255 * k + spec * 255, g = 251 * k + spec * 255, bl = 240 * k + spec * 235;
+          // 顔（前を向いているときだけ見える）
+          const u = x / ca, v = y / cb;
+          if (lz > 0.25) {
+            const fa = (cx, cy, rad, str) => { const d = Math.hypot(u - cx, v - cy); return d < rad ? str * Math.min(1, (rad - d) / (rad * 0.35)) : 0; };
+            const cheek = Math.max(fa(-0.5, -0.12, 0.2, 0.55), fa(0.5, -0.12, 0.2, 0.55));
+            if (cheek > 0) { r += (246 - r) * cheek; g += (186 - g) * cheek; bl += (160 - bl) * cheek; }
+            const eye = Math.max(fa(-0.32, 0.12, 0.085, 1), fa(0.32, 0.12, 0.085, 1));
+            // 口（小さな笑顔）
+            const mx = u;
+            const sy2 = -0.16 - 0.1 * (1 - (mx / 0.24) * (mx / 0.24));
+            const mouth = (Math.abs(mx) < 0.24 && Math.abs(v - sy2) < 0.028) ? 1 : 0;
+            const f = Math.max(eye, mouth);
+            if (f > 0) { r += (84 - r) * f; g += (74 - g) * f; bl += (66 - bl) * f; }
+          }
+          R = r; G = g; B = bl; A = 255;
+        }
+        if (showShell) {
+          const ho = hit(ox, oy, r00, r01, r02, r10, r11, r12, r20, r21, r22, RX, RY, RZ);
+          if (ho) {
+            const [x, y, z] = ho;
+            const nx = x / (RX * RX), ny = y / (RY * RY), nz = z / (RZ * RZ), nl = Math.hypot(nx, ny, nz);
+            const vz = (r20 * nx + r21 * ny + r22 * nz) / nl;
+            const fres = Math.pow(1 - Math.max(0, vz), 1.6);
+            const sa = 0.30 + 0.45 * fres;           // 削り落とす外側（うっすらした茶色）
+            const sr = 205, sg = 176, sb = 124;
+            if (A === 0) { R = sr; G = sg; B = sb; A = Math.round(255 * sa); }
+            else { R = R * (1 - sa * 0.8) + sr * sa * 0.8; G = G * (1 - sa * 0.8) + sg * sa * 0.8; B = B * (1 - sa * 0.8) + sb * sa * 0.8; }
+          }
+        }
+        buf[p] = R; buf[p + 1] = G; buf[p + 2] = B; buf[p + 3] = A;
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+    if (running && vis && !document.hidden && (!reduce || dragging || curS !== tgtS || Math.abs(drag) > 0.002)) raf = requestAnimationFrame(frame);
+  }
+  function kick() { if (!raf) raf = requestAnimationFrame(frame); }
+
+  // 指で回す
+  cv.style.touchAction = 'pan-y';
+  cv.addEventListener('pointerdown', e => { dragging = true; lastX = e.clientX; try { cv.setPointerCapture(e.pointerId); } catch (x) {} kick(); });
+  cv.addEventListener('pointermove', e => { if (!dragging) return; drag += (e.clientX - lastX) * 0.016; lastX = e.clientX; kick(); });
+  const end = () => { dragging = false; kick(); };
+  cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+
+  // 画面に見えているときだけ動かす（バッテリー・負荷のため）
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(es => { vis = es[0].isIntersecting; running = vis; if (vis) kick(); }).observe(cv);
+  } else { running = true; }
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) kick(); });
+  running = true; kick();
+
+  window.__setGrainKeep = keep => { tgtS = Math.cbrt(keep / 100); kick(); };
+}
+
 
 
 /* ============ 図解 ============ */
@@ -3014,9 +3408,8 @@ function initModeDiagrams() {
   const typeKou = S(glass(36, 26, '#e8f2f9', null, 0, 1) + tx(130, 40, 13, '#3b4f73', '', '無色透明で') + tx(130, 60, 13, '#bd4630', '', 'クセがない'));
   const typeMix = S(glass(0, 30, '#e3bf78', null, 0, .62) + tx(56, 56, 22, '#8a7f6e', 'middle', '＋') + glass(62, 30, '#e8f2f9', null, 0, .62) + tx(118, 56, 22, '#8a7f6e', 'middle', '＝') + glass(124, 24, '#e3bf78', '#e8f2f9', 50, .95) + tx(204, 46, 12, '#bd4630', '', 'いいとこ') + tx(204, 62, 12, '#bd4630', '', '取り'));
   const cask = (barrel, chipFill, chipLine, chipText, words) => {
-    const xs = [124, 144, 128];
-    const chips = words.map((w, i) => { const wd = 12.5 * w.length + 20; return '<g class="an-flt" style="animation-delay:' + (i * 0.7) + 's"><rect x="' + xs[i] + '" y="' + (10 + i * 28) + '" width="' + wd + '" height="24" rx="12" fill="' + chipFill + '" stroke="' + chipLine + '" stroke-width="2"/><text x="' + (xs[i] + wd / 2) + '" y="' + (26.5 + i * 28) + '" font-size="12.5" text-anchor="middle" fill="' + chipText + '">' + w + '</text></g>'; }).join('');
-    return S('<ellipse cx="59" cy="91" rx="32" ry="4" fill="#000" opacity=".22"/><image href="' + imgSrc('barrel.webp') + '" x="24" y="2" width="70" height="90" preserveAspectRatio="xMidYMid meet" style="filter:' + barrel + '"/>' + chips);
+    const chips = words.map((w, i) => '<span style="--d:' + (i * .7) + 's;background:' + chipFill + ';border-color:' + chipLine + ';color:' + chipText + '">' + w + '</span>').join('');
+    return '<div class="cask3d"><canvas aria-label="ウイスキー樽の断面。年数を動かすと、お酒の色と量が変わります"></canvas><div class="cchips">' + chips + '</div><div class="cask-yr"><div class="yl"><span>熟成の年数</span><b class="yv">0年</b></div><input type="range" class="polish-range cask-range" min="0" max="12" step="1" value="0" aria-label="熟成の年数"><div class="ye"><span>蒸留直後</span><span>12年</span></div></div><div class="cask-angel"></div></div>';
   };
   const CFG = {
     typeDiagram: { def: 0, meters: ['原料の香りとコク', 'クセのなさ・クリアさ'], modes: [
@@ -3051,11 +3444,239 @@ function initModeDiagrams() {
       const m = c.modes[i];
       btns.forEach((b, j) => b.classList.toggle('on', j === i));
       vis.innerHTML = m.vis; vis.firstElementChild.classList.remove('pop'); void vis.offsetWidth; vis.firstElementChild.classList.add('pop');
+      if (id === 'caskDiagram') mountCask(vis, i, box, m.m);
       fills.forEach((f, j) => { f.style.width = (m.m[j] || 0) + '%'; });
       tx.style.whiteSpace = m.text.indexOf('\n') >= 0 ? 'pre' : 'normal'; tx.style.fontSize = m.text.indexOf('\n') >= 0 ? 'min(14px, 3.7vw)' : ''; tx.textContent = m.text;
     }
     btns.forEach((b, i) => b.addEventListener('click', () => { set(i); markDone(box); }));
     set(c.def !== undefined ? c.def : (id === 'mashDiagram' ? 0 : 1));
+  });
+}
+
+
+/* ============ ウイスキー樽の断面3D（キャンバスで描画・ドラッグで回転） ============ */
+const CASK_PARAMS = [
+  { wood: [185, 133, 80],  lid: [214, 176, 120], inner: [44, 24, 14],  ember: [214, 96, 30], emberAmt: .55, liq: [214, 150, 52],  liqA: .88 },
+  { wood: [122, 63, 44],   lid: [160, 98, 72],   inner: [43, 18, 16],  ember: [170, 60, 30], emberAmt: .3,  liq: [138, 46, 30],  liqA: .9 },
+  { wood: [205, 184, 143], lid: [226, 210, 176], inner: [112, 92, 64], ember: [190, 140, 70], emberAmt: .1, liq: [232, 196, 110], liqA: .84 }
+];
+const caskState = { rot: 0, auto: true, t: 0, yrs: 0, clock: 0 };
+function caskHash(a, b) { const x = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return x - Math.floor(x); }
+function drawAngel(ctx, x, y, sc, a) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(sc, sc);
+  ctx.fillStyle = 'rgba(255,240,205,' + (.82 * a) + ')'; ctx.strokeStyle = 'rgba(222,176,82,' + a + ')'; ctx.lineWidth = .7;
+  [1, -1].forEach(sg => { ctx.beginPath(); ctx.moveTo(sg * 2, -2); ctx.quadraticCurveTo(sg * 14, -15, sg * 18, -4); ctx.quadraticCurveTo(sg * 14, -6, sg * 13, 0); ctx.quadraticCurveTo(sg * 10, -3, sg * 9, 3); ctx.quadraticCurveTo(sg * 5, 0, sg * 2, 5); ctx.closePath(); ctx.fill(); ctx.stroke(); });
+  ctx.beginPath(); ctx.moveTo(-3, -1); ctx.lineTo(3, -1); ctx.quadraticCurveTo(6, 8, 8, 14); ctx.lineTo(-8, 14); ctx.quadraticCurveTo(-6, 8, -3, -1); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(0, -5, 3, 0, 7); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(0, -10.5, 4.4, 1.3, 0, 0, 7); ctx.stroke();
+  ctx.restore();
+}
+function drawCask(ctx, W, H, rot, P, yrs, clock) {
+  const cx = W / 2, cy = H / 2 + 24, Hh = 88, R0 = 58, th = 6, sE = .34, cE = .94, N = 20, d = Math.PI * 2 / N, NS = 12;
+  const yf = yrs / 12, cf = Math.pow(yf, .8), tl = .3 - .27 * yf;
+  const clear = [214, 232, 242], mixc = (a, b, f) => [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f, a[2] + (b[2] - a[2]) * f];
+  const LQ = mixc(clear, P.liq, cf), LA = .5 + (P.liqA - .5) * cf;
+  const Wd = 2.5 * d;
+  const rr = t => R0 * (1 - .2 * t * t);
+  const pt = (r, phi, t) => [cx + r * Math.sin(phi), cy - t * Hh * cE + r * Math.cos(phi) * sE];
+  const col = (c, l, a) => 'rgba(' + Math.max(0, Math.min(255, c[0] * l | 0)) + ',' + Math.max(0, Math.min(255, c[1] * l | 0)) + ',' + Math.max(0, Math.min(255, c[2] * l | 0)) + ',' + (a == null ? 1 : a) + ')';
+  const wrap = a => { a = a % (Math.PI * 2); if (a > Math.PI) a -= Math.PI * 2; if (a < -Math.PI) a += Math.PI * 2; return a; };
+  ctx.clearRect(0, 0, W, H);
+  // 影
+  ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.beginPath(); ctx.ellipse(cx, cy + Hh * cE + 4, R0 * .95, R0 * sE * .9, 0, 0, 7); ctx.fill();
+  const staveInfo = [];
+  for (let k = 0; k < N; k++) {
+    const c = k * d, removed = Math.abs(wrap(c)) < Wd;
+    staveInfo.push({ k, c, removed, sc: c + rot });
+  }
+  const strip = (s, a, b, t0, t1, off, colorFn, inner) => {
+    const ps = s.sc + a, pe = s.sc + b;
+    const r0 = rr(t0) + off, r1 = rr(t1) + off;
+    const A = pt(r0, ps, t0), B = pt(r0, pe, t0), C = pt(r1, pe, t1), D = pt(r1, ps, t1);
+    ctx.fillStyle = colorFn; ctx.strokeStyle = colorFn; ctx.lineWidth = .7;
+    ctx.beginPath(); ctx.moveTo(A[0], A[1]); ctx.lineTo(B[0], B[1]); ctx.lineTo(C[0], C[1]); ctx.lineTo(D[0], D[1]); ctx.closePath(); ctx.fill(); ctx.stroke();
+  };
+  // 1) 奥の内側（焦がした面）
+  staveInfo.forEach(s => {
+    if (s.removed || Math.cos(s.sc) >= 0) return;
+    const l0 = .5 + .5 * Math.abs(Math.cos(s.sc)) * .6;
+    for (let j = 0; j < NS; j++) {
+      const t0 = -1 + 2 * j / NS, t1 = -1 + 2 * (j + 1) / NS;
+      const h = caskHash(s.k, j + 40), h2 = caskHash(s.k + 9, j + 7);
+      let c = P.inner.slice(), l = l0 * (.88 + .24 * h);
+      if (h2 > 1 - P.emberAmt * .1) { c = [P.inner[0] * .5 + P.ember[0] * .5, P.inner[1] * .5 + P.ember[1] * .5, P.inner[2] * .5 + P.ember[2] * .5]; l = .9 + .3 * h; }
+      const A = pt(rr(t0) - th, s.sc - d / 2, t0), B = pt(rr(t0) - th, s.sc + d / 2, t0), C = pt(rr(t1) - th, s.sc + d / 2, t1), D = pt(rr(t1) - th, s.sc - d / 2, t1);
+      ctx.fillStyle = ctx.strokeStyle = col(c, l); ctx.lineWidth = .7;
+      ctx.beginPath(); ctx.moveTo(A[0], A[1]); ctx.lineTo(B[0], B[1]); ctx.lineTo(C[0], C[1]); ctx.lineTo(D[0], D[1]); ctx.closePath(); ctx.fill(); ctx.stroke();
+    }
+  });
+  // 2) 中のお酒
+  const ri = t => rr(t) - th;
+  ctx.beginPath();
+  const lp = [];
+  for (let i = 0; i <= 12; i++) { const t = tl + (-1 - tl) * i / 12; lp.push(pt(-ri(t), 0, t)); }
+  lp.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]));
+  for (let i = 0; i <= 16; i++) { const p = pt(ri(-1), -Math.PI / 2 + Math.PI * i / 16, -1); ctx.lineTo(p[0], p[1]); }
+  for (let i = 0; i <= 12; i++) { const t = -1 + (tl + 1) * i / 12; const p = pt(ri(t), 0, t); ctx.lineTo(p[0], p[1]); }
+  for (let i = 0; i <= 16; i++) { const p = pt(ri(tl), Math.PI / 2 - Math.PI * i / 16, tl); ctx.lineTo(p[0], p[1]); }
+  ctx.closePath();
+  const gy = pt(0, 0, tl)[1], gy2 = pt(0, 0, -1)[1];
+  const lg = ctx.createLinearGradient(0, gy, 0, gy2 + 20);
+  lg.addColorStop(0, col(LQ, 1.08, LA)); lg.addColorStop(1, col(LQ, .68, LA));
+  ctx.fillStyle = lg; ctx.fill();
+  // 液面
+  ctx.beginPath(); ctx.ellipse(cx, pt(0, 0, tl)[1], ri(tl), ri(tl) * sE, 0, 0, 7);
+  ctx.fillStyle = col(LQ, 1.18, Math.min(.97, LA + .08)); ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(cx, pt(0, 0, tl)[1], ri(tl) * .8, ri(tl) * sE * .8, 0, Math.PI * 1.1, Math.PI * 1.7); ctx.stroke();
+  // 3) 手前の外側（木の板）
+  const hoops = [[-.93, -.87], [-.72, -.66], [.66, .72], [.87, .93]];
+  staveInfo.forEach(s => {
+    if (s.removed || Math.cos(s.sc) <= -.02) return;
+    const l0 = .5 + .5 * (-.5 * Math.sin(s.sc) + .75 * Math.cos(s.sc));
+    for (let j = 0; j < NS; j++) {
+      const t0 = -1 + 2 * j / NS, t1 = -1 + 2 * (j + 1) / NS;
+      const h = caskHash(s.k, j), l = Math.max(.25, l0) * (.9 + .2 * h) * (1 - .1 * t0 * t0);
+      strip(s, -d / 2, d / 2, t0, t1, 0, col(P.wood, l));
+    }
+    // 板の継ぎ目
+    ctx.strokeStyle = 'rgba(0,0,0,.28)'; ctx.lineWidth = .8; ctx.beginPath();
+    for (let j = 0; j <= NS; j++) { const t = -1 + 2 * j / NS, p = pt(rr(t), s.sc - d / 2, t); j ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]); }
+    ctx.stroke();
+    hoops.forEach(h => strip(s, -d / 2, d / 2, h[0], h[1], 1.4, col([62, 62, 68], Math.max(.35, l0 * 1.1))));
+  });
+  // 4) 切り口の断面
+  [[Wd, 1], [-Wd, -1]].forEach(([e, sg]) => {
+    const phi = e + rot, nz = sg * Math.sin(phi);
+    if (nz <= 0) return;
+    const l = .72 + .28 * nz;
+    ctx.beginPath();
+    for (let i = 0; i <= NS; i++) { const t = -1 + 2 * i / NS, p = pt(rr(t), phi, t); i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]); }
+    for (let i = NS; i >= 0; i--) { const t = -1 + 2 * i / NS, p = pt(ri(t), phi, t); ctx.lineTo(p[0], p[1]); }
+    ctx.closePath(); ctx.fillStyle = col([232, 208, 164], l); ctx.fill();
+    ctx.strokeStyle = 'rgba(60,35,15,.55)'; ctx.lineWidth = .8; ctx.stroke();
+    // 内側の焦げ
+    ctx.beginPath();
+    for (let i = 0; i <= NS; i++) { const t = -1 + 2 * i / NS, p = pt(ri(t) + 2.2, phi, t); i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]); }
+    for (let i = NS; i >= 0; i--) { const t = -1 + 2 * i / NS, p = pt(ri(t), phi, t); ctx.lineTo(p[0], p[1]); }
+    ctx.closePath(); ctx.fillStyle = col(P.inner, 1.1); ctx.fill();
+  });
+  // 5) ふた（切り口以外）
+  const top = pt(0, 0, 1), ro = rr(1);
+  ctx.beginPath(); ctx.moveTo(top[0], top[1]);
+  const a0 = Wd + rot, a1 = Math.PI * 2 - Wd + rot, steps = 36;
+  for (let i = 0; i <= steps; i++) { const p = pt(ro, a0 + (a1 - a0) * i / steps, 1); ctx.lineTo(p[0], p[1]); }
+  ctx.closePath();
+  const lgrad = ctx.createRadialGradient(top[0] - 14, top[1] - 6, 4, top[0], top[1], ro);
+  lgrad.addColorStop(0, col(P.lid, 1.1)); lgrad.addColorStop(1, col(P.lid, .8));
+  ctx.fillStyle = lgrad; ctx.fill();
+  ctx.save(); ctx.clip();
+  ctx.strokeStyle = 'rgba(70,40,15,.22)'; ctx.lineWidth = .8;
+  for (let k = 0; k < N; k++) { const p = pt(ro, k * d + rot + d / 2, 1); ctx.beginPath(); ctx.moveTo(top[0], top[1]); ctx.lineTo(p[0], p[1]); ctx.stroke(); }
+  ctx.restore();
+  ctx.strokeStyle = 'rgba(40,22,8,.55)'; ctx.lineWidth = 1.2; ctx.beginPath();
+  for (let i = 0; i <= steps; i++) { const p = pt(ro, a0 + (a1 - a0) * i / steps, 1); i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]); }
+  ctx.stroke();
+  // 栓
+  const bp = pt(ro * .55, Math.PI + rot, 1);
+  if (Math.abs(wrap(Math.PI)) > Wd) {
+    ctx.fillStyle = 'rgba(40,22,10,.85)'; ctx.beginPath(); ctx.ellipse(bp[0], bp[1], 6, 6 * sE * 1.1, 0, 0, 7); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,235,200,.4)'; ctx.lineWidth = 1; ctx.stroke();
+  }
+  // 天使の分け前：立ちのぼる蒸気と天使の影
+  const nA = yrs >= 9 ? 3 : yrs >= 5 ? 2 : yrs >= 1 ? 1 : 0;
+  for (let i = 0; i < nA; i++) {
+    const p = ((clock * .1 + i / 3) % 1), a = Math.sin(Math.PI * p);
+    const x = cx + (i - 1) * 34 + 9 * Math.sin(clock * 1.1 + i * 2.1), y = top[1] - 12 - p * (top[1] - 18);
+    ctx.strokeStyle = 'rgba(255,236,190,' + (.35 * a) + ')'; ctx.lineWidth = 1.4; ctx.beginPath();
+    for (let k = 0; k <= 10; k++) { const yy = top[1] - 4 - (top[1] - 6) * k / 10 * .9, xx = x + 7 * Math.sin(k * .9 + clock * 1.6 + i); k ? ctx.lineTo(xx, yy) : ctx.moveTo(xx, yy); }
+    ctx.stroke();
+    drawAngel(ctx, x, y, 1.15 + .3 * p, a);
+  }
+}
+function mountCask(vis, mode, box, mm) {
+  const cv = vis.querySelector('canvas'); if (!cv) return;
+  const P = CASK_PARAMS[mode] || CASK_PARAMS[0];
+  const dpr = Math.min(2, window.devicePixelRatio || 1), W = 200, H = 280;
+  cv.width = W * dpr; cv.height = H * dpr;
+  const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const token = (window.__caskToken = (window.__caskToken || 0) + 1);
+  let visible = true;
+  if ('IntersectionObserver' in window) { const io = new IntersectionObserver(es => { visible = es[0].isIntersecting; }); io.observe(cv); }
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const rng = vis.querySelector('.cask-range'), yv = vis.querySelector('.yv'), chips = vis.querySelectorAll('.cchips span'), angel = vis.querySelector('.cask-angel');
+  const fills = box ? box.querySelectorAll('.meter-fill') : [];
+  const sync = () => {
+    const y = caskState.yrs;
+    rng.value = y; rng.style.setProperty('--p', (y / 12 * 100) + '%'); yv.textContent = y + '年';
+    chips.forEach((c, i) => { c.style.opacity = Math.max(0, Math.min(1, (y - 2 - i * 3) / 3)); });
+    const f = Math.min(1, y / 10);
+    fills.forEach((el, j) => { el.style.width = ((mm && mm[j]) || 0) * f + '%'; });
+    angel.textContent = y === 0
+      ? '蒸留したばかりのウイスキーは、無色透明です。\n年数を動かして、樽の中の変化を見てみましょう。'
+      : '樽の中で眠る間に、色と香りが育ちます。\nその間にも毎年少しずつ蒸発していきます。\nこれを「天使の分け前」と呼びます。';
+    dirty = true;
+  };
+  let drag = false, lx = 0, dirty = true, last = performance.now();
+  rng.addEventListener('input', () => { caskState.yrs = Number(rng.value); if (box && typeof markDone === 'function') markDone(box); sync(); });
+  cv.addEventListener('pointerdown', e => { drag = true; lx = e.clientX; caskState.auto = false; try { cv.setPointerCapture(e.pointerId); } catch (_) {} cv.style.cursor = 'grabbing'; });
+  cv.addEventListener('pointermove', e => { if (!drag) return; caskState.rot += (e.clientX - lx) * .016; lx = e.clientX; dirty = true; });
+  const up = () => { drag = false; cv.style.cursor = 'grab'; };
+  cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+  sync();
+  (function loop(now) {
+    if (token !== window.__caskToken || !cv.isConnected) return;
+    const dt = Math.min(50, now - last) / 1000; last = now;
+    if (visible && !document.hidden) {
+      if (!reduce) caskState.clock += dt;
+      if (caskState.auto && !reduce) { caskState.t += dt; caskState.rot = .62 * Math.sin(caskState.t * .7); dirty = true; }
+      if (dirty || (caskState.yrs >= 1 && !reduce)) { drawCask(ctx, W, H, caskState.rot, P, caskState.yrs, caskState.clock); dirty = false; }
+    }
+    requestAnimationFrame(loop);
+  })(last);
+}
+
+/* ===== ウイスキー冒頭アニメ v2：一時停止・もう一度、樽の熟成年数を時間に同期 ===== */
+function initCineV2() {
+  document.querySelectorAll('.cine.v2').forEach(cine => {
+    const hook = cine.closest('.hook'), ctl = hook && hook.querySelector('.cine-ctl');
+    const all = () => (hook || cine).getAnimations({ subtree: true });
+    let paused = false;
+    if (ctl) ctl.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.act === 'pp') {
+        paused = !paused; all().forEach(a => { try { paused ? a.pause() : a.play(); } catch (_) {} });
+        b.textContent = paused ? '再生する' : '一時停止';
+      } else if (b.dataset.act === 're') {
+        paused = false; const pp = ctl.querySelector('[data-act="pp"]'); if (pp) pp.textContent = '一時停止';
+        all().forEach(a => { try { a.cancel(); a.play(); } catch (_) {} });
+        if (typeof scheduleAutoScroll === 'function' && currentScreen === 'whisky-intro') clearTimeout(window.__autoScrollTm);
+      }
+    });
+    const cv = cine.querySelector('.cv-cask'), yrEl = cine.querySelector('.cv-yr b'), shot = cine.querySelector('.cv-caskshot');
+    if (!cv || !shot) return;
+    const dpr = Math.min(2, window.devicePixelRatio || 1), W = 200, H = 280;
+    cv.width = W * dpr; cv.height = H * dpr;
+    const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const P = CASK_PARAMS[0], delay = 4.1;
+    let visible = true;
+    if ('IntersectionObserver' in window) new IntersectionObserver(es => { visible = es[0].isIntersecting; }).observe(cine);
+    let lastY = -1, lastT = -1;
+    (function loop() {
+      if (!cine.isConnected) return;
+      if (visible && !document.hidden) {
+        const a = shot.getAnimations()[0];
+        const t = a ? (a.currentTime || 0) / 1000 - delay : 0;
+        if (t > -0.3 && t < 4.7) {
+          const yrs = Math.max(0, Math.min(12, Math.round((t - 0.5) / 2.6 * 12)));
+          if (yrs !== lastY || Math.abs(t - lastT) > 0.03) {
+            drawCask(ctx, W, H, .5 * Math.sin(t * .9), P, yrs, t + 8);
+            if (yrs !== lastY) { yrEl.textContent = yrs; lastY = yrs; }
+            lastT = t;
+          }
+        }
+      }
+      requestAnimationFrame(loop);
+    })();
   });
 }
 
@@ -3181,9 +3802,9 @@ const SURVEY_CONFIG = {
   trackOpen: true,
   // 質問（ここを書き換えると内容を変えられます）
   questions: [
-    { id: 'gender', text: '男性・女性、<wbr>どちらでしょう？', komeo: 'komeo3.webp',
-      options: ['男性', '女性', '秘密'] },
-    { id: 'age', text: 'おいくつくらい<wbr>ですか？', komeo: 'komeo5.webp',
+    { id: 'gender', label: '性別', text: 'よろしければ、<wbr>性別を<wbr>教えてください。', komeo: 'komeo3.webp',
+      options: ['男性', '女性', '答えない'] },
+    { id: 'age', label: '年代', text: 'おいくつくらい<wbr>ですか？', komeo: 'komeo5.webp',
       options: ['34歳以下', '35歳以上'] }
   ]
 };
@@ -3325,7 +3946,9 @@ function buildGuide(g) {
   const src = g.querySelector('.guide-src');
   const html = src ? src.innerHTML : '';
   g._html = html;
-  g.innerHTML = '<img class="guide-img" src="' + imgSrc(g.dataset.komeo || 'komeo1.webp') + '" alt="" loading="lazy" decoding="async">' +
+  const sc = g.closest('.screen'), chara = !!sc && /^(sake-intro|sake-types|sake-methods|our-sake)$/.test(sc.dataset.screen);
+  if (!chara) g.classList.add('no-chara');
+  g.innerHTML = (chara ? '<img class="guide-img" src="' + imgSrc(g.dataset.komeo || 'komeo1.webp') + '" alt="" loading="lazy" decoding="async">' : '') +
     '<div class="guide-bubble"><div class="g-live">' + html + '</div></div>';
 }
 
@@ -3333,9 +3956,9 @@ function sayGuide(g, html) {
   const img = g.querySelector('.guide-img');
   if (html) g._html = html;
   g.classList.add('on');
-  img.classList.add('talking');
+  if (img) img.classList.add('talking');
   const ctrl = typeHTML(g.querySelector('.g-live'), g._html, () => {
-    img.classList.remove('talking');
+    if (img) img.classList.remove('talking');
     g._typing = null;
     g.dispatchEvent(new CustomEvent('guidedone'));
   });
@@ -3390,7 +4013,7 @@ function ensureInsta(fb) {
 
 function showThanks(fb) {
   const g = fb.querySelector('.guide');
-  g.querySelector('.guide-img').src = imgSrc('komeo1.webp');
+  const gi = g.querySelector('.guide-img'); if (gi) gi.src = imgSrc('komeo1.webp');
   fb.dataset.thanked = '1';
   const ig = ensureInsta(fb);
   requestAnimationFrame(() => ig.classList.add('show'));
@@ -3515,20 +4138,43 @@ function introAsk(q) {
 async function runIntro() {
   const qs = SURVEY_CONFIG.questions;
   const dots = $id('introDots');
-  dots.innerHTML = qs.map(() => '<i></i>').join('');
-  dots.classList.remove('show');
-  await introSay('ご来店<wbr>ありがとうございます。<br>酒肴家 吾熊です。', 'komeo1.webp');
-  await introSay('お酒の言葉を、<wbr>のんびり楽しむ辞典です。<br>まず、お客様のことを<wbr>少しだけ教えてください。', 'komeo4.webp');
+  dots.innerHTML = ''; dots.classList.remove('show');
   const answers = {};
-  for (let i = 0; i < qs.length; i++) {
-    answers[qs[i].id] = await introAsk(qs[i]);
-  }
+  // あいさつと質問を1画面にまとめる：性別・年代を続けて選ぶだけ（2タップ）
+  await introSay('本日は、<wbr>ご来店いただき<br>誠にありがとうございます。<br>酒肴家 吾熊でございます。', 'komeo1.webp');
+  await introSay('お待ちの間、<br>日本酒・焼酎・ウイスキーの<br>基本の知識を、動く図解で学べます。<br>当店の銘柄の豆知識や、<br>味わいもご覧いただけます。', 'komeo4.webp');
+  await introSay('恐れ入りますが、<br>お客様のことを<wbr>少しだけ<br>教えていただけますか。', 'komeo4.webp', { onTyped: resolve => {
+    $id('introNote').classList.add('show');
+    const box = $id('introOptions'); box.innerHTML = '';
+    let timer = null; const groups = [];
+    const check = () => {
+      clearTimeout(timer);
+      if (qs.every(q => answers[q.id])) timer = setTimeout(resolve, 520);
+    };
+    qs.forEach((q, qi) => {
+      const g = document.createElement('div'); g.className = 'intro-group'; groups[qi] = g;
+      if (qi > 0) g.style.visibility = 'hidden';   // 前の質問に答えると出てくる
+      const lab = document.createElement('div'); lab.className = 'intro-glabel'; lab.textContent = q.label || '';
+      const row = document.createElement('div'); row.className = 'intro-grow';
+      q.options.forEach((t, i) => {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'intro-opt';
+        b.style.animationDelay = ((qi * 3 + i) * 60) + 'ms'; b.textContent = t;
+        b.addEventListener('click', e => {
+          e.stopPropagation();
+          row.querySelectorAll('button').forEach(x => x.classList.remove('picked'));
+          b.classList.add('picked'); answers[q.id] = t;
+          const nx = groups[qi + 1]; if (nx && nx.style.visibility === 'hidden') { nx.style.visibility = ''; nx.style.animation = 'fadeUp .45s ease both'; }
+          check();
+        });
+        row.appendChild(b);
+      });
+      g.appendChild(lab); g.appendChild(row); box.appendChild(g);
+    });
+  } });
   storageSet(SURVEY_CONFIG.storageKey, '1');
   storageSet(SURVEY_CONFIG.profileKey, JSON.stringify({ gender: answers.gender, age: answers.age }));
   sendData({ type: 'survey' });
-  dots.classList.remove('show');
   $id('introNote').classList.remove('show');
-  await introSay('ありがとうございます。<br>さっそく、<wbr>どうぞ。', 'komeo4.webp', { auto: 900 });
   closeIntro();
 }
 
@@ -3602,7 +4248,7 @@ function makeFold(titleHTML, nodes, anchor) {
   fold.className = 'fold';
   if (nodes.some(n => n.querySelector && n.querySelector('.pick-label'))) titleHTML += '<span class="fold-pick">★ イチオシ</span>';
   fold.innerHTML = '<button type="button" class="fold-head" aria-expanded="false">' +
-    '<span class="fold-title">' + titleHTML + '</span>' +
+    '<span class="fold-title' + (titleHTML.replace(/<[^>]+>/g, '').length <= 12 ? ' fit' : '') + '">' + titleHTML + '</span>' +
     '<span class="fold-cue"><span class="fold-cue-text">タップで開く</span>' +
     '<svg class="fold-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>' +
     '</button><div class="fold-body"><div class="fold-inner"></div></div>';
@@ -3934,7 +4580,7 @@ const LABEL_TERMS = {
   'モルト': { screen: 'whisky-types', el: 'blendDiagram' }, 'グレーン': { screen: 'whisky-types', el: 'blendDiagram' }, 'ブレンデッド': { screen: 'whisky-types', el: 'blendDiagram' },
   'スコッチ': { screen: 'world-whisky', acc: 'スコッチ' }, 'バーボン': { screen: 'world-whisky', acc: 'バーボン（' },
   'ジャパニーズ': { screen: 'world-whisky', acc: 'ジャパニーズ' }, 'アイリッシュ': { screen: 'world-whisky', acc: 'アイリッシュ' }, 'カナディアン': { screen: 'world-whisky', acc: 'カナディアン' },
-  'ピート': { screen: 'whisky-deep', el: 'peatBox' }, 'バーボン樽': { screen: 'whisky-deep', el: 'caskDiagram', mode: 0 },
+  'ピート': { screen: 'whisky-deep', el: 'peatBox' }, '精米歩合': { screen: 'sake-types', el: 'polishBox' }, 'バーボン樽': { screen: 'whisky-deep', el: 'caskDiagram', mode: 0 },
   'シェリー樽': { screen: 'whisky-deep', el: 'caskDiagram', mode: 1 }, 'ミズナラ樽': { screen: 'whisky-deep', el: 'caskDiagram', mode: 2 }
 };
 
@@ -4121,6 +4767,7 @@ const INIT_STEPS = [
   () => { initPolish(); },
   () => { initDistill(); },
   () => { initHiire(); },
+  () => { initCineV2(); },
   () => { initModeDiagrams(); },
   () => { initBlend(); },
   () => { initFolds(); },
