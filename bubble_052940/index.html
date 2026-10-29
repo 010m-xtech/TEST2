@@ -1895,7 +1895,7 @@
     .mf-b-tips-h { font-size: 11.5px; font-weight: 900; color: #ffcf4a; margin-bottom: 4px; }
     .mf-b-tips ul { display: flex; flex-direction: column; gap: 5px; }
     .mf-b-tips li { position: relative; padding-left: 14px; font-size: 12px; line-height: 1.6; color: rgba(255, 255, 255, 0.92); }
-    .mf-b-tips li::before { content: ''; position: absolute; left: 0; top: 0.62em; width: 6px; height: 6px; border-radius: 9999px; background: linear-gradient(90deg, #4b8b3b 0 33%, #fff 33% 66%, #e2603c 66%); }
+    .mf-b-tips li::before { content: ''; position: absolute; left: 0; top: 0.62em; width: 6px; height: 6px; border-radius: 9999px; background: #f47c2c; }
     .mf-b-menu { margin-top: 10px; padding: 8px 10px; border-radius: 14px; border-top: none; background: rgba(255, 255, 255, 0.08); }
     .mf-b-menu img { width: 42px; height: 42px; }
     .mf-b-menu b { font-size: 12.5px; }
@@ -2391,6 +2391,12 @@
       word-break: keep-all; overflow-wrap: anywhere;
     }
     .bt-say { white-space: nowrap !important; width: max-content; max-width: none; }
+    /* 紹介ページの名所名：左に日本語、右に英語 */
+    .bt-name { display: flex !important; align-items: baseline; flex-wrap: wrap; gap: 2px 10px; font-size: inherit !important; }
+    .bt-name-jp { font-family: var(--bt-jp); font-size: clamp(20px, 6.2vw, 26px); line-height: 1.2; color: #fff; }
+    .bt-name-en { font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.08em; color: #ffb347; white-space: nowrap; }
+    .bt-gacha-ico { display: inline-block; width: 20px; height: 23px; vertical-align: -5px; margin-right: 6px; }
+    .mf-b-tips li b { color: #ffb347; font-weight: 800; }
 </style>
 </head>
 <body class="flex justify-center items-start h-screen overflow-hidden bg-black">
@@ -2650,7 +2656,7 @@
         <div class="mf-op-flag"></div>
         <img src="logo-banner.webp" alt="お好み焼 ぼてこ幸田" class="mf-op-logo bt-op-banner">
         <p class="mf-op-h">ようこそ、<br><b>ぼてこ幸田号</b>へ。</p>
-        <p class="mf-op-p">今夜は店内のみんなで<br><b class="mf-op-em">岡崎めぐり乾杯旅</b>に出発します</p>
+        <p class="mf-op-p">今夜は店内のみんなで<br><b class="mf-op-em nw">岡崎めぐり乾杯旅</b>に出発します</p>
         <div class="bt-op-beer is-big"><img src="beer-mug.webp" alt=""><span><b>工場出荷2日以内</b>で<br>新鮮なビールが届いています<em>当店の美味しいビールのひみつも<br>ご覧ください！</em></span></div>
         <div class="mf-op-ground bt-op-store"><img src="boteko-morning.webp" alt="ぼてこ幸田店"><span>ぼてこ幸田店で、お待ちしています</span></div>
         <div class="mf-truck mf-op-truck"></div>
@@ -2692,7 +2698,7 @@
         <p class="mf-op-h">旅のチケットを、どうぞ。</p>
         <div class="mf-op-ticket">
           <div class="mf-op-t-hd"><span>ぼてこ幸田号</span><span>🚚 NAGOYA → KOTA</span></div>
-          <div class="mf-op-t-bd"><div>出発<b class="sm">アサヒビール名古屋工場</b></div><div>行き先<b class="sm">ぼてこ幸田</b></div><div>経由<b class="sm">マルト水谷・岡崎・幸田</b></div><div>乗車<b class="sm">店内のみなさん</b></div></div>
+          <div class="mf-op-t-bd"><div>出発<b class="sm">アサヒビール名古屋工場</b></div><div>行き先<b class="sm">ぼてこ幸田</b></div><div>経由<b class="sm">マルト水谷・岡崎・幸田</b></div><div>乗車<b class="sm">今座っている席の皆様が乗客です</b></div></div>
           <div class="mf-op-t-perf"></div>
           <ol class="mf-op-t-st"><li>ドリンクを撮って、ひとこと添えて乾杯！</li><li>各地で乾杯して、みんなで次の名所へ！！</li><li>名所ガチャは3回！進むほど当たりやすく、最後はハズレなし</li><li>5枚目のぼてこ幸田で…何かが起こる！？</li></ol>
         </div>
@@ -4347,7 +4353,7 @@
     // ---------- メイン画面の夜空の花火（本物の花火に近い打ち上げ・種類・光） ----------
     const MAIN_FW_COLORS = [...SEASON.colors, '#ff9a5c', '#ffffff', '#ffd21f', '#7be06b', '#ff9a5c'];
     // 花火の種類：普通の花火（菊・牡丹）／しだれ花火（柳・冠）／ビール／お好み焼き／ボのロゴ／ぼてこちゃん ＋ ロゴ（別のタイミングで打ち上げ）
-    const MAIN_FW_KINDS = ['kiku', 'kiku', 'botan', 'yanagi', 'kamuro', 'beer', 'okonomi', 'ho', 'chara'];
+    const MAIN_FW_KINDS = ['ho', 'chara']; // TOPの花火は、ぼてこのロゴ（ボ）とぼてこちゃんだけ
     let mainFw = [];
     let mainRockets = [];
     let nextMainFwAt = 0;
@@ -4439,7 +4445,7 @@
         const sp = (1.9 + Math.random() * 0.3) * scale;
         addFwParticle(x, y, Math.cos(a) * sp, Math.sin(a) * sp, cols[Math.floor(i / n * 3)], { glitter: Math.random() < 0.3 });
       }
-      const bloomImg = [mfLogoImg, BT_FOOD[2], BT_FOOD[0], mfCharaImg, BT_FOOD[1], BT_FOOD[2]][mfLogoFlip++ % 6];
+      const bloomImg = [mfLogoImg, mfCharaImg][mfLogoFlip++ % 2];
       const food = BT_FOOD.includes(bloomImg);
       mainLogoBlooms.push({ x, y, t0: performance.now(), r: Math.min(width, 430) * (food ? 0.13 : 0.075) * scale, img: bloomImg.naturalWidth ? bloomImg : mfLogoImg, food: food && !!bloomImg.naturalWidth });
       mainFlash(x, y, 0.6 * scale);
@@ -5344,7 +5350,7 @@
       { key: 'castle', day: '2日目　朝　岡崎へ', trivia: ["徳川家康は1542年、この岡崎城で生まれました", "いまの天守は、1959年に復元されたもの", "岡崎公園は「日本さくら名所100選」に選ばれています"], it: 'Okazaki Castle', jp: '岡崎城', img: 'city-castle.webp', credit: '', copy: '天下人のふるさとで、乾杯。', desc: '徳川家康が生まれた城。乙川のほとりの岡崎公園に、白い天守がそびえます。', menuId: 'default_0', menuName: 'お好み焼き' },
       { key: 'park', day: '2日目　昼　幸田町へ', trivia: ["幸田中央公園は、JR幸田駅から歩いて7分ほど", "幸田文化公園の桜の見ごろは、例年4月上旬から中旬", "しだれ桜の品種は、ヤエベニシダレザクラやウジョウシダレザクラなど"], it: 'Kota Parks', jp: '幸田中央公園・幸田文化公園', short: '幸田の公園', img: 'city-park.webp', credit: '幸田中央公園（写真：幸田町観光協会）', img2: 'city-park2.webp', credit2: '幸田文化公園のしだれ桜（写真：幸田町観光協会）', creditNote: '写真：幸田町観光協会', copy: '2つの公園で、ひと休みの乾杯。', desc: '幸田町の真ん中にある、2つの公園をめぐります。', parts: [{ h: '幸田中央公園', t: '幸田町役場のとなりにある、町の真ん中の公園。長いすべり台もあって、町のみんなの憩いの場です。' }, { h: '幸田文化公園', t: '約20種・500本の桜が植えられ、そのうち約350本が花笠のように垂れるしだれ桜。4月上旬〜中旬には「幸田しだれ桜まつり」が開かれます。' }], menuId: 'default_1', menuName: '焼きそば' },
       { key: 'honkoji', day: '2日目　夕方　本光寺へ', trivia: ["「三河のあじさい寺」。6月の紫陽花まつりには、約1万本のあじさいが咲きます", "山門に掲げられた「瑞雲山」は、本光寺の山号です", "深溝（ふこうず）松平家の菩提寺。宝物館は、紫陽花まつりの期間だけ公開されます"], it: 'Honkoji', jp: '本光寺', img: 'city-honkoji.webp', credit: '写真：幸田町観光協会', copy: 'あじさいの参道で、乾杯。', desc: '幸田町深溝にある、深溝松平家ゆかりのお寺。石畳の参道の両側に、あじさいがあふれるように咲きます。', menuId: 'default_1', menuName: '焼きそば' },
-      { key: 'boteko', day: '2日目　夜　ぼてこ幸田に到着！', trivia: ["お好み焼一筋に、五十年", "工場出荷から2日以内の、美味しい生ビールがここに届きます", "店頭のぼてこちゃんと、写真を撮ろう！"], it: 'BOTECO Kota', jp: 'ぼてこ幸田', img: 'city-boteko.webp', fit: true, credit: '', copy: 'ゴール！工場出荷から2日以内の生ビールで、乾杯！', desc: 'アサヒビール名古屋工場から、マルト水谷を通って届いた新鮮な生ビール。アツアツの鉄板のお好み焼きと一緒にどうぞ。', menuId: 'default_0', menuName: 'お好み焼き' }
+      { key: 'boteko', day: '2日目　夜　ぼてこ幸田に到着！', trivia: ["<b>1961年創業、進化し続けるこだわりの味</b><br>創業以来、ぼてこはおいしいお好み焼を追求して、先代からの味を守りながら常に進化。生地・ソース・マヨネーズ・麺すべてにおいてこだわりがあります。<br>ぜひ、ご堪能ください！！"], it: 'BOTECO Kota', jp: 'ぼてこ幸田', img: 'city-boteko.webp', fit: true, credit: '', copy: 'ゴール！工場出荷から2日以内の生ビールで、乾杯！', desc: 'アサヒビール名古屋工場から、マルト水谷を通って届いた新鮮な生ビール。アツアツの鉄板のお好み焼きと一緒にどうぞ。', menuId: 'default_0', menuName: 'お好み焼き' }
     ];
     // 名所の写真がまだ無いときは、名前入りの仮の絵にする（city-◯◯.webp を置けば差し替わる）
     const mfCityPlaceholder = (c) => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd9a8"/><stop offset="1" stop-color="#e98766"/></linearGradient></defs><rect width="400" height="600" fill="url(#g)"/><text x="200" y="300" font-family="sans-serif" font-weight="900" font-size="44" fill="#fff" text-anchor="middle">${c.jp}</text><text x="200" y="350" font-family="sans-serif" font-weight="700" font-size="20" fill="#fff" text-anchor="middle" opacity=".85">写真準備中</text></svg>`);
@@ -5462,6 +5468,8 @@
     // 自然には消えない。「乾杯の写真を撮って、次の目的地へ」か「地図を見る」で進む
     // 名所ガチャ（速達生ビールガチャ）：02 岡崎城・03 幸田の公園・04 本光寺で1回ずつ、計3回
     const MF_GACHA_URL = 'https://010m-xtech.github.io/TEST2/bubblegacha_052940/';
+    // ガチャガチャ（カプセルトイ）の絵：絵文字に無いので小さな絵で
+    const BT_GACHA_ICON = '<svg class="bt-gacha-ico" viewBox="0 0 24 28" aria-hidden="true"><circle cx="12" cy="9" r="8" fill="#e8f6ff" stroke="#3a2008" stroke-width="1.6"/><circle cx="8.5" cy="8" r="2.4" fill="#f47c2c"/><circle cx="14.5" cy="6.5" r="2.2" fill="#e2394f"/><circle cx="13" cy="12" r="2.3" fill="#2a9df4"/><circle cx="8" cy="12.5" r="1.8" fill="#4b8b3b"/><rect x="4" y="15.5" width="16" height="11" rx="2" fill="#f47c2c" stroke="#3a2008" stroke-width="1.6"/><circle cx="12" cy="20" r="2.4" fill="#fff" stroke="#3a2008" stroke-width="1.2"/><rect x="6.5" y="23" width="4" height="2.4" rx="0.6" fill="#3a2008"/></svg>';
     const MF_GACHA_STOPS = [2, 3, 4];
     const mfGachaUrl = (stop) => `${MF_GACHA_URL}?shop=${encodeURIComponent('ぼてこ幸田')}&stop=${stop}`;
     // 3回のガチャの流れ（当たりの確率がだんだん上がって、最後はハズレなし）
@@ -5487,14 +5495,14 @@
         <button type="button" class="mf-b-fold">写真を見る ︾</button>
         <img class="bt-b-chara" src="chara.webp" alt="">
         <p class="mf-b-no">STOP ${String(ci + 1).padStart(2, '0')} / 05</p>
-        <p class="mf-b-it">${c.it}<span class="mf-b-jp">${c.jp}</span></p>
+        <p class="mf-b-it bt-name"><span class="bt-name-jp">${c.jp}</span><span class="bt-name-en">${c.it}</span></p>
         <div class="mf-b-line"></div>
         ${notYet ? `<p class="mf-b-notyet">まだ到着していません。写真を撮って、旅を進めよう</p>` : ''}
         <p class="mf-b-copy">${c.copy}</p>
         <p class="mf-b-desc">${c.desc}</p>
         ${c.parts ? c.parts.map(p => `<div class="bt-part"><p class="bt-part-h">${p.h}</p><p>${p.t}</p></div>`).join('') : ''}
         ${(c.creditNote || c.credit) ? `<p class="bt-credit-l">${c.creditNote || c.credit}</p>` : ''}
-        ${MF_GACHA_STOPS.includes(ci + 1) && !notYet ? `<div class="bt-gacha-box"><a class="bt-gacha" href="${mfGachaUrl(ci + 1)}" target="_blank" rel="noopener">🎰 ${c.short || c.jp}のガチャを回す<small>${MF_GACHA_STOPS.indexOf(ci + 1) + 1} / 3 回目</small></a>${mfGachaSteps(ci + 1)}</div>` : ''}
+        ${MF_GACHA_STOPS.includes(ci + 1) && !notYet ? `<div class="bt-gacha-box"><a class="bt-gacha" href="${mfGachaUrl(ci + 1)}" target="_blank" rel="noopener">${BT_GACHA_ICON}${c.short || c.jp}のガチャを回す<small>${MF_GACHA_STOPS.indexOf(ci + 1) + 1} / 3 回目</small></a>${mfGachaSteps(ci + 1)}</div>` : ''}
         <div class="mf-b-tips"><p class="mf-b-tips-h">💡 豆知識</p><ul>${c.trivia.map(t => `<li>${t}</li>`).join('')}</ul></div>
         ${go}
         </div>`;
@@ -8786,6 +8794,8 @@
       const merged = [];
       for (const p of parts) {
         if (merged.length && /^[、。，．！？!?）」』〉》…ー〜・%％]+$/.test(p)) merged[merged.length - 1] += p;
+        // ひらがなだけの部分（「を」「して」「から」などの助詞・送りがな）は前の言葉にくっつける → 文節の頭でだけ改行
+        else if (merged.length && /^[\u3040-\u309f]+$/.test(p) && !/[、。！？!?]$/.test(merged[merged.length - 1])) merged[merged.length - 1] += p;
         else if (merged.length && /[（「『〈《]$/.test(merged[merged.length - 1])) merged[merged.length - 1] += p;
         else merged.push(p);
       }
