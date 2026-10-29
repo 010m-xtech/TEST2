@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+  <script>
+    // LINEのアプリ内ブラウザで開いたときは、いつものブラウザ（Safari / Chrome）で開き直す
+    // （LINEの中だとカメラや別タブ・保存がうまく動かないことがあるため）
+    (function () {
+      if (/\bLine\//i.test(navigator.userAgent) && !/[?&]openExternalBrowser=1/.test(location.search)) {
+        location.replace(location.href.split('#')[0] + (location.search ? '&' : '?') + 'openExternalBrowser=1');
+      }
+    })();
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>お好み焼 ぼてこ幸田</title>
@@ -1754,7 +1763,7 @@
     .mf-road::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--mf-ground, 190px) - 34px); background: #2e2a26; }
     .mf-road-view { position: absolute; left: 0; right: 0; top: 0; bottom: calc(var(--mf-ground, 190px) - 34px); overflow: hidden; }
     .mf-road-far, .mf-road-near { position: absolute; left: 0; bottom: 0; height: 100%; }
-    .mf-road-far svg, .mf-road-near svg { height: 100%; width: auto; display: block; }
+    .mf-road-far svg, .mf-road-near svg { height: 100%; width: 100%; display: block; }
     .mf-road-far, .mf-road-near { height: min(100%, 520px) !important; }
     .mf-road-far { opacity: 0.85; filter: blur(0.6px); animation: mfScroll 9s linear infinite; }
     .mf-road-near { animation: mfScroll 2.6s linear infinite; }
@@ -2340,6 +2349,48 @@
     }
     /* 紹介ページ：「次の目的地へ」「フィナーレへ」は下に固定（スクロールしなくても押せる） */
     .mf-bubble .mf-b-go { position: sticky; bottom: 0; z-index: 3; box-shadow: 0 -10px 18px rgba(20, 10, 6, 0.85), 0 6px 14px rgba(0, 0, 0, 0.35) !important; }
+    /* ===== 3回目の調整：実機のスマホで ===== */
+    /* 文字の改行：ことばの途中で切れないように（対応していない機種では、いつもどおり） */
+    .mf-op h1, .mf-op-h, .mf-op-p, .mf-b-copy, .mf-b-desc, .bt-part p, .mf-b-tips li, .bt-asahi-tx span, .mf-pill-txt, .bt-say, .mf-op-t-st li, .bt-op-beer span, .mf-night-jp, .show-headline, #showSub, .toast {
+      word-break: auto-phrase; line-break: strict; text-wrap: pretty;
+    }
+    .mf-op-h, .mf-b-copy, .mf-night-jp { text-wrap: balance; }
+    .nw { white-space: nowrap; }
+    /* 走る場面の景色：幅を景色の縦横比から決める（880 × 474） */
+    .mf-road-far, .mf-road-near { aspect-ratio: 880 / 474; width: auto !important; will-change: transform; }
+    /* 最初のページ：工場出荷2日以内の札を大きく */
+    .bt-op-beer.is-big { margin-top: 14px !important; padding: 12px 18px 12px 12px !important; border-width: 3px; gap: 12px; }
+    .bt-op-beer.is-big img { width: 42px !important; }
+    .bt-op-beer.is-big span { font-size: 15px !important; line-height: 1.45 !important; }
+    .bt-op-beer.is-big b { font-size: 1.15em; }
+    .bt-op-beer.is-big em { display: block; margin-top: 6px; padding-top: 6px; border-top: 1.5px dashed #f5b417; font-style: normal; font-size: 12.5px; color: #df5f14; }
+    @media (max-height: 720px) {
+      .bt-op-beer.is-big { margin-top: 8px !important; padding: 8px 14px 8px 10px !important; }
+      .bt-op-beer.is-big img { width: 32px !important; }
+      .bt-op-beer.is-big span { font-size: 13px !important; }
+      .bt-op-beer.is-big em { font-size: 11px; margin-top: 4px; padding-top: 4px; }
+      .mf-op-s.on .mf-op-p { margin-top: 2px !important; }
+    }
+    /* TOPの地図：下のボタンに隠れないように、地図はボタンの上までに収める */
+    .mf-map-svg { top: calc(env(safe-area-inset-top) + 118px) !important; height: calc(100% - env(safe-area-inset-top) - 118px - var(--mf-ground, 190px) - 58px) !important; }
+    .mf-map-pill { bottom: calc(var(--mf-ground, 190px) + 4px) !important; }
+    @media (max-height: 720px) {
+      .mf-line { top: calc(env(safe-area-inset-top) + 34px) !important; transform: scale(0.86); transform-origin: 50% 0; }
+      .mf-map-svg { top: calc(env(safe-area-inset-top) + 100px) !important; height: calc(100% - env(safe-area-inset-top) - 100px - var(--mf-ground, 190px) - 48px) !important; }
+      .cta-camera { padding: 7px 10px 6px !important; gap: 0 !important; }
+      .cta-camera > span:first-child { font-size: 14px !important; }
+      .cta-camera #ctaSub { font-size: 10.5px !important; }
+      .bt-cta-mug { width: 22px !important; margin: -6px 0 -4px !important; }
+      .mf-map-pill { padding: 3px 14px 3px 4px !important; }
+      .mf-pill-logo { height: 24px !important; }
+      .mf-pill-txt { font-size: 11.5px !important; }
+      .mf-pill-chara { width: 34px !important; top: -28px !important; }
+    }
+    /* 単語の切れ目（<wbr>）でだけ改行。長すぎる単語だけ途中で折り返す */
+    .mf-op-h, .mf-op-p, .bt-op-beer span, .mf-op-t-bd, .mf-op-t-st li, .bt-op-route, .mf-op-foot, .bt-op-buddy span, .mf-b-copy, .mf-b-desc, .bt-part p, .mf-b-tips li, .bt-credit-l, .bt-asahi-tx, .mf-pill-txt, .bt-say, .mf-night-jp, .mf-night-sub, .bt-gacha-h, .bt-gacha small, .mf-b-go small, .mf-b-notyet, #showSub, #revealSub, #cheerHint, .mf-mvp-sub, .mf-mvp-who {
+      word-break: keep-all; overflow-wrap: anywhere;
+    }
+    .bt-say { white-space: nowrap !important; width: max-content; max-width: none; }
 </style>
 </head>
 <body class="flex justify-center items-start h-screen overflow-hidden bg-black">
@@ -2592,15 +2643,15 @@
     <!-- ======================================================== -->
     <!-- オープニング＋遊び方（絵と短い説明・タップで次へ／スキップ可） -->
     <!-- ======================================================== -->
-    <div id="mfOpening" class="mf-op hidden" role="dialog" aria-label="遊び方">
+    <div id="mfOpening" class="mf-op" role="dialog" aria-label="遊び方">
       <div class="mf-op-top"><div class="mf-op-dots"><i></i><i></i><i></i><i></i><i></i></div><button type="button" class="mf-op-skip">スキップ ›</button></div>
 
-      <section class="mf-op-s">
+      <section class="mf-op-s on">
         <div class="mf-op-flag"></div>
         <img src="logo-banner.webp" alt="お好み焼 ぼてこ幸田" class="mf-op-logo bt-op-banner">
         <p class="mf-op-h">ようこそ、<br><b>ぼてこ幸田号</b>へ。</p>
         <p class="mf-op-p">今夜は店内のみんなで<br><b class="mf-op-em">岡崎めぐり乾杯旅</b>に出発します</p>
-        <div class="bt-op-beer"><img src="beer-mug.webp" alt=""><span><b>工場出荷2日以内</b>の<br>美味しい生ビールで乾杯！</span></div>
+        <div class="bt-op-beer is-big"><img src="beer-mug.webp" alt=""><span><b>工場出荷2日以内</b>で<br>新鮮なビールが届いています<em>当店の美味しいビールのひみつも<br>ご覧ください！</em></span></div>
         <div class="mf-op-ground bt-op-store"><img src="boteko-morning.webp" alt="ぼてこ幸田店"><span>ぼてこ幸田店で、お待ちしています</span></div>
         <div class="mf-truck mf-op-truck"></div>
         <div class="bt-op-buddy is-big"><span>いらっしゃい！</span><img src="chara.webp" alt=""></div>
@@ -3645,8 +3696,18 @@
       if (dx > 0 && mfOpIdx > 0) mfOpShow(mfOpIdx - 1);
     });
 
-    function startStoryIntro(onEnd) {
+    const OP_SEEN_KEY = 'boteko_kota_op_seen';
+    const opSeenRecently = () => { try { return Date.now() - (+localStorage.getItem(OP_SEEN_KEY) || 0) < 3 * 60 * 60 * 1000; } catch (e) { return false; } };
+    function startStoryIntro(onEnd, force = true) {
       onStoryEnd = onEnd || null;
+      if (!force && opSeenRecently()) {
+        // 最近見た人は、オープニングを出さずにそのまま旅の画面へ
+        mfOp.classList.add('hidden');
+        onStoryEnd = null;
+        if (onEnd) onEnd();
+        setTimeout(() => { if (mfPos !== null && !mfShowVisible) mfShowMap(mfPos); }, 50);
+        return;
+      }
       storyActive = true;
       // ショート動画のかわりに、絵と説明のオープニングを見せる
       mfOpInit();
@@ -3673,6 +3734,7 @@
     function endStoryIntro() {
       if (!storyActive) return;
       storyActive = false;
+      try { localStorage.setItem(OP_SEEN_KEY, String(Date.now())); } catch (e) {}
       clearTimeout(mfOpTimer);
       mfOp.classList.add('out');
       setTimeout(() => mfOp.classList.add('hidden'), 500);
@@ -5530,7 +5592,7 @@
         el.className = 'bt-asahi';
         el.innerHTML = `<button type="button" class="bt-asahi-x" aria-label="閉じる">✕</button>
           <svg class="bt-asahi-ill" viewBox="0 0 120 70" aria-hidden="true"><rect x="0" y="58" width="120" height="12" fill="#e9dcc4"/><rect x="6" y="26" width="58" height="32" fill="#e6ebef" stroke="#5a6670"/><path d="M6 26 l9-9 9 9 9-9 9 9 9-9 9 9" fill="#f4f6f8" stroke="#5a6670"/><g fill="#ffd38a"><rect x="12" y="34" width="8" height="8"/><rect x="26" y="34" width="8" height="8"/><rect x="40" y="34" width="8" height="8"/></g><rect x="70" y="10" width="13" height="48" rx="6.5" fill="#d3dbe2" stroke="#5a6670"/><rect x="86" y="18" width="13" height="40" rx="6.5" fill="#d3dbe2" stroke="#5a6670"/><g transform="translate(100 44)"><rect x="0" y="0" width="12" height="14" rx="2" fill="#c0c8d0" stroke="#5a6670"/><rect x="0" y="4" width="12" height="2" fill="#8a96a0"/><rect x="0" y="9" width="12" height="2" fill="#8a96a0"/></g><g transform="translate(86 50)"><rect x="0" y="0" width="12" height="8" rx="2" fill="#c0c8d0" stroke="#5a6670"/></g></svg>
-          <div class="bt-asahi-tx"><b>START　アサヒビール名古屋工場</b><span>樽詰めされたばかりの新鮮な生ビールが出荷！<br>マルト水谷を通って、<em>2日以内</em>に ぼてこ幸田 へ届きます</span></div>`;
+          <div class="bt-asahi-tx"><b>START　<span class="nw">アサヒビール名古屋工場</span></b><span>樽詰めされたばかりの新鮮な生ビールが出荷！<br>マルト水谷を通って、<em>2日以内</em>に ぼてこ幸田 へ届きます</span></div>`;
         mfMap.appendChild(el);
         el.querySelector('.bt-asahi-x').addEventListener('click', (e) => { e.stopPropagation(); el.classList.add('closed'); el.classList.remove('show'); });
       }
@@ -8706,15 +8768,66 @@
       buildStoryDecor();
       renderMeter();
 
-      // オープニング（3枠）→ 終わったらトップ画面を表示
+    });
+
+    // ---------- 日本語の改行：単語の切れ目でだけ改行する（iPhoneのSafariでも効くように） ----------
+    // 文章を単語に分けて、そのあいだに改行してよい印（<wbr>）を入れる。長すぎる単語だけは途中で折り返す
+    const BT_WRAP_SEL = '.mf-op-h, .mf-op-p, .bt-op-beer span, .mf-op-t-bd, .mf-op-t-st li, .bt-op-route, .mf-op-foot, .bt-op-buddy span, .mf-b-copy, .mf-b-desc, .bt-part p, .mf-b-tips li, .bt-credit-l, .bt-asahi-tx, .mf-pill-txt, .bt-say, .mf-night-jp, .mf-night-sub, .bt-gacha-h, .bt-gacha small, .mf-b-go small, .mf-b-notyet, #showSub, #revealSub, #cheerHint, .mf-mvp-sub, .mf-mvp-who';
+    const btSeg = (typeof Intl !== 'undefined' && Intl.Segmenter) ? new Intl.Segmenter('ja', { granularity: 'word' }) : null;
+    const btDone = new WeakSet();
+    function btWrapText(node) {
+      if (!btSeg || btDone.has(node)) return;
+      const t = node.nodeValue;
+      if (!t || t.length < 6 || !/[\u3040-\u30ff\u4e00-\u9fff]/.test(t)) { btDone.add(node); return; }
+      const parent = node.parentNode;
+      if (!parent || parent.closest('.nw, svg, script, style, textarea, input')) { btDone.add(node); return; }
+      const parts = [...btSeg.segment(t)].map(x => x.segment);
+      // 「、」「。」「！」などは前の単語にくっつける
+      const merged = [];
+      for (const p of parts) {
+        if (merged.length && /^[、。，．！？!?）」』〉》…ー〜・%％]+$/.test(p)) merged[merged.length - 1] += p;
+        else if (merged.length && /[（「『〈《]$/.test(merged[merged.length - 1])) merged[merged.length - 1] += p;
+        else merged.push(p);
+      }
+      if (merged.length < 2) { btDone.add(node); return; }
+      const frag = document.createDocumentFragment();
+      merged.forEach((p, i) => {
+        if (i) frag.appendChild(document.createElement('wbr'));
+        const tn = document.createTextNode(p); btDone.add(tn); frag.appendChild(tn);
+      });
+      parent.replaceChild(frag, node);
+    }
+    function btWrap(root) {
+      if (!btSeg || !root || root.nodeType !== 1) return;
+      const els = root.matches && root.matches(BT_WRAP_SEL) ? [root] : [];
+      els.push(...root.querySelectorAll(BT_WRAP_SEL));
+      if (!els.length && root.closest) { const up = root.closest(BT_WRAP_SEL); if (up) els.push(up); }
+      els.forEach(el => {
+        const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+        const list = []; while (w.nextNode()) list.push(w.currentNode);
+        list.forEach(btWrapText);
+      });
+    }
+    if (btSeg) {
+      btWrap(document.getElementById('appContainer'));
+      new MutationObserver(ms => ms.forEach(m => {
+        if (m.type === 'characterData') { const el = m.target.parentNode; if (el && el.closest && el.closest(BT_WRAP_SEL)) btWrapText(m.target); return; }
+        m.addedNodes.forEach(n => { if (n.nodeType === 1) btWrap(n); else if (n.nodeType === 3 && n.parentNode && n.parentNode.closest && n.parentNode.closest(BT_WRAP_SEL)) btWrapText(n); });
+      })).observe(document.getElementById('appContainer'), { childList: true, subtree: true, characterData: true });
+    }
+
+    // オープニング → 終わったらトップ画面を表示（写真や動画の読み込み完了を待たずに、すぐ始める）
+    {
       const uiElements = document.getElementById('uiElements');
+      const keepIdx = mfOpIdx;
       startStoryIntro(() => {
         startIntroBubbleSpawning();
         uiElements.classList.remove('opacity-0');
         uiElements.classList.add('opacity-100');
         document.getElementById('memoryMeter').classList.remove('opacity-0');
-      });
-    });
+      }, false);
+      if (keepIdx > 0) mfOpShow(keepIdx);
+    }
   </script>
 </body>
 </html>
