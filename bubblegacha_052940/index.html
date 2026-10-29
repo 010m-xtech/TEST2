@@ -84,6 +84,12 @@
         };
         const KEY_SURVEY = 'boteko_kota_gacha_survey_completed';
         const ALL_PRIZES = [MISS, ...PRIZES];
+        // 旅の画面にもどる（ガチャは別のタブで開いているので、閉じれば旅の画面。閉じられないときは旅の画面へ移動）
+        const JOURNEY_URL = 'https://010m-xtech.github.io/TEST2/bubble_052940/';
+        const backToJourney = () => {
+            try { window.close(); } catch (e) {}
+            setTimeout(() => { location.href = JOURNEY_URL; }, 300);
+        };
         // 悪用対策：旅の画面が記録した「この端末で着いた名所」を確認（12時間以内・その名所以降に着いていること）
         const REACHED_KEY = 'boteko_kota_reached';
         const canPlay = (stopNo) => {
@@ -541,7 +547,7 @@
                             <p className="text-amber-300 font-black text-xl leading-snug">{STOPS[stop] ? STOPS[stop].name.slice(3) : 'この名所'}には<br />まだ到着していません</p>
                             <p className="mt-3 text-white/85 text-sm font-bold leading-relaxed">旅の画面で乾杯の写真を撮って、<br />名所に着いたらガチャを回せます！</p>
                             <button
-                                onClick={() => { window.close(); setTimeout(() => { location.href = 'https://010m-xtech.github.io/TEST2/bubble_052940/'; }, 300); }}
+                                onClick={backToJourney}
                                 className="mt-5 w-full py-3 bg-yellow-400 text-black font-black rounded-full border-4 border-yellow-200 active:scale-95"
                             >
                                 旅にもどる
@@ -675,7 +681,7 @@
                                     
                                     {activePrize.id === 0 ? (
                                         <button
-                                            onClick={() => { window.close(); setTimeout(() => { location.href = 'https://010m-xtech.github.io/TEST2/bubble_052940/'; }, 300); }}
+                                            onClick={backToJourney}
                                             className="mt-4 w-full py-2.5 px-3 bg-yellow-400 text-black font-black text-sm md:text-xl rounded-full border-4 border-yellow-200 active:scale-95"
                                         >
                                             旅にもどる
@@ -691,6 +697,10 @@
                                             <p className="text-yellow-300 font-black text-xs md:text-lg drop-shadow-[0_2px_5px_rgba(0,0,0,0.9)] whitespace-nowrap tracking-wide">
                                                 ※スクショか写真を撮って後で見せてください
                                             </p>
+                                            <button onClick={backToJourney} className="mt-1 w-full py-2.5 bg-yellow-400 text-black font-black text-sm rounded-full border-4 border-yellow-200 active:scale-95">
+                                                旅にもどる
+                                            </button>
+                                            <p className="text-white/70 text-[10px] font-bold leading-snug">この画面は、名所の紹介ページの「ガチャ」ボタンからいつでも見られます</p>
                                         </div>
                                     ) : (
                                         <button 
@@ -700,6 +710,11 @@
                                             <div>{activePrize.subLine1}</div>
                                             <div>{activePrize.subLine2}</div>
                                             <span className="block text-[9px] md:text-xs font-bold mt-1 text-black/70">＞ ボタンを押してアンケートへ ＜</span>
+                                        </button>
+                                    )}
+                                    {activePrize.id !== 0 && !isSurveyCompleted && (
+                                        <button onClick={backToJourney} className="mt-3 text-white/80 text-xs font-bold underline underline-offset-4">
+                                            あとでアンケートに答える（旅にもどる）
                                         </button>
                                     )}
                                 </div>
