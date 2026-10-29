@@ -91,7 +91,8 @@
             try { round = (JSON.parse(localStorage.getItem('boteko_kota_reached') || 'null') || {}).round || 0; } catch (e) {}
             return `boteko_kota_gacha_r${round}_s${stop}`;
         };
-        const KEY_SURVEY = 'boteko_kota_gacha_survey_completed';
+        // アンケートは当たるたびに答えてもらう（名所ごと・旅ごと）
+        const KEY_SURVEY = (stop) => KEY_RESULT(stop).replace('_gacha_', '_gacha_survey_');
         const ALL_PRIZES = [MISS, ...PRIZES];
         // 旅の画面にもどる（ガチャは別のタブで開いているので、閉じれば旅の画面。閉じられないときは旅の画面へ移動）
         const JOURNEY_URL = 'https://010m-xtech.github.io/TEST2/bubble_052940/';
@@ -413,7 +414,6 @@
               if (urlParams.get('action') === 'reset') {
                   // この名所ガチャの結果とアンケートをクリア（スタッフ確認用）
                   Object.keys(localStorage).filter(k => k.startsWith('boteko_kota_gacha_')).forEach(k => localStorage.removeItem(k));
-                  localStorage.removeItem(KEY_SURVEY);
                   
                   const shopParam = urlParams.get('shop');
                   const baseUrl = 'https://010m-xtech.github.io/TEST2/bubblegacha_052940/';
@@ -435,7 +435,7 @@
 
               // この名所ですでに回していたら、その結果を出す（名所ごとに1回）
               const savedPrizeId = localStorage.getItem(KEY_RESULT(stopNo));
-              const savedSurvey = localStorage.getItem(KEY_SURVEY);
+              const savedSurvey = localStorage.getItem(KEY_SURVEY(stopNo));
               
               if (savedPrizeId !== null) {
                   setPrizeId(parseInt(savedPrizeId, 10));
@@ -523,7 +523,7 @@
                   gameResult={activePrize ? `${activePrize.rank}（${STOPS[stop] ? STOPS[stop].name : ''}）` : ''} 
                   onComplete={() => {
                       setIsSurveyCompleted(true);
-                      localStorage.setItem(KEY_SURVEY, 'true');
+                      localStorage.setItem(KEY_SURVEY(stop), 'true');
                       setView('gacha');
                   }}
               />;
@@ -719,11 +719,6 @@
                                             <div>{activePrize.subLine1}</div>
                                             <div>{activePrize.subLine2}</div>
                                             <span className="block text-[9px] md:text-xs font-bold mt-1 text-black/70">＞ ボタンを押してアンケートへ ＜</span>
-                                        </button>
-                                    )}
-                                    {activePrize.id !== 0 && !isSurveyCompleted && (
-                                        <button onClick={backToJourney} className="mt-3 text-white/80 text-xs font-bold underline underline-offset-4">
-                                            あとでアンケートに答える（旅にもどる）
                                         </button>
                                     )}
                                 </div>
