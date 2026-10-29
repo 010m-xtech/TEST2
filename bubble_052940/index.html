@@ -2115,7 +2115,7 @@
     .bt-asahi-tx b { display: block; font-family: var(--bt-jp); font-weight: 400; font-size: 12px; color: #b8501a; }
     .bt-asahi-tx span { display: block; margin-top: 3px; font-size: 11px; line-height: 1.45; color: #4a3020; font-weight: 700; }
     .bt-asahi-tx em { font-style: normal; color: #df5f14; font-size: 1.15em; }
-    .bt-asahi-x { position: absolute; right: 6px; top: 4px; width: 24px; height: 24px; border-radius: 50%; color: #8a6a50; font-size: 13px; }
+    .bt-asahi-x { position: absolute; right: 2px; top: 0; width: 40px; height: 40px; border-radius: 50%; color: #8a6a50; font-size: 16px; font-weight: 900; }
     .bt-day { display: inline-block; margin-bottom: 4px; padding: 2px 10px; border-radius: 9999px; background: #ffd21f; color: #4a2a05; font-family: var(--bt-jp); font-size: 11px; }
     .bt-credit { position: absolute; right: 8px; top: calc(env(safe-area-inset-top) + 124px); max-width: 70%; padding: 2px 7px; border-radius: 6px; background: rgba(0, 0, 0, 0.45); color: #fff; font-size: 9px; line-height: 1.4; opacity: 0; transition: opacity 0.4s ease; z-index: 1; }
     .bt-credit.show { opacity: 1; }
@@ -2299,6 +2299,47 @@
     @keyframes btPop { from { opacity: 0; transform: scale(0.4) translateY(20px); } to { opacity: 1; transform: none; } }
     .mf-op-go { background: linear-gradient(180deg, #ffa552 0%, #f47c2c 55%, #df5f14 100%) !important; color: #fff !important; font-size: 18px !important; }
 
+    /* ===== スマホの画面の高さに合わせる（ブラウザの上下のバーを引いた高さ：550〜700px） ===== */
+    /* オープニング最後：「旅に出る」は画面の下に固定して、必ず押せるように */
+    .mf-op-s:has(.mf-op-go) { padding-bottom: calc(env(safe-area-inset-bottom) + 96px) !important; }
+    .mf-op-go { position: absolute !important; left: 20px; right: 20px; width: auto !important; max-width: none !important; margin: 0 !important; bottom: calc(env(safe-area-inset-bottom) + 18px); z-index: 5; }
+    .mf-op-foot { font-size: 10.5px !important; }
+    .bt-finale { background: linear-gradient(180deg, #ffe46b, #ffd21f 55%, #f2b300) !important; color: #3a2008 !important; animation: btFinale 1.2s ease-in-out infinite alternate; }
+    .bt-finale small { color: #6b4a10 !important; }
+    @keyframes btFinale { from { box-shadow: 0 0 0 rgba(255, 210, 31, 0); } to { box-shadow: 0 0 22px rgba(255, 210, 31, 0.9); } }
+    @media (max-height: 720px) {
+      .bt-op-banner { width: min(58%, 230px) !important; margin-top: 4px !important; }
+      .mf-op-s { padding-top: calc(env(safe-area-inset-top) + 46px) !important; }
+      .mf-op-h { font-size: clamp(17px, 5.2vw, 21px) !important; margin-top: 8px !important; line-height: 1.4 !important; }
+      .mf-op-p { font-size: 12.5px !important; margin-top: 4px !important; line-height: 1.55 !important; }
+      .bt-op-beer { margin-top: 6px !important; padding: 5px 12px 5px 8px !important; }
+      .bt-op-beer img { width: 24px !important; }
+      .bt-op-beer span { font-size: 11.5px !important; }
+      .bt-op-store { height: 28% !important; }
+      .mf-op-truck { bottom: calc(28% + 2px) !important; width: min(38%, 150px) !important; left: 30% !important; }
+      .bt-op-buddy.is-big { bottom: calc(28% + 6px) !important; }
+      .bt-op-buddy.is-big img { width: 56px !important; }
+      .bt-op-buddy.is-big span { font-size: 10.5px; padding: 3px 8px; }
+      .bt-op-buddy.is-ticket { display: none !important; }
+      .mf-op-truck2 { display: none !important; }
+      .mf-op-ticket { margin-top: 8px !important; }
+      .mf-op-t-hd { padding: 8px 12px !important; }
+      .mf-op-t-bd { padding: 8px 12px !important; gap: 4px 10px !important; }
+      .mf-op-t-st { padding: 8px 12px 10px !important; gap: 4px !important; }
+      .mf-op-t-st li { font-size: 11.5px !important; }
+      .mf-op-phone { margin: 18px 0 40px !important; }
+      .mf-op-map { max-height: 44vh !important; margin: 8px 0 4px !important; }
+      .bt-op-center .mf-op-mystery { width: min(36%, 140px) !important; margin-top: 10px !important; }
+    }
+    @media (max-height: 600px) {
+      .bt-op-buddy.is-big span { display: none; }
+      .bt-op-store { height: 24% !important; }
+      .mf-op-truck { bottom: calc(24% + 2px) !important; width: min(34%, 130px) !important; }
+      .bt-op-buddy.is-big { bottom: calc(24% + 4px) !important; }
+      .mf-op-map { max-height: 40vh !important; }
+    }
+    /* 紹介ページ：「次の目的地へ」「フィナーレへ」は下に固定（スクロールしなくても押せる） */
+    .mf-bubble .mf-b-go { position: sticky; bottom: 0; z-index: 3; box-shadow: 0 -10px 18px rgba(20, 10, 6, 0.85), 0 6px 14px rgba(0, 0, 0, 0.35) !important; }
 </style>
 </head>
 <body class="flex justify-center items-start h-screen overflow-hidden bg-black">
@@ -2563,7 +2604,7 @@
         <div class="mf-op-ground bt-op-store"><img src="boteko-morning.webp" alt="ぼてこ幸田店"><span>ぼてこ幸田店で、お待ちしています</span></div>
         <div class="mf-truck mf-op-truck"></div>
         <div class="bt-op-buddy is-big"><span>いらっしゃい！</span><img src="chara.webp" alt=""></div>
-        <p class="mf-op-foot">タップで次へ</p>
+        <p class="mf-op-foot">右をタップで次へ ／ 左をタップで前へ</p>
       </section>
 
       <section class="mf-op-s">
@@ -2582,7 +2623,7 @@
         <p class="mf-op-h">1枚ごとに、店内<b>みんな</b>で<br><b>次の名所</b>へ。</p>
         <svg class="mf-op-map" viewBox="0 0 300 318" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
         <div class="bt-op-route"><span class="is-start">アサヒビール</span><i>›</i><span>マルト水谷</span><i>›</i><span>岡崎城</span><i>›</i><span>幸田の公園</span><i>›</i><span>本光寺</span><i>›</i><span class="is-goal">ぼてこ幸田</span></div>
-        <p class="mf-op-p mf-op-small">着くと、名所の紹介と<b class="mf-op-em">おすすめメニュー</b>が見られます</p>
+        <p class="mf-op-p mf-op-small">着くと、名所の<b class="mf-op-em">写真と紹介・豆知識</b>が見られます</p>
         <div class="bt-op-buddy"><span>みんなで行こう！</span><img src="chara.webp" alt=""></div>
       </section>
 
@@ -2992,7 +3033,7 @@
     </div>
     <div id="launchHint">
       <div class="ring"></div>
-      <p>TAP でポンッ！</p>
+      <p>乾杯でポンッ！</p>
     </div>
     <!-- 確定演出のラベル -->
     <div id="revealLabel" class="absolute inset-x-0 top-[60%] z-10 flex flex-col items-center pointer-events-none px-4 text-center">
@@ -3582,9 +3623,26 @@
       // 最後のチケットは自動では閉じない（「旅に出る」を押す）
       if (mfOpIdx < mfOpSlides.length - 1) mfOpTimer = setTimeout(() => mfOpShow(mfOpIdx + 1), 3200);
     }
+    let mfOpSwiped = 0;
     mfOp.addEventListener('click', (e) => {
       if (e.target.closest('.mf-op-skip, .mf-op-go')) { endStoryIntro(); return; }
-      if (mfOpIdx < mfOpSlides.length - 1) mfOpShow(mfOpIdx + 1);
+      if (Date.now() - mfOpSwiped < 400) return;
+      // 左1/3をタップで前へ、それ以外は次へ
+      const r = mfOp.getBoundingClientRect();
+      if (e.clientX - r.left < r.width / 3) { if (mfOpIdx > 0) mfOpShow(mfOpIdx - 1); }
+      else if (mfOpIdx < mfOpSlides.length - 1) mfOpShow(mfOpIdx + 1);
+    });
+    // 横にスワイプでも前後に移動
+    let mfOpTouch = null;
+    mfOp.addEventListener('touchstart', (e) => { const t = e.touches[0]; mfOpTouch = { x: t.clientX, y: t.clientY }; }, { passive: true });
+    mfOp.addEventListener('touchend', (e) => {
+      if (!mfOpTouch) return;
+      const t = e.changedTouches[0], dx = t.clientX - mfOpTouch.x, dy = t.clientY - mfOpTouch.y;
+      mfOpTouch = null;
+      if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy)) return;
+      mfOpSwiped = Date.now();
+      if (dx < 0 && mfOpIdx < mfOpSlides.length - 1) mfOpShow(mfOpIdx + 1);
+      if (dx > 0 && mfOpIdx > 0) mfOpShow(mfOpIdx - 1);
     });
 
     function startStoryIntro(onEnd) {
@@ -5165,7 +5223,8 @@
     // ==============================================
     const METER_GOAL = 5;
     const SHOW_DURATION = 26000; // 確定演出 4.2秒 ＋ 打ち上げ待ち 最大3秒 ＋ 打ち上げ 1秒 ＋ 本編 17.8秒
-    const SHOW_LEAD_MS = 16000;                // 5枚目でぼてこ幸田へ旅して、名所を見てから開始
+    const SHOW_LEAD_MS = 3 * 60 * 1000;        // 5枚目でぼてこ幸田に着いたら「フィナーレへ」で開始（だれも押さなければ3分後に自動で開始）
+    const FINALE_DELAY_MS = 600;               // 「フィナーレへ」を押してから始まるまで
     const MEMORY_TTL_MS = 3 * 60 * 60 * 1000;  // 写真データの保険の有効期限（Firestore の TTL 設定で自動削除）
 
     // スプレッドシート連携：Apps Script をウェブアプリとして公開した URL を貼る（空なら送らない）
@@ -5359,7 +5418,7 @@
       const notYet = ci + 1 > mfPos;
       const go = next
         ? `<button type="button" class="mf-b-go">🗺 MAPに戻って、次の目的地へ<small>次の目的地：${next.short || next.jp}</small></button>`
-        : `<div class="mf-b-go is-wait">🎆 旅のゴール！まもなく花火ショー</div>`;
+        : `<button type="button" class="mf-b-go bt-finale">🎆 フィナーレへ！<small>押すと、みんなの画面で花火ショーが始まります</small></button>`;
       return `<button type="button" class="mf-bubble-x" aria-label="閉じて地図を見る">✕</button>
         <button type="button" class="mf-b-bar"><span>📖 ${c.jp}の紹介を見る</span><i>︽</i></button>
         <div class="mf-b-body">
@@ -5373,8 +5432,8 @@
         <p class="mf-b-desc">${c.desc}</p>
         ${c.parts ? c.parts.map(p => `<div class="bt-part"><p class="bt-part-h">${p.h}</p><p>${p.t}</p></div>`).join('') : ''}
         ${(c.creditNote || c.credit) ? `<p class="bt-credit-l">${c.creditNote || c.credit}</p>` : ''}
-        <div class="mf-b-tips"><p class="mf-b-tips-h">💡 豆知識</p><ul>${c.trivia.map(t => `<li>${t}</li>`).join('')}</ul></div>
         ${MF_GACHA_STOPS.includes(ci + 1) && !notYet ? `<div class="bt-gacha-box"><a class="bt-gacha" href="${mfGachaUrl(ci + 1)}" target="_blank" rel="noopener">🎰 ${c.short || c.jp}のガチャを回す<small>${MF_GACHA_STOPS.indexOf(ci + 1) + 1} / 3 回目</small></a>${mfGachaSteps(ci + 1)}</div>` : ''}
+        <div class="mf-b-tips"><p class="mf-b-tips-h">💡 豆知識</p><ul>${c.trivia.map(t => `<li>${t}</li>`).join('')}</ul></div>
         ${go}
         </div>`;
     }
@@ -5392,7 +5451,7 @@
       tap('.mf-bubble-x', mfCloseBubble);
       const gacha = mfBubble.querySelector('.bt-gacha');
       if (gacha) gacha.addEventListener('click', (e) => e.stopPropagation());
-      tap('.mf-b-go', () => { if (MF_CITIES[mfPos]) mfCloseBubble(); });
+      tap('.mf-b-go', () => { if (MF_CITIES[mfPos]) mfCloseBubble(); else requestFinale(); });
       // 紹介はいつでもたたんだり開いたりできる（写真を大きく見たいとき）
       tap('.mf-b-fold', () => { mfBubble.classList.add('folded'); requestAnimationFrame(mfLiftTruck); });
       tap('.mf-b-bar', () => { mfBubble.classList.remove('folded'); mfBubble.scrollTop = 0; requestAnimationFrame(mfLiftTruck); });
@@ -5473,7 +5532,7 @@
           <svg class="bt-asahi-ill" viewBox="0 0 120 70" aria-hidden="true"><rect x="0" y="58" width="120" height="12" fill="#e9dcc4"/><rect x="6" y="26" width="58" height="32" fill="#e6ebef" stroke="#5a6670"/><path d="M6 26 l9-9 9 9 9-9 9 9 9-9 9 9" fill="#f4f6f8" stroke="#5a6670"/><g fill="#ffd38a"><rect x="12" y="34" width="8" height="8"/><rect x="26" y="34" width="8" height="8"/><rect x="40" y="34" width="8" height="8"/></g><rect x="70" y="10" width="13" height="48" rx="6.5" fill="#d3dbe2" stroke="#5a6670"/><rect x="86" y="18" width="13" height="40" rx="6.5" fill="#d3dbe2" stroke="#5a6670"/><g transform="translate(100 44)"><rect x="0" y="0" width="12" height="14" rx="2" fill="#c0c8d0" stroke="#5a6670"/><rect x="0" y="4" width="12" height="2" fill="#8a96a0"/><rect x="0" y="9" width="12" height="2" fill="#8a96a0"/></g><g transform="translate(86 50)"><rect x="0" y="0" width="12" height="8" rx="2" fill="#c0c8d0" stroke="#5a6670"/></g></svg>
           <div class="bt-asahi-tx"><b>START　アサヒビール名古屋工場</b><span>樽詰めされたばかりの新鮮な生ビールが出荷！<br>マルト水谷を通って、<em>2日以内</em>に ぼてこ幸田 へ届きます</span></div>`;
         mfMap.appendChild(el);
-        el.querySelector('.bt-asahi-x').addEventListener('click', (e) => { e.stopPropagation(); el.classList.add('closed'); });
+        el.querySelector('.bt-asahi-x').addEventListener('click', (e) => { e.stopPropagation(); el.classList.add('closed'); el.classList.remove('show'); });
       }
       const show = !!on && !el.classList.contains('closed');
       // 左上の小窓（アサヒビール・マルト水谷）を隠さないよう、そのすぐ下に置く
@@ -6010,15 +6069,40 @@
       const key = `${s.round}_${s.showStartAt}`;
       if (key === lastPlayedShowKey) return;
       const elapsed = Date.now() - s.showStartAt;
+      // 開始時刻のすぐ前になるまでは待つ（「フィナーレへ」が押されると開始時刻が今になる）
+      if (elapsed < -FINALE_DELAY_MS - 4000) return;
       if (elapsed < SHOW_DURATION) {
         // ショー開始前〜進行中：全員で見る（途中参加でも頭から再生）
         lastPlayedShowKey = key;
-        startFireworkShow(s.round, Math.max(0, Math.min(SHOW_LEAD_MS, -elapsed)));
+        startFireworkShow(s.round, Math.max(0, -elapsed));
       } else if (elapsed > SHOW_DURATION + 8000 && !isShowPlaying) {
         // 誰も見届けずに終わったラウンド → 片付け
         lastPlayedShowKey = key;
         finishRound(s.round, true);
       }
+    }
+
+    // 「フィナーレへ」：全席の開始時刻を今にする（だれか1人が押せば、みんなの画面で始まる）
+    let finaleRequested = false;
+    async function requestFinale() {
+      if (finaleRequested || isShowPlaying || meterState.count < METER_GOAL) return;
+      finaleRequested = true;
+      setTimeout(() => { finaleRequested = false; }, 4000);
+      try { initAudio(); } catch (e) {}
+      const startAt = Date.now() + FINALE_DELAY_MS;
+      if (useLocalMeter || !db) {
+        handleState({ ...meterState, showStartAt: startAt });
+      } else {
+        try {
+          await runTransaction(db, async (tx) => {
+            const snap = await tx.get(stateDocRef());
+            const st = snap.exists() ? snap.data() : {};
+            // まだ始まっていないときだけ（ほかの席が先に押していたら、そのまま）
+            if ((st.count || 0) >= METER_GOAL && (st.showStartAt || 0) > startAt) tx.update(stateDocRef(), { showStartAt: startAt });
+          });
+        } catch (e) { console.warn('Finale request failed:', e); finaleRequested = false; }
+      }
+      checkShowTrigger();
     }
 
     function checkStaleMeter() {
@@ -6027,7 +6111,7 @@
         finishRound(s.round, false);
       }
     }
-    setInterval(() => { checkShowTrigger(); checkStaleMeter(); }, 5000);
+    setInterval(() => { checkShowTrigger(); checkStaleMeter(); }, 1000);
 
     // ---------- Firestore リスナー ----------
     // 接続が切れても、この端末だけのメーターに切り替えず、少し待ってつなぎ直す
@@ -6633,7 +6717,7 @@
     const REVEAL_MS = 3800;          // 確定演出の長さ
     const REVEAL_POP_AT = 2700;      // 王冠が抜ける瞬間
     const LAUNCH_AT = 4200;          // 「スワイプで打ち上げ」が始まる時刻
-    const LAUNCH_WAIT_MAX = 3000;    // 誰もスワイプしなければ自動で打ち上げ
+    const LAUNCH_WAIT_MAX = 15000;   // 誰も乾杯しなければ自動で打ち上げ
     const LAUNCH_FLIGHT = 950;       // コルクが夜空へ昇る時間
     const LAUNCH_NECK_Y = 0.6;       // 打ち上げ待ちのシャンパンの口の高さ（画面の高さに対する割合）
     const MAIN_LEN = 17800;          // 本編の長さ（最後のMVPを長めに見せる）
@@ -7902,7 +7986,9 @@
       showScene.style.transform = 'translateY(0)';
       showScene.classList.add('show');
       launchHint.classList.add('show');
-      showSub.textContent = 'ビール瓶をタップして、栓を飛ばそう！';
+      showSub.textContent = '「乾杯」を押して、フィナーレスタート！';
+      cheerHint.textContent = '乾杯でフィナーレスタート！';
+      cheerWrap.classList.remove('hidden');
       showSub.style.opacity = '1';
       playChime();
     }
@@ -7980,6 +8066,10 @@
       if (launch.state !== 'wait') return;
       initAudio();
       launch.requested = true;
+    });
+    // 乾杯ボタンでも打ち上げ（乾杯 → すぐフィナーレ）
+    document.getElementById('cheerBtn').addEventListener('pointerdown', () => {
+      if (launch.state === 'wait') { initAudio(); launch.requested = true; }
     });
 
     function runShow(items, info) {
