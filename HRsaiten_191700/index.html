@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="ja">
 <head>
@@ -1217,7 +1216,7 @@ function makeThumb(c){
   for (const q of [.62, .5, .4, .3]) { const u = t.toDataURL("image/jpeg", q); if (u.length < 50000) return u; }
   return null;
 }
-// お店に届ける写真(長い辺 800px・1枚 約80KB)。「今週」が終わったらスプレッドシートが Firebase から消す
+// お店に届ける写真(長い辺 800px・1枚 約80KB)。「今日」が終わったらスプレッドシートが Firebase から消す
 function makeStorePhoto(c){
   if (!c) return null;
   const s = Math.min(1, 800 / Math.max(c.width, c.height)), t = document.createElement("canvas");
@@ -1784,13 +1783,15 @@ $("saveForm").addEventListener("submit", async e => {
       const dup = await db.collection("scores").where("hash", "==", photoHash).limit(1).get();
       if (!dup.empty) { $("sheetNote").textContent = "この写真はすでに記録されています。新しい一杯で挑戦してください。"; return; }
     }
-    let ref, expireAt = null;
+    let ref, expireAt = null, photoExpireAt = null;
     if (isFb) {
       // 感想は表に出さず、お店だけが見られる private に残す
       if (!myUid) { await firebase.auth().signInAnonymously(); myUid = firebase.auth().currentUser.uid; }
       ref = db.collection("scores").doc();
       const ex = weekStart(last.at); ex.setDate(ex.getDate() + 7);
       expireAt = firebase.firestore.Timestamp.fromMillis(ex.getTime() + DAY_START_HOUR * 3600e3); // 「今週」が終わったら記録も写真も消えてよい(スプレッドシートが消す)
+      const dx = bizDate(last.at); dx.setHours(0, 0, 0, 0); dx.setDate(dx.getDate() + 1);
+      photoExpireAt = firebase.firestore.Timestamp.fromMillis(dx.getTime() + DAY_START_HOUR * 3600e3); // お店用の大きい写真は「今日」が終わったら消えてよい
       const batch = db.batch();
       batch.set(db.doc("private/" + ref.id), { memo, name: name.slice(0, 12), score: last.total, createdAt: last.at, uid: myUid, device: deviceName() });
       batch.set(ref, { name: name.slice(0, 12), score: last.total, rings: last.rings, scores: last.scores,
@@ -1804,7 +1805,7 @@ $("saveForm").addEventListener("submit", async e => {
     }
     savedId = ref.id; savedName = name.slice(0, 12);
     if (thumb) { await db.doc("thumbs/" + ref.id).set(isFb ? { img: thumb, uid: myUid, expireAt } : { img: thumb }).catch(() => {}); thumbs.delete(ref.id); }
-    if (isFb && storePhoto) await db.doc("photos/" + ref.id).set({ img: storePhoto, uid: myUid, createdAt: last.at, expireAt }).catch(() => {});
+    if (isFb && storePhoto) await db.doc("photos/" + ref.id).set({ img: storePhoto, uid: myUid, createdAt: last.at, expireAt: photoExpireAt }).catch(() => {});
     $("saveSheet").hidden = true;
     $("saveNote").textContent = `「${savedName}」で記録しました。`;
     updateSaveButton();
