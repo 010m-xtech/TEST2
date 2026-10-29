@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -68,16 +67,26 @@
 
         // --- 岡崎めぐり乾杯旅：名所ごとのガチャ（URLの ?stop= で決まる。各名所1回ずつ・計3回） ---
         // 確率は %（ハズレ・1等・2等・3等の合計が100になるように）
+        // 演出の動画（このフォルダに置く）：1・2回目は gacha.mp4、3回目（本光寺）は intro1.mp4
+        const GACHA_VIDEO = 'gacha.mp4';
         const STOPS = {
-            2: { name: '02 岡崎城', miss: 90, p1: 7, p2: 2, p3: 1 },
-            3: { name: '03 幸田の公園', miss: 30, p1: 10, p2: 20, p3: 50 },
-            4: { name: '04 本光寺', miss: 0, p1: 10, p2: 30, p3: 60 }
+            2: { name: '02 岡崎城', miss: 90, p1: 1, p2: 2, p3: 7, video: GACHA_VIDEO },
+            3: { name: '03 幸田の公園', miss: 20, p1: 10, p2: 20, p3: 50, video: GACHA_VIDEO },
+            4: { name: '04 本光寺', miss: 0, p1: 10, p2: 30, p3: 60, video: 'intro1.mp4' }
         };
         const STOP_KEYS = Object.keys(STOPS);
         // 結果の保存先（同じサイトのほかのガチャと混ざらないように、専用の名前にする）
         const KEY_RESULT = (stop) => `boteko_kota_gacha_result_s${stop}`;
         const KEY_SURVEY = 'boteko_kota_gacha_survey_completed';
         const ALL_PRIZES = [MISS, ...PRIZES];
+        // 悪用対策：旅の画面が記録した「この端末で着いた名所」を確認（12時間以内・その名所以降に着いていること）
+        const REACHED_KEY = 'boteko_kota_reached';
+        const canPlay = (stopNo) => {
+            try {
+                const r = JSON.parse(localStorage.getItem(REACHED_KEY) || 'null');
+                return !!r && Date.now() - r.at < 12 * 60 * 60 * 1000 && r.stop >= Number(stopNo);
+            } catch (e) { return false; }
+        };
 
         // --- 黄金に輝くテキスト用スタイル ---
         const customStyles = `
@@ -160,45 +169,6 @@
                         <path d="M 75 15 L 80 10 M 80 20 L 85 18 M 70 20 L 68 15" stroke="yellow" strokeWidth="2" strokeLinecap="round" />
                     </React.Fragment>
                 </svg>
-            );
-        };
-
-        // --- ガチャマシンのコンポーネント ---
-        const GachaMachine = ({ onPlay }) => {
-            const [isImageLoaded, setIsImageLoaded] = useState(false);
-
-            useEffect(() => {
-                const timer = setTimeout(() => setIsImageLoaded(true), 3000);
-                return () => clearTimeout(timer);
-            }, []);
-
-            return (
-                <div 
-                    className="flex flex-col items-center justify-center cursor-pointer group w-full h-[100dvh] touch-manipulation select-none" 
-                    onClick={onPlay}
-                >
-                    <div className="relative w-full h-full transition-transform duration-300 active:scale-95 md:group-hover:scale-[1.02] flex items-center justify-center">
-                        {!isImageLoaded && (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center z-20 bg-zinc-900/50 backdrop-blur-sm">
-                                <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-4 shadow-[0_0_15px_rgba(245,158,11,0.5)]"></div>
-                                <p className="text-amber-400 font-bold animate-pulse drop-shadow-md">ガチャ準備中...</p>
-                            </div>
-                        )}
-
-                        <img 
-                            src="https://github.com/user-attachments/assets/a3f56b5a-4215-4063-b622-80f7e6953db6"
-                            alt="速達生ビールガチャ" 
-                            className={`w-full h-full max-h-[100dvh] object-cover drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)] transition-opacity duration-700 ease-in-out ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
-                            onLoad={() => setIsImageLoaded(true)}
-                            onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src = "https://placehold.co/1080x1080/27272a/f59e0b?text=Tap+to+Start!%5Cn(Your+Image+Here)";
-                                setIsImageLoaded(true);
-                            }}
-                        />
-                        <div className="absolute inset-0 bg-white opacity-0 active:opacity-10 md:group-hover:opacity-10 transition-opacity duration-300 pointer-events-none"></div>
-                    </div>
-                </div>
             );
         };
 
@@ -390,6 +360,7 @@
           const [deviceId, setDeviceId] = useState("");
 
           const videoRef = useRef(null);
+          const [muted, setMuted] = useState(true);
           const audioCtxRef = useRef(null);
 
           // 🌟 常にメモリ上の最新のPRIZESマスタデータを直接参照する
@@ -397,6 +368,20 @@
               if (prizeId === null) return null;
               return ALL_PRIZES.find(p => p.id === prizeId) || PRIZES[2]; // 万が一見つからなければ3等をフォールバック
           }, [prizeId]);
+
+          // 名所ごとの確率で引く
+          const drawPrize = (stopNo) => {
+            const t = STOPS[stopNo] || STOPS[STOP_KEYS[0]];
+            const table = [[MISS, t.miss], [PRIZES[0], t.p1], [PRIZES[1], t.p2], [PRIZES[2], t.p3]];
+            const total = table.reduce((a, [, p]) => a + p, 0);
+            const rand = Math.random() * total;
+            let sum = 0;
+            for (const [prize, p] of table) {
+                sum += p;
+                if (p > 0 && rand < sum) return prize;
+            }
+            return PRIZES[PRIZES.length - 1];
+          };
 
           useEffect(() => {
               const urlParams = new URLSearchParams(window.location.search);
@@ -435,6 +420,15 @@
               if (savedPrizeId !== null) {
                   setPrizeId(parseInt(savedPrizeId, 10));
                   setStage('result');
+              } else if (!canPlay(stopNo)) {
+                  // まだその名所に着いていない（URLを書き換えて開いた など）
+                  setStage('locked');
+              } else {
+                  // 旅の画面でボタンを押したら、そのまま動画の演出から始める（ガチャの絵を押す手順はなし）
+                  const prize = drawPrize(stopNo);
+                  setPrizeId(prize.id);
+                  localStorage.setItem(KEY_RESULT(stopNo), prize.id.toString());
+                  setStage('playing_video');
               }
               if (savedSurvey === 'true') {
                   setIsSurveyCompleted(true);
@@ -453,19 +447,7 @@
             });
           }, []);
 
-          // 名所ごとの確率で引く
-          const drawPrize = () => {
-            const t = STOPS[stop] || STOPS[STOP_KEYS[0]];
-            const table = [[MISS, t.miss], [PRIZES[0], t.p1], [PRIZES[1], t.p2], [PRIZES[2], t.p3]];
-            const total = table.reduce((a, [, p]) => a + p, 0);
-            const rand = Math.random() * total;
-            let sum = 0;
-            for (const [prize, p] of table) {
-                sum += p;
-                if (p > 0 && rand < sum) return prize;
-            }
-            return PRIZES[PRIZES.length - 1];
-          };
+
 
           const playFanfare = (ctx) => {
               if (!ctx) return;
@@ -497,41 +479,20 @@
               }
           };
 
+          // 演出が始まったら動画を再生（開いた直後は音なしでしか自動再生できないので、音は「音を出す」ボタンで）
+          useEffect(() => {
+            if (stage !== 'playing_video' || !videoRef.current) return;
+            const v = videoRef.current;
+            v.muted = true;
+            v.currentTime = 0;
+            v.play().catch(e => { console.error("動画の再生に失敗しました:", e); setStage('result'); });
+          }, [stage]);
+
           useEffect(() => {
             if (stage === 'result' && activePrize && activePrize.soundType === 'fanfare') {
                 playFanfare(audioCtxRef.current);
             }
           }, [stage, activePrize]);
-
-          const handlePlay = () => {
-            if (stage !== 'idle') return;
-
-            if (!audioCtxRef.current) {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                if (AudioContext) {
-                    audioCtxRef.current = new AudioContext();
-                }
-            }
-            if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
-                audioCtxRef.current.resume();
-            }
-
-            if (navigator.vibrate) {
-                navigator.vibrate([100, 50, 100]); 
-            }
-            
-            const prize = drawPrize();
-            setPrizeId(prize.id); // 🌟 V2: オブジェクトではなくIDだけをセットする
-            
-            // この名所の結果として、IDだけを保存する
-            localStorage.setItem(KEY_RESULT(stop), prize.id.toString());
-            setStage('playing_video');
-            
-            if (videoRef.current) {
-                videoRef.current.currentTime = 0;
-                videoRef.current.play().catch(e => console.error("動画の再生に失敗しました:", e));
-            }
-          };
 
           if (!isLoaded) return null;
 
@@ -569,12 +530,17 @@
                 </div>
 
                 <div className="w-full mx-auto flex flex-col items-center justify-center min-h-[100dvh] relative z-10">
-                    <div className="w-full h-[100dvh] flex justify-center items-center">
-                        <GachaMachine onPlay={handlePlay} />
-                    </div>
-                    {STOPS[stop] && (
-                        <div className="absolute left-1/2 -translate-x-1/2 z-20 px-5 py-2 rounded-full bg-zinc-900/85 border-2 border-amber-400 text-amber-300 font-black text-sm whitespace-nowrap pointer-events-none shadow-lg" style={{ top: 'calc(env(safe-area-inset-top) + 14px)' }}>
-                            🚚 岡崎めぐり乾杯旅　{STOPS[stop].name}のガチャ
+                    {stage === 'locked' && (
+                        <div className="w-full max-w-[360px] mx-4 p-6 rounded-3xl bg-zinc-900/90 border-2 border-amber-400 text-center shadow-2xl">
+                            <p className="text-4xl mb-2">🚚</p>
+                            <p className="text-amber-300 font-black text-xl leading-snug">{STOPS[stop] ? STOPS[stop].name.slice(3) : 'この名所'}には<br />まだ到着していません</p>
+                            <p className="mt-3 text-white/85 text-sm font-bold leading-relaxed">旅の画面で乾杯の写真を撮って、<br />名所に着いたらガチャを回せます！</p>
+                            <button
+                                onClick={() => { window.close(); setTimeout(() => { location.href = 'https://010m-xtech.github.io/TEST2/bubble_052940/'; }, 300); }}
+                                className="mt-5 w-full py-3 bg-yellow-400 text-black font-black rounded-full border-4 border-yellow-200 active:scale-95"
+                            >
+                                旅にもどる
+                            </button>
                         </div>
                     )}
                 </div>
@@ -585,14 +551,41 @@
                 >
                     <video 
                         ref={videoRef}
-                        src="https://github.com/user-attachments/assets/e6cba716-a806-4e82-84cb-618aa012f1f2"
+                        src={STOPS[stop] ? STOPS[stop].video : GACHA_VIDEO}
                         className="w-full h-full object-contain"
                         playsInline
+                        muted={muted}
+                        autoPlay
                         onEnded={() => setStage('result')}
                     ></video>
+                    {muted && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setMuted(false);
+                                if (videoRef.current) videoRef.current.muted = false;
+                                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                                if (!audioCtxRef.current && AudioContext) audioCtxRef.current = new AudioContext();
+                            }}
+                            className="absolute left-4 px-4 py-2 rounded-full bg-black/60 border border-white/50 text-white text-sm font-bold active:scale-95"
+                            style={{ top: 'calc(env(safe-area-inset-top) + 16px)' }}
+                        >
+                            🔊 音を出す
+                        </button>
+                    )}
+                    {STOPS[stop] && (
+                        <div className="absolute left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-zinc-900/80 border-2 border-amber-400 text-amber-300 font-black text-xs whitespace-nowrap pointer-events-none" style={{ bottom: 'calc(env(safe-area-inset-bottom) + 18px)' }}>
+                            🚚 {STOPS[stop].name}のガチャ（{STOP_KEYS.indexOf(String(stop)) + 1} / 3 回目）
+                        </div>
+                    )}
                     <button
                         type="button"
-                        onClick={() => { try { videoRef.current && videoRef.current.pause(); } catch (e) {} setStage('result'); }}
+                        onClick={() => {
+                            try { videoRef.current && videoRef.current.pause(); } catch (e) {}
+                            const AudioContext = window.AudioContext || window.webkitAudioContext;
+                            if (!audioCtxRef.current && AudioContext) audioCtxRef.current = new AudioContext();
+                            setStage('result');
+                        }}
                         className="absolute right-4 px-4 py-2 rounded-full bg-black/60 border border-white/50 text-white text-sm font-bold active:scale-95"
                         style={{ top: 'calc(env(safe-area-inset-top) + 16px)' }}
                     >
@@ -708,6 +701,16 @@
                             </div>
                         )}
                         
+                        <div className="w-full max-w-[360px] mb-3 px-3 py-2.5 rounded-2xl bg-zinc-900/85 border border-amber-500/40 text-center relative z-10">
+                            <p className="text-amber-300 font-black text-xs mb-1.5">🚚 名所ガチャは3回！旅を進めるほど当たりやすい</p>
+                            <div className="flex justify-center gap-1.5 text-[10.5px] font-bold">
+                                {STOP_KEYS.map(k => (
+                                    <span key={k} className={`px-2 py-1 rounded-lg ${String(stop) === k ? 'bg-amber-400 text-black' : 'bg-white/10 text-white/80'}`}>
+                                        {STOPS[k].name.slice(3)}<br />{['チャンス', '大チャンス', 'ハズレなし！'][STOP_KEYS.indexOf(k)]}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
                         <div className="w-full text-center pb-2 z-50">
                             {activePrize && <RealTimeClock />}
                         </div>
