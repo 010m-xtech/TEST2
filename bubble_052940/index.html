@@ -5515,10 +5515,12 @@
     function mfMarkReached(pos) {
       if (!pos) return;
       try {
+        // 旅（ラウンド）ごとに記録する。花火のあと次の旅になると、ガチャもまた回せる
+        const round = meterState.round || 1;
         const prev = JSON.parse(localStorage.getItem(MF_REACHED_KEY) || 'null');
-        const fresh = prev && Date.now() - prev.at < 12 * 60 * 60 * 1000;
-        const stop = Math.max(pos, fresh ? prev.stop : 0);
-        localStorage.setItem(MF_REACHED_KEY, JSON.stringify({ stop, at: Date.now() }));
+        const same = prev && prev.round === round && Date.now() - prev.at < 12 * 60 * 60 * 1000;
+        const stop = Math.max(pos, same ? prev.stop : 0);
+        localStorage.setItem(MF_REACHED_KEY, JSON.stringify({ stop, round, at: Date.now() }));
       } catch (e) {}
     }
     function mfArrive(pos) {
