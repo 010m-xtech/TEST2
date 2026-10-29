@@ -2397,6 +2397,16 @@
     .bt-name-en { font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.08em; color: #ffb347; white-space: nowrap; }
     .bt-gacha-ico { display: inline-block; width: 20px; height: 23px; vertical-align: -5px; margin-right: 6px; }
     .mf-b-tips li b { color: #ffb347; font-weight: 800; }
+    /* 前のお客様の旅が途中のとき */
+    .bt-resume { position: absolute; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(20, 10, 6, 0.6); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+    .bt-resume.hidden { display: none; }
+    .bt-resume-box { position: relative; width: 100%; max-width: 340px; padding: 44px 20px 18px; border-radius: 24px; background: #fff3e8; border: 3px solid #f47c2c; text-align: center; box-shadow: 0 14px 30px rgba(0, 0, 0, 0.4); animation: btPop 0.4s cubic-bezier(0.3, 1.5, 0.5, 1) both; }
+    .bt-resume-chara { position: absolute; left: 50%; top: -46px; width: 84px; transform: translateX(-50%); }
+    .bt-resume-h { font-family: var(--bt-jp); font-size: 20px; line-height: 1.4; color: #3a2418; }
+    .bt-resume-p { margin-top: 8px; font-size: 13.5px; font-weight: 800; line-height: 1.6; color: #6a5040; }
+    .bt-resume-p small { font-size: 11px; color: #9a7a5a; }
+    .bt-resume-new { display: block; width: 100%; margin-top: 16px; padding: 13px; border-radius: 16px; font-family: var(--bt-jp); font-size: 16px; color: #fff; background: linear-gradient(180deg, #ffa552, #f47c2c 55%, #df5f14); border: 2px solid #fff; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2); }
+    .bt-resume-keep { display: block; width: 100%; margin-top: 10px; padding: 10px; border-radius: 14px; font-size: 14px; font-weight: 800; color: #6b3514; background: #fff; border: 2px solid #f0c8a8; }
 </style>
 </head>
 <body class="flex justify-center items-start h-screen overflow-hidden bg-black">
@@ -2708,6 +2718,16 @@
       </section>
     </div>
     <!-- 5枚目：真っ暗になってから花火 -->
+    <!-- 前のお客様の旅が途中のとき -->
+    <div id="btResume" class="bt-resume hidden" role="dialog" aria-label="旅の確認">
+      <div class="bt-resume-box">
+        <img src="chara.webp" alt="" class="bt-resume-chara">
+        <p class="bt-resume-h">前のお客様の旅が<br>途中のようです</p>
+        <p class="bt-resume-p">新しく、最初から旅を始めますか？<br><small>（同じ席のみなさんで遊んでいる途中なら<span class="nw">「続きから」</span>）</small></p>
+        <button type="button" class="bt-resume-new">🚚 新しく旅を始める</button>
+        <button type="button" class="bt-resume-keep">続きから遊ぶ</button>
+      </div>
+    </div>
     <div id="mfNight" class="mf-night" aria-hidden="true">
       <p class="mf-night-en">KOTA</p>
       <p class="mf-night-jp">幸田町に、夜がきた…</p>
@@ -5299,7 +5319,8 @@
     // 設定方法は bubble/sheet-apps-script.gs の先頭を参照
     const SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzzAtdQ_cj1OZQHOHZFof5sPY7K7jyxJnr1BZnUm4d023brm3Xh6jnPDqXMmes1IZ4D/exec';
     const SHEET_SECRET = 'kanpai-memories';   // Apps Script 側と同じ合言葉にする
-    const STALE_RESET_MS = 6 * 60 * 60 * 1000; // 6時間放置されたメーターはリセット（翌日に持ち越さない）
+    const STALE_RESET_MS = 50 * 60 * 1000;     // 50分写真が届かなければリセット（次のお客様が途中から始まらないように）
+    const RESUME_ASK_MS = 20 * 60 * 1000;      // 20分以上止まっている旅は、開いたときに「新しく始める／続きから」を聞く
 
     const stateDocRef = () => doc(db, 'artifacts', appId, 'public', 'data', 'meter', 'state');
     const memoriesColRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'memories');
@@ -6175,13 +6196,30 @@
       checkShowTrigger();
     }
 
+    // 開いたとき、しばらく止まっている途中の旅なら「新しく始める／続きから」を聞く（1回だけ）
+    let resumeAsked = false;
+    const btResume = document.getElementById('btResume');
+    function mfMaybeAskResume() {
+      if (resumeAsked || storyActive || isShowPlaying) return;
+      const s = meterState;
+      if (!(s.count > 0 && s.count < METER_GOAL && s.updatedAt && Date.now() - s.updatedAt > RESUME_ASK_MS)) return;
+      resumeAsked = true;
+      btResume.classList.remove('hidden');
+    }
+    btResume.querySelector('.bt-resume-new').addEventListener('click', () => {
+      btResume.classList.add('hidden');
+      finishRound(meterState.round, false);
+      showToast('<span class="toast-dot"></span><span class="truncate">🚚 新しい旅のはじまり！アサヒビール名古屋工場から出発です</span>', 3000);
+    });
+    btResume.querySelector('.bt-resume-keep').addEventListener('click', () => btResume.classList.add('hidden'));
+
     function checkStaleMeter() {
       const s = meterState;
       if (s.count > 0 && s.count < METER_GOAL && s.updatedAt && Date.now() - s.updatedAt > STALE_RESET_MS) {
         finishRound(s.round, false);
       }
     }
-    setInterval(() => { checkShowTrigger(); checkStaleMeter(); }, 1000);
+    setInterval(() => { checkShowTrigger(); checkStaleMeter(); mfMaybeAskResume(); }, 1000);
 
     // ---------- Firestore リスナー ----------
     // 接続が切れても、この端末だけのメーターに切り替えず、少し待ってつなぎ直す
@@ -8780,7 +8818,7 @@
 
     // ---------- 日本語の改行：単語の切れ目でだけ改行する（iPhoneのSafariでも効くように） ----------
     // 文章を単語に分けて、そのあいだに改行してよい印（<wbr>）を入れる。長すぎる単語だけは途中で折り返す
-    const BT_WRAP_SEL = '.mf-op-h, .mf-op-p, .bt-op-beer span, .mf-op-t-bd, .mf-op-t-st li, .bt-op-route, .mf-op-foot, .bt-op-buddy span, .mf-b-copy, .mf-b-desc, .bt-part p, .mf-b-tips li, .bt-credit-l, .bt-asahi-tx, .mf-pill-txt, .bt-say, .mf-night-jp, .mf-night-sub, .bt-gacha-h, .bt-gacha small, .mf-b-go small, .mf-b-notyet, #showSub, #revealSub, #cheerHint, .mf-mvp-sub, .mf-mvp-who';
+    const BT_WRAP_SEL = '.bt-resume-p, .bt-resume-h, .mf-op-h, .mf-op-p, .bt-op-beer span, .mf-op-t-bd, .mf-op-t-st li, .bt-op-route, .mf-op-foot, .bt-op-buddy span, .mf-b-copy, .mf-b-desc, .bt-part p, .mf-b-tips li, .bt-credit-l, .bt-asahi-tx, .mf-pill-txt, .bt-say, .mf-night-jp, .mf-night-sub, .bt-gacha-h, .bt-gacha small, .mf-b-go small, .mf-b-notyet, #showSub, #revealSub, #cheerHint, .mf-mvp-sub, .mf-mvp-who';
     const btSeg = (typeof Intl !== 'undefined' && Intl.Segmenter) ? new Intl.Segmenter('ja', { granularity: 'word' }) : null;
     const btDone = new WeakSet();
     function btWrapText(node) {
