@@ -76,7 +76,12 @@
         };
         const STOP_KEYS = Object.keys(STOPS);
         // 結果の保存先（同じサイトのほかのガチャと混ざらないように、専用の名前にする）
-        const KEY_RESULT = (stop) => `boteko_kota_gacha_result_s${stop}`;
+        // 旅（ラウンド）ごとに分けるので、次の旅になればまた回せる（1回の旅で各名所1回ずつ）
+        const KEY_RESULT = (stop) => {
+            let round = 0;
+            try { round = (JSON.parse(localStorage.getItem('boteko_kota_reached') || 'null') || {}).round || 0; } catch (e) {}
+            return `boteko_kota_gacha_r${round}_s${stop}`;
+        };
         const KEY_SURVEY = 'boteko_kota_gacha_survey_completed';
         const ALL_PRIZES = [MISS, ...PRIZES];
         // 悪用対策：旅の画面が記録した「この端末で着いた名所」を確認（12時間以内・その名所以降に着いていること）
@@ -392,7 +397,7 @@
 
               if (urlParams.get('action') === 'reset') {
                   // この名所ガチャの結果とアンケートをクリア（スタッフ確認用）
-                  STOP_KEYS.forEach(k => localStorage.removeItem(KEY_RESULT(k)));
+                  Object.keys(localStorage).filter(k => k.startsWith('boteko_kota_gacha_')).forEach(k => localStorage.removeItem(k));
                   localStorage.removeItem(KEY_SURVEY);
                   
                   const shopParam = urlParams.get('shop');
@@ -555,7 +560,7 @@
                         className="w-full h-full object-contain"
                         playsInline
                         muted={muted}
-                        autoPlay
+                        preload="auto"
                         onEnded={() => setStage('result')}
                     ></video>
                     {muted && (
