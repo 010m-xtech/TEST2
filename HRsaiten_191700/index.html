@@ -5,15 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://www.gstatic.com https://www.google.com https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https://*.googleapis.com https://*.firebaseapp.com https://www.google.com https://www.recaptcha.net; frame-src https://www.google.com https://www.recaptcha.net https://*.firebaseapp.com; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<title>ハッピーリング採点チャレンジ</title>
+<title>ハッピーリング採点チャレンジ｜名古屋めし居酒屋 なごのみせ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800;900&family=Klee+One:wght@600&family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800;900&family=Klee+One:wght@600&family=Dela+Gothic+One&family=Yuji+Boku&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
-/* Layout: 夜のビアホールに置いた1杯のジョッキ。スマホ1画面ずつ切り替え、上=見出し、中=内容、下=親指で押す操作 */
+/* Layout: 名古屋めし居酒屋「なごのみせ」の看板(朱赤・黒の筆文字・金のしゃちほこ)の前に置いた1杯のジョッキ。スマホ1画面ずつ切り替え、上=見出し、中=内容、下=親指で押す操作 */
 :root{
-  --night:#0F0904;       /* 店の闇 */
-  --stout:#1C1209;
+  --night:#160303;       /* 看板の赤を落とした、店の闇 */
+  --stout:#240707;
+  --sign:#C8161D;        /* 看板の朱赤 */
   --amber:#F2A51A;       /* ラガー */
   --amber-deep:#B86A0C;
   --gold:#F7D37A;        /* 金箔 */
@@ -34,6 +35,7 @@
 
   --f-display:"Dela Gothic One","Hiragino Sans","Noto Sans JP",sans-serif;
   --f-body:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
+  --f-brush:"Yuji Boku","Hiragino Mincho ProN",serif; /* 看板の筆文字 */
   --f-hand:"Klee One","Hiragino Maru Gothic ProN",sans-serif;
   --f-num:"Big Shoulders Display","Dela Gothic One",Impact,sans-serif;
   --tap:56px;
@@ -51,8 +53,8 @@ button,input{font-family:inherit}
 /* ---------- アプリの枠と画面 ---------- */
 .app{position:relative; height:100%; max-width:480px; margin:0 auto; overflow:hidden; isolation:isolate;
   background:
-    radial-gradient(120% 60% at 50% -10%, #6B3A0C 0%, transparent 60%),
-    radial-gradient(90% 50% at 50% 110%, #3A1F07 0%, transparent 70%),
+    radial-gradient(120% 60% at 50% -10%, #B0171B 0%, transparent 60%),
+    radial-gradient(90% 50% at 50% 110%, #5E0C0C 0%, transparent 70%),
     var(--night)}
 /* 背景の玉ボケ(店の照明) */
 .app::before{content:""; position:absolute; inset:-10%; z-index:-1; pointer-events:none; filter:blur(16px); opacity:.75;
@@ -62,8 +64,8 @@ button,input{font-family:inherit}
     radial-gradient(circle at 62% 6%, #FFE09A55 0 12px, transparent 24px),
     radial-gradient(circle at 12% 18%, #FFB34766 0 22px, transparent 40px),
     radial-gradient(circle at 86% 12%, #FFD27A55 0 30px, transparent 52px),
-    radial-gradient(circle at 74% 34%, #FF8A3A33 0 16px, transparent 30px),
-    radial-gradient(circle at 20% 62%, #FFB34722 0 26px, transparent 46px),
+    radial-gradient(circle at 74% 34%, #FF3A2A44 0 16px, transparent 30px),
+    radial-gradient(circle at 20% 62%, #E0412A33 0 26px, transparent 46px),
     radial-gradient(circle at 90% 78%, #FFD27A2E 0 20px, transparent 38px)}
 .screen{position:absolute; inset:0; display:flex; flex-direction:column}
 .screen.enter{animation:enter .34s cubic-bezier(.2,.8,.2,1)}
@@ -79,7 +81,7 @@ button,input{font-family:inherit}
 .icon-btn:active{background:var(--glass-2)}
 .body{flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:4px 16px 16px}
 .foot{flex:none; display:grid; gap:10px; padding:12px 16px calc(14px + env(safe-area-inset-bottom, 0px));
-  background:linear-gradient(180deg, transparent, #0F0904E6 40%)}
+  background:linear-gradient(180deg, transparent, #160303E6 40%)}
 .row{display:grid; grid-template-columns:1fr 1fr; gap:10px}
 
 /* 立体感のある金のボタン */
@@ -109,8 +111,18 @@ button,input{font-family:inherit}
 
 /* ---------- ホーム ---------- */
 .crown{justify-self:center; width:40px; height:auto; filter:drop-shadow(0 0 10px #FFC82E99)}
+/* お店のロゴ: 朱赤の板に、白ふちの黒いロゴ文字(看板の文字をなぞって描き直したもの) */
+.shop{justify-self:center; display:flex; align-items:center; padding:5px 14px 4px; border-radius:6px; background:var(--sign); color:#FFF;
+  box-shadow:inset 0 0 0 1.5px #F7D37A, inset 0 0 0 3px var(--sign), inset 0 0 0 4px #F7D37A88, 0 8px 20px -6px #000C}
+.shop .nm{display:grid; justify-items:center; line-height:1.05}
+.shop .nm small{font-weight:900; font-size:8.5px; letter-spacing:.2em}
+.shop .nm img{display:block; height:36px; width:auto; margin:2px 0 1px; filter:drop-shadow(0 1px 0 #6E0A0A)}
+.shop .nm b{font-weight:900; font-size:9.5px; letter-spacing:.32em; color:#FFF}
+.shop .nm i{font-style:normal; font-family:var(--f-num); font-weight:800; font-size:9px; letter-spacing:.2em; color:#FFE7A3}
+.pos.p1{position:relative}
+.pos.p1::after{content:""; position:absolute; top:-13px; left:50%; width:16px; height:20px; transform:translateX(-50%) rotate(-8deg); background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 52'%3E%3Cpath d='M9 48C3 44 3 33 9 28c5-4 12-5 14-11 1-4-1-8-4-10l9-5 2 8 7-4-4 9c-2 9-9 15-15 17-4 2-4 8 0 12z' fill='%23F7C94A' stroke='%23B8700C' stroke-width='1.5'/%3E%3C/svg%3E") center/contain no-repeat}
 .home-in{flex:1; min-height:0; display:flex; flex-direction:column; align-items:center; gap:6px; padding:0 16px; text-align:center}
-.title{margin:0; display:grid; gap:2px; justify-items:center; filter:drop-shadow(0 2px 0 #6B3A0C) drop-shadow(0 10px 18px #000C)}
+.title{margin:0; display:grid; gap:2px; justify-items:center; filter:drop-shadow(0 2px 0 #6E0A0A) drop-shadow(0 10px 18px #000C)}
 .title .l1{font-family:var(--f-display); font-weight:400; font-size:clamp(36px,11vw,52px); line-height:1.08; letter-spacing:.02em; white-space:nowrap}
 .title .l2{font-family:var(--f-display); font-weight:400; font-size:clamp(20px,6.2vw,28px); line-height:1.2; letter-spacing:.12em}
 .stage{position:relative; width:100%; flex:1; min-height:220px; display:grid; place-items:center}
@@ -125,7 +137,7 @@ button,input{font-family:inherit}
 .flow{list-style:none; margin:4px 0 0; padding:0; width:100%; display:grid; grid-template-columns:1fr 16px 1fr 16px 1fr; align-items:start}
 .flow .step{display:grid; justify-items:center; gap:6px; font-weight:900; font-size:12.5px; line-height:1.35; color:var(--text-soft); transition:color .3s}
 .flow .ic{position:relative; width:64px; height:64px; border-radius:50%; display:grid; place-items:center; transition:transform .3s, box-shadow .3s;
-  background:radial-gradient(circle at 40% 30%, #3A2408, #120A03); box-shadow:inset 0 0 0 1.5px #F7D37A55, 0 8px 18px #000A}
+  background:radial-gradient(circle at 40% 30%, #4A0E0A, #160303); box-shadow:inset 0 0 0 1.5px #F7D37A55, 0 8px 18px #000A}
 .flow .ic > svg{width:38px; height:38px}
 .flow .no{position:absolute; right:-5px; bottom:-3px; width:22px; height:22px; border-radius:50%; display:grid; place-items:center;
   font-family:var(--f-num); font-weight:900; font-size:14px; color:#FFF; background:var(--red); box-shadow:0 0 0 2px var(--night)}
@@ -171,7 +183,7 @@ button,input{font-family:inherit}
 .ideal{margin:0; border-radius:22px; overflow:hidden; position:relative;
   box-shadow:0 0 0 1px var(--edge), 0 30px 50px -24px #000, 0 0 60px -20px #F2A51A55}
 .ideal img{display:block; width:100%; max-width:100%; height:auto; aspect-ratio:4/5; object-fit:cover; background:#000}
-.ideal figcaption{position:absolute; left:0; right:0; bottom:0; padding:40px 18px 16px; background:linear-gradient(180deg, transparent, #0F0904F2 55%)}
+.ideal figcaption{position:absolute; left:0; right:0; bottom:0; padding:40px 18px 16px; background:linear-gradient(180deg, transparent, #160303F2 55%)}
 .ideal figcaption b{display:block; font-family:var(--f-display); font-weight:400; font-size:18px; margin-bottom:4px}
 .ideal figcaption span{display:block; font-size:13px; font-weight:700; color:var(--text-soft); line-height:1.6}
 .points{list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
@@ -290,7 +302,7 @@ input[type=file]{position:absolute; width:1px; height:1px; opacity:0; pointer-ev
 .sheet-body{display:grid; gap:14px; padding:16px 18px 20px}
 .verdict{display:grid; grid-template-columns:1fr auto; align-items:center; gap:8px}
 .score{margin:0; font-family:var(--f-num); font-weight:900; font-size:clamp(100px,32vw,142px); line-height:.86; font-variant-numeric:tabular-nums;
-  filter:drop-shadow(0 3px 0 #6B3A0C) drop-shadow(0 14px 24px #000)}
+  filter:drop-shadow(0 3px 0 #6E0A0A) drop-shadow(0 14px 24px #000)}
 .score small{font-family:var(--f-display); font-weight:400; font-size:.22em; margin-left:.1em; color:var(--text); -webkit-text-fill-color:var(--text)}
 .hanko{width:104px; height:104px; border-radius:50%; display:grid; place-content:center; text-align:center; color:var(--shu); transform:rotate(-12deg); padding:8px;
   font-family:var(--f-display); font-size:16px; line-height:1.2;
@@ -364,7 +376,7 @@ li.mine{background:#F7D37A1F; border-radius:12px}
 .scrim{position:absolute; inset:0; z-index:10; background:var(--scrim); display:flex; align-items:flex-end; animation:fade .2s}
 @keyframes fade{from{opacity:0}}
 .panel{width:100%; max-height:92%; overflow-y:auto; border-radius:26px 26px 0 0; padding:10px 16px calc(16px + env(safe-area-inset-bottom, 0px)); display:grid; gap:12px;
-  background:linear-gradient(180deg, #2A1B0E, #1C1209); box-shadow:inset 0 1px 0 #FFF0D233, 0 -20px 40px #000A; animation:up .3s cubic-bezier(.2,.8,.2,1)}
+  background:linear-gradient(180deg, #34100C, #240707); box-shadow:inset 0 1px 0 #FFF0D233, 0 -20px 40px #000A; animation:up .3s cubic-bezier(.2,.8,.2,1)}
 @keyframes up{from{transform:translateY(40px)}}
 .panel .grab{justify-self:center; width:40px; height:5px; border-radius:3px; background:var(--line)}
 .panel h3{margin:0; text-align:center; font-family:var(--f-display); font-weight:400; font-size:20px}
@@ -378,7 +390,7 @@ li.mine{background:#F7D37A1F; border-radius:12px}
 
 /* ---------- 起動の演出: 生ビール速達トラックがロゴを運んでくる ---------- */
 .splash{position:absolute; inset:0; z-index:50; display:grid; place-items:center; overflow:hidden; cursor:pointer;
-  background:radial-gradient(70% 50% at 50% 42%, #3A240C, #0B0907 70%)}
+  background:radial-gradient(70% 50% at 50% 42%, #7A1010, #120202 70%)}
 .splash.out{animation:splashOut .45s ease-in forwards}
 @keyframes splashOut{to{opacity:0; visibility:hidden}}
 .splash .road{position:absolute; left:0; right:0; top:calc(50% + 70px); height:2px; background:repeating-linear-gradient(90deg, #F7D37A66 0 18px, transparent 18px 34px); animation:roadMove .5s linear infinite}
@@ -393,6 +405,7 @@ li.mine{background:#F7D37A1F; border-radius:12px}
 .splash .sp-logo{position:absolute; top:calc(50% - 175px); left:0; right:0; text-align:center; opacity:0; transform:translateY(16px) scale(.92); animation:logoIn .5s cubic-bezier(.3,1.5,.5,1) 1.15s forwards}
 @keyframes logoIn{to{opacity:1; transform:none}}
 .splash .sp-logo b{display:block; font-family:var(--f-display); font-weight:400; font-size:38px; letter-spacing:.04em; line-height:1.15}
+.splash .sp-logo em{display:inline-block; margin-bottom:10px; padding:3px 12px; border-radius:4px; font-style:normal; font-family:var(--f-brush); font-size:15px; letter-spacing:.1em; color:#FFF; background:var(--sign); box-shadow:inset 0 0 0 1.5px #F7D37A}
 .splash .sp-logo span{display:block; margin-top:6px; font-weight:900; font-size:15px; letter-spacing:.3em; color:var(--text-soft)}
 .splash .sp-rings{display:flex; justify-content:center; gap:8px; margin-top:12px}
 .splash .sp-rings i{width:34px; height:5px; border-radius:3px; background:var(--gold); box-shadow:0 0 10px #F7D37AAA; transform:scaleX(0); animation:ringIn .25s ease-out forwards}
@@ -430,7 +443,7 @@ li.mine{background:#F7D37A1F; border-radius:12px}
 
   <!-- 起動の演出 -->
   <div class="splash" id="splash" hidden aria-hidden="true">
-    <div class="sp-logo"><b class="gold-text">ハッピーリング</b><span>採点チャレンジ</span><div class="sp-rings"><i></i><i></i><i></i><i></i></div></div>
+    <div class="sp-logo"><em>名古屋めし居酒屋 なごのみせ</em><b class="gold-text">ハッピーリング</b><span>採点チャレンジ</span><div class="sp-rings"><i></i><i></i><i></i><i></i></div></div>
     <div class="road"></div>
     <div class="sp-truck"><img src="truck.webp" alt=""></div>
     <p class="skip">タップでスキップ</p>
@@ -456,7 +469,9 @@ li.mine{background:#F7D37A1F; border-radius:12px}
   <section class="screen" id="s-home" aria-label="ホーム">
     <div class="top">
       <span></span>
-      <svg class="crown" viewBox="0 0 48 32" aria-hidden="true"><defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF0C2"/><stop offset=".5" stop-color="#F7C94A"/><stop offset="1" stop-color="#C98A1E"/></linearGradient></defs><path d="M4 26L2 8l11 9 11-15 11 15 11-9-2 18z" fill="url(#cg)"/><rect x="4" y="27" width="40" height="4" rx="2" fill="url(#cg)"/><circle cx="24" cy="18" r="2.6" fill="#D8452B"/></svg>
+      <div class="shop" role="img" aria-label="名古屋めし居酒屋 なごのみせ since 1956">
+        <span class="nm"><small>名古屋めし居酒屋</small><img src="logo.svg" alt=""><b>なごのみせ</b><i>since 1956</i></span>
+      </div>
       <button class="icon-btn" type="button" id="menuBtn" aria-label="メニューを開く"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
     </div>
     <div class="home-in">
@@ -1986,24 +2001,28 @@ function startMug3D(){
   const sparkMat = new T.PointsMaterial({ map: glowTex, size: .16, color: 0xffe2a0, opacity: .9, sizeAttenuation: true, ...add });
   const sparks = new T.Points(sparkGeo, sparkMat); swirl.add(sparks);
 
-  // 生ビール速達トラックが、金の輪の上を走る(写真は左向き。右へ進むときは左右反転した絵に替える)
-  const truck = (() => {
+  // 生ビール速達トラックと麒麟が、金の輪の上を走る(絵は左向き。右へ進むときは左右反転した絵に替える)
+  const runner = (file, w, h, u, dir, secs) => {
     const tex = new T.Texture(), texR = new T.Texture();
     texR.wrapS = T.RepeatWrapping; texR.repeat.x = -1; texR.offset.x = 1;
     [tex, texR].forEach(t => { t.encoding = T.sRGBEncoding; });
-    new T.ImageLoader().load("truck.webp", im => { [tex, texR].forEach(t => { t.image = im; t.needsUpdate = true; }); });
+    new T.ImageLoader().load(file, im => { [tex, texR].forEach(t => { t.image = im; t.needsUpdate = true; }); });
     const opt = { transparent: true, depthWrite: false, toneMapped: false };
     const matL = new T.SpriteMaterial({ map: tex, ...opt }), matR = new T.SpriteMaterial({ map: texR, ...opt });
-    const sp = new T.Sprite(matL); sp.scale.set(1.3, 1.3 * 178 / 436, 1); sp.renderOrder = 5; swirl.add(sp);
-    return { sp, matL, matR, u: .15, dir: 1, right: false };
-  })();
+    const sp = new T.Sprite(matL); sp.scale.set(w, w * h, 1); sp.renderOrder = 5; swirl.add(sp);
+    return { sp, matL, matR, u, dir, secs, right: false };
+  };
+  const runners = [
+    runner("truck.webp", 1.3, 178 / 436, .15, 1, 7),   // 下から上まで約7秒
+    runner("kirin.webp", 1.15, 188 / 360, .8, -1, 5.5), // 麒麟は少し速く、反対向きに駆ける
+  ];
   const _a = new T.Vector3(), _b = new T.Vector3();
-  function driveTruck(dt){
-    const tk = truck;
-    tk.u += tk.dir * dt / 7; // 下から上まで約7秒
+  function driveTruck(dt){ runners.forEach(tk => drive(tk, dt)); }
+  function drive(tk, dt){
+    tk.u += tk.dir * dt / tk.secs;
     if (tk.u > .97) { tk.u = .97; tk.dir = -1; } else if (tk.u < .03) { tk.u = .03; tk.dir = 1; }
     const p = helix.getPointAt(tk.u), q = helix.getPointAt(Math.min(1, Math.max(0, tk.u + tk.dir * .01)));
-    tk.sp.position.set(p.x, p.y + tk.sp.scale.y * .42, p.z); // タイヤが金の線に乗るように少し上へ
+    tk.sp.position.set(p.x, p.y + tk.sp.scale.y * .42, p.z); // 足もとが金の線に乗るように少し上へ
     // 画面上で、どちらへ・どの傾きで進んでいるか
     _a.copy(p); swirl.localToWorld(_a).project(camera); _b.copy(q); swirl.localToWorld(_b).project(camera);
     const dx = (_b.x - _a.x) * camera.aspect, dy = _b.y - _a.y;
