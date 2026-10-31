@@ -175,6 +175,9 @@
     @supports (height: 100dvh) {
       body, #appContainer { height: 100dvh; }
     }
+    /* iPhoneで画面全体が引っ張られて動かないように固定（中のスクロールする部分だけ動く） */
+    html, body { overflow: hidden; overscroll-behavior: none; }
+    body { position: fixed; inset: 0; }
 
     /* ========== リアルなビールジョッキ（SVG） ========== */
     .mug-svg .beer-level {
@@ -2411,6 +2414,34 @@
 </style>
 </head>
 <body class="flex justify-center items-start h-screen overflow-hidden bg-black">
+  <script>
+    // iPhoneで画面が動く・拡大されるのを防ぐ
+    // （iPhoneは「拡大禁止」の設定を無視するので、2本指の操作を止める。1本指はスクロールできる場所だけ動かせる）
+    (function () {
+      const stop = (e) => { if (e.cancelable) e.preventDefault(); };
+      ['gesturestart', 'gesturechange'].forEach(t => document.addEventListener(t, stop, { passive: false }));
+      const canScroll = (el, dy) => {
+        for (; el && el !== document.body; el = el.parentElement) {
+          const oy = getComputedStyle(el).overflowY;
+          if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 1) {
+            // 端まで来ていたら、それ以上は引っ張らない（画面ごと動くのを防ぐ）
+            if (dy > 0 && el.scrollTop <= 0) return false;
+            if (dy < 0 && el.scrollTop + el.clientHeight >= el.scrollHeight - 1) return false;
+            return true;
+          }
+        }
+        return false;
+      };
+      let y0 = 0;
+      document.addEventListener('touchstart', (e) => { y0 = e.touches[0] ? e.touches[0].clientY : 0; }, { passive: true });
+      document.addEventListener('touchmove', (e) => {
+        if (e.touches.length > 1) return stop(e);
+        const t = e.target;
+        if (t && t.closest && t.closest('input, textarea, select')) return;
+        if (!canScroll(t, e.touches[0].clientY - y0)) stop(e);
+      }, { passive: false });
+    })();
+  </script>
 
   <!-- ============================================== -->
   <!-- スマホサイズ固定コンテナ（最大幅430px：実機スマホでは100%全画面） -->
