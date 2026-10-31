@@ -3154,7 +3154,12 @@
     // ==============================================
     // 0. クラウド保存＆リアルタイム同期の初期化
     // ==============================================
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'boteko-kota'; // お店ごとに変える（ほかのお店とメーターが混ざらないように）
+    // 席ごとに分けて遊ぶ：QRのURLに ?seat=1〜18 を付ける。席ごとにメーター・写真・旅の進み具合が別々になる
+    // （?seat が無いときは、これまでどおりお店で1つの旅）
+    const SEAT_MAX = 18;
+    const SEAT = (() => { const n = parseInt(new URLSearchParams(location.search).get('seat'), 10); return n >= 1 && n <= SEAT_MAX ? n : 0; })();
+    const SEAT_SUFFIX = SEAT ? `-seat${String(SEAT).padStart(2, '0')}` : '';
+    const appId = (typeof __app_id !== 'undefined' ? __app_id : 'boteko-kota') + SEAT_SUFFIX; // お店ごと・席ごとに変える（ほかのお店・席とメーターが混ざらないように）
     let auth = null;
     let db = null;
     let currentUser = null;
@@ -5492,7 +5497,7 @@
     // ガチャガチャ（カプセルトイ）の絵：絵文字に無いので小さな絵で
     const BT_GACHA_ICON = '<svg class="bt-gacha-ico" viewBox="0 0 24 28" aria-hidden="true"><circle cx="12" cy="9" r="8" fill="#e8f6ff" stroke="#3a2008" stroke-width="1.6"/><circle cx="8.5" cy="8" r="2.4" fill="#f47c2c"/><circle cx="14.5" cy="6.5" r="2.2" fill="#e2394f"/><circle cx="13" cy="12" r="2.3" fill="#2a9df4"/><circle cx="8" cy="12.5" r="1.8" fill="#4b8b3b"/><rect x="4" y="15.5" width="16" height="11" rx="2" fill="#f47c2c" stroke="#3a2008" stroke-width="1.6"/><circle cx="12" cy="20" r="2.4" fill="#fff" stroke="#3a2008" stroke-width="1.2"/><rect x="6.5" y="23" width="4" height="2.4" rx="0.6" fill="#3a2008"/></svg>';
     const MF_GACHA_STOPS = [2, 3, 4];
-    const mfGachaUrl = (stop) => `${MF_GACHA_URL}?shop=${encodeURIComponent('ぼてこ幸田')}&stop=${stop}`;
+    const mfGachaUrl = (stop) => `${MF_GACHA_URL}?shop=${encodeURIComponent('ぼてこ幸田')}&stop=${stop}${SEAT ? `&seat=${SEAT}` : ''}`;
     // 3回のガチャの流れ（当たりの確率がだんだん上がって、最後はハズレなし）
     function mfGachaSteps(now) {
       return `<p class="bt-gacha-h">名所ガチャは3回！旅を進めるほど当たりやすい</p><div class="bt-gacha-steps">${MF_GACHA_STOPS.map((st, k) => {
@@ -5661,7 +5666,7 @@
     // ---------- 街に着く：名所の写真だけ → トラックが入ってきて停車 → 紹介 → 地図へ ----------
     // 名所ガチャの悪用対策：この端末で着いた名所を記録しておき、ガチャ側で「着いた名所だけ」回せるようにする
     // （ガチャも同じサイト 010m-xtech.github.io なので、同じ記録を読める）
-    const MF_REACHED_KEY = 'boteko_kota_reached';
+    const MF_REACHED_KEY = 'boteko_kota_reached' + SEAT_SUFFIX; // 席ごとに別の記録
     function mfMarkReached(pos) {
       if (!pos) return;
       try {
@@ -8701,7 +8706,7 @@
           method: 'POST',
           mode: 'no-cors',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ secret: SHEET_SECRET, caption, drink: MF_DRINK_LABELS[mfDrink] || '', img, timestamp: Date.now(), showNo: (meterState.totalShows || 0) + 1 })
+          body: JSON.stringify({ secret: SHEET_SECRET, caption, drink: MF_DRINK_LABELS[mfDrink] || '', img, seat: SEAT ? `${SEAT}番席` : '', timestamp: Date.now(), showNo: (meterState.totalShows || 0) + 1 })
         }).catch(() => {});
       } catch (e) {}
     }
