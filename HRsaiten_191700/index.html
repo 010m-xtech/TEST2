@@ -1162,8 +1162,8 @@ function adviceFor(r){
   const weakest = CRITERIA.map(c => c.key).sort((a, b) => ratio(a) - ratio(b))[0];
   if (ratio(weakest) >= .95) return "文句なしの一杯です。次も同じリズムで飲んで、100点を狙いましょう。";
   if (weakest === "count") return r.rings < 4
-    ? `今回は${r.rings}本。一口を少し小さくして、もう少し回数を分けて飲んでみましょう。`
-    : `今回は${r.rings}本。一口を少し大きくして、テンポよく飲み切ってみましょう。`;
+    ? "一口を少し小さくして、もう少し回数を分けて飲んでみましょう。"
+    : "一口を少し大きくして、テンポよく飲み切ってみましょう。";
   if (weakest === "shape") return "一口ごとにジョッキをまっすぐ置いて、泡が落ち着くのを待つと輪が水平に残ります。";
   if (weakest === "clarity") return "泡が消えないうちに、テンポよく次の一口へ。間をあけすぎると輪が薄くなります。";
   return "毎回同じくらいの量を飲むと、輪の間隔がそろいます。同じ飲み口から飲むのも効きます。";
@@ -1483,9 +1483,13 @@ $("stop").addEventListener("click", () => ctl && ctl.abort());
 
 const fmtDate = t => { const d = new Date(t); return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`; };
 
+// 結果の写真には、見つけた輪の線や本数を出さない(お店の希望)。線を戻すときは SHOW_RING_LINES を true に
+const SHOW_RING_LINES = false;
 function drawRings(){
   const svg = $("rsvg"), photo = $("photo");
   svg.innerHTML = ""; photo.querySelectorAll(".tag").forEach(n => n.remove());
+  $("rcap").hidden = true;
+  if (!SHOW_RING_LINES) return;
   last.pos.forEach((p, i) => {
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     path.setAttribute("class", "rl");
@@ -1550,7 +1554,7 @@ function showResult(){
   else if (last.total > last.prevBest) pb.innerHTML = `自己ベスト更新！ <b>${last.prevBest}点 → ${last.total}点</b>`;
   else pb.innerHTML = `自己ベストは <b>${last.prevBest}点</b>。あと ${last.prevBest - last.total + 1} 点で更新です。`;
 
-  $("rankline").textContent = `リング ${last.rings} 本`;
+  $("rankline").textContent = "";
   predictRank();
 }
 
@@ -1617,7 +1621,7 @@ async function predictRank(){
     if (!db) {
       const all = localRecords();
       const rt = all.filter(r => r.score > last.total && r.createdAt >= startOf("today")).length + 1;
-      const el = $("rankline"); el.textContent = `リング ${last.rings} 本 ・ `;
+      const el = $("rankline"); el.textContent = "";
       const sp = document.createElement("span");
       if (rt <= 5) { sp.className = "hot"; sp.textContent = `今日の${rt}位に入れます`; } else sp.textContent = `今日の${rt}位の記録`;
       el.append(sp); return;
@@ -1629,7 +1633,7 @@ async function predictRank(){
       col.where("day", "==", dayKey()).where("score", ">", last.total).orderBy("score", "desc").limit(50).get(),
     ]);
     const rm = week.size + 1, rt = today.size + 1;
-    const el = $("rankline"); el.textContent = `リング ${last.rings} 本 ・ `;
+    const el = $("rankline"); el.textContent = "";
     const s = document.createElement("span");
     const r = n => n > 50 ? "50位より下" : `${n}位`;
     if (rt <= 5) { s.className = "hot"; s.textContent = `今日の${rt}位` + (rm <= 5 ? `・今週の${rm}位` : "") + "に入れます"; }
@@ -1638,7 +1642,8 @@ async function predictRank(){
   } catch (_) {}
 }
 
-let tab = "today", boardError = "";
+let tab = "today";
+const boardErrors = { today: "", week: "" }; // タブごとに覚える(片方だけ読めないときに、もう片方のエラーで消されないように)
 const boards = { today: null, week: null };
 const thumbs = new Map();
 let deleting = null, staffMode = false;
@@ -1666,6 +1671,7 @@ function renderBoard(){
   const ol = $("board"); ol.innerHTML = "";
   const emptyRow = msg => { const li = document.createElement("li"); const p = document.createElement("p"); p.className = "empty"; p.textContent = msg; li.append(p); ol.append(li); };
   $("localNote").hidden = !!db; $("localClear").hidden = !!db || !localRecords().length;
+  const boardError = boardErrors[tab];
   if (boardError) {
     emptyRow("ランキングを読み込めませんでした。");
     const m = boardError.match(/https:\/\/\S+/);
@@ -1686,7 +1692,7 @@ function renderBoard(){
     const who = li.children[2]; who.textContent = String(v.name || "名もなき呑み人");
     const sub = document.createElement("span");
     const dt = v.createdAt ? new Date(Number(v.createdAt)) : null;
-    sub.textContent = `リング ${Number(v.rings) || 0} 本` + (dt ? ` ・ ${dt.getMonth() + 1}/${dt.getDate()}` : "");
+    sub.textContent = dt ? `${dt.getMonth() + 1}/${dt.getDate()}` : "";
     who.append(sub);
     li.children[3].innerHTML = `${score}<small>点</small>`;
     li.classList.add("tap"); li.tabIndex = 0;
@@ -1737,7 +1743,7 @@ function openViewer(id, rank, v){
   $("viewerName").textContent = String(v.name || "名もなき呑み人");
   $("viewerScore").innerHTML = `${Number(v.score) || 0}<small>点</small>`;
   const dt = v.createdAt ? new Date(Number(v.createdAt)) : null;
-  $("viewerMeta").textContent = `リング ${Number(v.rings) || 0} 本` + (dt ? ` ・ ${dt.getMonth() + 1}/${dt.getDate()} ${dt.getHours()}:${String(dt.getMinutes()).padStart(2, "0")}` : "");
+  $("viewerMeta").textContent = dt ? `${dt.getMonth() + 1}/${dt.getDate()} ${dt.getHours()}:${String(dt.getMinutes()).padStart(2, "0")}` : "";
   viewerBack = document.activeElement;
   $("viewer").hidden = false; $("viewerClose").focus();
 }
@@ -2116,13 +2122,16 @@ $("mug3d").hidden = false; $("mug2d").setAttribute("hidden", ""); // SVGは hidd
 try { if (!startMug3D()) throw 0; } catch (_) { $("mug3d").hidden = true; $("mug2d").removeAttribute("hidden"); }
 // 共有ランキング(claude.ai のデータ置き場か、お店の Firebase)。どちらも同じ書き方で読み書きできる
 function startRemoteBoards(store){
-  db = store; boardError = "";
+  db = store; boardErrors.today = boardErrors.week = "";
   const col = db.collection("scores");
+  let unsub = [], keys = "", retry = null;
   const sub = (k, q) => q.orderBy("score", "desc").limit(5).onSnapshot(
-    snap => { boards[k] = snap.docs; boardError = ""; if (tab === k) renderBoard(); },
-    e => { boards[k] = []; boardError = String((e && e.message) || "error"); if (tab === k) renderBoard(); }
+    snap => { boards[k] = snap.docs; boardErrors[k] = ""; if (tab === k) renderBoard(); },
+    e => { // 止まった読み込みは30秒後に読み直す(インデックスを作った直後などに、開き直さなくても出るように)
+      boards[k] = []; boardErrors[k] = String((e && e.message) || "error"); if (tab === k) renderBoard();
+      if (!retry) retry = setTimeout(() => { retry = null; keys = ""; watch(); }, 30e3);
+    }
   );
-  let unsub = [], keys = "";
   const watch = () => { // 朝5時や週が変わったら、新しい「今日」「今週」を読み直す(開きっぱなしの端末のため)
     const k = dayKey() + "|" + weekKey(); if (k === keys) return; keys = k;
     unsub.forEach(f => { try { f(); } catch (_) {} });
