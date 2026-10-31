@@ -84,24 +84,27 @@
             4: { name: '04 本光寺', miss: 0, p1: 10, p2: 30, p3: 60, video: 'intro1.mp4' }
         };
         const STOP_KEYS = Object.keys(STOPS);
+        // 席ごとに遊ぶ（?seat=1〜18）：旅の画面と同じ席の記録を見る。結果も席ごとに分ける
+        const SEAT = (() => { const n = parseInt(new URLSearchParams(location.search).get('seat'), 10); return n >= 1 && n <= 18 ? n : 0; })();
+        const SEAT_SUFFIX = SEAT ? `-seat${String(SEAT).padStart(2, '0')}` : '';
         // 結果の保存先（同じサイトのほかのガチャと混ざらないように、専用の名前にする）
         // 旅（ラウンド）ごとに分けるので、次の旅になればまた回せる（1回の旅で各名所1回ずつ）
         const KEY_RESULT = (stop) => {
             let round = 0;
-            try { round = (JSON.parse(localStorage.getItem('boteko_kota_reached') || 'null') || {}).round || 0; } catch (e) {}
-            return `boteko_kota_gacha_r${round}_s${stop}`;
+            try { round = (JSON.parse(localStorage.getItem('boteko_kota_reached' + SEAT_SUFFIX) || 'null') || {}).round || 0; } catch (e) {}
+            return `boteko_kota_gacha${SEAT_SUFFIX.replace('-', '_')}_r${round}_s${stop}`;
         };
         // アンケートは当たるたびに答えてもらう（名所ごと・旅ごと）
         const KEY_SURVEY = (stop) => KEY_RESULT(stop).replace('_gacha_', '_gacha_survey_');
         const ALL_PRIZES = [MISS, ...PRIZES];
         // 旅の画面にもどる（ガチャは別のタブで開いているので、閉じれば旅の画面。閉じられないときは旅の画面へ移動）
-        const JOURNEY_URL = 'https://010m-xtech.github.io/TEST2/bubble_052940/';
+        const JOURNEY_URL = 'https://010m-xtech.github.io/TEST2/bubble_052940/' + (SEAT ? `?seat=${SEAT}` : '');
         const backToJourney = () => {
             try { window.close(); } catch (e) {}
             setTimeout(() => { location.href = JOURNEY_URL; }, 300);
         };
         // 悪用対策：旅の画面が記録した「この端末で着いた名所」を確認（12時間以内・その名所以降に着いていること）
-        const REACHED_KEY = 'boteko_kota_reached';
+        const REACHED_KEY = 'boteko_kota_reached' + SEAT_SUFFIX;
         const canPlay = (stopNo) => {
             try {
                 const r = JSON.parse(localStorage.getItem(REACHED_KEY) || 'null');
@@ -420,11 +423,13 @@
                   const q = new URLSearchParams();
                   if (shopParam) q.set('shop', shopParam);
                   q.set('stop', stopNo);
+                  if (SEAT) q.set('seat', SEAT);
                   const newUrl = baseUrl + '?' + q.toString();
                   window.history.replaceState({}, document.title, newUrl);
               }
 
-              setShopName(urlParams.get('shop') || "不明な店舗");
+              // アンケートの店舗名に席番号も付けて、シートでどの席か分かるようにする
+              setShopName((urlParams.get('shop') || "不明な店舗") + (SEAT ? `（${SEAT}番席）` : ''));
 
               let savedId = localStorage.getItem('beer_app_device_id');
               if (!savedId) {
