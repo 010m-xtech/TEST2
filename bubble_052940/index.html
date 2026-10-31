@@ -2661,6 +2661,7 @@
     <!-- オープニング＋遊び方（絵と短い説明・タップで次へ／スキップ可） -->
     <!-- ======================================================== -->
     <div id="mfOpening" class="mf-op" role="dialog" aria-label="遊び方">
+      <script>/* ガチャから戻ったとき：オープニングの1枚目が一瞬見えないよう、すぐ隠す */ if (/[?&]from=gacha\b/.test(location.search)) document.getElementById('mfOpening').classList.add('hidden');</script>
       <div class="mf-op-top"><div class="mf-op-dots"><i></i><i></i><i></i><i></i><i></i></div><button type="button" class="mf-op-skip">スキップ ›</button></div>
 
       <section class="mf-op-s on">
@@ -3729,7 +3730,14 @@
     });
 
     const OP_SEEN_KEY = 'boteko_kota_op_seen';
-    const opSeenRecently = () => { try { return Date.now() - (+localStorage.getItem(OP_SEEN_KEY) || 0) < 3 * 60 * 60 * 1000; } catch (e) { return false; } };
+    // オープニングを飛ばすのは、ガチャの画面から「旅にもどる」で戻ってきたときだけ（?from=gacha）
+    // それ以外（QRを読み込んだとき・開き直したとき）は毎回オープニングから
+    const OP_FROM_GACHA = new URLSearchParams(location.search).get('from') === 'gacha';
+    if (OP_FROM_GACHA) {
+      // URLから from=gacha を消しておく（このあと開き直したときはオープニングが出るように）
+      try { const u = new URL(location.href); u.searchParams.delete('from'); history.replaceState(null, '', u.pathname + u.search + u.hash); } catch (e) {}
+    }
+    const opSeenRecently = () => OP_FROM_GACHA;
     function startStoryIntro(onEnd, force = true) {
       onStoryEnd = onEnd || null;
       if (!force && opSeenRecently()) {
@@ -5502,7 +5510,8 @@
     const MF_SHOOTER_KEY = 'boteko_kota_shooter' + SEAT_SUFFIX;
     function mfIsShooter(stop) {
       const m = memoriesOfRound(meterState.round)[stop - 1];
-      const mine = !!m && m.userId === currentUserId();
+      // ログインが間に合わずに端末の仮IDで送った写真も「自分の写真」として数える
+      const mine = !!m && (m.userId === currentUserId() || m.userId === localUserId);
       if (mine) {
         // ガチャの画面で確かめられるように、この端末に記録しておく（旅ごと）
         try {
