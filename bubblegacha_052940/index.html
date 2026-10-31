@@ -111,6 +111,15 @@
                 return !!r && Date.now() - r.at < 12 * 60 * 60 * 1000 && r.stop >= Number(stopNo);
             } catch (e) { return false; }
         };
+        // その名所に連れてきた写真を、この端末で撮ったか（旅の画面が記録する）
+        const SHOOTER_KEY = 'boteko_kota_shooter' + SEAT_SUFFIX;
+        const isShooter = (stopNo) => {
+            try {
+                const r = JSON.parse(localStorage.getItem(REACHED_KEY) || 'null');
+                const s = JSON.parse(localStorage.getItem(SHOOTER_KEY) || 'null');
+                return !!r && !!s && s.round === r.round && Date.now() - s.at < 12 * 60 * 60 * 1000 && s.stops.includes(Number(stopNo));
+            } catch (e) { return false; }
+        };
 
         // --- 黄金に輝くテキスト用スタイル ---
         const customStyles = `
@@ -448,6 +457,9 @@
               } else if (!canPlay(stopNo)) {
                   // まだその名所に着いていない（URLを書き換えて開いた など）
                   setStage('locked');
+              } else if (!isShooter(stopNo)) {
+                  // 着いてはいるが、この名所に連れてきた写真を撮った人ではない
+                  setStage('not_shooter');
               } else {
                   // 旅の画面でボタンを押したら、そのまま動画の演出から始める（ガチャの絵を押す手順はなし）
                   const prize = drawPrize(stopNo);
@@ -555,6 +567,19 @@
                 </div>
 
                 <div className="w-full mx-auto flex flex-col items-center justify-center min-h-[100dvh] relative z-10">
+                    {stage === 'not_shooter' && (
+                        <div className="w-full max-w-[360px] mx-4 p-6 rounded-3xl bg-zinc-900/90 border-2 border-amber-400 text-center shadow-2xl">
+                            <p className="text-4xl mb-2">📸</p>
+                            <p className="text-amber-300 font-black text-xl leading-snug">このガチャは、<br />写真を撮った人だけ<br />回せます</p>
+                            <p className="mt-3 text-white/85 text-sm font-bold leading-relaxed">{STOPS[stop] ? STOPS[stop].name.slice(3) : 'この名所'}に着いた写真を撮った人の<br />スマホで回してね！</p>
+                            <button
+                                onClick={backToJourney}
+                                className="mt-5 w-full py-3 bg-yellow-400 text-black font-black rounded-full border-4 border-yellow-200 active:scale-95"
+                            >
+                                旅にもどる
+                            </button>
+                        </div>
+                    )}
                     {stage === 'locked' && (
                         <div className="w-full max-w-[360px] mx-4 p-6 rounded-3xl bg-zinc-900/90 border-2 border-amber-400 text-center shadow-2xl">
                             <p className="text-4xl mb-2">🚚</p>
