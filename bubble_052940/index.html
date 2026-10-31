@@ -2149,6 +2149,7 @@
     .bt-gacha small { display: block; margin-top: 2px; font-family: 'M PLUS Rounded 1c', sans-serif; font-size: 10.5px; font-weight: 800; color: #6b4a10; }
     .bt-gacha-box { margin-top: 12px; padding: 10px; border-radius: 18px; background: rgba(255, 210, 31, 0.1); border: 1.5px dashed rgba(255, 210, 31, 0.6); }
     .bt-gacha-box .bt-gacha { margin-top: 0; }
+    .bt-gacha-only { padding: 10px 8px; border-radius: 14px; background: rgba(255, 246, 229, 0.08); text-align: center; font-family: var(--bt-jp); font-size: 13px; line-height: 1.5; color: #ffd21f; }
     .bt-gacha-h { margin: 9px 0 5px; text-align: center; font-family: var(--bt-jp); font-size: 11.5px; color: #ffd21f; }
     .bt-gacha-steps { display: flex; align-items: stretch; justify-content: center; gap: 3px; }
     .bt-gacha-steps i { align-self: center; font-style: normal; color: #ffd21f; font-weight: 900; }
@@ -5347,7 +5348,7 @@
     function memoriesOfRound(round) {
       return allMemories
         .filter(m => m.round === round)
-        .sort((a, b) => a.timestamp - b.timestamp)
+        .sort((a, b) => (a.no && b.no) ? a.no - b.no : a.timestamp - b.timestamp) // スマホの時計のずれに左右されないよう、何枚目かの番号で並べる
         .slice(0, METER_GOAL);
     }
 
@@ -5497,6 +5498,23 @@
     // ガチャガチャ（カプセルトイ）の絵：絵文字に無いので小さな絵で
     const BT_GACHA_ICON = '<svg class="bt-gacha-ico" viewBox="0 0 24 28" aria-hidden="true"><circle cx="12" cy="9" r="8" fill="#e8f6ff" stroke="#3a2008" stroke-width="1.6"/><circle cx="8.5" cy="8" r="2.4" fill="#f47c2c"/><circle cx="14.5" cy="6.5" r="2.2" fill="#e2394f"/><circle cx="13" cy="12" r="2.3" fill="#2a9df4"/><circle cx="8" cy="12.5" r="1.8" fill="#4b8b3b"/><rect x="4" y="15.5" width="16" height="11" rx="2" fill="#f47c2c" stroke="#3a2008" stroke-width="1.6"/><circle cx="12" cy="20" r="2.4" fill="#fff" stroke="#3a2008" stroke-width="1.2"/><rect x="6.5" y="23" width="4" height="2.4" rx="0.6" fill="#3a2008"/></svg>';
     const MF_GACHA_STOPS = [2, 3, 4];
+    // 名所ガチャは「その名所に連れてきた写真を撮った人」だけが回せる（例：2枚目の写真を撮った人 → 岡崎城のガチャ）
+    const MF_SHOOTER_KEY = 'boteko_kota_shooter' + SEAT_SUFFIX;
+    function mfIsShooter(stop) {
+      const m = memoriesOfRound(meterState.round)[stop - 1];
+      const mine = !!m && m.userId === currentUserId();
+      if (mine) {
+        // ガチャの画面で確かめられるように、この端末に記録しておく（旅ごと）
+        try {
+          const round = meterState.round || 1;
+          const prev = JSON.parse(localStorage.getItem(MF_SHOOTER_KEY) || 'null');
+          const stops = prev && prev.round === round ? prev.stops : [];
+          if (!stops.includes(stop)) stops.push(stop);
+          localStorage.setItem(MF_SHOOTER_KEY, JSON.stringify({ round, stops, at: Date.now() }));
+        } catch (e) {}
+      }
+      return mine;
+    }
     const mfGachaUrl = (stop) => `${MF_GACHA_URL}?shop=${encodeURIComponent('ぼてこ幸田')}&stop=${stop}${SEAT ? `&seat=${SEAT}` : ''}`;
     // 3回のガチャの流れ（当たりの確率がだんだん上がって、最後はハズレなし）
     function mfGachaSteps(now) {
@@ -5528,7 +5546,9 @@
         <p class="mf-b-desc">${c.desc}</p>
         ${c.parts ? c.parts.map(p => `<div class="bt-part"><p class="bt-part-h">${p.h}</p><p>${p.t}</p></div>`).join('') : ''}
         ${(c.creditNote || c.credit) ? `<p class="bt-credit-l">${c.creditNote || c.credit}</p>` : ''}
-        ${MF_GACHA_STOPS.includes(ci + 1) && !notYet ? `<div class="bt-gacha-box"><a class="bt-gacha" href="${mfGachaUrl(ci + 1)}" target="_blank" rel="noopener">${BT_GACHA_ICON}${c.short || c.jp}のガチャを回す<small>${MF_GACHA_STOPS.indexOf(ci + 1) + 1} / 3 回目</small></a>${mfGachaSteps(ci + 1)}</div>` : ''}
+        ${MF_GACHA_STOPS.includes(ci + 1) && !notYet ? `<div class="bt-gacha-box">${mfIsShooter(ci + 1)
+          ? `<a class="bt-gacha" href="${mfGachaUrl(ci + 1)}" target="_blank" rel="noopener">${BT_GACHA_ICON}${c.short || c.jp}のガチャを回す<small>写真を撮ったあなたが回せます！（${MF_GACHA_STOPS.indexOf(ci + 1) + 1} / 3 回目）</small></a>`
+          : `<p class="bt-gacha-only">📸 ${c.short || c.jp}に着いた写真を撮った人が、<br>ガチャを回せます！</p>`}${mfGachaSteps(ci + 1)}</div>` : ''}
         <div class="mf-b-tips"><p class="mf-b-tips-h">💡 豆知識</p><ul>${c.trivia.map(t => `<li>${t}</li>`).join('')}</ul></div>
         ${go}
         </div>`;
@@ -5562,6 +5582,8 @@
       mfBubble.classList.remove('show');
       appContainer.classList.remove('mf-result');
       mfShowMap(mfPos);
+      // 次の写真がもう届いていれば、待たずに次の名所へ
+      if (mfLandedCount() > mfPos) { clearTimeout(mfWaitTimer); mfWaitTimer = setTimeout(mfTryDepart, 800); }
     }
 
     // ---------- 地図：写真の丸（スポット）で、行った街・次の街・まだの街 ----------
@@ -5682,6 +5704,14 @@
       mfMarkReached(pos);
       mfTimers.forEach(clearTimeout); mfTimers = [];
       mfPos = pos;
+      mfTraveling = false;
+      mfArrivedAt = Date.now();
+      // 写真が続けて届いていたら、この名所の紹介を見てもらってから次へ（名所を飛ばさない）
+      clearTimeout(mfWaitTimer); mfWaitTimer = null;
+      if (pos > 0 && mfLandedCount() > pos) {
+        mfWaitTimer = setTimeout(mfTryDepart, MF_MIN_STAY_MS);
+        mfLater(() => showToast('<span class="toast-dot"></span><span class="truncate">📸 次の写真も届いています！このあと次の名所へ</span>', 3000), 3400);
+      }
       mfMeasureGround();
       if (pos === 0) { mfShowMap(0); return; }
       const ci = pos - 1;
@@ -5701,6 +5731,7 @@
     // ---------- 次の街へ：地図の上で出発 → 街並みを走る（約4秒）→ 到着 ----------
     function mfTravel(from, to) {
       mfTimers.forEach(clearTimeout); mfTimers = [];
+      mfTraveling = true;
       const lastPhoto = memoriesOfRound(meterState.round)[to - 1];
       const express = !!(lastPhoto && lastPhoto.drink === 'beer');
       const travelMs = express ? 2800 : MF_TRAVEL_MS;
@@ -5743,14 +5774,25 @@
 
     // ---------- 枚数に合わせて旅を進める（renderMeter から毎回呼ばれる） ----------
     // 写真がロープに着いてから出発する（飛んでいる途中は待つ）
-    let mfRound = null, mfWaitTimer = null;
+    // 写真が続けて届いても、名所は1か所ずつ進む。着いた名所の紹介は最低これだけ見せてから次へ
+    const MF_MIN_STAY_MS = 2600 + 8000;
+    let mfRound = null, mfWaitTimer = null, mfTraveling = false, mfArrivedAt = 0;
     function mfLandedCount() { return memoriesOfRound(meterState.round).filter(m => !pendingFlightIds.has(m.id)).length; }
     function mfTryDepart() {
       mfWaitTimer = null;
       if (mfShowVisible || storyActive) return;
       if (pendingFlightIds.size) { mfWaitTimer = setTimeout(mfTryDepart, 500); return; }
+      if (mfTraveling) return; // 走っている途中：着いたら mfArrive が次を決める
       const pos = Math.min(MF_CITIES.length, mfLandedCount());
-      if (pos > mfPos) mfTravel(mfPos, pos);
+      if (pos <= mfPos) return;
+      // 着いたばかりで紹介を出している途中なら、少し見てもらってから
+      const stay = mfStage.classList.contains('show') ? MF_MIN_STAY_MS - (Date.now() - mfArrivedAt) : 0;
+      if (stay > 0) {
+        mfWaitTimer = setTimeout(mfTryDepart, stay);
+        if (stay > 3000) showToast('<span class="toast-dot"></span><span class="truncate">📸 次の写真が届いています！まもなく次の名所へ出発</span>', 2600);
+        return;
+      }
+      mfTravel(mfPos, mfPos + 1);
     }
     function updateJourney(n) {
       const pos = Math.max(0, Math.min(MF_CITIES.length, n));
@@ -6287,7 +6329,7 @@
         const count = meterState.count + 1;
         const round = meterState.round;
         if (knownMemoryIds === null) knownMemoryIds = new Set(allMemories.map(m => m.id));
-        handleMemories([...allMemories, { id, round, img, caption, drink, userId, timestamp: now }]);
+        handleMemories([...allMemories, { id, round, no: count, img, caption, drink, userId, timestamp: now }]);
         handleState({ ...meterState, count, updatedAt: now, showStartAt: count >= METER_GOAL ? now + SHOW_LEAD_MS : 0, showTheme: count >= METER_GOAL ? pickShowTheme() : '', upgraded: false, cheers: 0 });
         return 'ok';
       }
@@ -6335,7 +6377,7 @@
         if (count >= METER_GOAL) return 'full';
         const newCount = count + 1;
         tx.set(doc(memoriesColRef(), id), {
-          round, img, caption, drink, userId, timestamp: now,
+          round, no: newCount, img, caption, drink, userId, timestamp: now, // no＝その旅の何枚目か（＝どの名所に連れて行った写真か）
           // 演出後に消し損ねても、Firestore の TTL で自動削除されるように
           expireAt: Timestamp.fromMillis(now + MEMORY_TTL_MS)
         });
