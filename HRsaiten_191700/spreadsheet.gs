@@ -2,7 +2,8 @@
  * ハッピーリング採点チャレンジ → スプレッドシート
  *
  * Firebase の private(感想の控え)を読み、新しい記録だけを下に足していきます。
- * 日付・端末・ニックネーム・点数・感想 と、重複を防ぐための ID が入ります。
+ * 日時・端末・写真・一言(感想)・ニックネーム・点数 と、重複を防ぐための ID が入ります。
+ * 写真はセルの中に入れるので、Firebase から消えたあともシートに残ります。
  * シートに書き写した感想の控え(private)は、Firebase から消します(シートには残ります)。
  * あわせて、期限が過ぎた記録と写真(scores・thumbs・photos)を Firebase から消します。
  * 鍵やパスワードは使いません。Firebase プロジェクトのメンバー(オーナー・編集者)の Google アカウントで動かすだけで読めます。
@@ -10,7 +11,8 @@
  */
 const PROJECT_ID = 'nagonomise-happyring'; // Firebase の「プロジェクトの設定」にある「プロジェクト ID」
 const SHEET_NAME = '記録';
-const HEADER = ['日付', '端末', 'ニックネーム', '点数', '感想', 'ID'];
+const HEADER = ['日時', '端末', '写真', '一言', 'ニックネーム', '点数', 'ID'];
+const PHOTO_COL = 3, ID_COL = 7;
 
 /** 最初に1回だけ実行: 見出しを作り、1時間ごとに自動で取り込み・お掃除するようにする */
 function setup() {
@@ -32,13 +34,16 @@ function hourly() {
 function importRecords() {
   const sh = sheet_();
   const last = sh.getLastRow();
-  const ids = new Set(last > 1 ? sh.getRange(2, 6, last - 1, 1).getValues().map(r => String(r[0])) : []);
+  const ids = new Set(last > 1 ? sh.getRange(2, ID_COL, last - 1, 1).getValues().map(r => String(r[0])) : []);
+  const fresh = Date.now() - 2 * 60000; // 写真は記録の数秒あとに届くので、2分たっていない記録は次回に回す
   let since = Number(PropertiesService.getScriptProperties().getProperty('since') || 0);
   let added = 0, removed = 0;
 
   for (let page = 0; page < 20; page++) {
-    const docs = query_(since);
-    const rows = [];
+    const all = query_(since);
+    const cut = all.findIndex(doc => Number(val_((doc.fields || {}).createdAt) || 0) > fresh);
+    const docs = cut < 0 ? all : all.slice(0, cut);
+    const rows = [], photos = [];
     docs.forEach(doc => {
       const id = doc.name.split('/').pop();
       const f = doc.fields || {};
@@ -49,14 +54,27 @@ function importRecords() {
       rows.push([
         at ? new Date(at) : '',
         val_(f.device) || '-',
+        '',
+        val_(f.memo) || '',
         val_(f.name) || '',
         Number(val_(f.score) || 0),
-        val_(f.memo) || '',
         id,
       ]);
+      photos.push(photo_(id));
     });
     if (rows.length) {
-      sh.getRange(sh.getLastRow() + 1, 1, rows.length, HEADER.length).setValues(rows);
+      const top = sh.getLastRow() + 1;
+      sh.getRange(top, 1, rows.length, HEADER.length).setValues(rows);
+      sh.setRowHeights(top, rows.length, 110);
+      // 写真は1枚ずつ入れる(1枚うまくいかなくても、ほかの記録は残す)
+      photos.forEach((img, i) => {
+        if (!img) { sh.getRange(top + i, PHOTO_COL).setValue('-'); return; }
+        try {
+          sh.getRange(top + i, PHOTO_COL).setValue(SpreadsheetApp.newCellImage().setSourceUrl(img).setAltTextTitle(rows[i][4] || '写真').build());
+        } catch (e) {
+          sh.getRange(top + i, PHOTO_COL).setValue('(写真を入れられませんでした)');
+        }
+      });
       added += rows.length;
     }
     // シートに書けたのを確かめてから、Firebase の控えを消す
@@ -66,7 +84,7 @@ function importRecords() {
       request_('documents:commit', { writes: names.map(name => ({ delete: name })) });
       removed += names.length;
     }
-    if (docs.length < 300) break;
+    if (cut >= 0 || all.length < 300) break;
   }
   // 同じ瞬間の記録を取りこぼさないよう、少しだけ戻して次回に重ねて読む(ID で重複は防ぐ)
   PropertiesService.getScriptProperties().setProperty('since', String(Math.max(0, since - 60000)));
@@ -112,6 +130,21 @@ function query_(since) {
   }).filter(r => r.document).map(r => r.document);
 }
 
+/** お店用の写真(なければランキングの小さい写真)を data URL で返す。どちらもなければ null */
+function photo_(id) {
+  for (const col of ['photos', 'thumbs']) {
+    const res = UrlFetchApp.fetch('https://firestore.googleapis.com/v1/projects/' + PROJECT_ID +
+      '/databases/(default)/documents/' + col + '/' + id + '?mask.fieldPaths=img', {
+      headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken(), 'x-goog-user-project': PROJECT_ID },
+      muteHttpExceptions: true,
+    });
+    if (res.getResponseCode() !== 200) continue;
+    const img = val_((JSON.parse(res.getContentText()).fields || {}).img);
+    if (img && /^data:image\/jpeg;base64,/.test(img)) return img;
+  }
+  return null;
+}
+
 function request_(method, body) {
   const url = 'https://firestore.googleapis.com/v1/projects/' + PROJECT_ID +
     '/databases/(default)/' + method;
@@ -146,6 +179,8 @@ function sheet_() {
     sh.setFrozenRows(1);
     sh.getRange('A:A').setNumberFormat('yyyy/mm/dd hh:mm');
     sh.setColumnWidth(2, 180);
+    sh.setColumnWidth(PHOTO_COL, 110);
+    sh.setColumnWidth(4, 200);
   }
   return sh;
 }
