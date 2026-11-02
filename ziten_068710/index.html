@@ -1742,6 +1742,20 @@
   .feedback-form textarea{ background:#f8f1de; }
   @keyframes camInF{0%{transform:scale(.88);opacity:0;filter:brightness(.35)}35%{opacity:1}100%{transform:scale(1);opacity:1;filter:brightness(1)}}
   @keyframes camInB{0%{transform:scale(1.18);opacity:0;filter:brightness(.35)}35%{opacity:1}100%{transform:scale(1);opacity:1;filter:brightness(1)}}
+
+  /* ===== 裏返せるカード：枠を少し動かして知らせる（一度裏返したら止まる） ===== */
+  @keyframes flipPeek{
+    0%,58%,100%{ transform:perspective(1000px) rotateY(0) translateY(0) }
+    66%{ transform:perspective(1000px) rotateY(-14deg) translateY(-4px) }
+    74%{ transform:perspective(1000px) rotateY(9deg) translateY(-2px) }
+    84%{ transform:perspective(1000px) rotateY(-4deg) translateY(0) }
+    92%{ transform:perspective(1000px) rotateY(0) translateY(0) }
+  }
+  @keyframes flipGlow{ 0%,58%,100%{ box-shadow:0 0 0 0 rgba(201,160,74,0) } 74%{ box-shadow:0 0 0 5px rgba(201,160,74,.45), 0 0 22px rgba(201,160,74,.45) } }
+  .flip-card:not(.is-flipped):not(.was-flipped) .flip-card-inner{ animation:flipPeek 4.2s ease-in-out 1.4s infinite; }
+  .flip-card:not(.is-flipped):not(.was-flipped) .flip-card-front{ animation:flipGlow 4.2s ease-in-out 1.4s infinite; }
+  .flip-card-front .tap-hint{ background:var(--ink); color:#f0d58a; border:1px solid var(--gold); border-radius:4px; padding:7px 16px; font-family:var(--font-mincho); letter-spacing:.1em; font-size:13px; }
+  @media (prefers-reduced-motion: reduce){ .flip-card .flip-card-inner, .flip-card .flip-card-front{ animation:none !important; } }
 </style>
 </head>
 <body class="opening intro-wait">
@@ -4928,6 +4942,8 @@ function stepInits() {
   initTimer = setTimeout(stepInits, 40);
 }
 initTimer = setTimeout(stepInits, (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 200 : 4000);
+
+(function(){ document.querySelectorAll('.flip-card').forEach(function(c){ c.addEventListener('click', function(){ c.classList.add('was-flipped'); }); }); })();
 </script>
 
 </body>
