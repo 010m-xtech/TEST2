@@ -2102,7 +2102,7 @@
     .bt-food { animation-duration: 14s !important; }
     /* オープニング3・4枚目：上下の余白をなくして中央に */
     .mf-op-s:has(.bt-op-mapnum), .mf-op-s:has(.bt-op-shotnum), .bt-op-center { justify-content: center; padding-top: calc(env(safe-area-inset-top) + 40px) !important; padding-bottom: calc(env(safe-area-inset-bottom) + 48px) !important; }
-    .mf-op-map { flex: 0 0 auto !important; width: 100% !important; max-width: 380px; height: auto !important; aspect-ratio: 300 / 318; max-height: 52vh; margin: 14px 0 6px !important; box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18); }
+    .mf-op-map { flex: 0 0 auto !important; width: 100% !important; max-width: 380px; height: auto !important; aspect-ratio: 300 / 318; max-height: 52vh; max-height: 52dvh; margin: 14px 0 6px !important; box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18); }
     .bt-op-route { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px 3px; max-width: 380px; margin-top: 8px; }
     .bt-op-route span { padding: 3px 9px; border-radius: 9999px; background: #fff; border: 2px solid #f47c2c; color: #6b3514; font-family: var(--bt-jp); font-size: 11px; }
     .bt-op-route span.is-goal { background: #f47c2c; color: #fff; }
@@ -2189,7 +2189,7 @@
       .mf-op-s:has(.bt-op-mapnum) .bt-op-buddy span { display: none; }
       .mf-op-s:has(.bt-op-mapnum) .bt-op-buddy { top: calc(env(safe-area-inset-top) + 14px); right: auto; left: 10px; }
       .mf-op-s:has(.bt-op-mapnum) .bt-op-buddy img { width: 40px; }
-      .mf-op-map { max-height: 46vh; }
+      .mf-op-map { max-height: 46vh; max-height: 46dvh; }
       .bt-op-buddy.is-ticket { margin: 14px 0 auto !important; }
       .bt-op-buddy.is-ticket img { width: 76px !important; }
       .bt-op-buddy.is-ticket span { font-size: 12px; padding: 4px 11px; margin-bottom: 6px !important; }
@@ -2341,7 +2341,7 @@
       .mf-op-t-st { padding: 8px 12px 10px !important; gap: 4px !important; }
       .mf-op-t-st li { font-size: 11.5px !important; }
       .mf-op-phone { margin: 18px 0 40px !important; }
-      .mf-op-map { max-height: 44vh !important; margin: 8px 0 4px !important; }
+      .mf-op-map { max-height: 44vh !important; max-height: 44dvh !important; margin: 8px 0 4px !important; }
       .bt-op-center .mf-op-mystery { width: min(36%, 140px) !important; margin-top: 10px !important; }
     }
     @media (max-height: 600px) {
@@ -2349,7 +2349,7 @@
       .bt-op-store { height: 24% !important; }
       .mf-op-truck { bottom: calc(24% + 2px) !important; width: min(34%, 130px) !important; }
       .bt-op-buddy.is-big { bottom: calc(24% + 4px) !important; }
-      .mf-op-map { max-height: 40vh !important; }
+      .mf-op-map { max-height: 40vh !important; max-height: 40dvh !important; }
     }
     /* 紹介ページ：「次の目的地へ」「フィナーレへ」は下に固定（スクロールしなくても押せる） */
     .mf-bubble .mf-b-go { position: sticky; bottom: 0; z-index: 3; box-shadow: 0 -10px 18px rgba(20, 10, 6, 0.85), 0 6px 14px rgba(0, 0, 0, 0.35) !important; }
@@ -2411,7 +2411,17 @@
     .bt-resume-p small { font-size: 11px; color: #9a7a5a; }
     .bt-resume-new { display: block; width: 100%; margin-top: 16px; padding: 13px; border-radius: 16px; font-family: var(--bt-jp); font-size: 16px; color: #fff; background: linear-gradient(180deg, #ffa552, #f47c2c 55%, #df5f14); border: 2px solid #fff; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2); }
     .bt-resume-keep { display: block; width: 100%; margin-top: 10px; padding: 10px; border-radius: 14px; font-size: 14px; font-weight: 800; color: #6b3514; background: #fff; border: 2px solid #f0c8a8; }
-</style>
+
+    /* 縦が短い画面（URLバーやツールバーが出ているとき）：上の写真のロープを小さくして、地図はその下から */
+    @media (max-height: 620px) {
+      .mf-line { top: calc(env(safe-area-inset-top) + 30px) !important; transform: scale(0.72); }
+      .mf-map-svg { top: calc(env(safe-area-inset-top) + 124px) !important; height: calc(100% - env(safe-area-inset-top) - 124px - var(--mf-ground, 190px) - 44px) !important; }
+      .bt-asahi { top: calc(env(safe-area-inset-top) + 128px); padding: 6px 28px 6px 8px; gap: 6px; width: min(86%, 330px); }
+      .bt-asahi-ill { width: 60px; }
+      .bt-asahi-tx b { font-size: 11px; }
+      .bt-asahi-tx span { font-size: 10px; line-height: 1.4; margin-top: 1px; }
+    }
+  </style>
 </head>
 <body class="flex justify-center items-start h-screen overflow-hidden bg-black">
   <script>
@@ -2699,7 +2709,7 @@
         <div class="mf-op-flag"></div>
         <img src="logo-banner.webp" alt="お好み焼 ぼてこ幸田" class="mf-op-logo bt-op-banner">
         <p class="mf-op-h">ようこそ、<br><b>ぼてこ幸田号</b>へ。</p>
-        <p class="mf-op-p">今夜は店内のみんなで<br><b class="mf-op-em nw">岡崎めぐり乾杯旅</b>に出発します</p>
+        <p class="mf-op-p">今夜はこの席のみんなで<br><b class="mf-op-em nw">速達生と一緒に乾杯旅</b>に出発します</p>
         <div class="bt-op-beer is-big"><img src="beer-mug.webp" alt=""><span><b>工場出荷2日以内</b>で<br>新鮮なビールが届いています<em>当店の美味しいビールのひみつも<br>ご覧ください！</em></span></div>
         <div class="mf-op-ground bt-op-store"><img src="boteko-morning.webp" alt="ぼてこ幸田店"><span>ぼてこ幸田店で、お待ちしています</span></div>
         <div class="mf-truck mf-op-truck"></div>
@@ -2720,7 +2730,7 @@
 
       <section class="mf-op-s">
         <span class="mf-op-num bt-op-mapnum">2</span>
-        <p class="mf-op-h">1枚ごとに、店内<b>みんな</b>で<br><b>次の名所</b>へ。</p>
+        <p class="mf-op-h">1枚ごとに、席の<b>みんな</b>で<br><b>次の名所</b>へ。</p>
         <svg class="mf-op-map" viewBox="0 0 300 318" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
         <div class="bt-op-route"><span class="is-start">アサヒビール</span><i>›</i><span>マルト水谷</span><i>›</i><span>岡崎城</span><i>›</i><span>幸田の公園</span><i>›</i><span>本光寺</span><i>›</i><span class="is-goal">ぼてこ幸田</span></div>
         <p class="mf-op-p mf-op-small">着くと、名所の<b class="mf-op-em">写真と紹介・豆知識</b>が見られます</p>
@@ -2732,7 +2742,7 @@
         <p class="mf-op-h">5枚目で、ゴールの<b class="mf-op-gold">ぼてこ幸田</b>へ。</p>
         <div class="mf-op-mystery"><span>？</span></div>
         <p class="mf-op-h mf-op-big">何かが起こる…<b class="mf-op-gold">！？</b></p>
-        <p class="mf-op-p">それは、店内のみんなで<br>5枚そろえた人だけのおたのしみ</p>
+        <p class="mf-op-p">それは、この席のみんなで<br>5枚そろえた人だけのおたのしみ</p>
         <div class="bt-op-buddy"><span>なにかな〜？</span><img src="chara.webp" alt=""></div>
         <p class="mf-op-foot">ドキドキしながら、旅を進めよう</p>
       </section>
