@@ -5690,6 +5690,7 @@
       el.innerHTML = `<img class="mf-pill-logo" src="logo-banner.webp" alt="ぼてこ"><span class="mf-pill-txt">${html}</span><img class="mf-pill-chara" src="chara.webp" alt="">`;
     }
     // 出発前：アサヒビール名古屋工場で樽詰め → マルト水谷 → ぼてこ幸田まで2日以内
+    const BT_ASAHI_AUTO_HIDE_MS = 8000;
     function mfShowAsahi(on) {
       let el = document.getElementById('btAsahi');
       if (!el) {
@@ -5702,6 +5703,9 @@
         mfMap.appendChild(el);
         el.querySelector('.bt-asahi-x').addEventListener('click', (e) => { e.stopPropagation(); el.classList.add('closed'); el.classList.remove('show'); });
       }
+      // 新しい旅（ラウンド）になったら、もう一度出す
+      const round = String(meterState.round || 1);
+      if (el.dataset.round !== round) { el.dataset.round = round; el.classList.remove('closed'); }
       const show = !!on && !el.classList.contains('closed');
       // 左上の小窓（アサヒビール・マルト水谷）を隠さないよう、そのすぐ下に置く
       if (show) {
@@ -5712,6 +5716,10 @@
         }
       }
       el.classList.toggle('show', show);
+      // 地図が見えるように、出てから8秒で自動で消す（✕でもすぐ消せる）
+      // （地図の描き直しで何度呼ばれても、最初に出たときから数える）
+      if (show && !el._autoHide) el._autoHide = setTimeout(() => { el._autoHide = null; el.classList.add('closed'); el.classList.remove('show'); }, BT_ASAHI_AUTO_HIDE_MS);
+      if (!show) { clearTimeout(el._autoHide); el._autoHide = null; }
     }
     function mfPlaceMapTruck([x, y]) {
       const [sx, sy] = mfMapXY(x, y);
