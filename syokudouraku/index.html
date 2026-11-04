@@ -269,6 +269,7 @@
       <g id="okinawa"></g>
       <g id="marks"></g>
       <g id="labels" style="pointer-events:none"></g>
+      <g id="flight" style="pointer-events:none"></g>
     </svg>
     <div id="pref-tip"></div>
     <button class="region-back" id="region-back">← 全国</button>
@@ -327,6 +328,15 @@
   <div id="sheet-body"></div>
 </article>
 
+<script>
+  // うまく表示されないときに原因が分かるよう、エラーを画面に出す
+  window.addEventListener('error', function (e) {
+    var box = document.getElementById('load-error') || document.body.appendChild(Object.assign(document.createElement('pre'), { id: 'load-error' }));
+    box.style.cssText = 'position:fixed;left:8px;right:8px;bottom:8px;z-index:999;background:#fff3f3;color:#a00;border:1px solid #e99;border-radius:10px;padding:10px;font-size:12px;white-space:pre-wrap;max-height:40vh;overflow:auto';
+    var where = e.target && e.target.src ? '読み込めないファイル: ' + e.target.src : (e.message + '  (' + (e.filename || '').split('/').pop() + ':' + e.lineno + ')');
+    box.textContent += '⚠ ' + where + '\n';
+  }, true);
+</script>
 <script src="japan-map.js"></script>
 <script src="sake-data.js"></script>
 <script src="diorama-data.js"></script>
@@ -508,6 +518,60 @@ function animateViewBox(to, ms) {
 }
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
+// 県の中心（地図上の座標）
+function prefCenter(name) {
+  const p = $('japan').querySelector(`path.pref[data-pref="${name}"]`);
+  if (!p) return null;
+  const b = p.getBBox();
+  return [b.x + b.width / 2, b.y + b.height / 2];
+}
+
+// 出発地から目的の県まで、飛行機が弧を描いて飛ぶ
+function flyPlane(to) {
+  const from = prefCenter(STORE.origin || '東京都');
+  if (!from || !to) return Promise.resolve();
+  const dx = to[0] - from[0], dy = to[1] - from[1], dist = Math.hypot(dx, dy);
+  if (dist < 30) return Promise.resolve();          // 出発地と同じ県なら飛ばない
+  const vb = $('japan').getAttribute('viewBox').split(/\s+/).map(Number);
+  const u = vb[2] / 1640;                           // 表示の拡大率に合わせて大きさを変える
+  // 弧の頂点（進行方向の左側＝上側にふくらませる）
+  let nx = -dy / dist, ny = dx / dist; if (ny > 0) { nx = -nx; ny = -ny; }
+  const lift = Math.min(260, dist * 0.35);
+  const c = [(from[0] + to[0]) / 2 + nx * lift, (from[1] + to[1]) / 2 + ny * lift];
+  const at = t => [(1-t)*(1-t)*from[0] + 2*(1-t)*t*c[0] + t*t*to[0], (1-t)*(1-t)*from[1] + 2*(1-t)*t*c[1] + t*t*to[1]];
+  const g = $('flight');
+  g.innerHTML = `
+    <circle cx="${from[0]}" cy="${from[1]}" r="${7*u}" fill="#B8322A" stroke="#fff" stroke-width="${2.5*u}"/>
+    <path id="fl-trail" fill="none" stroke="#B8322A" stroke-width="${3.5*u}" stroke-dasharray="${10*u} ${8*u}" stroke-linecap="round" opacity=".8"/>
+    <g id="fl-target" transform="translate(${to[0]} ${to[1]})" opacity="0">
+      <circle r="${26*u}" fill="none" stroke="#B8322A" stroke-width="${3*u}"><animate attributeName="r" values="${10*u};${34*u}" dur="1s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0" dur="1s" repeatCount="indefinite"/></circle>
+      <circle r="${7*u}" fill="#B8322A" stroke="#fff" stroke-width="${2.5*u}"/></g>
+    <g id="fl-shadow" opacity=".22"><ellipse rx="${28*u}" ry="${10*u}" fill="#000"/></g>
+    <g id="fl-plane"><g transform="scale(${2.6*u})">
+      <path d="M22,0 L14,-3 L2,-3 L-6,-17 L-11,-17 L-6,-3 L-14,-3 L-18,-9 L-21,-9 L-19,0 L-21,9 L-18,9 L-14,3 L-6,3 L-11,17 L-6,17 L2,3 L14,3 Z"
+        fill="#fff" stroke="#1F1B16" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M14,-3 Q24,0 14,3" fill="#B8322A"/></g></g>`;
+  const plane = $('fl-plane'), shadow = $('fl-shadow'), trail = $('fl-trail'), target = $('fl-target');
+  const ms = Math.min(1900, 900 + dist * 1.4);
+  return new Promise(res => {
+    const start = performance.now();
+    const step = now => {
+      const t = Math.min(1, (now - start) / ms), k = ease(t);
+      const [x, y] = at(k), [x2, y2] = at(Math.min(1, k + 0.01));
+      const ang = Math.atan2(y2 - y, x2 - x) * 180 / Math.PI;
+      const alt = Math.sin(Math.PI * k);           // 離陸→上昇→着陸
+      plane.setAttribute('transform', `translate(${x} ${y - alt * 18 * u}) rotate(${ang}) scale(${0.8 + alt * 0.5})`);
+      shadow.setAttribute('transform', `translate(${x + alt * 10 * u} ${y + alt * 8 * u}) scale(${1 - alt * 0.4})`);
+      let d = `M${from[0]},${from[1]}`;
+      for (let i = 1; i <= 24; i++) { const [px, py] = at(k * i / 24); d += ` L${px},${py}`; }
+      trail.setAttribute('d', d);
+      target.setAttribute('opacity', Math.min(1, t * 3));
+      t < 1 ? requestAnimationFrame(step) : res();
+    };
+    requestAnimationFrame(step);
+  });
+}
+
 async function openPrefecture(path) {
   busy = true;
   const name = path.dataset.pref;
@@ -515,6 +579,7 @@ async function openPrefecture(path) {
   $('pref-tip').style.opacity = 0;
   path.classList.add('active');
   $('labels').innerHTML = '';
+  await flyPlane(prefCenter(name));
   svg.classList.add('zooming');
   const b = path.getBBox();
   const size = Math.max(b.width, b.height) * 1.6 + 40;
@@ -537,6 +602,7 @@ async function backToMap() {
   $('town-screen').classList.add('hidden');
   $('map-screen').classList.remove('hidden');
   $('particles').innerHTML = '';
+  $('flight').innerHTML = '';
   renderMarks();
   $('curtain').classList.remove('show');
   if (regionView) {
@@ -1254,6 +1320,11 @@ function closeSheet() {
 /* =========================================================
    はじめる
    ========================================================= */
+(function checkFiles() {
+  const need = { 'japan-map.js': typeof JAPAN_PREFECTURE_PATHS, 'sake-data.js': typeof SAKE_TOWNS, 'diorama-data.js': typeof DIORAMAS, 'store.js': typeof STORE };
+  const missing = Object.keys(need).filter(k => need[k] === 'undefined');
+  if (missing.length) throw new Error('次のファイルが読み込めていません: ' + missing.join(', ') + '\nindex.html と同じフォルダに置いてください。');
+})();
 applyStore();
 renderMap();
 setupMapEvents();
