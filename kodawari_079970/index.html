@@ -767,6 +767,12 @@ body.shopen{overflow:hidden}
 .shmore[hidden]{display:none}
 @keyframes shmb{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
 @media (prefers-reduced-motion:reduce){.shmore{animation:none}}
+/* V314 前半の図を小さく畳む */
+.shb .pf.shfold{transition:none}
+.shb .pf.shfold>svg{width:38%!important;height:auto!important;margin:0 auto;display:block}
+.shb .pf.shfold .tag,.shb .pf.shfold .tagp{display:none}
+.shb .pf.shfold{padding-top:6px!important;padding-bottom:6px!important}
+.shb .cf{margin-top:8px!important;margin-bottom:8px!important}
 </style>
 </head>
 <body><div id="bgl" aria-hidden="true"></div>
@@ -1155,7 +1161,7 @@ m.innerHTML='<div class="shp" role="dialog" aria-label="ニワトリの話"><div
 document.body.appendChild(m);document.body.classList.add("shopen");window.SHFAST=true;
 var nx1=null,oldv=v,shb=document.getElementById("shb"),A=document.getElementById("shA"),closed=false,chained=false;
 v=A;tok++;
-function chain(){if(chained||closed)return;chained=true;if(nx1)nx1.style.display="none";A.querySelectorAll("[id]").forEach(function(e){e.removeAttribute("id")});var B=document.createElement("div");B.className="shv";B.id="shB";shb.appendChild(B);v=B;item2(d);setTimeout(function(){var nx=B.querySelector("#nx");if(nx)nx.hidden=true},0)}
+function chain(){if(chained||closed)return;chained=true;if(nx1)nx1.style.display="none";var pfx=A.querySelector(".pf");if(pfx)pfx.classList.add("shfold");A.querySelectorAll("[id]").forEach(function(e){e.removeAttribute("id")});var B=document.createElement("div");B.className="shv";B.id="shB";shb.appendChild(B);v=B;item2(d);setTimeout(function(){var nx=B.querySelector("#nx");if(nx)nx.hidden=true},0)}
 try{item(d)}catch(e){}
 nx1=A.querySelector("#nx1");
 if(nx1){var mo=new MutationObserver(function(){if(!nx1.hidden){mo.disconnect();setTimeout(chain,500)}});mo.observe(nx1,{attributes:true,attributeFilter:["hidden"]});if(!nx1.hidden){mo.disconnect();setTimeout(chain,500)}nx1.onclick=chain}
