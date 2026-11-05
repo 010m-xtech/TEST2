@@ -607,7 +607,7 @@
 <script src="system/japan-map.js"></script>
 <script src="system/sake-data.js"></script>
 <script src="system/diorama-data.js"></script>
-<script src="menu/menu.js"></script>
+<script src="menu.js"></script>
 <script>
 /* ===== motion-data.js の中身（index.html だけで動くように、ここに入れています） ===== */
 // 自動生成：ジオラマ画像の「水面」の範囲（96×96のマスク）。水面だけをゆらゆら動かすのに使います。画像を差し替えたら作り直してください
@@ -1074,6 +1074,7 @@ function renderMap() {
 // 食材の種類（アイコンと名前）
 const KINDS = {
   sake:  { icon: "🍶", label: "お酒" },
+  food:  { icon: "🍽", label: "料理" },
   fish:  { icon: "🐟", label: "魚介" },
   meat:  { icon: "🥩", label: "お肉" },
   veg:   { icon: "🥬", label: "野菜" },
@@ -1081,9 +1082,11 @@ const KINDS = {
   fruit: { icon: "🍑", label: "果物" },
   other: { icon: "🧂", label: "調味料ほか" }
 };
-// menu.js にはファイル名だけ書けばよい（menu フォルダの写真を使う）
-const photo = f => !f ? '' : /^(https?:|data:|\.|\/)|\//.test(f) ? f : 'menu/' + f;
-const storeItems = pref => (STORE.items && STORE.items[pref]) || [];
+// menu.js にはファイル名だけ書けばよい（image フォルダの写真を使う）
+const photo = f => !f ? '' : /^(https?:|data:|\.|\/)|\//.test(f) ? f : 'image/' + f;
+const filled = v => typeof v === 'string' ? v.trim() !== '' : Array.isArray(v) ? v.some(filled) : v && typeof v === 'object' ? Object.values(v).some(filled) : !!v;
+// name を書いたメニューだけを使う（空の入れ物は表示しない）
+const storeItems = pref => ((STORE.items && STORE.items[pref]) || []).filter(it => it && filled(it.name));
 // その県で出すピン（お酒・フード）
 function pinsFor(pref) {
   const items = storeItems(pref);
@@ -2170,40 +2173,25 @@ function tasteHTML(id) {
 // お店の食材 1つ分
 function itemHTML(it, i) {
   const k = KINDS[it.kind] || KINDS.other;
-  // 写真つきのメニュー（雑誌のような見せ方）
-  if (it.image) return `
+  // 雑誌のような見せ方（書いた項目だけを表示。写真がなくてもOK）
+  return `
     <article class="mag">
       <div class="mag-kind">${k.icon} ${k.label}${it.from ? `<span>｜${it.from}</span>` : ''}</div>
       <h4 class="mag-title mincho">${it.name}</h4>
-      <div class="mag-photo"${it.aspect ? ` style="aspect-ratio:${it.aspect}"` : ''}>
+      ${it.image ? `      <div class="mag-photo"${it.aspect ? ` style="aspect-ratio:${it.aspect}"` : ''}>
         <img src="${photo(it.image)}" alt="${it.name}" loading="lazy" decoding="async">
         ${it.poem ? `<div class="mag-poem mincho">${it.poem}</div>` : ''}
-      </div>
-      ${it.awards ? `<div class="mag-awards">${it.awards.map(a => `<div class="mag-award ${a.medal || ''}"><b>${a.year}</b><div><div class="aw-t">${a.title}</div>${a.note ? `<div class="aw-n">${a.note}</div>` : ''}</div></div>`).join('')}</div>` : ''}
-      ${it.tags ? `<div class="mag-tags">${it.tags.map(x => `<span>${x}</span>`).join('')}</div>` : ''}
-      ${(it.photos || []).map(ph => `<figure class="mag-sub"><img src="${photo(ph.src)}" alt="" loading="lazy" decoding="async">${ph.caption ? `<figcaption>${ph.caption}</figcaption>` : ''}</figure>`).join('')}
+      </div>` : ''}
+      ${filled(it.awards) ? `<div class="mag-awards">${it.awards.filter(a => filled(a.title)).map(a => `<div class="mag-award ${a.medal || ''}"><b>${a.year}</b><div><div class="aw-t">${a.title}</div>${a.note ? `<div class="aw-n">${a.note}</div>` : ''}</div></div>`).join('')}</div>` : ''}
+      ${filled(it.tags) ? `<div class="mag-tags">${it.tags.filter(filled).map(x => `<span>${x}</span>`).join('')}</div>` : ''}
+      ${(it.photos || []).filter(ph => filled(ph.src)).map(ph => `<figure class="mag-sub"><img src="${photo(ph.src)}" alt="" loading="lazy" decoding="async">${ph.caption ? `<figcaption>${ph.caption}</figcaption>` : ''}</figure>`).join('')}
       ${it.story ? `<p class="mag-story">${it.story}</p>` : ''}
-      ${it.points ? `<div class="mag-point"><h5 class="mincho">ここがおいしい</h5><ol class="mag-points">${it.points.map(x => `<li>${x}</li>`).join('')}</ol></div>` : ''}
+      ${filled(it.points) ? `<div class="mag-point"><h5 class="mincho">ここがおいしい</h5><ol class="mag-points">${it.points.filter(filled).map(x => `<li>${x}</li>`).join('')}</ol></div>` : ''}
       ${it.point ? `<div class="mag-point"><h5 class="mincho">${it.kind === 'sake' ? 'こだわり' : '素材のこだわり'}</h5><p>${it.point}</p></div>` : ''}
-      ${it.about ? `<div class="mag-about"><h5 class="mincho">${it.about.title || ''}</h5>${it.about.image ? `<figure class="mag-sub"><img src="${photo(it.about.image)}" alt="" loading="lazy" decoding="async">${it.about.caption ? `<figcaption>${it.about.caption}</figcaption>` : ''}</figure>` : ''}<p>${it.about.text || ''}</p></div>` : ''}
+      ${it.about && (filled(it.about.text) || filled(it.about.image)) ? `<div class="mag-about"><h5 class="mincho">${it.about.title || ''}</h5>${it.about.image ? `<figure class="mag-sub"><img src="${photo(it.about.image)}" alt="" loading="lazy" decoding="async">${it.about.caption ? `<figcaption>${it.about.caption}</figcaption>` : ''}</figure>` : ''}<p>${it.about.text || ''}</p></div>` : ''}
       ${it.menu ? `<span class="item-menu">🍽 ${it.menu}</span>` : ''}
       ${it.source ? `<p class="mag-source">${it.source}</p>` : ''}
     </article>`;
-  const hasTaste = it.kind === 'sake' && it.dry != null && it.rich != null;
-  if (STORE.layout === 'list') return `
-    <div class="item-row"><span>${k.icon}</span>
-      <div><div class="r-name">${it.name}</div><div class="r-sub">${it.from || ''}${it.season ? '・' + it.season : ''}</div></div>
-      <div class="r-menu">${it.menu || ''}</div></div>`;
-  return `
-    <div class="item-card"><div class="item-icon">${k.icon}</div>
-      <div style="flex:1;min-width:0">
-        <div class="item-kind">${k.label}${it.season ? `<span class="item-season">${it.season}</span>` : ''}</div>
-        <div class="item-name mincho">${it.name}</div>
-        <div class="item-from">${it.from || ''}</div>
-        ${it.note ? `<p class="item-note">${it.note}</p>` : ''}
-        ${it.menu ? `<span class="item-menu">🍽 ${it.menu}</span>` : ''}
-        ${hasTaste ? `<div class="sake-grid" style="margin-top:12px">${tasteHTML('taste-item-' + i)}</div>` : ''}
-      </div></div>`;
 }
 
 // mode: 'sake'（お酒のピン）/ 'food'（フードのピン）
@@ -2336,7 +2324,7 @@ function closeIntro() {
    はじめる
    ========================================================= */
 (function checkFiles() {
-  const need = { 'system/japan-map.js': typeof JAPAN_PREFECTURE_PATHS, 'system/sake-data.js': typeof SAKE_TOWNS, 'system/diorama-data.js': typeof DIORAMAS, 'menu/menu.js': typeof STORE };
+  const need = { 'system/japan-map.js': typeof JAPAN_PREFECTURE_PATHS, 'system/sake-data.js': typeof SAKE_TOWNS, 'system/diorama-data.js': typeof DIORAMAS, 'menu.js': typeof STORE };
   const missing = Object.keys(need).filter(k => need[k] === 'undefined');
   if (missing.length) throw new Error('次のファイルが読み込めていません: ' + missing.join(', ') + '\nフォルダの場所と、menu.js の \" や , が消えていないかを確かめてください。');
 })();
