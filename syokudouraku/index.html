@@ -23,6 +23,9 @@
   .mincho { font-family: "Shippori Mincho", serif; }
   button { font: inherit; color: inherit; cursor: pointer; }
 
+  html { background: #DCD3C3; }
+  .screen, #intro, #curtain { left: 0 !important; right: 0 !important; margin: 0 auto; max-width: 440px; }
+  @media (min-width: 480px) { .screen, #intro { box-shadow: 0 0 40px rgba(0,0,0,.18); } }
   .screen { position: fixed; inset: 0; transition: opacity .6s ease, transform .6s ease; }
   .screen.hidden { opacity: 0; pointer-events: none; }
 
@@ -39,11 +42,16 @@
     width: 68px; height: 68px; display: flex; flex-direction: column; align-items: center; justify-content: center; transform: rotate(-8deg); background: rgba(255,255,255,.5); }
   .stamp-count b { font-family: "Shippori Mincho", serif; font-size: 20px; line-height: 1; }
   .stamp-count span { font-size: 9px; letter-spacing: .1em; margin-top: 2px; }
+  .stamp-count small { font-size: 8px; font-weight: 700; letter-spacing: .05em; margin-bottom: 1px; }
+  .stamp-count.pop { animation: stampIn .5s both cubic-bezier(.3,1.6,.5,1); }
   .store-badge { margin-top: 0; display: block; background: none !important; border: 0 !important; padding: 0 !important; font-size: 12px; font-weight: 700; line-height: 1.6;
     background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; }
   .store-badge:empty { display: none; }
   .store-badge b { color: var(--accent); }
-  #map-wrap { position: relative; flex: 1; min-height: 0; }
+  #map-wrap { position: relative; flex: 1; min-height: 0; margin: 10px 12px 0; border-radius: 22px; overflow: hidden;
+    background: radial-gradient(ellipse at 60% 30%, #BFE6F7, #8CCBEA 55%, #5FAED8);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.5), inset 0 -20px 40px rgba(20,80,130,.18); }
+  #japan path.pref.green { stroke: #F4FBF0; }
   #japan { width: 100%; height: 100%; display: block; }
   #japan path.pref { stroke: var(--paper); stroke-width: 1.2; vector-effect: non-scaling-stroke; cursor: pointer;
     transition: filter .2s, opacity .4s; }
@@ -54,7 +62,7 @@
   .map-legend { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 12px; font-weight: 700; }
   .map-legend span { display: inline-flex; align-items: center; gap: 5px; background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; }
   .map-legend i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
-  #japan path.pref.gold { stroke: #FFF6D8; animation: goldGlow 2.4s ease-in-out infinite alternate; }
+  #japan path.pref.gold { stroke: #FFF6D8; }
   @keyframes goldGlow { from { filter: drop-shadow(0 0 2px rgba(233,180,60,.5)); } to { filter: drop-shadow(0 0 9px rgba(255,200,70,.95)); } }
   .map-hint { position: absolute; left: 50%; bottom: max(22px, env(safe-area-inset-bottom)); transform: translateX(-50%);
     background: var(--ink); color: #fff; font-size: 13px; padding: 10px 18px; border-radius: 999px; white-space: nowrap;
@@ -118,7 +126,7 @@
   #diorama.day     { background: radial-gradient(circle at 50% 40%, #F4F8FB, #D5E3EE 70%); }
   #diorama.evening { background: radial-gradient(circle at 50% 40%, #FBD9C0, #B9849A 75%); }
   #diorama.night   { background: radial-gradient(circle at 50% 40%, #2A3466, #0B1026 75%); }
-  .dio-stage { position: relative; width: min(92vw, 58vh, 600px); aspect-ratio: 1; perspective: 1200px; margin-top: 40px; }
+  .dio-stage { position: relative; width: min(92%, 56vh); aspect-ratio: 1; perspective: 1200px; margin-top: 40px; }
   .dio-float { position: absolute; inset: 0; animation: dioFloat 6s ease-in-out infinite; }
   @keyframes dioFloat { 50% { transform: translateY(-10px); } }
   .dio-tilt { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform .35s cubic-bezier(.2,.8,.3,1); --inv: 1; }
@@ -152,7 +160,8 @@
     background: rgba(255,255,255,.9); border-radius: 999px; padding: 5px; box-shadow: 0 4px 12px rgba(0,0,0,.18); }
   .dio-modes button { width: 34px; height: 34px; border-radius: 50%; border: 0; background: none; font-family: "Shippori Mincho", serif; font-weight: 800; font-size: 15px; color: var(--muted); }
   .dio-modes button.on { background: var(--ink); color: #fff; }
-  .dio-modes .night-btn { font-size: 16px; border-top: 1px solid var(--line); border-radius: 50%; }
+  .dio-modes .night-btn { font-size: 15px; border-top: 1px solid var(--line); border-radius: 50%; height: 42px; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
+  .dio-modes .night-btn small { font-family: "Noto Sans JP", sans-serif; font-size: 8.5px; font-weight: 700; margin-top: 2px; color: var(--ink); }
   .dio-stage { z-index: 1; }
   .dio-water { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
   .dio-cloud { position: absolute; inset: 0; pointer-events: none; opacity: .5;
@@ -165,6 +174,8 @@
   .dio-tools button { width: 42px; height: 42px; border-radius: 50%; border: 0; background: rgba(255,255,255,.94); font-size: 18px; font-weight: 800; color: var(--ink);
     box-shadow: 0 4px 12px rgba(0,0,0,.18); }
   .dio-tools button:active { transform: scale(.92); }
+  .dio-tools button { width: 50px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
+  .dio-tools small { font-size: 8.5px; font-weight: 700; margin-top: 3px; letter-spacing: -.02em; }
   .help-btn { width: 42px; height: 42px; border-radius: 50%; border: 0; background: rgba(255,255,255,.92); color: var(--ink); font-size: 18px; font-weight: 800;
     box-shadow: 0 4px 12px rgba(0,0,0,.2); flex-shrink: 0; }
   .dio-tilt img { width: 100%; height: 100%; object-fit: contain; display: block; transition: filter 1s; user-select: none; -webkit-user-drag: none;
@@ -199,7 +210,7 @@
   .pin-chip:empty { display: none; }
   /* お店の産地の県：ジオラマのまわりに金色のきらめき */
   .dio-sparkle { position: absolute; inset: -6%; pointer-events: none; display: none; }
-  #diorama.gold .dio-sparkle { display: block; }
+  #diorama.gold .dio-sparkle { display: none; }
   .dio-sparkle i { position: absolute; width: 10px; height: 10px; background: #FFE08A; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
     filter: drop-shadow(0 0 4px #FFC940); animation: sparkle 2.6s ease-in-out infinite; }
   @keyframes sparkle { 0%, 100% { transform: scale(0) rotate(0); opacity: 0; } 50% { transform: scale(1.3) rotate(90deg); opacity: 1; } }
@@ -210,10 +221,20 @@
   .gold-ribbon[hidden] { display: none; }
   .dio-pin .ring { position: absolute; left: 50%; bottom: -6px; width: 56px; height: 20px; margin-left: -28px; border-radius: 50%; border: 3px solid #fff;
     animation: ripple 1.8s ease-out infinite; }
-  .dio-info { padding: 0 62px; margin: 28px 0 70px; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+  .dio-info { padding: 0 74px; margin: 24px 0 70px; width: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
   .dio-clock { font-size: 13px; letter-spacing: .1em; color: rgba(31,27,22,.7); font-weight: 700; }
   #diorama.night .dio-clock, #diorama.evening .dio-clock { color: rgba(255,255,255,.8); }
-  .dio-spots { background: rgba(31,27,22,.55); color: #fff; font-size: 13px; padding: 8px 14px; border-radius: 999px; backdrop-filter: blur(6px); max-width: 90vw; text-align: center; }
+  /* 説明文：ふちがふわっと消える、ぼかしたガラスのような背景 */
+  .dio-spots { position: relative; color: var(--ink); font-size: 12.5px; line-height: 1.8; padding: 14px 16px 12px; max-width: 100%;
+    text-align: left; font-family: "Shippori Mincho", serif; font-weight: 600; letter-spacing: .02em; word-break: normal; overflow-wrap: anywhere;
+    text-shadow: 0 0 8px rgba(255,250,240,.9), 0 0 2px rgba(255,250,240,.9); isolation: isolate; }
+  .dio-spots::before { content: ""; position: absolute; inset: -6px -14px; z-index: -1; border-radius: 40px;
+    background: radial-gradient(ellipse at center, rgba(255,251,244,.78), rgba(255,251,244,.45) 60%, rgba(255,251,244,0) 100%);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    -webkit-mask-image: radial-gradient(ellipse at center, #000 55%, transparent 100%); mask-image: radial-gradient(ellipse at center, #000 55%, transparent 100%); }
+  .dio-spots::after { content: ""; position: absolute; left: 50%; top: 4px; width: 28px; height: 1.5px; margin-left: -14px; background: linear-gradient(90deg, transparent, #B88A2E, transparent); }
+  #diorama.night .dio-spots { color: #F6F0DE; text-shadow: 0 0 10px rgba(10,14,40,.95), 0 0 2px rgba(10,14,40,.9); }
+  #diorama.night .dio-spots::before { background: radial-gradient(ellipse at center, rgba(14,20,50,.7), rgba(14,20,50,.35) 60%, rgba(14,20,50,0) 100%); }
   .dio-spots:empty { display: none; }
 
   /* ---------- オープニング ---------- */
@@ -229,10 +250,11 @@
   .intro-bars i.now b { animation: bar 2.5s linear forwards; }
   @keyframes bar { to { width: 100%; } }
   .intro-skip { position: absolute; top: max(6px, env(safe-area-inset-top)); right: 12px; border: 0; background: none; font-size: 13px; font-weight: 700; color: var(--muted); padding: 8px; }
-  .intro-stage { position: relative; width: min(86vw, 52vh, 460px); aspect-ratio: 1; }
+  .intro-stage { position: relative; width: min(86%, 50vh); aspect-ratio: 1; }
   .intro-scene { position: absolute; inset: 0; opacity: 0; transition: opacity .35s; }
   .intro-scene.on { opacity: 1; }
   .intro-map { width: 100%; height: 100%; }
+  #intro-map { background: radial-gradient(ellipse at 60% 30%, #BFE6F7, #8CCBEA 55%, #5FAED8); border-radius: 18px; }
   .intro-map path { stroke: #F4EFE4; stroke-width: 2; }
   .intro-map.dim path:not(.gold) { opacity: .35; }
   .intro-finger { position: absolute; font-size: 44px; filter: drop-shadow(0 4px 6px rgba(0,0,0,.25)); opacity: 0; }
@@ -243,6 +265,7 @@
   .intro-scene.on .intro-dio { animation: dioPop 2.5s ease forwards; }
   @keyframes dioPop { 0%, 48% { opacity: 0; transform: scale(.25) translateY(30px); } 70% { opacity: 1; transform: scale(1.04); } 100% { opacity: 1; transform: scale(1); } }
   .intro-dio.still { opacity: 1; transform: none; animation: none !important; }
+  .intro-dio.shown { opacity: 1; transform: none; }
   .intro-pin { position: absolute; left: 50%; top: 40%; width: 46px; height: 46px; margin: -46px 0 0 -23px; background: #B8322A; color: #fff; border: 3px solid #fff;
     border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: grid; place-items: center; font-family: "Shippori Mincho", serif; font-weight: 800; font-size: 19px;
     box-shadow: 0 6px 14px rgba(0,0,0,.3); }
@@ -261,19 +284,34 @@
   .intro-skip, .intro-start { position: relative; z-index: 3; }
   .intro-skip { position: absolute; }
   .intro-scene.on .zoomy { animation: introZoom 2.5s ease-in-out forwards; }
-  @keyframes introZoom { 0%, 15% { transform: scale(1); } 70%, 100% { transform: scale(1.28) translateY(4%); } }
+  @keyframes introZoom { 0%, 25% { transform: scale(1); } 75%, 100% { transform: scale(1.55) translate(2%, 6%); } }
+  .intro-stage { overflow: hidden; border-radius: 18px; }
   .intro-scene.on .zoomy { filter: none; }
   .intro-modes { position: absolute; left: 4%; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 5px; background: rgba(255,255,255,.95);
     border-radius: 999px; padding: 5px; box-shadow: 0 4px 12px rgba(0,0,0,.18); }
   .intro-modes b { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-family: "Shippori Mincho", serif; font-size: 14px; color: var(--muted); }
-  .intro-scene.on .intro-modes b { animation: modeOn 2.5s steps(1) forwards; }
-  .intro-modes b:nth-child(1) { animation-delay: 0s !important; } .intro-modes b:nth-child(2) { animation-delay: -1.9s !important; }
-  .intro-modes b:nth-child(3) { animation-delay: -1.4s !important; } .intro-modes b:nth-child(4) { animation-delay: -.9s !important; } .intro-modes b:nth-child(5) { animation-delay: -.4s !important; }
-  @keyframes modeOn { 0%, 19% { background: var(--ink); color: #fff; } 20%, 100% { background: none; color: var(--muted); } }
+  .intro-scene.on .intro-modes b { animation: modeOn .64s step-end; }
+  .intro-modes b:nth-child(2) { animation-delay: .625s !important; } .intro-modes b:nth-child(3) { animation-delay: 1.25s !important; }
+  .intro-scene.on .intro-modes b:nth-child(4) { animation: modeOn .64s step-end 1.875s forwards; }
+  @keyframes modeOn { from, to { background: var(--ink); color: #fff; } }
   .intro-pinch { position: absolute; right: 12%; bottom: 14%; font-size: 40px; opacity: 0; }
   .intro-scene.on .intro-pinch { animation: pinch 2.5s ease-in-out forwards; }
   @keyframes pinch { 0%, 10% { opacity: 0; transform: scale(.8); } 25% { opacity: 1; } 70% { transform: scale(1.25); opacity: 1; } 100% { opacity: 0; } }
   .intro-plane-svg { overflow: visible; }
+  .intro-zoombtn { position: absolute; right: 4%; bottom: 10%; width: 56px; height: 56px; border-radius: 50%; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,.2);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 22px; font-weight: 800; line-height: 1; }
+  .intro-zoombtn small { font-size: 9px; margin-top: 3px; }
+  .intro-finger.tap2 { right: 2%; bottom: 2%; left: auto; top: auto; }
+  .intro-scene.on .intro-finger.tap2 { animation: fingerTap2 2.5s ease-in-out forwards; }
+  @keyframes fingerTap2 { 0% { opacity: 0; transform: translate(30px, 40px); } 15% { opacity: 1; transform: none; } 22% { transform: scale(.85); } 28% { transform: none; } 80% { opacity: 1; } 100% { opacity: 0; } }
+  .intro-seasons { position: absolute; inset: 6%; }
+  .intro-seasons img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; }
+  /* 春→夏→秋→冬と 0.625秒ずつ順番に見せる（冬はそのまま残す） */
+  .intro-scene.on .intro-seasons img { animation: seasonShow .64s step-end; }
+  .intro-seasons img:nth-child(2) { animation-delay: .625s !important; } .intro-seasons img:nth-child(3) { animation-delay: 1.25s !important; }
+  .intro-scene.on .intro-seasons img:nth-child(4) { animation: seasonShow .64s step-end 1.875s forwards; }
+  @keyframes seasonShow { from, to { opacity: 1; } }
+  .intro-pin.food { left: 74%; top: 30%; background: #2F7A55; }
   .intro-cap { min-height: 3.2em; margin: 22px 0 10px; font-size: 18px; font-weight: 800; text-align: center; line-height: 1.6; letter-spacing: .04em; }
   .intro-start { visibility: hidden; border: 0; background: var(--accent); color: #fff; font-weight: 800; font-size: 16px; padding: 14px 44px; border-radius: 999px;
     box-shadow: 0 8px 20px rgba(184,50,42,.3); }
@@ -285,13 +323,13 @@
   @keyframes fall { to { transform: translate(var(--dx), 110vh) rotate(540deg); } }
 
   /* 画面切り替え用の幕 */
-  #curtain { position: fixed; inset: 0; background: var(--paper); opacity: 0; pointer-events: none; transition: opacity .45s ease; z-index: 50; }
+  #curtain { position: fixed; inset: 0; background: var(--paper); opacity: 0; pointer-events: none; transition: opacity .22s ease; z-index: 50; }
   #curtain.show { opacity: 1; }
 
   /* ---------- お酒シート ---------- */
   #sheet-bg { position: fixed; inset: 0; background: rgba(20,15,10,.45); opacity: 0; pointer-events: none; transition: opacity .35s; z-index: 60; }
   #sheet-bg.show { opacity: 1; pointer-events: auto; }
-  #sheet { position: fixed; left: 50%; bottom: 0; width: min(560px, 100%); max-height: 92vh; overflow-y: auto;
+  #sheet { position: fixed; left: 50%; bottom: 0; width: min(440px, 100%); max-height: 92vh; overflow-y: auto;
     transform: translate(-50%, 105%); transition: transform .5s cubic-bezier(.2,.9,.25,1); z-index: 61;
     background: var(--paper); border-radius: 26px 26px 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,.25);
     padding: 10px 22px max(24px, env(safe-area-inset-bottom)); }
@@ -321,6 +359,36 @@
   /* お店のこだわり食材 */
   .store-eyebrow { font-size: 12px; color: var(--accent); font-weight: 700; letter-spacing: .15em; }
   .store-heading { font-size: 21px; font-weight: 800; margin: 4px 0 16px; line-height: 1.4; }
+  /* 写真つきメニュー（雑誌風） */
+  .mag { margin-bottom: 14px; }
+  .mag-kind { font-size: 11px; font-weight: 700; color: var(--accent); letter-spacing: .1em; }
+  .mag-kind span { color: var(--muted); font-weight: 500; letter-spacing: 0; }
+  .mag-title { font-size: 20px; font-weight: 800; margin: 4px 0 10px; line-height: 1.45; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+  .mag-photo { position: relative; aspect-ratio: 4 / 3; border-radius: 16px; overflow: hidden; background: #222; box-shadow: 0 6px 18px rgba(0,0,0,.12); }
+  .mag-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .mag-poem { position: absolute; top: 10px; right: 10px; max-height: calc(100% - 20px); writing-mode: vertical-rl; white-space: pre; font-size: 12px; font-weight: 700;
+    letter-spacing: .18em; line-height: 1.75; color: #fff; background: rgba(0,0,0,.6); backdrop-filter: blur(4px); padding: 10px 7px; border-radius: 10px; border: 1px solid rgba(255,255,255,.2); }
+  .mag-story { font-size: 13.5px; line-height: 1.9; margin: 12px 0 0; text-align: justify; }
+  .mag-point { margin-top: 10px; background: #F7F1E6; border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+  .mag-point h5 { margin: 0 0 4px; font-size: 13px; color: var(--accent); }
+  .mag-point p { margin: 0; font-size: 13px; line-height: 1.85; text-align: justify; }
+  .mag .item-menu { margin-top: 10px; }
+  .mag-source { margin: 8px 0 0; font-size: 10.5px; color: var(--muted); }
+  .mag-sub { margin: 12px 0 0; }
+  .mag-sub img { width: 100%; display: block; border-radius: 14px; background: linear-gradient(180deg,#FBF6EC,#EFE5D2); }
+  .mag-sub figcaption { font-size: 11px; color: var(--muted); margin-top: 5px; line-height: 1.6; }
+  .mag-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .mag-tags span { font-size: 11.5px; padding: 3px 10px; border-radius: 99px; border: 1px solid var(--line); background: #fff; }
+  .mag-awards { display: grid; gap: 6px; margin-top: 12px; }
+  .mag-award { display: flex; gap: 10px; align-items: center; padding: 8px 12px; border-radius: 12px; background: #fff; border: 1px solid var(--line); }
+  .mag-award b { flex: none; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; color: #fff; background: radial-gradient(circle at 35% 30%, #F3F3F3, #9DA3A8); box-shadow: inset 0 0 0 3px rgba(255,255,255,.5); }
+  .mag-award.gold b { background: radial-gradient(circle at 35% 30%, #FFE9A8, #C8962A); }
+  .aw-t { font-size: 13px; font-weight: 700; }
+  .aw-n { font-size: 11px; color: var(--muted); }
+  .mag-points { margin: 0; padding-left: 1.3em; font-size: 13px; line-height: 1.85; }
+  .mag-about { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .mag-about h5 { margin: 0; font-size: 15px; }
+  .mag-about p { font-size: 13px; line-height: 1.9; margin: 10px 0 0; text-align: justify; }
   .item-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; display: flex; gap: 14px; }
   .item-icon { width: 54px; height: 54px; flex-shrink: 0; border-radius: 16px; display: grid; place-items: center; font-size: 28px;
     background: color-mix(in srgb, var(--accent) 10%, #fff); }
@@ -332,15 +400,13 @@
     background: var(--ink); color: #fff; }
   .item-season { font-size: 12px; color: var(--accent); font-weight: 700; margin-left: 8px; }
   .item-list { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 4px 16px; margin-bottom: 12px; }
-  .item-row { display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; align-items: baseline; padding: 12px 0; border-bottom: 1px dashed var(--line); }
+  .item-row { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 12px 0; border-bottom: 1px dashed var(--line); }
   .item-row:last-child { border-bottom: 0; }
   .item-row .r-name { font-weight: 800; }
   .item-row .r-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
   .item-row .r-menu { font-size: 12px; font-weight: 700; text-align: right; }
   .section-title { font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: .15em; margin: 22px 0 10px; display: flex; align-items: center; gap: 8px; }
   .section-title::after { content: ""; flex: 1; height: 1px; background: var(--line); }
-  .pairing { margin-top: 14px; padding: 14px 16px; border-radius: var(--radius); background: var(--ink); color: #fff; font-size: 14px; line-height: 1.7; }
-  .pairing b { color: #F2C76E; }
   .disclaimer { font-size: 11px; color: var(--muted); margin: 14px 0 0; line-height: 1.6; }
   .stamped { display: flex; align-items: center; gap: 10px; margin-top: 16px; padding: 12px 14px; border: 2px dashed var(--accent); border-radius: var(--radius); color: var(--accent); font-weight: 700; font-size: 14px; }
   .stamped .seal { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--accent); display: grid; place-items: center; font-family: "Shippori Mincho", serif; font-size: 18px; transform: rotate(-10deg); animation: stampIn .5s .3s both cubic-bezier(.3,1.6,.5,1); }
@@ -365,7 +431,7 @@
       <div class="store-badge" id="store-badge"></div>
     </div>
     <div class="head-right">
-      <div class="stamp-count" title="訪れた県"><b id="stamp-num">0</b><span>/ 47 県</span></div>
+      <div class="stamp-count" title="旅した県"><small>旅した県</small><b id="stamp-num">0</b><span>/ 47</span></div>
       <button class="help-btn small" id="map-help" aria-label="遊び方">？</button>
     </div>
   </header>
@@ -376,7 +442,6 @@
         <linearGradient id="gold" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="260" y2="260" spreadMethod="reflect">
           <stop offset="0" stop-color="#B07F22"/><stop offset=".35" stop-color="#E9C35A"/><stop offset=".5" stop-color="#FFF3C4"/>
           <stop offset=".65" stop-color="#E9C35A"/><stop offset="1" stop-color="#B07F22"/>
-          <animateTransform attributeName="gradientTransform" type="translate" from="0 0" to="520 520" dur="5s" repeatCount="indefinite"/>
         </linearGradient>
       </defs>
       <g id="prefs"></g>
@@ -423,9 +488,9 @@
       <div class="dio-shadow"></div>
     </div>
     <div class="dio-tools" id="dio-tools">
-      <button data-act="out" aria-label="縮小">－</button>
-      <button data-act="reset" aria-label="元に戻す">◎</button>
-      <button data-act="in" aria-label="拡大">＋</button>
+      <button data-act="in" aria-label="近づく">＋<small>近づく</small></button>
+      <button data-act="out" aria-label="はなれる">－<small>はなれる</small></button>
+      <button data-act="reset" aria-label="もとに戻す">◎<small>もどす</small></button>
     </div>
     <div class="dio-info">
       <div class="dio-clock" id="dio-clock"></div>
@@ -448,35 +513,36 @@
 
 <div id="curtain"></div>
 
-<!-- ===== オープニング：遊び方（3コマ × 2.5秒） ===== -->
+<!-- ===== オープニング：遊び方（4コマ × 2.5秒） ===== -->
 <div id="intro" hidden>
   <div class="intro-bars"><i><b></b></i><i><b></b></i><i><b></b></i><i><b></b></i></div>
   <div class="intro-tap left" id="intro-prev" aria-label="前へ"></div>
   <div class="intro-tap right" id="intro-next" aria-label="次へ"></div>
   <button class="intro-skip" id="intro-skip">スキップ</button>
   <div class="intro-stage">
-    <!-- 1. 地図 -->
+    <!-- 1. 日本地図 → 県をタップ → トラックで旅に出る -->
     <div class="intro-scene" data-n="0">
       <svg class="intro-map" id="intro-map" viewBox="0 0 1640 1490"></svg>
       <div class="intro-finger" id="intro-finger">👆</div>
     </div>
-    <!-- 2. 飛行機 → ジオラマ -->
+    <!-- 2. 県の街並み → 近づいて見る -->
     <div class="intro-scene" data-n="1">
-      <svg class="intro-map dim" id="intro-map2" viewBox="0 0 1640 1490"></svg>
-      <img class="intro-dio" id="intro-dio" alt="">
+      <img class="intro-dio shown zoomy" id="intro-dio" alt="">
+      <div class="intro-zoombtn">＋<small>近づく</small></div>
+      <div class="intro-finger tap2">👆</div>
     </div>
-    <!-- 3. 季節・昼夜・拡大 -->
+    <!-- 3. 春夏秋冬で街並みが変わる -->
     <div class="intro-scene" data-n="2">
-      <img class="intro-dio still zoomy" id="intro-dio3" alt="">
+      <div class="intro-seasons" id="intro-seasons"></div>
       <div class="intro-modes"><b>春</b><b>夏</b><b>秋</b><b>冬</b><b>🌙</b></div>
-      <div class="intro-pinch">🤏</div>
     </div>
-    <!-- 4. ピン → おすすめ -->
+    <!-- 4. 酒・食のマーク → こだわりのお酒とメニュー -->
     <div class="intro-scene" data-n="3">
       <img class="intro-dio still" id="intro-dio2" alt="">
       <div class="intro-pin">酒</div>
+      <div class="intro-pin food">食</div>
       <div class="intro-finger tap3">👆</div>
-      <div class="intro-card"><small>当店のこだわり</small><b class="mincho">地酒 × 港町の牡蠣</b><span>🍽 焼き牡蠣と一緒にどうぞ</span></div>
+      <div class="intro-card"><small>当店のこだわり</small><b class="mincho">こだわりのお酒と素材</b><span>🍽 その素材でつくったメニューも</span></div>
     </div>
   </div>
   <p class="intro-cap mincho" id="intro-cap"></p>
@@ -681,7 +747,7 @@ const LookFX = (() => {
     const scene = $('dio-scene'), img = $('dio-img'), dio = $('diorama');
     dio.dataset.season = state.season; dio.classList.toggle('night', state.night); dio.classList.toggle('day', !state.night);
     document.querySelectorAll('#dio-modes [data-season]').forEach(b => b.classList.toggle('on', b.dataset.season === state.season));
-    const nb = document.querySelector('#dio-modes [data-act="night"]'); if (nb) nb.textContent = state.night ? '☀' : '🌙';
+    const nb = document.querySelector('#dio-modes [data-act="night"]'); if (nb) nb.innerHTML = state.night ? '☀<small>朝へ</small>' : '🌙<small>夜へ</small>';
     if (!state.info) { scene.style.opacity = 0; img.style.opacity = 1; dio.classList.add('fallback'); return; }
     dio.classList.remove('fallback');
     const cv = getLook(state.season, state.night), ctx = scene.getContext('2d');
@@ -750,7 +816,11 @@ const LookFX = (() => {
   function setupSky() {
     clearTimeout(state.fwTimer); state.fireworks = [];
     const sky = $('dio-sky'); sky.innerHTML = '';
-    const fw = $('dio-fireworks'); fw.getContext('2d').clearRect(0, 0, fw.width, fw.height);
+    const fw = $('dio-fireworks');
+    // 表示サイズどおりの比率で描く（引き伸ばされて楕円にならないように）
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    fw.width = Math.max(1, fw.clientWidth * dpr); fw.height = Math.max(1, fw.clientHeight * dpr);
+    fw.getContext('2d').clearRect(0, 0, fw.width, fw.height);
     if (!state.night) return;
     let html = '';
     for (let i = 0; i < 70; i++) html += `<i class="star" style="left:${Math.random() * 100}%;top:${Math.random() * 55}%;animation-delay:-${(Math.random() * 4).toFixed(1)}s;opacity:${(.3 + Math.random() * .7).toFixed(2)}"></i>`;
@@ -767,9 +837,11 @@ const LookFX = (() => {
     const fw = $('dio-fireworks'), W = fw.width, H = fw.height;
     const cols = ['#FFD36E', '#FF7A7A', '#8FD3FF', '#C9A2FF', '#9DFFB0', '#FFFFFF'];
     const col = cols[(Math.random() * cols.length) | 0], x = W * (.2 + Math.random() * .6), y = H * (.08 + Math.random() * .22);
-    const n = 60 + (Math.random() * 30 | 0), parts = [];
-    for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2, sp = 1.6 + Math.random() * 1.6; parts.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp }); }
-    state.fireworks.push({ parts, col, life: 0, rise: 26, sx: x, sy: H * .62 });
+    const col2 = cols[(Math.random() * cols.length) | 0], parts = [], R = Math.min(W, H) / 260;
+    // 外側と内側の、きれいな丸い輪
+    for (const [n, sp, c] of [[64, 2.9 * R, col], [36, 1.6 * R, col2]])
+      for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2; parts.push({ x, y, px: x, py: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, c }); }
+    state.fireworks.push({ parts, col, life: 0, rise: 28, sx: x, sy: H * .62, r: R });
     state.flash = { col, t: performance.now() };
   }
   function drawFireworks(t) {
@@ -783,9 +855,15 @@ const LookFX = (() => {
         const k = f.life / f.rise, y = f.sy + (f.parts[0].y - f.sy) * k;
         ctx.fillStyle = 'rgba(255,230,180,.9)'; ctx.fillRect(f.parts[0].x - 1.5, y, 3, 6); continue;
       }
-      const a = Math.max(0, 1 - (f.life - f.rise) / 75);
-      ctx.fillStyle = f.col; ctx.globalAlpha = a;
-      for (const p of f.parts) { p.x += p.vx; p.y += p.vy; p.vx *= .975; p.vy = p.vy * .975 + .035; ctx.beginPath(); ctx.arc(p.x, p.y, 2.2, 0, 7); ctx.fill(); }
+      const age = f.life - f.rise, a = Math.max(0, 1 - age / 75);
+      ctx.globalAlpha = a; ctx.lineCap = 'round';
+      for (const p of f.parts) {
+        p.px = p.x; p.py = p.y;
+        p.x += p.vx; p.y += p.vy; p.vx *= .965; p.vy = p.vy * .965 + (age > 35 ? .02 * f.r : 0);   // しばらくは丸いまま広がり、最後に少し垂れる
+        ctx.strokeStyle = p.c; ctx.lineWidth = 2.2 * f.r;
+        ctx.beginPath(); ctx.moveTo(p.px, p.py); ctx.lineTo(p.x, p.y); ctx.stroke();
+        ctx.fillStyle = p.c; ctx.beginPath(); ctx.arc(p.x, p.y, 1.6 * f.r, 0, 7); ctx.fill();
+      }
       ctx.globalAlpha = 1;
     }
     ctx.globalCompositeOperation = 'source-over';
@@ -809,7 +887,25 @@ const LookFX = (() => {
   function setSeason(sz) { state.season = sz; render(); }
   function toggleNight() { state.night = !state.night; render(); }
 
-  return { load, render, stop, setSeason, toggleNight, flashColor, state, SEASON_JP };
+  // 遊び方の3コマ目用：春夏秋冬の見本を作る（少しずつ計算して、画面を止めない）
+  const previewCache = {};
+  function preview(src, cb) {
+    if (previewCache[src]) return cb(previewCache[src]);
+    const im = new Image();
+    im.onload = () => setTimeout(() => {
+      let info; try { info = analyze(im); } catch (e) { return; }
+      const out = {}, list = ['spring', 'summer', 'autumn', 'winter'];
+      const next = i => {
+        if (i >= list.length) { previewCache[src] = out; return cb(out); }
+        out[list[i]] = toCanvas(info, seasonPixels(info, list[i])).toDataURL('image/webp', .82);
+        setTimeout(() => next(i + 1), 30);
+      };
+      next(0);
+    }, 80);
+    im.src = src;
+  }
+
+  return { load, render, stop, setSeason, toggleNight, flashColor, preview, state, SEASON_JP };
 })();
 
 </script>
@@ -819,9 +915,8 @@ const LookFX = (() => {
    ========================================================= */
 const $ = id => document.getElementById(id);
 const VISITED_KEY = 'sakemachi-visited';
-let visited = new Set();
-try { visited = new Set(JSON.parse(localStorage.getItem(VISITED_KEY) || '[]')); } catch (e) {}
-function saveVisited() { try { localStorage.setItem(VISITED_KEY, JSON.stringify([...visited])); } catch (e) {} }
+let visited = new Set();            // 開くたびに 0 から。県を旅すると増える
+function saveVisited() {}
 
 const shortPref = p => p === '北海道' ? '北海道' : p.replace(/[都府県]$/, '');
 const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -899,7 +994,8 @@ function renderMarks() {
     p.classList.add('visited');
   });
   $('marks').innerHTML = marks;
-  $('stamp-num').textContent = visited.size;
+  const sn = $('stamp-num');
+  if (sn.textContent !== String(visited.size)) { sn.textContent = visited.size; const c = sn.parentNode; c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop'); }
 }
 
 function setupMapEvents() {
@@ -926,7 +1022,7 @@ function setupMapEvents() {
   $('region-back').addEventListener('click', () => !busy && zoomRegion(null));
 }
 
-const SMALL_SCREEN = matchMedia('(max-width: 700px)');
+const SMALL_SCREEN = { matches: true };   // いつもスマホの操作（地方 → 県）にする
 let regionView = null;
 
 // 表示エリアの縦横比に合わせて、箱がちょうど収まる viewBox を作る
@@ -992,7 +1088,14 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 function prefCenter(name) {
   const p = $('japan').querySelector(`path.pref[data-pref="${name}"]`);
   if (!p) return null;
-  const b = p.getBBox();
+  // 離島に引っ張られないよう、いちばん大きな塊（本土側）の中心を使う
+  const parts = (p.getAttribute('d').match(/M[^M]+/g) || []);
+  let best = null, area = -1;
+  const tmp = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  $('flight').appendChild(tmp);
+  for (const d of parts) { tmp.setAttribute('d', d); const b = tmp.getBBox(); if (b.width * b.height > area) { area = b.width * b.height; best = b; } }
+  tmp.remove();
+  const b = best || p.getBBox();
   return [b.x + b.width / 2, b.y + b.height / 2];
 }
 
@@ -1007,47 +1110,121 @@ const PLANE_SVG = `
   <circle cx="-4" cy="-4.2" r="1.6" fill="#7CC6EE"/><circle cx="4" cy="-4.2" r="1.6" fill="#7CC6EE"/><circle cx="12" cy="-4.2" r="1.6" fill="#7CC6EE"/>
   <circle cx="-4" cy="4.2" r="1.6" fill="#7CC6EE"/><circle cx="4" cy="4.2" r="1.6" fill="#7CC6EE"/><circle cx="12" cy="4.2" r="1.6" fill="#7CC6EE"/>`;
 
-// 出発地から目的の県まで、飛行機が弧を描いて飛ぶ
+const TRUCK_IMG = 'data:image/webp;base64,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';
+const TRUCK_RATIO = 99 / 240;
+
+// 出発地から目的の県まで、トラックが走っていく
 function flyPlane(to) {
   const from = prefCenter(STORE.origin || '東京都');
   if (!from || !to) return Promise.resolve();
   const dx = to[0] - from[0], dy = to[1] - from[1], dist = Math.hypot(dx, dy);
-  if (dist < 30) return Promise.resolve();          // 出発地と同じ県なら飛ばない
+  if (dist < 30) return Promise.resolve();          // 出発地と同じ県なら走らない
   const vb = $('japan').getAttribute('viewBox').split(/\s+/).map(Number);
   const u = vb[2] / 1640;                           // 表示の拡大率に合わせて大きさを変える
-  // 弧の頂点（進行方向の左側＝上側にふくらませる）
+  // ゆるい弧の道
   let nx = -dy / dist, ny = dx / dist; if (ny > 0) { nx = -nx; ny = -ny; }
-  const lift = Math.min(260, dist * 0.35);
+  const lift = Math.min(120, dist * 0.18);
   const c = [(from[0] + to[0]) / 2 + nx * lift, (from[1] + to[1]) / 2 + ny * lift];
   const at = t => [(1-t)*(1-t)*from[0] + 2*(1-t)*t*c[0] + t*t*to[0], (1-t)*(1-t)*from[1] + 2*(1-t)*t*c[1] + t*t*to[1]];
+  const W = 230 * u, H = W * TRUCK_RATIO, faceRight = dx > 0;   // 写真は左向き。右へ行くときは反転
   const g = $('flight');
   g.innerHTML = `
     <circle cx="${from[0]}" cy="${from[1]}" r="${7*u}" fill="#B8322A" stroke="#fff" stroke-width="${2.5*u}"/>
-    <path id="fl-trail" fill="none" stroke="#B8322A" stroke-width="${3.5*u}" stroke-dasharray="${10*u} ${8*u}" stroke-linecap="round" opacity=".8"/>
+    <path id="fl-trail" fill="none" stroke="#fff" stroke-width="${7*u}" stroke-linecap="round" opacity=".85"/>
+    <path id="fl-trail2" fill="none" stroke="#B8322A" stroke-width="${3*u}" stroke-dasharray="${10*u} ${9*u}" stroke-linecap="round"/>
     <g id="fl-target" transform="translate(${to[0]} ${to[1]})" opacity="0">
       <circle r="${26*u}" fill="none" stroke="#B8322A" stroke-width="${3*u}"><animate attributeName="r" values="${10*u};${34*u}" dur="1s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0" dur="1s" repeatCount="indefinite"/></circle>
       <circle r="${7*u}" fill="#B8322A" stroke="#fff" stroke-width="${2.5*u}"/></g>
-    <g id="fl-shadow" opacity=".18"><g transform="scale(${1.5*u})"><g fill="#000" stroke="none">${PLANE_SVG.replace(/fill="[^"]+"/g, 'fill="#000"').replace(/stroke="[^"]+"/g, '')}</g></g></g>
-    <g id="fl-plane"><g transform="scale(${1.6*u})">${PLANE_SVG}</g></g>`;
-  const plane = $('fl-plane'), shadow = $('fl-shadow'), trail = $('fl-trail'), target = $('fl-target');
-  const ms = Math.min(1900, 900 + dist * 1.4);
+    <g id="fl-dust"></g>
+    <g id="fl-plane"><ellipse cx="0" cy="${H * .48}" rx="${W * .46}" ry="${H * .12}" fill="#000" opacity=".22"/>
+      <g transform="translate(${(faceRight ? -1 : 1) * W * .56} 0) scale(${faceRight ? 1 : -1} 1)" stroke="#3A2E2A" stroke-width="${6*u}" stroke-linecap="round">
+        ${[[-H * .3, 55], [0, 85], [H * .3, 50]].map(([yy, len], i) => `<line x1="${-len*u}" y1="${yy}" x2="0" y2="${yy}" stroke-dasharray="${len*u} ${len*u}"><animate attributeName="stroke-dashoffset" values="0;${2*len*u}" dur="${.35 + i*.08}s" repeatCount="indefinite"/></line>`).join('')}
+      </g>
+      <image href="${TRUCK_IMG}" x="${-W / 2}" y="${-H / 2}" width="${W}" height="${H}" transform="${faceRight ? 'scale(-1 1)' : ''}"/></g>`;
+  const plane = $('fl-plane'), trail = $('fl-trail'), trail2 = $('fl-trail2'), target = $('fl-target'), dust = $('fl-dust');
+  const ms = Math.min(1500, 700 + dist * 0.9);
+  let lastPuff = 0;
   return new Promise(res => {
     const start = performance.now();
     const step = now => {
-      const t = Math.min(1, (now - start) / ms), k = ease(t);
-      const [x, y] = at(k), [x2, y2] = at(Math.min(1, k + 0.01));
-      const ang = Math.atan2(y2 - y, x2 - x) * 180 / Math.PI;
-      const alt = Math.sin(Math.PI * k);           // 離陸→上昇→着陸
-      plane.setAttribute('transform', `translate(${x} ${y - alt * 18 * u}) rotate(${ang}) scale(${0.8 + alt * 0.5})`);
-      shadow.setAttribute('transform', `translate(${x + alt * 22 * u} ${y + alt * 26 * u}) rotate(${ang}) scale(${0.8 - alt * 0.15})`);
+      const t = Math.min(1, (now - start) / ms), k = t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      const [x, y] = at(k);
+      const bump = Math.abs(Math.sin(now / 55)) * 2.2 * u;     // ガタゴト揺れる
+      plane.setAttribute('transform', `translate(${x} ${y - H * .35 - bump})`);
       let d = `M${from[0]},${from[1]}`;
       for (let i = 1; i <= 24; i++) { const [px, py] = at(k * i / 24); d += ` L${px},${py}`; }
-      trail.setAttribute('d', d);
+      trail.setAttribute('d', d); trail2.setAttribute('d', d);
       target.setAttribute('opacity', Math.min(1, t * 3));
+      // 後ろに土けむり
+      if (now - lastPuff > 70 && t < .95) {
+        lastPuff = now;
+        const bx = x + (faceRight ? -1 : 1) * W * .45;
+        dust.insertAdjacentHTML('beforeend', `<circle cx="${bx}" cy="${y - H * .05}" r="${6*u}" fill="#fff" opacity=".7"><animate attributeName="r" to="${16*u}" dur=".6s" fill="freeze"/><animate attributeName="opacity" to="0" dur=".6s" fill="freeze"/></circle>`);
+        if (dust.childNodes.length > 14) dust.firstChild.remove();
+      }
       t < 1 ? requestAnimationFrame(step) : res();
     };
     requestAnimationFrame(step);
   });
+}
+
+// 県ごとの紹介文（自然・食・建築・街並み）
+const PREF_DESC = {
+ "北海道": "雪をかぶった山と港に囲まれた北の街。新鮮な海鮮が自慢です。札幌市時計台や、石造り倉庫が並ぶ小樽運河のレトロな街並みも魅力。",
+ "青森県": "岩木山のふもと、りんご畑が広がる城下町。陸奥湾のホタテが名物です。桜に囲まれた弘前城と、夏のねぶたが街を彩ります。",
+ "岩手県": "岩手山と清らかな川に抱かれた街。三陸の海の幸も豊かです。杉木立の中に、平泉・中尊寺の名建築がたたずみます。",
+ "宮城県": "松島湾の島々と青い海に囲まれた港町。牡蠣など海鮮が盛んです。瑞巌寺の名建築と、ケヤキ並木の仙台の街並みが続きます。",
+ "秋田県": "田んぼが広がる米どころ。おいしいお米と地酒の国です。黒塀としだれ桜が残る角館の武家屋敷と、竿燈まつりが見どころ。",
+ "山形県": "山々と温泉に囲まれた、さくらんぼの里。果物と山の幸が豊かです。岩山に建つ山寺と、木造旅館が並ぶ銀山温泉が魅力。",
+ "福島県": "桃畑が広がる山あいの城下町。果物と地酒が自慢です。赤瓦の鶴ヶ城と、かやぶき屋根が並ぶ大内宿の街並みが見どころ。",
+ "茨城県": "太平洋に面した、梅と滝の国。港ではあんこうなど海の幸が揚がります。偕楽園の梅林と、袋田の滝の雄大な景色が見どころ。",
+ "栃木県": "山と滝に囲まれた、いちごの名産地。湯葉やいちごが人気です。杉並木の奥には、金色に輝く日光東照宮の名建築があります。",
+ "群馬県": "山に囲まれた、温泉と高原野菜の里。キャベツがおいしい土地です。湯けむりの草津温泉と、レンガ造りの富岡製糸場が見どころ。",
+ "埼玉県": "川と畑に囲まれた、江戸の面影が残る街。野菜づくりが盛んです。時の鐘と黒い蔵造りの商家が並ぶ、川越の街並みが魅力。",
+ "千葉県": "海に囲まれた、漁業と行楽の地。新鮮な魚介が自慢です。成田山の三重塔、犬吠埼灯台、湾岸のテーマパークがにぎわいます。",
+ "東京都": "隅田川が流れる日本一の大都会。全国のおいしいものが集まります。浅草寺の五重塔と、東京タワーや高層ビルが並ぶ街並みが魅力。",
+ "神奈川県": "海と富士山を望む港町。しらすなど海の幸が自慢です。鎌倉の大仏と、観覧車や赤レンガ倉庫が並ぶ横浜の港が見どころ。",
+ "新潟県": "棚田と日本海に囲まれた米どころ。お米と地酒の国です。信濃川にかかる萬代橋や、佐渡のたらい舟がのどかな景色をつくります。",
+ "富山県": "立山連峰と富山湾に囲まれた街。白えびやブリなど海の幸が自慢です。合掌造りの五箇山と、ライトレールが走る街並みが魅力。",
+ "石川県": "日本海と美しい庭園の城下町。カニなど海の幸が盛んです。兼六園やひがし茶屋街の古い街並みと、金沢駅の鼓門が見どころ。",
+ "福井県": "荒波が打ち寄せる日本海の国。越前がにが名物です。断崖の東尋坊、天守が残る丸岡城、恐竜の像が街を彩ります。",
+ "山梨県": "富士山を望む、ぶどうと桃の里。果物とワインが自慢です。新倉山浅間公園の五重塔と富士山が並ぶ景色が見どころ。",
+ "長野県": "アルプスの山々に囲まれた高原の街。りんごやそばがおいしい土地です。黒い天守の松本城と、善光寺の名建築があります。",
+ "岐阜県": "山と清流に囲まれた国。鮎や飛騨牛が名物です。かやぶきの合掌造りが並ぶ白川郷と、長良川の鵜飼い、岐阜城が見どころ。",
+ "静岡県": "富士山と駿河湾に囲まれた、お茶の国。お茶とカツオ・マグロが自慢です。茶畑の向こうを新幹線が走り、久能山東照宮が建ちます。",
+ "愛知県": "川と緑に囲まれた、ものづくりの大都市。名古屋めしが人気です。金のしゃちほこの名古屋城と、熱田神宮の杜が街を見守ります。",
+ "三重県": "伊勢湾の海と神宮の森に囲まれた国。伊勢えびや真珠が名産です。伊勢神宮の社殿と、夫婦岩が並ぶ海辺の景色が見どころ。",
+ "滋賀県": "日本一の湖・琵琶湖に囲まれた国。湖の幸や近江米が自慢です。湖に立つ白鬚神社の鳥居と、彦根城が見どころ。",
+ "京都府": "山と鴨川に囲まれた古都。湯豆腐や京野菜が楽しめます。清水寺や八坂の塔などの名建築と、町家が並ぶ街並みが魅力。",
+ "大阪府": "川と運河がめぐる、くいだおれの街。たこ焼きなど食べ歩きが楽しい土地です。大阪城と通天閣、道頓堀のにぎわいが見どころ。",
+ "兵庫県": "瀬戸内の海と山に囲まれた港町。明石だこや灘の酒が自慢です。白鷺のような姫路城と、神戸ポートタワーが並ぶ港が魅力。",
+ "奈良県": "緑の山と公園に囲まれた古都。柿の葉寿司が名物です。東大寺の大仏殿、興福寺の五重塔と、鹿が遊ぶ公園が見どころ。",
+ "和歌山県": "山と海に囲まれた、みかんと梅の里。果物と海の幸が豊かです。那智の滝と三重塔、山の上の和歌山城が見どころ。",
+ "鳥取県": "砂丘と日本海、大山に囲まれた国。カニと梨が名物です。広い鳥取砂丘をラクダが歩き、のどかな港町が広がります。",
+ "島根県": "宍道湖と日本海に囲まれた神話の国。しじみや海の幸が豊かです。大しめ縄の出雲大社と、黒い天守の松江城が見どころ。",
+ "岡山県": "おだやかな瀬戸内に面した、桃とぶどうの国。果物がおいしい土地です。岡山城と後楽園、白壁と柳の倉敷美観地区が魅力。",
+ "広島県": "瀬戸内の島々に囲まれた国。牡蠣が名物です。海に浮かぶ厳島神社の大鳥居と、坂道に寺が並ぶ尾道の街並みが見どころ。",
+ "山口県": "三方を海に囲まれた国。ふぐなど海の幸が自慢です。五連アーチの錦帯橋、角島大橋、赤い鳥居が続く元乃隅神社が見どころ。",
+ "徳島県": "山の渓谷と鳴門の海に囲まれた国。すだちと海の幸が名産です。祖谷のかずら橋、鳴門の渦潮と大鳴門橋、阿波おどりが魅力。",
+ "香川県": "瀬戸内の島々に囲まれた、うどん県。讃岐うどんとオリーブが名物です。長い石段の金刀比羅宮と、瀬戸大橋が見どころ。",
+ "愛媛県": "瀬戸内の海と山に囲まれた、みかんの国。鯛など海の幸も豊かです。山の上の松山城と、木造三層の道後温泉本館が見どころ。",
+ "高知県": "太平洋と四万十川に囲まれた国。カツオのたたきが名物です。高知城と、松林と荒波の桂浜、にぎやかな食の市場が魅力。",
+ "福岡県": "博多湾に面した食の都。もつ鍋や屋台の味が人気です。梅に囲まれた太宰府天満宮と、福岡タワーが建つ海辺が見どころ。",
+ "佐賀県": "有明海と田園に囲まれた国。イカや佐賀牛が自慢です。山の中腹に建つ祐徳稲荷神社と、有田焼の窯元の煙突が見どころ。",
+ "長崎県": "港と坂の町。ちゃんぽんなど異国の味と海の幸が楽しめます。白い大浦天主堂、眼鏡橋、中華街が並ぶ異国情緒の街並みが魅力。",
+ "熊本県": "阿蘇の山々と湧き水に囲まれた国。馬刺しと水のおいしさが自慢です。石垣が見事な熊本城と、阿蘇の草原が見どころ。",
+ "大分県": "山と湯けむりに囲まれた温泉の国。とり天や関さばが名物です。別府の湯けむりと赤い血の池地獄、由布岳の景色が見どころ。",
+ "宮崎県": "南国の海と渓谷に囲まれた国。マンゴーや地鶏が名物です。高千穂峡の滝と、鬼の洗濯板に囲まれた青島神社が見どころ。",
+ "鹿児島県": "噴煙を上げる桜島と錦江湾に囲まれた国。黒豚や焼酎が自慢です。大名庭園の仙巌園と、路面電車が走る街並みが魅力。",
+ "沖縄県": "エメラルドの海と白い砂浜に囲まれた南の島。ゴーヤーや泡盛が名物です。赤瓦の首里城と、シーサーが見守る街並みが魅力。"
+};
+
+// 前の県のジオラマを消しておく（新しい画像が出るまで前の絵が残らないように）
+function clearTownScene() {
+  stopWater(); LookFX.stop();
+  ['dio-scene', 'dio-water', 'dio-part'].forEach(id => { const c = $(id); c.getContext('2d').clearRect(0, 0, c.width, c.height); });
+  $('dio-scene').style.opacity = 0;
+  const img = $('dio-img'); img.style.opacity = 0; img.removeAttribute('src');
 }
 
 async function openPrefecture(path) {
@@ -1057,13 +1234,20 @@ async function openPrefecture(path) {
   $('pref-tip').style.opacity = 0;
   path.classList.add('active');
   $('labels').innerHTML = '';
-  await flyPlane(prefCenter(name));
+  const dio = DIORAMAS[name]; if (dio && dio.img) { const pre = new Image(); pre.src = dio.img; }   // 着く前に画像を読んでおく
+  clearTownScene();
+  const from = prefCenter(STORE.origin || '東京都'), to = prefCenter(name);
+  if (from && to && Math.hypot(to[0] - from[0], to[1] - from[1]) > 30) {
+    const x1 = Math.min(from[0], to[0]), y1 = Math.min(from[1], to[1]), x2 = Math.max(from[0], to[0]), y2 = Math.max(from[1], to[1]);
+    await animateViewBox(fitBox(x1, y1, x2 - x1, y2 - y1, 150), 380);
+  }
+  await flyPlane(to);
   svg.classList.add('zooming');
   const b = path.getBBox();
   const size = Math.max(b.width, b.height) * 1.6 + 40;
-  await animateViewBox([b.x + b.width / 2 - size / 2, b.y + b.height / 2 - size / 2, size, size], 900);
+  await animateViewBox([b.x + b.width / 2 - size / 2, b.y + b.height / 2 - size / 2, size, size], 450);
   $('curtain').classList.add('show');
-  await wait(450);
+  await wait(220);
   showTown(SAKE_BY_PREF[name]);
   $('map-screen').classList.add('hidden');
   $('town-screen').classList.remove('hidden');
@@ -1076,7 +1260,7 @@ async function backToMap() {
   busy = true;
   closeSheet();
   $('curtain').classList.add('show');
-  await wait(450);
+  await wait(220);
   $('town-screen').classList.add('hidden');
   $('map-screen').classList.remove('hidden');
   $('particles').innerHTML = '';
@@ -1090,7 +1274,7 @@ async function backToMap() {
     busy = false;
     return zoomRegion(regionView);
   }
-  await animateViewBox(FULL_VIEW, 800);
+  await animateViewBox(FULL_VIEW, 500);
   const svg = $('japan');
   svg.classList.remove('zooming');
   svg.querySelectorAll('.active').forEach(p => p.classList.remove('active'));
@@ -1131,7 +1315,7 @@ function showTown(town) {
   const any = pins.sake || pins.food;
   $('town-hint').style.display = '';
   $('town-hint-text').textContent = any ? (pins.sake && pins.food ? 'お酒とフードのピンをタップ' : pins.food ? 'フードのピンをタップ' : 'お酒のピンをタップ')
-    : 'ピンチ・ダブルタップで拡大';
+    : '＋ボタンで近づいて見てみよう';
   const gold = isFeatured(town.pref), red = !gold && storeItems(town.pref).length > 0;
   $('gold-ribbon').hidden = !gold;
   $('gold-ribbon').textContent = '✦ 特におすすめの産地 ✦';
@@ -1600,7 +1784,7 @@ function setupDiorama(town, d) {
     setTime(currentTime);
   };
   const key = d.img.split('/').pop().replace(/\.\w+$/, '');
-  img.onload = () => LookFX.load(img, key);
+  img.onload = () => { img.style.opacity = 1; LookFX.load(img, key); };
   img.src = d.img;
   if (img.complete && img.naturalWidth) LookFX.load(img, key);
   img.alt = `${town.pref}のジオラマ`;
@@ -1632,7 +1816,7 @@ function setupDiorama(town, d) {
   if (d.smoke) for (let i = 0; i < 4; i++) fx += `<span class="puff" style="left:${d.smoke[0]}%;top:${d.smoke[1]}%;animation-delay:${i * 1.1}s"></span>`;
   for (let i = 0; i < 3; i++) fx += `<span class="bird" style="top:${6 + i * 5}%;animation-duration:${14 + i * 4}s;animation-delay:-${i * 5}s">︶</span>`;
   $('dio-fx').innerHTML = fx;
-  $('dio-spots').textContent = d.spots ? '📍 ' + d.spots : '';
+  $('dio-spots').textContent = PREF_DESC[town.pref] || (d.spots ? '📍 ' + d.spots : '');
   const tick = () => {
     const n = new Date();
     $('dio-clock').textContent = n.toLocaleDateString('ja-JP', { month: 'long', day: 'numeric', weekday: 'short' }) + '  ' + n.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
@@ -1863,6 +2047,25 @@ function tasteHTML(id) {
 // お店の食材 1つ分
 function itemHTML(it, i) {
   const k = KINDS[it.kind] || KINDS.other;
+  // 写真つきのメニュー（雑誌のような見せ方）
+  if (it.image) return `
+    <article class="mag">
+      <div class="mag-kind">${k.icon} ${k.label}${it.from ? `<span>｜${it.from}</span>` : ''}</div>
+      <h4 class="mag-title mincho">${it.name}</h4>
+      <div class="mag-photo"${it.aspect ? ` style="aspect-ratio:${it.aspect}"` : ''}>
+        <img src="${it.image}" alt="${it.name}" loading="lazy" decoding="async">
+        ${it.poem ? `<div class="mag-poem mincho">${it.poem}</div>` : ''}
+      </div>
+      ${it.awards ? `<div class="mag-awards">${it.awards.map(a => `<div class="mag-award ${a.medal || ''}"><b>${a.year}</b><div><div class="aw-t">${a.title}</div>${a.note ? `<div class="aw-n">${a.note}</div>` : ''}</div></div>`).join('')}</div>` : ''}
+      ${it.tags ? `<div class="mag-tags">${it.tags.map(x => `<span>${x}</span>`).join('')}</div>` : ''}
+      ${(it.photos || []).map(ph => `<figure class="mag-sub"><img src="${ph.src}" alt="" loading="lazy" decoding="async">${ph.caption ? `<figcaption>${ph.caption}</figcaption>` : ''}</figure>`).join('')}
+      ${it.story ? `<p class="mag-story">${it.story}</p>` : ''}
+      ${it.points ? `<div class="mag-point"><h5 class="mincho">ここがおいしい</h5><ol class="mag-points">${it.points.map(x => `<li>${x}</li>`).join('')}</ol></div>` : ''}
+      ${it.point ? `<div class="mag-point"><h5 class="mincho">${it.kind === 'sake' ? 'こだわり' : '素材のこだわり'}</h5><p>${it.point}</p></div>` : ''}
+      ${it.about ? `<div class="mag-about"><h5 class="mincho">${it.about.title || ''}</h5>${it.about.image ? `<figure class="mag-sub"><img src="${it.about.image}" alt="" loading="lazy" decoding="async">${it.about.caption ? `<figcaption>${it.about.caption}</figcaption>` : ''}</figure>` : ''}<p>${it.about.text || ''}</p></div>` : ''}
+      ${it.menu ? `<span class="item-menu">🍽 ${it.menu}</span>` : ''}
+      ${it.source ? `<p class="mag-source">${it.source}</p>` : ''}
+    </article>`;
   const hasTaste = it.kind === 'sake' && it.dry != null && it.rich != null;
   if (STORE.layout === 'list') return `
     <div class="item-row"><span>${k.icon}</span>
@@ -1888,8 +2091,6 @@ function openSheet(t, mode = 'sake') {
   const useDefault = STORE.showDefaultSake === true && !sakes.length;
   const dots = [];   // [id, 辛さ, 濃さ]
   const list = arr => { const body = arr.map(it => itemHTML(it, all.indexOf(it))).join(''); return STORE.layout === 'list' ? `<div class="item-list">${body}</div>` : body; };
-  const mini = arr => `<div class="item-list">${arr.map(it => { const k = KINDS[it.kind] || KINDS.other;
-    return `<div class="item-row"><span>${k.icon}</span><div><div class="r-name">${it.name}</div><div class="r-sub">${it.from || ''}</div></div><div class="r-menu">${it.menu || ''}</div></div>`; }).join('')}</div>`;
   let html = `<div class="store-eyebrow">${isFeatured(t.pref) ? '✦ 特におすすめ' : 'こだわりの産地'}</div>
     <h3 class="store-heading mincho">${(mode === 'food' ? (STORE.foodHeading || '{pref}から届く、当店の食材') : (STORE.heading || '{pref}のお酒')).replace('{pref}', t.pref)}</h3>`;
 
@@ -1901,21 +2102,11 @@ function openSheet(t, mode = 'sake') {
       html += sakeCardHTML(t, 'taste-default');
       dots.push(['taste-default', t.dry, t.rich]);
     }
-    if (foods.length) {
-      html += `<div class="section-title">いっしょに味わいたい ${shortPref(t.pref)}の食材</div>` + mini(foods);
-      const f = foods.find(i => i.menu), sk = sakes[0] ? sakes[0].name : (useDefault ? t.name : '');
-      if (f && sk) html += `<div class="pairing">🍶 × ${(KINDS[f.kind] || KINDS.other).icon}　同じ${shortPref(t.pref)}生まれの組み合わせ。<br><b>${sk}</b> と <b>${f.menu}</b> を一緒にどうぞ。</div>`;
-    }
   } else {
     html += list(foods);
-    if (sakes.length || useDefault) {
-      html += `<div class="section-title">合わせたい ${shortPref(t.pref)}のお酒</div>`;
-      html += sakes.length ? mini(sakes) : `<div class="item-list"><div class="item-row"><span>🍶</span><div><div class="r-name">${t.name}</div><div class="r-sub">${t.type}・${t.brewery}</div></div><div class="r-menu">${t.temp}</div></div></div>`;
-    }
   }
 
-  html += `<div class="stamped"><span class="seal">酒</span>${t.pref}のスタンプ（${visited.size} / 47）</div>
-    <p class="disclaimer">${useDefault && mode === 'sake' ? '※ 地酒は県ごとの代表的な銘柄の一例です。味わいは目安です。' : ''}${STORE.note || ''}</p>`;
+  html += `<p class="disclaimer">${useDefault && mode === 'sake' ? '※ 地酒は県ごとの代表的な銘柄の一例です。味わいは目安です。' : ''}${STORE.note || ''}</p>`;
   $('sheet-body').innerHTML = html;
   $('sheet-bg').classList.add('show');
   $('sheet').classList.add('show');
@@ -1936,10 +2127,10 @@ function closeSheet() {
    ========================================================= */
 const INTRO_KEY = 'meisan-map-intro-seen';
 const INTRO_CAPS = [
-  '① 地図の色に注目<br><span style="color:#D2493C">赤</span>＝メニューの産地　<span style="color:#B07F22">金</span>＝特におすすめ',
-  '② 県をタップすると<br>飛行機でその街へひとっ飛び',
-  '③ 季節や昼・夜を切り替えて<br>ピンチで近づいて街を眺めよう',
-  '④ ピンをタップすると<br>おすすめのお酒と料理'
+  '① 日本地図から行きたい県をタップして旅に出よう<br><span style="color:#D2493C">赤</span>と<span style="color:#B07F22">金色</span>の県はおすすめ',
+  '② その県の街並みが見られます<br>＋ボタンで近づいて、よ～く見てみよう',
+  '③ 春夏秋冬、朝と夜で街並みが変わります<br>日本の四季と一日を感じてね',
+  '④「酒」「食」のマークを押すと<br>お店のこだわりのお酒と素材のメニューが見られます'
 ];
 let introTimer = null;
 function buildIntro() {
@@ -1949,9 +2140,18 @@ function buildIntro() {
     `<path d="${d}" class="${prefTier(n)}" data-p="${n}" fill="${prefFill(n)}"/>`).join('');
   const defs = document.querySelector('#japan defs').outerHTML;
   $('intro-map').innerHTML = defs + paths;
-  $('intro-map2').innerHTML = defs + paths.replace(/class="(green|red)"/g, 'class="$1" style="opacity:.35"') + '<g id="intro-flight"></g>';
+  $('intro-map').innerHTML += '<g id="intro-flight"></g>';
   const img = (DIORAMAS[sample] || {}).img || '';
-  $('intro-dio').src = img; $('intro-dio2').src = img; $('intro-dio3').src = img;
+  $('intro-dio').src = img; $('intro-dio2').src = img;
+  // 3コマ目：季節ごとの見た目（季節の処理が使えるときは描き変えた絵、使えないときは色味で表現）
+  const box = $('intro-seasons'); box.innerHTML = ['spring', 'summer', 'autumn', 'winter'].map(z => `<img alt="" data-season="${z}" src="${img}">`).join('');
+  const fallback = { spring: 'hue-rotate(-25deg) saturate(1.2) brightness(1.06)', summer: 'saturate(1.35) contrast(1.05)', autumn: 'sepia(.45) saturate(1.5) hue-rotate(-18deg)', winter: 'grayscale(.6) brightness(1.18) contrast(.9)' };
+  box.querySelectorAll('img').forEach(im => im.style.filter = fallback[im.dataset.season]);
+  LookFX.preview(img, cvs => box.querySelectorAll('img').forEach(im => {
+    const url = cvs[im.dataset.season]; if (!url) return;
+    const nx = new Image(); nx.src = url;
+    (nx.decode ? nx.decode() : Promise.resolve()).then(() => { im.src = url; im.style.filter = 'none'; }).catch(() => {});
+  }));
   // 指は金色の県の上へ
   const tgt = $('intro-map').querySelector(`path[data-p="${sample}"]`);
   return { tgt, sample };
@@ -1970,9 +2170,16 @@ function playIntro() {
       if (from) { const fb0 = from.getBBox(); if (Math.hypot(fb0.x - b.x, fb0.y - b.y) < 400) from = $('intro-map').querySelector(`path[data-p="${sample === '福岡県' ? '北海道' : '福岡県'}"]`); }
       if (from) {
         const fb = from.getBBox(), f = [fb.x + fb.width / 2, fb.y + fb.height / 2], t = [b.x + b.width / 2, b.y + b.height / 2];
-        const c = [(f[0] + t[0]) / 2, Math.min(f[1], t[1]) - 220];
-        $('intro-flight').innerHTML = `<path d="M${f[0]},${f[1]} Q${c[0]},${c[1]} ${t[0]},${t[1]}" fill="none" stroke="#B8322A" stroke-width="7" stroke-dasharray="18 14" class="intro-route"/>
-          <g class="intro-plane"><g transform="scale(6)">${PLANE_SVG}</g><animateMotion dur="1.3s" fill="freeze" rotate="auto" path="M${f[0]},${f[1]} Q${c[0]},${c[1]} ${t[0]},${t[1]}"/></g>`;
+        const c = [(f[0] + t[0]) / 2, Math.min(f[1], t[1]) - 120];
+        const W = 330, H = W * TRUCK_RATIO, right = t[0] > f[0];
+        $('intro-flight').innerHTML = `<path d="M${f[0]},${f[1]} Q${c[0]},${c[1]} ${t[0]},${t[1]}" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round" opacity=".9"/>
+          <path d="M${f[0]},${f[1]} Q${c[0]},${c[1]} ${t[0]},${t[1]}" fill="none" stroke="#B8322A" stroke-width="6" stroke-dasharray="18 14" class="intro-route"/>
+          <g class="intro-plane" opacity="0"><set attributeName="opacity" to="1" begin=".8s" fill="freeze"/>
+            <g transform="translate(${right ? -W * .58 : W * .58} ${-H / 2}) scale(${right ? 1 : -1} 1)" stroke="#3A2E2A" stroke-width="9" stroke-linecap="round">
+              ${[[-H * .28, 60], [0, 90], [H * .28, 55]].map(([yy, len], i) => `<line x1="${-len}" y1="${yy}" x2="0" y2="${yy}" stroke-dasharray="${len} ${len}"><animate attributeName="stroke-dashoffset" values="0;${2*len}" dur="${.35 + i*.08}s" repeatCount="indefinite"/></line>`).join('')}
+            </g>
+            <image href="${TRUCK_IMG}" x="${-W / 2}" y="${-H}" width="${W}" height="${H}" transform="${right ? 'scale(-1 1)' : ''}"/>
+            <animateMotion dur="1.4s" begin=".8s" fill="freeze" path="M${f[0]},${f[1]} Q${c[0]},${c[1]} ${t[0]},${t[1]}"/></g>`;
       }
     }
   });
@@ -1988,7 +2195,7 @@ function playIntro() {
     bars.forEach((b, j) => { b.classList.remove('now'); b.classList.toggle('done', j < i); });
     void intro.offsetWidth; bars[i].classList.add('now');
     $('intro-cap').innerHTML = INTRO_CAPS[i];
-    if (i === 1) { const fl = $('intro-flight'); if (fl) fl.innerHTML = fl.innerHTML; }   // 飛行機を最初から
+    if (i === 0) { const fl = $('intro-flight'); if (fl) { fl.innerHTML = fl.innerHTML; try { $('intro-map').setCurrentTime(0); } catch (e) {} } }   // トラックを最初から
     $('intro-start').classList.toggle('show', i === INTRO_CAPS.length - 1);
     clearTimeout(introTimer);
     if (i < INTRO_CAPS.length - 1) introTimer = setTimeout(() => show(i + 1), 2500);
