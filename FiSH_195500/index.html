@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&display=swap&text=%E5%B1%85%E9%85%92%E5%B1%8B%E4%B9%9E%E9%A3%9FKOZIKISNCE1983" rel="stylesheet">
 <style>
   :root{
     --kinari: #F2EEE3;
@@ -601,6 +602,31 @@
   .result-actions .btn{ width:100%; }
 
   /* ============ 画像の拡大表示 ============ */
+
+  /* ===== 魚の情報シート ===== */
+  .fish-sheet{ position:fixed; inset:0; z-index:58; display:none; align-items:center; justify-content:center; padding:18px 14px; }
+  .fish-sheet.show{ display:flex; }
+  .sheet-backdrop{ position:absolute; inset:0; background:rgba(4,12,24,.55); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); opacity:0; transition:opacity .45s ease; }
+  .sheet-panel{ position:relative; width:100%; max-width:480px; max-height:100%; display:flex; flex-direction:column;
+    background:linear-gradient(180deg, rgba(20,40,66,.94), rgba(10,24,44,.96)); border:1px solid var(--gold-soft); border-radius:22px;
+    box-shadow:0 18px 60px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.08);
+    opacity:0; transform:translateY(22px) scale(.96); transition:opacity .45s ease, transform .55s cubic-bezier(.2,.8,.2,1); }
+  .fish-sheet.open .sheet-backdrop{ opacity:1; }
+  .fish-sheet.open .sheet-panel{ opacity:1; transform:none; }
+  .sheet-scroll{ overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; padding:22px 18px 22px; border-radius:22px; }
+  .sheet-close{ position:absolute; top:10px; right:10px; z-index:3; width:36px; height:36px; border-radius:50%; border:1px solid var(--gold-soft);
+    background:rgba(10,24,44,.75); color:var(--kinari); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .sheet-sake{ margin-top:30px; padding-top:22px; border-top:1px solid rgba(227,203,148,.28); }
+  .sheet-sake-title{ font-family:var(--font-mincho); font-size:19px; line-height:1.6; font-weight:700; color:var(--kinari); margin:0 0 12px; word-break:keep-all; }
+  .sheet-sake .menu-notice{ margin-bottom:16px; font-size:13px; }
+  .sheet-back{ width:100%; margin-top:26px; background:rgba(227,203,148,.14); border:1px solid var(--gold-soft); color:var(--kinari); }
+  body.sheet-open{ overflow:hidden; }
+  .finish-pill{ position:fixed; left:50%; bottom:calc(16px + env(safe-area-inset-bottom)); z-index:57; transform:translate(-50%,16px); opacity:0; pointer-events:none;
+    padding:12px 28px; border-radius:999px; border:1px solid var(--gold-soft); background:rgba(10,24,44,.82); color:var(--kinari);
+    -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); font-family:var(--font-gothic); font-size:15px; font-weight:700; letter-spacing:.06em;
+    box-shadow:0 6px 24px rgba(0,0,0,.35); transition:opacity .5s ease, transform .5s ease; cursor:pointer; }
+  body.on-select.has-caught:not(.sheet-open) .finish-pill{ opacity:1; transform:translate(-50%,0); pointer-events:auto; }
+  @media (prefers-reduced-motion: reduce){ .sheet-backdrop,.sheet-panel,.finish-pill{ transition:none; } }
   .lightbox{ position:fixed; inset:0; z-index:200; background: #08101c; display:none; flex-direction:column; }
   .lightbox.open{ display:flex; }
   .lb-bar{ display:flex; justify-content:space-between; align-items:center; padding:12px 16px; color: var(--kinari); font-size:12px; }
@@ -871,6 +897,13 @@
     filter: drop-shadow(0 6px 8px rgba(2,10,24,.4)); animation: fxQ 1.7s ease forwards;
   }
   @keyframes fxQ{ 0%{ transform:translateY(10px) scale(.3); opacity:0; } 18%{ transform:translateY(0) scale(1.1); opacity:1; } 28%{ transform:scale(1); } 80%{ opacity:1; } 100%{ transform:translateY(-12px); opacity:0; } }
+  .season{ margin:16px auto 0; max-width:340px; text-align:left; }
+  .season-head{ display:flex; align-items:baseline; gap:8px; margin-bottom:7px; }
+  .season-tag{ font-family:var(--font-mincho); font-weight:700; font-size:13px; color:#10203a; background:var(--gold); border-radius:6px; padding:1px 8px; }
+  .season-txt{ font-size:13px; font-weight:700; color:var(--kinari); }
+  .season-bar{ display:grid; grid-template-columns:repeat(12,1fr); gap:3px; }
+  .season-bar span{ height:22px; border-radius:4px; background:rgba(242,238,227,.1); font-size:10px; line-height:22px; text-align:center; color:rgba(242,238,227,.5); }
+  .season-bar span.on{ background:linear-gradient(180deg,#EBD6A0,#D2B678); color:#10203a; font-weight:700; }
   .dex-stamp{
     position:absolute; right:5%; bottom:-4px; z-index:3; width:62px; height:62px; border-radius:50%;
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;
@@ -1006,6 +1039,30 @@
   .brand h1{ font-size:clamp(17px, 5.2vw, 21px); letter-spacing:.2em; line-height:1.25; }
   .brand h1::after{ content:''; display:block; width:38px; height:1px; margin-top:6px; background: linear-gradient(90deg, var(--gold-soft), transparent); }
   @media (max-width:340px){ .brand h1{ font-size:16px; letter-spacing:.14em; } }
+  /* ヘッダー: 線で区切らず、下へ向かって自然にぼかして溶けこませる */
+  header{
+    background: linear-gradient(180deg, rgba(5,15,30,.92) 0%, rgba(8,22,42,.74) 58%, rgba(8,22,42,0) 100%);
+    box-shadow: none; border-bottom:0; padding-bottom:30px;
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    -webkit-mask-image: linear-gradient(180deg, #000 0, #000 62%, rgba(0,0,0,.55) 82%, transparent 100%);
+            mask-image: linear-gradient(180deg, #000 0, #000 62%, rgba(0,0,0,.55) 82%, transparent 100%);
+  }
+  header::after{ display:none; }
+  /* ヘッダーの店名: ロゴと同じ「切り絵風」(太い文字 + ずらした紙の厚み + やわらかい影) */
+  :root{ --font-brand: 'Dela Gothic One', 'Reggae One', 'Hiragino Sans', 'Yu Gothic', sans-serif; }
+  .brand h1{
+    font-family: var(--font-brand); font-weight:400; color:#F6F2E6;
+    font-size: clamp(19px, 5.8vw, 24px); letter-spacing:.05em; line-height:1.15;
+    transform: rotate(-1.6deg); transform-origin: 0 100%;
+    text-shadow: 1px 1px 0 #B9B3A1, 2px 2px 0 #A9A391, 3px 3px 0 rgba(3,10,22,.55), 5px 6px 10px rgba(0,0,0,.45);
+  }
+  .brand h1::after{ display:none; }
+  .brand-since{
+    display:flex; align-items:center; gap:8px; margin-top:7px;
+    font-family: var(--font-brand); font-size:8.5px; letter-spacing:.34em; color: var(--gold); white-space:nowrap;
+  }
+  .brand-since::after{ content:''; flex:0 0 22px; height:1px; background: linear-gradient(90deg, var(--gold-soft), transparent); }
+  @media (max-width:340px){ .brand h1{ font-size:17px; } .brand-since{ font-size:7.5px; letter-spacing:.26em; } }
 </style>
 </head>
 <body>
@@ -1044,7 +1101,7 @@
   <header id="main-header" style="display: none;">
     <div class="brand" onclick="goScreen('select')">
       <img src="koziki_logo.webp" class="seal" alt="居酒屋 乞食ロゴ">
-      <div class="brand-text"><h1>居酒屋 乞食</h1></div>
+      <div class="brand-text"><h1>居酒屋 乞食</h1><span class="brand-since">KOZIKI SINCE 1983</span></div>
     </div>
     <button id="header-back-btn" class="header-back-btn" onclick="goBack()" style="display: none;">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
@@ -1078,78 +1135,7 @@
     </section>
 
     <!-- Screen: 魚詳細: 問い → 答え → 味わい -->
-    <section class="screen" data-screen="detail">
-      <div class="fish-hero dex-hero" id="detailHero">
-        <div class="dex-stage">
-          <span class="dex-glow" aria-hidden="true"></span>
-          <div class="dex-fishwrap"><img id="detailImg" src="" alt=""></div>
-          <span class="dex-stamp" id="detailStamp" hidden></span>
-        </div>
-        <div class="dex-meta"><span class="dex-no" id="detailNo"></span><span class="dex-kana" id="detailKana"></span></div>
-        <div class="fish-header">
-          <span class="name" id="detailName"></span>
-        </div>
-        <span class="dex-rule" aria-hidden="true"></span>
-        <p class="story-lead" id="detailLead"></p>
-      </div>
 
-      <article class="fish-story">
-        <!-- 1. 問い(クイズ/めくりカード) -->
-        <div class="story-highlight" id="detailHighlightBlock"></div>
-
-        <!-- 2. 答え・豆知識 -->
-        <div class="story-trivia" id="detailTriviaBlock">
-          <div class="trivia-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-            豆知識
-          </div>
-          <p id="detailTrivia"></p>
-          <div class="trivia-illustration-wrap" id="detailIllWrap">
-            <div class="ill-box"><img id="detailIllImg" src="" alt=""><span class="zoom-badge" aria-hidden="true">拡大</span></div>
-            <div class="trivia-illustration-caption" id="detailIllCaption"></div>
-            <ul class="ill-legend" id="detailIllLegend" hidden></ul>
-          </div>
-        </div>
-
-        <!-- 見分けカード(該当する魚のみ) -->
-        <div class="story-compare" id="detailCompareBlock" hidden></div>
-
-        <!-- 3. 味わい -->
-        <div class="story-taste">
-          <h4 class="taste-title">お魚のこと</h4>
-          <div class="about" id="detailAbout"></div>
-          <div class="parts" id="detailParts" hidden></div>
-        </div>
-
-        <!-- 店主のひとこと(入力がある魚のみ) -->
-        <div class="story-owner" id="detailOwnerBlock" hidden>
-          <div class="owner-label">店主のひとこと</div>
-          <p id="detailOwner"></p>
-        </div>
-      </article>
-
-      <button class="btn btn-primary" style="width: 100%; margin-top: 12px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;" onclick="goToMenu()">
-        <span id="toMenuLabel">この魚に合うお酒を見る</span>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-      </button>
-    </section>
-
-    <!-- Screen: メニュー・お酒 -->
-    <section class="screen" data-screen="menu">
-      <h2 class="title" style="line-height: 1.6; word-break: keep-all;" id="menuTitle"></h2>
-
-      <div class="menu-notice">
-        ※掲載のお酒は、お取り扱いがない場合があります。<br>
-        ※お取り扱いの有無は、スタッフにおたずねください。
-      </div>
-
-      <div class="sake-legend"><span class="lg"><b>流す</b>脂をスッと切る</span><span class="lg"><b>重ねる</b>旨みを深める</span></div>
-      <div id="menuScreenList"></div>
-
-      <div class="btn-row" style="margin-top: 32px; flex-direction: column;">
-        <button class="btn btn-primary" style="width:100%" id="finishButton" onclick="handleFinishClick()"></button>
-      </div>
-    </section>
 
     <!-- Screen: アンケート(初回のみ) -->
     <section class="screen" data-screen="survey">
@@ -1268,6 +1254,78 @@
 <div class="water-wipe" id="waterWipe" aria-hidden="true"></div>
 <div class="fx-layer" id="fxLayer" aria-hidden="true"></div>
 
+<!-- 魚の情報シート(タップするとふわっと開く。閉じると水槽に戻る) -->
+<div class="fish-sheet" id="fishSheet" aria-hidden="true">
+  <div class="sheet-backdrop" onclick="closeSheet()"></div>
+  <div class="sheet-panel" role="dialog" aria-modal="true" aria-label="魚の情報">
+    <button class="sheet-close" type="button" onclick="closeSheet()" aria-label="閉じる"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div class="sheet-scroll" id="sheetScroll">
+      <div class="fish-hero dex-hero" id="detailHero">
+        <div class="dex-stage">
+          <span class="dex-glow" aria-hidden="true"></span>
+          <div class="dex-fishwrap"><img id="detailImg" src="" alt=""></div>
+        </div>
+        <div class="dex-meta"><span class="dex-no" id="detailNo"></span><span class="dex-kana" id="detailKana"></span></div>
+        <div class="fish-header">
+          <span class="name" id="detailName"></span>
+        </div>
+        <span class="dex-rule" aria-hidden="true"></span>
+        <p class="story-lead" id="detailLead"></p>
+        <div class="season" id="detailSeason" hidden></div>
+      </div>
+
+      <article class="fish-story">
+        <!-- 1. 問い(クイズ/めくりカード) -->
+        <div class="story-highlight" id="detailHighlightBlock"></div>
+
+        <!-- 2. 答え・豆知識 -->
+        <div class="story-trivia" id="detailTriviaBlock">
+          <div class="trivia-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            豆知識
+          </div>
+          <p id="detailTrivia"></p>
+          <div class="trivia-illustration-wrap" id="detailIllWrap">
+            <div class="ill-box"><img id="detailIllImg" src="" alt=""><span class="zoom-badge" aria-hidden="true">拡大</span></div>
+            <div class="trivia-illustration-caption" id="detailIllCaption"></div>
+            <ul class="ill-legend" id="detailIllLegend" hidden></ul>
+          </div>
+        </div>
+
+        <!-- 見分けカード(該当する魚のみ) -->
+        <div class="story-compare" id="detailCompareBlock" hidden></div>
+
+        <!-- 3. 味わい -->
+        <div class="story-taste">
+          <h4 class="taste-title">お魚のこと</h4>
+          <div class="about" id="detailAbout"></div>
+          <div class="parts" id="detailParts" hidden></div>
+        </div>
+
+        <!-- 店主のひとこと(入力がある魚のみ) -->
+        <div class="story-owner" id="detailOwnerBlock" hidden>
+          <div class="owner-label">店主のひとこと</div>
+          <p id="detailOwner"></p>
+        </div>
+      </article>
+
+
+      <section class="sheet-sake" id="sheetSake">
+        <h3 class="sheet-sake-title" id="menuTitle"></h3>
+        <div class="menu-notice">
+          ※掲載のお酒は、お取り扱いがない場合があります。<br>
+          ※お取り扱いの有無は、スタッフにおたずねください。
+        </div>
+        <div class="sake-legend"><span class="lg"><b>流す</b>脂をスッと切る</span><span class="lg"><b>重ねる</b>旨みを深める</span></div>
+        <div id="menuScreenList"></div>
+      </section>
+      <button class="btn sheet-back" type="button" onclick="closeSheet()">水槽にもどる</button>
+    </div>
+  </div>
+</div>
+
+<button class="finish-pill" id="finishButton" type="button" onclick="handleFinishClick()">さいごに...</button>
+
 <!-- 画像の拡大表示 -->
 <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="画像の拡大表示">
   <div class="lb-bar">
@@ -1332,7 +1390,7 @@ function logPayload(action, extra){
   const scr = document.querySelector('.screen.active');
   return Object.assign({
     deviceId: fishDeviceId, sessionId: fishSessionId, action: action,
-    screen: scr ? scr.dataset.screen : '', device: fishDevice, browser: fishBrowser, visit: fishVisit,
+    screen: document.body.classList.contains('sheet-open') ? 'detail' : (scr ? scr.dataset.screen : ''), device: fishDevice, browser: fishBrowser, visit: fishVisit,
     src: fishSrc, table: fishTable, caught: (typeof caught !== 'undefined' && caught) ? caught.size : 0,
     sec: Math.round((Date.now() - fishStart) / 1000)
   }, extra || {});
@@ -1670,6 +1728,7 @@ let currentFishId = null;
 let surveyProfile = loadJSON('fish_survey', null);
 let caught = new Set(loadJSON('fish_caught', []));
 let screenHistory = [];
+var lastPX = null, lastPY = null;   // waterWipe()が起動時に呼ばれても落ちないよう先に宣言
 
 const fishById = id => fishList.find(x => x.id === id);
 function saveCaught(){ store.set('fish_caught', JSON.stringify([...caught])); }
@@ -1708,6 +1767,7 @@ function startSeamlessLoop() {
 function goScreen(name, isBack = false){
   // 冒頭の質問(必須)に答えるまでは、魚の画面へ進ませず、質問の画面に戻す
   if (name === 'select' && !surveyProfile && !surveyReview) { setSurveyFish(currentFishId || 'aji'); name = 'survey'; }
+  closeSheet(true);
   const currentScreen = document.querySelector('.screen.active')?.dataset.screen;
 
   if (!isBack && currentScreen && currentScreen !== name && currentScreen !== 'op') {
@@ -1809,6 +1869,7 @@ let aquaAnimId = null;
 function refreshSelect(){
   document.getElementById('caughtCount').textContent = caught.size;
   document.getElementById('totalCount').textContent = fishList.length;
+  updateFinishPill();
 
   aquaFishes.forEach(item => {
     item.img.classList.toggle('unknown', !caught.has(item.id));
@@ -1899,7 +1960,7 @@ function startAquarium() {
     const minX = -30, maxX = w - fishW + 30;
     const counter = document.getElementById('collectCounter');
     const minY = counter ? counter.offsetTop + counter.offsetHeight + 12 : 60;
-    const maxY = h - fishH - 20;
+    const maxY = h - fishH - 72;
 
     aquaFishes.forEach(f => {
       if (f.frozen) return;
@@ -2127,8 +2188,14 @@ function selectFish(id){
   const dexIdx = fishList.indexOf(f) + 1;
   document.getElementById('detailNo').textContent = 'No.' + String(dexIdx).padStart(2, '0');
   document.getElementById('detailKana').textContent = f.kana || '';
-  const stamp = document.getElementById('detailStamp');
-  if (DEX_SEASON[f.id]) { stamp.innerHTML = '<b>旬</b><i>' + DEX_SEASON[f.id] + '</i>'; stamp.hidden = false; } else { stamp.hidden = true; stamp.textContent = ''; }
+  const seasonEl = document.getElementById('detailSeason');
+  const sn = DEX_SEASON[f.id];
+  if (sn) {
+    let bar = '';
+    for (let m = 1; m <= 12; m++) bar += `<span class="${sn.m.includes(m) ? 'on' : ''}">${m}</span>`;
+    seasonEl.innerHTML = `<div class="season-head"><span class="season-tag">旬</span><span class="season-txt">${sn.t}</span></div><div class="season-bar" aria-hidden="true">${bar}</div>`;
+    seasonEl.hidden = false;
+  } else { seasonEl.hidden = true; seasonEl.innerHTML = ''; }
 
   // 1. 問い
   const triviaBlock = document.getElementById('detailTriviaBlock');
@@ -2192,10 +2259,9 @@ function selectFish(id){
     ownerBlock.hidden = true;
   }
 
-  document.getElementById('toMenuLabel').textContent = 'この魚に合う日本酒を見る';
-
   sendLog('魚を見た', { fishId: f.id, fishName: f.name });
-  goScreen('detail');
+  fillSake();
+  openSheet();
 }
 
 /* ============ 画像の拡大表示 ============ */
@@ -2231,23 +2297,62 @@ function sakeCardHtml(s){
       </div>
       <p class="pair-line">${s.line}</p>
       <p class="taste">${s.taste}</p>
-      ${(s.match && s.match.length) ? `<div class="match"><span class="match-label">合う</span>${s.match.map(m => `<span class="chip-m">${m}</span>`).join('')}</div>` : ''}
     </div>`;
 }
 
-function goToMenu(){
+/* ============ 魚の情報シート ============ */
+let sakeSeenFor = null, sakeObserver = null, sheetCloseTimer = null;
+
+function fillSake(){
   const f = fishById(currentFishId);
   if (!f) return;
   const sake = sakeList.find(x => x.id === f.recommendedSake);
-  sendLog('お酒を見た', { fishId: f.id, fishName: f.name, value: sake ? sake.name : '' });
-
   document.getElementById('menuTitle').textContent = `${f.name}に合う日本酒`;
-  // 料理のメニューは載せず、日本酒だけを紹介する
-  document.getElementById('menuScreenList').innerHTML = sake ? sakeCardHtml(sake) : '';
-  document.getElementById('finishButton').textContent =
-    'さいごに...';
-  goScreen('menu');
+  document.getElementById('menuScreenList').innerHTML = sake ? sakeCardHtml(sake) : '';   // 日本酒だけを紹介する
 }
+
+function logSakeSeen(){
+  const f = fishById(currentFishId);
+  if (!f || sakeSeenFor === f.id) return;
+  sakeSeenFor = f.id;
+  const sake = sakeList.find(x => x.id === f.recommendedSake);
+  sendLog('お酒を見た', { fishId: f.id, fishName: f.name, value: sake ? sake.name : '' });
+}
+
+function openSheet(){
+  const sh = document.getElementById('fishSheet');
+  clearTimeout(sheetCloseTimer);
+  sakeSeenFor = null;
+  updateFinishPill();
+  document.getElementById('sheetScroll').scrollTop = 0;
+  sh.classList.add('show');
+  sh.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('sheet-open');
+  sendLog('画面', { screen: 'detail' });
+  requestAnimationFrame(() => requestAnimationFrame(() => sh.classList.add('open')));
+  if (sakeObserver) sakeObserver.disconnect();
+  if ('IntersectionObserver' in window) {
+    sakeObserver = new IntersectionObserver((es) => {
+      if (es.some(e => e.isIntersecting)) { logSakeSeen(); sendLog('画面', { screen: 'menu' }); sakeObserver.disconnect(); }
+    }, { root: document.getElementById('sheetScroll'), threshold: 0.35 });
+    sakeObserver.observe(document.getElementById('sheetSake'));
+  } else { logSakeSeen(); }
+}
+
+function closeSheet(instant){
+  const sh = document.getElementById('fishSheet');
+  if (!sh.classList.contains('show')) return;
+  sh.classList.remove('open');
+  sh.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('sheet-open');
+  if (sakeObserver) sakeObserver.disconnect();
+  clearTimeout(sheetCloseTimer);
+  const done = () => sh.classList.remove('show');
+  if (instant || REDUCED_MOTION) done(); else sheetCloseTimer = setTimeout(done, 480);
+}
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); });
+
+function updateFinishPill(){ document.body.classList.toggle('has-caught', caught.size >= 1); }
 
 /* ============ アンケート・結果 ============ */
 // 性別と年齢の両方を選んだ時点で回答完了。お礼を表示し、「最初の画面に戻る」を押せるようにする
@@ -2761,7 +2866,9 @@ const ICON = {
   drop:  '<svg ' + SVGA + '><path d="M12 3c3 4 6 7 6 11a6 6 0 0 1-12 0c0-4 3-7 6-11z"/></svg>'
 };
 const ABOUT_ICON = { '特徴': ICON.fish, '味わい': ICON.drop, '魅力': ICON.spark };
-const DEX_SEASON = { aji: '初夏〜夏', katsuo: '春・秋', hirame: '冬', yariika: '冬〜春' };   // 本文に書いてある旬だけを判子にする
+const DEX_SEASON = {   // 本文に書いてある旬だけを表示(m=旬の月)
+  aji:{t:'初夏〜夏',m:[5,6,7,8]}, katsuo:{t:'春・秋',m:[3,4,5,9,10,11]}, hirame:{t:'冬',m:[12,1,2]}, yariika:{t:'冬〜春',m:[12,1,2,3,4]}
+};
 
 function haptic(p){ if (!REDUCED_MOTION && navigator.vibrate) { try{ navigator.vibrate(p); }catch(e){} } }
 
@@ -2789,7 +2896,7 @@ function catchBurst(item){
 }
 
 /* 水面のゆらぎ(画面を切り替えるとき) */
-let lastPX = null, lastPY = null;
+
 function waterWipe(){
   if (REDUCED_MOTION) return;
   const w = document.getElementById('waterWipe'); if (!w) return;
