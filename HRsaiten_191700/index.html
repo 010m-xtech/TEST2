@@ -709,8 +709,8 @@ li.mine{background:#F7D37A1F; border-radius:12px}
     </div>
     <div class="body">
       <div class="tabs" role="tablist" aria-label="ランキングの期間">
-        <button role="tab" type="button" aria-selected="true" data-k="today">今日</button>
-        <button role="tab" type="button" aria-selected="false" data-k="week">今週</button>
+        <button role="tab" type="button" aria-selected="true" data-k="week">今週</button>
+        <button role="tab" type="button" aria-selected="false" data-k="month">今月</button>
       </div>
       <p class="local-note" id="localNote" hidden>この端末で記録した一杯のランキングです。</p>
       <ol class="board" id="board"><li><p class="empty">読み込み中…</p></li></ol>
@@ -1515,8 +1515,8 @@ const LOCAL_KEY = "happyring.records", LOCAL_MAX = 100;
 const localRecords = () => { const v = store.get(LOCAL_KEY, []); return Array.isArray(v) ? v : []; };
 function loadLocalBoards(){
   const all = localRecords(), top = arr => arr.sort((a, b) => b.score - a.score).slice(0, 5).map(r => ({ id: r.id, data: () => r }));
-  boards.today = top(all.filter(r => r.createdAt >= startOf("today")));
   boards.week = top(all.filter(r => r.createdAt >= startOf("week")));
+  boards.month = top(all.filter(r => r.createdAt >= startOf("month")));
 }
 
 function showResult(){
@@ -1610,8 +1610,11 @@ const dayKey = t => { const d = bizDate(t); return `${d.getFullYear()}-${String(
 // 「今週」は月曜の朝5時で切り替える。週の名前は、その週の月曜の日付
 function weekStart(t){ const d = bizDate(t); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return d; }
 const weekKey = t => { const d = weekStart(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+// 「今月」は1日の朝5時で切り替える。月の名前は「2026-11」のような年と月
+function monthStart(t){ const d = bizDate(t); d.setHours(0, 0, 0, 0); d.setDate(1); return d; }
+const monthKey = t => { const d = monthStart(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`; };
 function startOf(kind){
-  const d = kind === "week" ? weekStart() : bizDate(); d.setHours(0, 0, 0, 0);
+  const d = kind === "week" ? weekStart() : kind === "month" ? monthStart() : bizDate(); d.setHours(0, 0, 0, 0);
   return d.getTime() + DAY_START_HOUR * 3600e3;
 }
 
@@ -1620,31 +1623,31 @@ async function predictRank(){
   try {
     if (!db) {
       const all = localRecords();
-      const rt = all.filter(r => r.score > last.total && r.createdAt >= startOf("today")).length + 1;
+      const rw = all.filter(r => r.score > last.total && r.createdAt >= startOf("week")).length + 1;
       const el = $("rankline"); el.textContent = "";
       const sp = document.createElement("span");
-      if (rt <= 5) { sp.className = "hot"; sp.textContent = `今日の${rt}位に入れます`; } else sp.textContent = `今日の${rt}位の記録`;
+      if (rw <= 5) { sp.className = "hot"; sp.textContent = `今週の${rw}位に入れます`; } else sp.textContent = `今週の${rw}位の記録`;
       el.append(sp); return;
     }
     // 自分より上の記録を50件まで数える(読み込みを増やしすぎないため)
     const col = db.collection("scores");
-    const [week, today] = await Promise.all([
+    const [month, week] = await Promise.all([
+      col.where("month", "==", monthKey()).where("score", ">", last.total).orderBy("score", "desc").limit(50).get(),
       col.where("week", "==", weekKey()).where("score", ">", last.total).orderBy("score", "desc").limit(50).get(),
-      col.where("day", "==", dayKey()).where("score", ">", last.total).orderBy("score", "desc").limit(50).get(),
     ]);
-    const rm = week.size + 1, rt = today.size + 1;
+    const rm = month.size + 1, rw = week.size + 1;
     const el = $("rankline"); el.textContent = "";
     const s = document.createElement("span");
     const r = n => n > 50 ? "50位より下" : `${n}位`;
-    if (rt <= 5) { s.className = "hot"; s.textContent = `今日の${rt}位` + (rm <= 5 ? `・今週の${rm}位` : "") + "に入れます"; }
-    else s.textContent = `今日の${r(rt)}・今週の${r(rm)}の記録`;
+    if (rw <= 5) { s.className = "hot"; s.textContent = `今週の${rw}位` + (rm <= 5 ? `・今月の${rm}位` : "") + "に入れます"; }
+    else s.textContent = `今週の${r(rw)}・今月の${r(rm)}の記録`;
     el.append(s);
   } catch (_) {}
 }
 
-let tab = "today";
-const boardErrors = { today: "", week: "" }; // タブごとに覚える(片方だけ読めないときに、もう片方のエラーで消されないように)
-const boards = { today: null, week: null };
+let tab = "week";
+const boardErrors = { week: "", month: "" }; // タブごとに覚える(片方だけ読めないときに、もう片方のエラーで消されないように)
+const boards = { week: null, month: null };
 const thumbs = new Map();
 let deleting = null, staffMode = false;
 
@@ -1679,7 +1682,7 @@ function renderBoard(){
     return;
   }
   if (!docs) { emptyRow("読み込み中…"); return; }
-  if (!docs.length) { emptyRow(tab === "today" ? "今日はまだ記録がありません。一番乗りを狙いましょう。" : "まだ記録がありません。最初の一杯を刻みましょう。"); return; }
+  if (!docs.length) { emptyRow(tab === "week" ? "今週はまだ記録がありません。一番乗りを狙いましょう。" : "今月はまだ記録がありません。最初の一杯を刻みましょう。"); return; }
   let rank = 0, prev = null;
   docs.forEach((d, i) => {
     const v = d.data() || {};
@@ -1779,7 +1782,7 @@ $("clearBtn").addEventListener("click", () => {
   store.set(LOCAL_KEY, []); clearArmed = false; $("clearBtn").textContent = "この端末の記録をすべて消す"; loadLocalBoards(); renderBoard();
 });
 $("openSave").addEventListener("click", () => {
-  if (savedId) { tab = "today"; document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-selected", String(x.dataset.k === "today"))); renderBoard(); show("rank"); return; }
+  if (savedId) { tab = "week"; document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-selected", String(x.dataset.k === "week"))); renderBoard(); show("rank"); return; }
   $("sheetNote").textContent = ""; $("save").disabled = false; $("photoNote").hidden = !isFb;
   $("saveSheet").hidden = false;
   setTimeout(() => $("name").focus(), 250);
@@ -1816,19 +1819,21 @@ $("saveForm").addEventListener("submit", async e => {
       // 感想は表に出さず、お店だけが見られる private に残す
       if (!myUid) { await firebase.auth().signInAnonymously(); myUid = firebase.auth().currentUser.uid; }
       ref = db.collection("scores").doc();
-      const ex = weekStart(last.at); ex.setDate(ex.getDate() + 7);
-      expireAt = firebase.firestore.Timestamp.fromMillis(ex.getTime() + DAY_START_HOUR * 3600e3); // 「今週」が終わったら記録も写真も消えてよい(スプレッドシートが消す)
+      // 「今週」と「今月」の両方が終わったら記録も写真も消えてよい(スプレッドシートが消す)。月末の記録は、月をまたぐ「今週」にも残す
+      const ew = weekStart(last.at); ew.setDate(ew.getDate() + 7);
+      const em = monthStart(last.at); em.setMonth(em.getMonth() + 1);
+      expireAt = firebase.firestore.Timestamp.fromMillis(Math.max(ew.getTime(), em.getTime()) + DAY_START_HOUR * 3600e3);
       const dx = bizDate(last.at); dx.setHours(0, 0, 0, 0); dx.setDate(dx.getDate() + 1);
       photoExpireAt = firebase.firestore.Timestamp.fromMillis(dx.getTime() + DAY_START_HOUR * 3600e3); // お店用の大きい写真は「今日」が終わったら消えてよい
       const batch = db.batch();
       batch.set(db.doc("private/" + ref.id), { memo, name: name.slice(0, 12), score: last.total, createdAt: last.at, uid: myUid, device: deviceName() });
       batch.set(ref, { name: name.slice(0, 12), score: last.total, rings: last.rings, scores: last.scores,
-        createdAt: last.at, hash: photoHash || "", day: dayKey(last.at), week: weekKey(last.at), uid: myUid, expireAt });
+        createdAt: last.at, hash: photoHash || "", day: dayKey(last.at), week: weekKey(last.at), month: monthKey(last.at), uid: myUid, expireAt });
       await batch.commit();
     } else {
       ref = await db.collection("scores").add({
         name: name.slice(0, 12), memo, score: last.total, rings: last.rings, scores: last.scores,
-        comment: last.comment, createdAt: last.at, hash: photoHash || "", day: dayKey(last.at), week: weekKey(last.at),
+        comment: last.comment, createdAt: last.at, hash: photoHash || "", day: dayKey(last.at), week: weekKey(last.at), month: monthKey(last.at),
       });
     }
     savedId = ref.id; savedName = name.slice(0, 12);
@@ -2122,7 +2127,7 @@ $("mug3d").hidden = false; $("mug2d").setAttribute("hidden", ""); // SVGは hidd
 try { if (!startMug3D()) throw 0; } catch (_) { $("mug3d").hidden = true; $("mug2d").removeAttribute("hidden"); }
 // 共有ランキング(claude.ai のデータ置き場か、お店の Firebase)。どちらも同じ書き方で読み書きできる
 function startRemoteBoards(store){
-  db = store; boardErrors.today = boardErrors.week = "";
+  db = store; boardErrors.week = boardErrors.month = "";
   const col = db.collection("scores");
   let unsub = [], keys = "", retry = null;
   const sub = (k, q) => q.orderBy("score", "desc").limit(5).onSnapshot(
@@ -2132,11 +2137,11 @@ function startRemoteBoards(store){
       if (!retry) retry = setTimeout(() => { retry = null; keys = ""; watch(); }, 30e3);
     }
   );
-  const watch = () => { // 朝5時や週が変わったら、新しい「今日」「今週」を読み直す(開きっぱなしの端末のため)
-    const k = dayKey() + "|" + weekKey(); if (k === keys) return; keys = k;
+  const watch = () => { // 週や月が変わったら、新しい「今週」「今月」を読み直す(開きっぱなしの端末のため)
+    const k = weekKey() + "|" + monthKey(); if (k === keys) return; keys = k;
     unsub.forEach(f => { try { f(); } catch (_) {} });
-    boards.today = boards.week = null;
-    unsub = [sub("today", col.where("day", "==", dayKey())), sub("week", col.where("week", "==", weekKey()))];
+    boards.week = boards.month = null;
+    unsub = [sub("week", col.where("week", "==", weekKey())), sub("month", col.where("month", "==", monthKey()))];
     renderBoard();
   };
   watch(); setInterval(watch, 60e3);
