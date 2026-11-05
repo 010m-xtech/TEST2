@@ -532,7 +532,7 @@
                                 <path class="twinkle" style="animation-delay:.8s" d="M10 30 l1 2.4 2.4 1 -2.4 1 -1 2.4 -1 -2.4 -2.4 -1 2.4 -1 Z" fill="#f6e3b0" />
                             
                         </svg>
-                        <!-- ワイン（赤・白）／ビール（ビアカクテル）：中身がゆらゆら揺れる2つのグラス -->
+                        <!-- ワイン（赤・白）／ビール or カクテル：中身がゆらゆら揺れる2つのグラス -->
                         <div v-else class="flex items-end justify-center -space-x-1 h-[70px] mb-2 text-[#f6efe2]">
                             <liquid-glass v-for="(g, gi) in drink.icons" :key="gi" :glass="g.glass" :liquid="g.liquid" :bubbles="!!g.bubbles" class="w-[42px] h-[58px]" :class="gi ? 'mt-2' : ''"></liquid-glass>
                         </div>
@@ -1496,7 +1496,7 @@
                 const drinks = [
                     { id: 'vino',    name: 'ワイン', sub: '赤・白', it: 'Vino',
                       icons: [{ glass: 'wine', liquid: 'rgba(140, 22, 40, .92)' }, { glass: 'wine', liquid: 'rgba(238, 212, 128, .9)' }],  liquid: 'rgba(140, 22, 40, .92)', ring: '#e8917c', glow: 'rgba(196, 50, 60, .5)',  bottle: '#2a1416', label: 'Vino', foodPhoto: 'ryouri2.webp' },
-                    { id: 'birra',   name: 'ビール', sub: 'ビアカクテル', it: 'Birra',
+                    { id: 'birra',   name: 'ビール or カクテル', logName: 'ビール', it: 'Birra', // logName … 集計に記録する名前（表示名を変えても集計はこれまでどおり）
                       icons: [{ glass: 'mug', liquid: 'rgba(232, 168, 38, .95)', bubbles: true }, { glass: 'highball', liquid: 'rgba(214, 120, 46, .88)', bubbles: true }], liquid: 'rgba(232, 168, 38, .92)', ring: '#f0c35a', glow: 'rgba(240, 190, 80, .5)', bottle: '#5a3b10', label: 'Birra', foodPhoto: 'ryouri1.webp' },
                     { id: 'nouveau', name: '？',     it: 'Sorpresa', liquid: 'rgba(150, 28, 64, .9)', ring: '#e6c983', glow: 'rgba(230, 201, 131, .5)', bottle: '#2a1416', label: 'Nouveau',
                       hidden: true, // ← ボジョレーが入荷したら、この hidden: true, を消すとトップに「？」が戻ります
@@ -1539,7 +1539,7 @@
 
                 // ▼ ビールを選んだ人に、注ぐ間に見せる「速達生ビール」のこだわり（上から順に1枚ずつ出ます） ▼
                 const KODAWARI = [
-                    { num: '01', title: '工場出荷2日以内の新鮮なビール', text: '工場から速達便で、できたての鮮度のままお店へ。' },
+                    { num: '01', title: '工場出荷2日以内の新鮮なビール', text: '工場から速達便で、新鮮なままお店へ。' },
                     { num: '02', title: 'きれいなグラスに、丁寧な注ぎ方', text: 'グラスの洗浄、サーバーの温度、ガス圧まで管理し、一杯ずつ丁寧に注ぎます。' },
                     { num: '03', title: '本当においしい1杯', text: 'サッポロの審査をクリアした「本物サッポロ生」を、あなたのジョッキへ。' }
                 ];
@@ -1553,8 +1553,8 @@
                 //   credit … 写真のクレジット（ウィキメディア・コモンズの写真などを使うときに入れてください）
                 // ==================================================================
                 const DRIVE = [
-                    { kind: 'factory', label: 'ビール工場', title: 'できたての生ビールが誕生',
-                      text: '工場でつくられたばかりの生ビールを、樽に詰めて出荷します。', pops: [{ photo: 'maruto_taru.webp' }] },
+                    { kind: 'factory', label: 'ビール工場', title: 'ビール工場で、新鮮なビールができました',
+                      text: '工場から出荷された新鮮な生ビールを、これから運んでいきます。', pops: [{ photo: 'maruto_taru.webp' }] },
                     { kind: 'maruto', label: 'マルト水谷', title: '工場出荷2日以内のビールだけを',
                       text: '倉庫から、新鮮なうちに速達便で出発！', pops: [{ photo: 'maruto_soko.webp' }] },
                     { kind: 'castle', label: '岡崎城', title: '家康公が生まれた、岡崎城', pops: [{ photo: 'okazakijo.webp' }],
@@ -1887,7 +1887,7 @@
                                 kodawari: true,
                                 description: '「速達生ビール」。工場出荷2日以内の新鮮さと、グラスの洗浄からサーバーの温度・ガス圧まで妥協しない品質管理で、きめ細かな泡とキレのある味わいをお届けします。',
                                 matching: 'ソーリーポテト\n大きなイタリア生ソーセージのソテー\nポテトフライ',
-                                catch: '工場出荷2日以内の、できたて生',
+                                catch: '工場出荷2日以内の、新鮮な生',
                                 keywords: ['速達生', 'キレ', 'きめ細かな泡'],
                                 points: ['工場出荷2日以内の、新鮮そのものの味わい', 'グラス洗浄・温度・ガス圧まで徹底した品質管理', 'クリーミーな泡と、のどごし爽快なキレ'],
                                 taste: { sweet: 1.5, body: 3 },
@@ -2501,14 +2501,14 @@
                     userAgent: navigator.userAgent,
                     gender: answersByQ.value[0] === 'A' ? '男性' : '女性',
                     age: answersByQ.value[1] === 'A' ? '35歳未満' : '35歳以上',
-                    drink: drinkTheme.value.realName || drinkTheme.value.name,
+                    drink: drinkTheme.value.logName || drinkTheme.value.realName || drinkTheme.value.name,
                     resultName: finalResult.value ? finalResult.value.titleRuby : '',
                     product: productFullName.value,
                     beerFilm: isBeer.value ? beerFilm.value : '-',
                     // これまでの集計との互換用
                     q1Gender: answersByQ.value[0] === 'A' ? '男性' : '女性',
                     q2Age: answersByQ.value[1] === 'A' ? '35歳未満' : '35歳以上',
-                    selectedDrink: drinkTheme.value.realName || drinkTheme.value.name,
+                    selectedDrink: drinkTheme.value.logName || drinkTheme.value.realName || drinkTheme.value.name,
                     resultType: finalResult.value ? finalResult.value.id : 'unknown'
                 });
 
