@@ -496,6 +496,8 @@
   .insta-icon{ width:56px; height:56px; flex:none; border-radius:13px; display:block; }
   .insta-text{ flex:1; min-width:0; display:flex; flex-direction:column; gap:4px; line-break:strict; }
   .insta-l1{ font-size:16.5px; font-weight:700; line-height:1.5; }
+  #farewellForm.locked{ opacity:.5; pointer-events:none; transition:opacity .4s ease; }
+  .farewell-back{ text-align:center; margin:18px 0 0; font-size:14px; color:rgba(242,238,227,.7); letter-spacing:.06em; }
   .insta-l2{ font-size:14px; line-height:1.55; color: rgba(242,238,227,0.85); }
   .insta-text .ph{ display:inline-block; }
   .insta-arrow{ flex:none; font-size:26px; line-height:1; color: rgba(242,238,227,0.7); }
@@ -621,11 +623,10 @@
   .sheet-sake .menu-notice{ margin-bottom:16px; font-size:13px; }
   .sheet-back{ width:100%; margin-top:26px; background:rgba(227,203,148,.14); border:1px solid var(--gold-soft); color:var(--kinari); }
   body.sheet-open{ overflow:hidden; }
-  .finish-nudge{ position:fixed; left:0; right:0; bottom:calc(76px + env(safe-area-inset-bottom)); z-index:57; display:flex; justify-content:center; gap:10px; pointer-events:none; animation: fadeUp .45s ease both; }
-  .finish-nudge[hidden]{ display:none; }
-  .finish-nudge button{ pointer-events:auto; min-width:104px; padding:11px 20px; border-radius:999px; font-family:var(--font-gothic); font-size:15px; font-weight:700; cursor:pointer; border:1px solid var(--gold-soft); box-shadow:0 6px 22px rgba(0,0,0,.35); }
-  .nudge-yes{ background:var(--gold); color:#10203a; }
-  .nudge-later{ background:rgba(10,24,44,.85); color:var(--kinari); }
+  .ask-actions{ display:flex; gap:12px; width:100%; margin-top:2px; }
+  .ask-actions[hidden]{ display:none; }
+  .ask-actions.pop-in{ animation: fadeUp .5s ease both; }
+  .ask-actions .btn{ flex:1; padding:15px 0; font-size:17px; }
   .sheet-tabs{ display:flex; gap:6px; padding:12px 56px 10px 14px; border-bottom:1px solid rgba(227,203,148,.22); flex:0 0 auto; }
   .sheet-tab{ flex:1; max-width:130px; padding:8px 0; border-radius:999px; border:1px solid transparent; background:transparent; color:rgba(242,238,227,.6);
     font-family:var(--font-gothic); font-size:14px; font-weight:700; letter-spacing:.08em; cursor:pointer; transition:background .25s, color .25s; }
@@ -1212,8 +1213,8 @@
         <textarea id="farewellText" class="note-input" rows="4" maxlength="200" placeholder="どんなことでも、お気軽にどうぞ" aria-label="お店へのひとこと"></textarea>
         <p class="note">お名前や連絡先は、書かなくて大丈夫です</p>
         <div class="btn-row" style="flex-direction: column;">
-          <button class="btn btn-primary" id="farewellSend" type="button" style="width:100%" disabled>送る</button>
-          <button class="btn btn-primary" id="farewellSkip" type="button" style="width:100%">このまま終わる</button>
+          <button class="btn btn-primary" id="farewellSend" type="button" style="width:100%" disabled>送って水槽に戻る</button>
+          <button class="btn btn-primary" id="farewellSkip" type="button" style="width:100%">このまま水槽に戻る</button>
         </div>
       </div>
 
@@ -1221,16 +1222,16 @@
         <a class="insta-card" id="instaLink" href="https://www.instagram.com/izakayakojiki?psln=czk4Zm1zdXo4a3Ux" target="_blank" rel="noopener">
           <img class="insta-icon" src="instagram.webp" width="56" height="56" alt="Instagram">
           <span class="insta-text">
-            <span class="insta-l1"><span class="ph">インスタグラムも</span><span class="ph">ぜひご覧ください！</span></span>
-            <span class="insta-l2"><span class="ph">おすすめや</span><span class="ph">お店の情報を</span><span class="ph">お届けしています！</span></span>
+            <span class="insta-l1">Instagram</span>
+            <span class="insta-l2">@izakayakojiki</span>
           </span>
           <span class="insta-arrow" aria-hidden="true">›</span>
         </a>
-        <div class="btn-row" style="flex-direction: column;">
-          <button class="btn btn-primary" type="button" style="width:100%" onclick="goScreen('select')">最初の画面に戻る</button>
-        </div>
+        <p class="farewell-back" id="farewellBack">タップで水槽にもどります</p>
       </div>
     </section>
+
+    <section class="screen" data-screen="ask"></section>
 
     <!-- Screen: 結果 -->
     <section class="screen" data-screen="result">
@@ -1269,6 +1270,19 @@
     <div class="talk-bubble" role="button" tabindex="0" aria-live="polite" aria-label="お魚の言葉(タップで次へ)">
       <span class="talk-main"></span>
       <span class="talk-sub"></span>
+    </div>
+  </div>
+  <span class="air a1"></span><span class="air a2"></span><span class="air a3"></span>
+</div>
+
+<!-- 3匹見たあとの「ちょっとだけお聞きしてもいいですか？」(魚の吹き出しとボタンだけの画面) -->
+<div class="stage-head" id="askStage" data-orient="v" hidden>
+  <div class="stage-inner">
+    <div class="talk-fish-wrap"><img class="talk-fish" src="maaji.webp" alt=""></div>
+    <div class="talk-bubble" aria-live="polite"><span class="talk-main"></span></div>
+    <div class="ask-actions" id="askActions" hidden>
+      <button type="button" class="btn btn-primary" onclick="nudgeAnswer('いいよ')">いいよ</button>
+      <button type="button" class="btn btn-ghost" onclick="nudgeAnswer('あとで')">あとで</button>
     </div>
   </div>
   <span class="air a1"></span><span class="air a2"></span><span class="air a3"></span>
@@ -1350,11 +1364,6 @@
       <button class="btn sheet-back" type="button" onclick="closeSheet()">水槽にもどる</button>
     </div>
   </div>
-</div>
-
-<div class="finish-nudge" id="finishNudge" hidden>
-  <button type="button" class="nudge-yes" onclick="nudgeAnswer('いいよ')">いいよ</button>
-  <button type="button" class="nudge-later" onclick="nudgeAnswer('あとで')">あとで</button>
 </div>
 
 <button class="finish-pill" id="finishButton" type="button" onclick="handleFinishClick()">さいごに...</button>
@@ -1790,7 +1799,8 @@ function goScreen(name, isBack = false){
   // 冒頭の質問(必須)に答えるまでは、魚の画面へ進ませず、質問の画面に戻す
   if (name === 'select' && !surveyProfile && !surveyReview) { setSurveyFish(currentFishId || 'aji'); name = 'survey'; }
   closeSheet(true);
-  hideNudge();
+  clearTimeout(nudgeTimer);
+  if (name !== 'farewell') clearTimeout(farewellReturnTimer);
   const currentScreen = document.querySelector('.screen.active')?.dataset.screen;
 
   if (!isBack && currentScreen && currentScreen !== name && currentScreen !== 'op') {
@@ -1799,7 +1809,7 @@ function goScreen(name, isBack = false){
 
   const backBtn = document.getElementById('header-back-btn');
   if (backBtn) {
-    if (name === 'select' || name === 'op' || (name === 'survey' && !surveyReview) || name === 'farewell' || name === 'detail') {
+    if (name === 'select' || name === 'op' || (name === 'survey' && !surveyReview) || name === 'farewell' || name === 'detail' || name === 'ask') {
       backBtn.style.display = 'none';
       screenHistory = [];
     } else {
@@ -1811,6 +1821,7 @@ function goScreen(name, isBack = false){
     el.classList.toggle('active', el.dataset.screen === name);
   });
   document.body.classList.toggle('on-select', name === 'select');
+  if (name === 'ask') showAsk(); else hideAsk();
   if (currentScreen && currentScreen !== name) waterWipe();
   window.scrollTo({ top: 0, behavior: REDUCED_MOTION ? 'auto' : 'smooth' });
 
@@ -1835,6 +1846,20 @@ function goScreen(name, isBack = false){
   if (name !== 'survey') { surveyTalk.stop(); surveyStageCtl.hide(); }
   sendLog('画面', { screen: name });                    // どの画面を見たか(離脱位置の分析に使います)
 }
+
+const ASK_TEXT = '急にごめんなさい。\n少しだけお聞きしても\nいいですか？';
+let askTimer = null;
+function showAsk(){
+  const f = fishById(currentFishId); askTalk.setFish(f ? f.id : 'aji');
+  const st = document.getElementById('askStage'), act = document.getElementById('askActions');
+  st.style.setProperty('--stage-top', (document.getElementById('main-header').offsetHeight || 66) + 'px');
+  act.hidden = true; act.classList.remove('pop-in');
+  st.hidden = false;
+  askTalk.say(ASK_TEXT, { wave: '少しだけ' });
+  clearTimeout(askTimer);
+  askTimer = setTimeout(() => { act.hidden = false; act.classList.add('pop-in'); }, REDUCED_MOTION ? 200 : talkSettle(ASK_TEXT) * 1000);
+}
+function hideAsk(){ clearTimeout(askTimer); askTalk.stop(); document.getElementById('askStage').hidden = true; }
 
 function goBack() {
   if (screenHistory.length > 0) {
@@ -2347,7 +2372,7 @@ function openSheet(){
   clearTimeout(sheetCloseTimer);
   sakeSeenFor = null;
   sheetViews++;
-  hideNudge();
+  clearTimeout(nudgeTimer);
   updateFinishPill();
   setSheetTab('fish', true);
   document.getElementById('sheetScroll').scrollTop = 0;
@@ -2380,30 +2405,29 @@ function closeSheet(instant){
   if (!instant) maybeNudge();
 }
 
-/* 魚を3匹以上見て水槽に戻ったとき、1度だけ「ひとこと」をお願いする(押さなくても、あとで「さいごに...」から答えられる) */
-function hideNudge(){ clearTimeout(nudgeTimer); const n = document.getElementById('finishNudge'); if (n) n.hidden = true; }
+/* 魚を3匹以上見て水槽に戻ったとき、1度だけ「ちょっとだけお聞きしてもいいですか？」の画面を出す
+   「いいよ」→ ひとことの入力欄 / 「あとで」→ 水槽に戻る */
 function maybeNudge(){
   if (nudgeShown || farewellDone || sheetViews < 3) return;
   nudgeShown = true;
   clearTimeout(nudgeTimer);
   nudgeTimer = setTimeout(() => {
     if (!document.body.classList.contains('on-select') || document.body.classList.contains('sheet-open')) { nudgeShown = false; return; }
-    selectTalk.stop();
-    const f = fishById(currentFishId); selectTalk.setFish(f ? f.id : 'aji');
-    selectTalk.say('そろそろ、\nひとこと\nお願いしても\nいいですか？', { wave: 'ひとこと' });
-    document.getElementById('finishNudge').hidden = false;
     sendLog('ひとこと案内', { value: '表示' });
+    goScreen('ask');
   }, 700);
 }
 function nudgeAnswer(v){
-  hideNudge();
   sendLog('ひとこと案内', { value: v });
-  if (v === 'いいよ') { handleFinishClick(); return; }
-  selectTalk.say(SELECT_LINES.more.text, { wave: '' });
+  if (v === 'いいよ') { handleFinishClick(true); return; }
+  goScreen('select');
 }
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); });
 
-function updateFinishPill(){ document.body.classList.toggle('has-caught', caught.size >= 1); }
+function updateFinishPill(){   // 答えた方には「さいごに...」を出さない(ひとことは1端末1回)
+  let answered = false; try { answered = store.get('fish_farewell_done') === '1'; } catch(e){}
+  document.body.classList.toggle('has-caught', caught.size >= 1 && !answered);
+}
 
 /* ============ アンケート・結果 ============ */
 // 性別と年齢の両方を選んだ時点で回答完了。お礼を表示し、「最初の画面に戻る」を押せるようにする
@@ -2545,7 +2569,8 @@ const selectTalk = createFishTalk(document.getElementById('selectHead'));
 const farewellTalk = createFishTalk(document.getElementById('farewellHead'));
 const surveyStage = createFishTalk(document.getElementById('surveyStage'));
 const farewellStage = createFishTalk(document.getElementById('farewellStage'));
-const relayoutTalks = () => { surveyTalk.layout(); selectTalk.layout(); farewellTalk.layout(); surveyStage.layout(); farewellStage.layout(); };
+const askTalk = createFishTalk(document.getElementById('askStage'));
+const relayoutTalks = () => { askTalk.layout(); surveyTalk.layout(); selectTalk.layout(); farewellTalk.layout(); surveyStage.layout(); farewellStage.layout(); };
 window.addEventListener('resize', relayoutTalks);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayoutTalks);
 
@@ -2682,14 +2707,28 @@ const FAREWELL_LINES = [
   // 具体的に伝える: 料理・お酒・このコンテンツなど、何でもよいこと。上に残る小さい吹き出しは、長いので少し小さい文字に(compactCls)
   { text: '料理やお酒、\nこのコンテンツなど、\nどんなことでも\n感想をいただけたら\n嬉しいです。', wave: 'どんなことでも', compactCls: 'thanks' }
 ];
-const FAREWELL_SENT = 'ありがとうございます。\n励みになります。\nこの後も、どうぞ\nお楽しみください。';
-const FAREWELL_REPEAT = 'ここまで、\nありがとうございます。\nこの後も、どうぞ\nお楽しみください。';
-const FAREWELL_SKIP = 'ありがとうございます。\nまたお待ちしています。\nこの後も、どうぞ\nお楽しみください。';
+const FAREWELL_THANKS = 'ありがとうございます！\nこの後も、どうぞ\nお楽しみください！\nインスタグラムも\n見てみてね！';   // 送っても、送らなくても、同じ言葉(この画面だけで完結 → 数秒後に水槽へ)
+const FAREWELL_SENT = FAREWELL_THANKS, FAREWELL_REPEAT = FAREWELL_THANKS, FAREWELL_SKIP = FAREWELL_THANKS;
+let farewellReturnTimer = null;
+function returnFromFarewell(){
+  clearTimeout(farewellReturnTimer);
+  if (document.querySelector('.screen.active')?.dataset.screen === 'farewell' && farewellFinished) goScreen('select');
+}
+function startFarewellReturn(){
+  clearTimeout(farewellReturnTimer);
+  farewellReturnTimer = setTimeout(returnFromFarewell, 7000);       // 数秒たつと、自動で水槽へ
+}
 let farewellDone = store.get('fish_farewell_done') === '1';          // 1端末1回: この端末で、すでに答えた(または「このまま終わる」を選んだ)か
 let farewellToken = 0, farewellTimer = null, farewellFinished = false;
 const fwEl = id => document.getElementById(id);
-function hideFarewellForm(){ clearTimeout(farewellTimer); const f = fwEl('farewellForm'); f.hidden = true; f.classList.remove('pop-in'); }
+function lockFarewellForm(){
+  fwEl('farewellForm').classList.add('locked');
+  fwEl('farewellText').readOnly = true; fwEl('farewellSend').disabled = true; fwEl('farewellSkip').disabled = true;
+}
+function hideFarewellForm(){
+  fwEl('farewellForm').classList.remove('locked'); fwEl('farewellText').readOnly = false; fwEl('farewellSkip').disabled = false; clearTimeout(farewellTimer); const f = fwEl('farewellForm'); f.hidden = true; f.classList.remove('pop-in'); }
 function resetFarewellUI(){
+  clearTimeout(farewellReturnTimer);
   hideFarewellForm(); fwEl('farewellDone').hidden = true;
   fwEl('farewellText').value = ''; fwEl('farewellSend').disabled = true;
   farewellTalk.img.classList.remove('done'); farewellFinished = false;
@@ -2713,18 +2752,26 @@ function playFarewellIntro(){
   if (farewellFinished) return;
   hideFarewellForm();
   if (farewellDone && !surveyReview) { showFarewellRepeat(); return; }   // 答え済みの端末: ひとことは聞かず、お礼とインスタだけ
+  if (farewellDirect) {                                                   // 「いいよ」: 魚のひとこと(感想のお願い)と、入力欄だけ
+    farewellDirect = false;
+    farewellStageCtl.hide(); farewellStageCtl.compactFinal();
+    document.getElementById('farewellHead').classList.remove('await'); document.getElementById('farewellHead').classList.add('pop-in');
+    revealFarewellForm(token);
+    return;
+  }
   farewellStageCtl.start(token);
 }
 function finishFarewell(kind){
   if (farewellFinished) return;
   farewellFinished = true;
   if (!surveyReview) { farewellDone = true; store.set('fish_farewell_done', '1'); }   // 確認モードでは記録しない
-  hideFarewellForm();
+  lockFarewellForm();                                  // 入力欄は消さず、そのまま。魚の吹き出しだけがお礼に変わる
   farewellTalk.stop();
   farewellTalk.img.classList.add('done');
   if (kind !== 'sent' && !surveyReview) sendLog('ひとこと(スキップ)');
-  farewellTalk.say(kind === 'sent' ? FAREWELL_SENT : FAREWELL_SKIP, { wave: '', cls: 'thanks' });
+  farewellTalk.say(FAREWELL_THANKS, { wave: '', cls: 'thanks' });
   fwEl('farewellDone').hidden = false; fwEl('farewellDone').classList.add('pop-in');
+  startFarewellReturn();
   document.getElementById('header-back-btn').style.display = 'none';
   screenHistory = [];
 }
@@ -2733,8 +2780,9 @@ function showFarewellRepeat(){
   farewellStageCtl.hide();
   farewellTalk.stop();
   farewellTalk.img.classList.add('done');
-  farewellTalk.say(FAREWELL_REPEAT, { wave: '', cls: 'thanks' });
+  farewellTalk.say(FAREWELL_THANKS, { wave: '', cls: 'thanks' });
   fwEl('farewellDone').hidden = false; fwEl('farewellDone').classList.add('pop-in');
+  startFarewellReturn();
   document.getElementById('header-back-btn').style.display = 'none';
   screenHistory = [];
 }
@@ -2745,10 +2793,12 @@ function farewellSend(){
   finishFarewell('sent');
 }
 (function(){
-  fwEl('instaLink').addEventListener('click', () => { if (!surveyReview) sendLog('インスタ'); });   // 開いたことを記録(リンク自体は新しいタブで開く)
+  fwEl('instaLink').addEventListener('click', () => { clearTimeout(farewellReturnTimer); if (!surveyReview) sendLog('インスタ'); });   // インスタを開く間は、自動では戻らない   // 開いたことを記録(リンク自体は新しいタブで開く)
   fwEl('farewellText').addEventListener('input', () => { fwEl('farewellSend').disabled = !fwEl('farewellText').value.trim(); });
   fwEl('farewellSend').addEventListener('click', farewellSend);
   fwEl('farewellSkip').addEventListener('click', () => finishFarewell('skip'));
+  fwEl('farewellBack').addEventListener('click', returnFromFarewell);
+  farewellTalk.bubble.addEventListener('click', returnFromFarewell);
 })();
 function openFarewellReview(){            // 確認用: 最後のひとこと画面を、何度でも新品の状態で開く(送信されません)
   clearTimeout(opTimer); clearTimeout(opGuard);
@@ -2782,7 +2832,9 @@ function openSurveyReview(){
 }
 
 // 初回はアンケートへ。回答済みなら最初の画面へ戻る
-function handleFinishClick(){
+let farewellDirect = false;                                  // 「いいよ」から来たときは、案内を飛ばして入力欄から
+function handleFinishClick(direct){
+  farewellDirect = direct === true;
   resetFarewellUI();
   setFarewellFish(currentFishId || 'aji');                 // 最後にしゃべる魚は、いま見ていた魚
   goScreen('farewell');
