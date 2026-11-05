@@ -621,6 +621,11 @@
   .sheet-sake .menu-notice{ margin-bottom:16px; font-size:13px; }
   .sheet-back{ width:100%; margin-top:26px; background:rgba(227,203,148,.14); border:1px solid var(--gold-soft); color:var(--kinari); }
   body.sheet-open{ overflow:hidden; }
+  .finish-nudge{ position:fixed; left:0; right:0; bottom:calc(76px + env(safe-area-inset-bottom)); z-index:57; display:flex; justify-content:center; gap:10px; pointer-events:none; animation: fadeUp .45s ease both; }
+  .finish-nudge[hidden]{ display:none; }
+  .finish-nudge button{ pointer-events:auto; min-width:104px; padding:11px 20px; border-radius:999px; font-family:var(--font-gothic); font-size:15px; font-weight:700; cursor:pointer; border:1px solid var(--gold-soft); box-shadow:0 6px 22px rgba(0,0,0,.35); }
+  .nudge-yes{ background:var(--gold); color:#10203a; }
+  .nudge-later{ background:rgba(10,24,44,.85); color:var(--kinari); }
   .sheet-tabs{ display:flex; gap:6px; padding:12px 56px 10px 14px; border-bottom:1px solid rgba(227,203,148,.22); flex:0 0 auto; }
   .sheet-tab{ flex:1; max-width:130px; padding:8px 0; border-radius:999px; border:1px solid transparent; background:transparent; color:rgba(242,238,227,.6);
     font-family:var(--font-gothic); font-size:14px; font-weight:700; letter-spacing:.08em; cursor:pointer; transition:background .25s, color .25s; }
@@ -1347,6 +1352,11 @@
   </div>
 </div>
 
+<div class="finish-nudge" id="finishNudge" hidden>
+  <button type="button" class="nudge-yes" onclick="nudgeAnswer('いいよ')">いいよ</button>
+  <button type="button" class="nudge-later" onclick="nudgeAnswer('あとで')">あとで</button>
+</div>
+
 <button class="finish-pill" id="finishButton" type="button" onclick="handleFinishClick()">さいごに...</button>
 
 <!-- 画像の拡大表示 -->
@@ -1780,6 +1790,7 @@ function goScreen(name, isBack = false){
   // 冒頭の質問(必須)に答えるまでは、魚の画面へ進ませず、質問の画面に戻す
   if (name === 'select' && !surveyProfile && !surveyReview) { setSurveyFish(currentFishId || 'aji'); name = 'survey'; }
   closeSheet(true);
+  hideNudge();
   const currentScreen = document.querySelector('.screen.active')?.dataset.screen;
 
   if (!isBack && currentScreen && currentScreen !== name && currentScreen !== 'op') {
@@ -2313,7 +2324,7 @@ function sakeCardHtml(s){
 }
 
 /* ============ 魚の情報シート ============ */
-let sakeSeenFor = null, sakeObserver = null, sheetCloseTimer = null;
+let sakeSeenFor = null, sakeObserver = null, sheetCloseTimer = null, sheetViews = 0, nudgeShown = false, nudgeTimer = null;
 
 function fillSake(){
   const f = fishById(currentFishId);
@@ -2335,6 +2346,8 @@ function openSheet(){
   const sh = document.getElementById('fishSheet');
   clearTimeout(sheetCloseTimer);
   sakeSeenFor = null;
+  sheetViews++;
+  hideNudge();
   updateFinishPill();
   setSheetTab('fish', true);
   document.getElementById('sheetScroll').scrollTop = 0;
@@ -2364,6 +2377,29 @@ function closeSheet(instant){
   clearTimeout(sheetCloseTimer);
   const done = () => sh.classList.remove('show');
   if (instant || REDUCED_MOTION) done(); else sheetCloseTimer = setTimeout(done, 480);
+  if (!instant) maybeNudge();
+}
+
+/* 魚を3匹以上見て水槽に戻ったとき、1度だけ「ひとこと」をお願いする(押さなくても、あとで「さいごに...」から答えられる) */
+function hideNudge(){ clearTimeout(nudgeTimer); const n = document.getElementById('finishNudge'); if (n) n.hidden = true; }
+function maybeNudge(){
+  if (nudgeShown || farewellDone || sheetViews < 3) return;
+  nudgeShown = true;
+  clearTimeout(nudgeTimer);
+  nudgeTimer = setTimeout(() => {
+    if (!document.body.classList.contains('on-select') || document.body.classList.contains('sheet-open')) { nudgeShown = false; return; }
+    selectTalk.stop();
+    const f = fishById(currentFishId); selectTalk.setFish(f ? f.id : 'aji');
+    selectTalk.say('そろそろ、\nひとこと\nお願いしても\nいいですか？', { wave: 'ひとこと' });
+    document.getElementById('finishNudge').hidden = false;
+    sendLog('ひとこと案内', { value: '表示' });
+  }, 700);
+}
+function nudgeAnswer(v){
+  hideNudge();
+  sendLog('ひとこと案内', { value: v });
+  if (v === 'いいよ') { handleFinishClick(); return; }
+  selectTalk.say(SELECT_LINES.more.text, { wave: '' });
 }
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); });
 
