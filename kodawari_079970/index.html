@@ -747,7 +747,7 @@ body.shopen{overflow:hidden}
 .shb{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:2px 2px 24px}
 .shb::-webkit-scrollbar{width:0}
 .shv{display:block}
-.shb #nx{display:none!important}.shb .pgl{display:none}
+.shb #nx{display:none!important}
 .shx{margin-top:10px;width:100%;flex:none}
 /* V308 */
 :root{color-scheme:only light}
@@ -838,6 +838,11 @@ body.shopen{overflow:hidden}
 .awc,.awc *,.awb,.awb b,.awb span{color:#111!important;-webkit-text-fill-color:#111!important;text-shadow:none!important}
 /* V335b 赤文字 */
 .rd,.shp .cb p span.rd,.cb p span.rd{color:#c62828!important;-webkit-text-fill-color:#c62828!important;font-weight:800}
+/* V336 こだわりを先に */
+.shb{position:relative}
+.shv.shhide{position:absolute;left:0;right:0;top:0;height:0;overflow:hidden;visibility:hidden;pointer-events:none}
+.shb .pgl{display:block;text-align:center;margin:0 0 6px;font-size:15px}
+.shb .pgl b{display:inline-block;padding:3px 14px;border-radius:999px;background:rgba(255,250,240,.75);border:1px solid #dcc28a;color:#6b4a22!important;-webkit-text-fill-color:#6b4a22!important}
 </style>
 </head>
 <body><div id="bgl" aria-hidden="true"></div>
@@ -1223,18 +1228,18 @@ function cl(){m.remove()}m.onclick=function(e){if(e.target===m)cl()};m.querySele
 var SHEET_ON=null;
 function openSheet(d){var old=document.getElementById("shw");if(old)old.remove();trk("sheet",d.n);
 var m=document.createElement("div");m.id="shw";m.className="shw";
-m.innerHTML='<div class="shp" role="dialog" aria-label="ニワトリの話"><button type="button" class="shcl" id="shcl" aria-label="閉じる">×</button><div class="shtabs" role="tablist"><button type="button" class="shtab on" id="shtA" role="tab">部位のこと</button><button type="button" class="shtab" id="shtB" role="tab" disabled>当店のこだわり<i class="shdot" hidden></i></button></div><div class="shb" id="shb"><div class="shv" id="shA"></div></div><button type="button" class="btn shx" id="shx">'+(ccount()>=NEED?"特別なメニューへ":"前の画面に戻る")+'</button></div>';
+m.innerHTML='<div class="shp" role="dialog" aria-label="ニワトリの話"><button type="button" class="shcl" id="shcl" aria-label="閉じる">×</button><div class="shtabs" role="tablist"><button type="button" class="shtab on" id="shtA" role="tab">当店のこだわり</button><button type="button" class="shtab" id="shtB" role="tab" disabled>部位のこと<i class="shdot" hidden></i></button></div><div class="shb" id="shb"><div class="shv" id="shA"></div></div><button type="button" class="btn shx" id="shx">'+(ccount()>=NEED?"特別なメニューへ":"前の画面に戻る")+'</button></div>';
 document.body.appendChild(m);document.body.classList.add("shopen");window.SHFAST=true;
 var nx1=null,oldv=v,shb=document.getElementById("shb"),A=document.getElementById("shA"),closed=false,chained=false;
 v=A;tok++;
-var B=null,tA=document.getElementById("shtA"),tB=document.getElementById("shtB"),dot=tB.querySelector(".shdot");
-function show(w){if(closed)return;var isB=w==="B";if(isB&&!B){chained=true;A.querySelectorAll("[id]").forEach(function(e){e.removeAttribute("id")});B=document.createElement("div");B.className="shv";B.id="shB";shb.appendChild(B);v=B;item2(d);setTimeout(function(){var nx=B.querySelector("#nx");if(nx)nx.hidden=true},0)}
-A.style.display=isB?"none":"";if(B)B.style.display=isB?"":"none";tA.classList.toggle("on",!isB);tB.classList.toggle("on",isB);tA.setAttribute("aria-selected",!isB);tB.setAttribute("aria-selected",isB);if(isB)dot.hidden=true;shb.scrollTop=0}
-function ready(){if(tB.disabled===false)return;tB.disabled=false;dot.hidden=false;tB.classList.add("shnew")}
-tA.onclick=function(){show("A")};tB.onclick=function(){show("B")};
-try{item(d)}catch(e){}
-nx1=A.querySelector("#nx1");
-if(nx1){nx1.style.display="none";var mo=new MutationObserver(function(){if(!nx1.hidden){mo.disconnect();ready()}});mo.observe(nx1,{attributes:true,attributeFilter:["hidden"]});if(!nx1.hidden){mo.disconnect();ready()}nx1.onclick=function(){show("B")}}
+var P=null,tK=document.getElementById("shtA"),tP=document.getElementById("shtB"),dot=tP.querySelector(".shdot");
+function show(w){if(closed)return;var isP=w==="P";if(isP&&!P){chained=true;A.querySelectorAll("[id]").forEach(function(e){e.removeAttribute("id")});P=document.createElement("div");P.className="shv";P.id="shP";shb.appendChild(P);v=P;try{item(d)}catch(e){}var n1=P.querySelector("#nx1");if(n1)n1.style.display="none"}
+A.classList.toggle("shhide",isP);if(P)P.classList.toggle("shhide",!isP);tK.classList.toggle("on",!isP);tP.classList.toggle("on",isP);tK.setAttribute("aria-selected",!isP);tP.setAttribute("aria-selected",isP);if(isP)dot.hidden=true;shb.scrollTop=0}
+function ready(){if(tP.disabled===false)return;tP.disabled=false;dot.hidden=false;tP.classList.add("shnew")}
+tK.onclick=function(){show("K")};tP.onclick=function(){show("P")};
+try{item2(d)}catch(e){}
+nx1=A.querySelector("#nx");
+if(nx1){var mo=new MutationObserver(function(){if(!nx1.hidden){mo.disconnect();ready()}});mo.observe(nx1,{attributes:true,attributeFilter:["hidden"]});if(!nx1.hidden){mo.disconnect();ready()}}
 var hp=false,fromPop=false;try{history.pushState({nmsh:1},"");hp=true}catch(e){}
 function onpop(){if(!closed){fromPop=true;cl()}}
 window.addEventListener("popstate",onpop);
