@@ -2411,9 +2411,10 @@ function openSheet(){
   document.getElementById('sheetScroll').scrollTop = 0;
   sh.classList.add('show');
   sh.setAttribute('aria-hidden', 'false');
+  document.getElementById('sheetScroll').scrollTop = 0;     // 表示してから先頭へ(非表示のままだと、前回の位置が残るため)
   document.body.classList.add('sheet-open');
   sendLog('画面', { screen: 'detail' });
-  requestAnimationFrame(() => requestAnimationFrame(() => sh.classList.add('open')));
+  requestAnimationFrame(() => { document.getElementById('sheetScroll').scrollTop = 0; requestAnimationFrame(() => sh.classList.add('open')); });
 }
 
 function setSheetTab(name, silent){
@@ -2434,7 +2435,7 @@ function closeSheet(instant){
   sh.setAttribute('aria-hidden', 'true');
   document.body.classList.remove('sheet-open');
   clearTimeout(sheetCloseTimer);
-  const done = () => sh.classList.remove('show');
+  const done = () => { sh.classList.remove('show'); document.getElementById('sheetScroll').scrollTop = 0; };
   if (instant || REDUCED_MOTION) done(); else sheetCloseTimer = setTimeout(done, 480);
   if (!instant) maybeNudge();
 }
