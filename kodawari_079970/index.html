@@ -1152,11 +1152,11 @@ var AC=function(t){return '<span style="color:var(--acc)">'+t+'</span>'};
 var S=[
 {t:'<b>ご来店ありがとうございます。<br>大将の江田です。</b>'},
 {t:'<b>お待ちいただく間に、<br>「まずはこれを食べてほしい」と思う<br>'+AC(String(D.length).replace(/\d/g,function(c){return String.fromCharCode(c.charCodeAt(0)+65248)})+'本の焼き鳥')+'を<br>紹介させてください。</b>'},
-{t:'<b>最初に、'+AC('2つだけ')+'<br>聞かせてください。<br>まず、性別は？</b>',q:"gender",o:["男性","女性","秘密"]},
+{t:'<b>その前に、'+AC('2つだけ')+'<br>聞かせてください。<br>まず、性別は？</b>',q:"gender",o:["男性","女性","秘密"]},
 {t:'<b>ありがとうございます。<br>続いて、年齢は？</b>',q:"age",o:["34歳以下","35歳以上"]},
-{t:'<b>ありがとうございます！<br>実は今、'+AC('ニワトリ')+'が<br>走り回っています。</b>'},
-{t:'<b>ニワトリを捕まえて、<br>大将の話を聞いてください。<br>途中で、ここだけの<br>'+AC('特別なコース')+'のご案内もあります。<br>それでは、どうぞ。</b>',end:true,note:'※途中でやめても、続きからできます。'},
-{t:'<b>ご来店ありがとうございます。<br>大将の江田です。<br>ニワトリを捕まえて、<br>大将の話を聞いてください。<br>途中で、ここだけの<br>'+AC('特別なコース')+'のご案内もあります。</b>',end:true},
+{t:'<b>ありがとうございます！<br>焼き鳥の話は、ニワトリから。<br>実は今、'+AC('ニワトリ')+'が<br>走り回っています。</b>'},
+{t:'<b>ニワトリを捕まえると、<br>その部位の焼き鳥の話を<br>お聞かせします。<br>途中で、ここだけの<br>'+AC('特別なコース')+'のご案内も。<br>それでは、どうぞ。</b>',end:true,note:'※途中でやめても、続きからできます。'},
+{t:'<b>ご来店ありがとうございます。<br>大将の江田です。<br>ニワトリを捕まえると、<br>その部位の焼き鳥の話を<br>お聞かせします。<br>途中で、ここだけの<br>'+AC('特別なコース')+'のご案内も。</b>',end:true},
 {t:'<b>おかえりなさい。<br>ここまでの記録は、<br>残っています。<br>'+AC('続きから')+'どうぞ。</b>',end:true}
 ];
 function after(ms,cb,my){var t=setTimeout(f,ms);function f(){if(my!==tok)return;clearTimeout(t);pending=null;cb()}pending=f}
@@ -1268,7 +1268,7 @@ m.querySelectorAll(".zkpick").forEach(function(b){b.onclick=function(){var i=+b.
 function hub(){var my=tok,n=D.length,cnt=ccount(),hq,hw;
 v.innerHTML='<div id="hq"></div><div id="hubw"></div>';hq=document.getElementById("hq");hw=document.getElementById("hubw");
 if(cnt>=NEED){noren(function(){go(D.length)});return}
-chef(hq,cnt===0?(RETURN?["ご来店ありがとうございます。大将の江田です。","ニワトリを捕まえて、\n大将の話を聞いてください。\n途中で、ここだけの\n特別なコースの\nご案内もあります。"]:["走り回るニワトリを、タップして捕まえてください。"]):(!RESUMED&&RESUME0>0&&cnt>=RESUME0&&cnt<NEED?(RESUMED=true,["おかえりなさい。","これまでに"+RESUME0+"つ見ています。",leftMsg()]):[leftMsg()]));
+chef(hq,cnt===0?(RETURN?["ご来店ありがとうございます。大将の江田です。","走り回るニワトリを、\nタップして捕まえてください。\n部位の焼き鳥の話を\nお聞かせします。","途中で、ここだけの\n特別なコースのご案内も\nあります。"]:["走り回るニワトリを、タップして捕まえてください。"]):(!RESUMED&&RESUME0>0&&cnt>=RESUME0&&cnt<NEED?(RESUMED=true,["おかえりなさい。","これまでに"+RESUME0+"つ見ています。",leftMsg()]):[leftMsg()]));
 hw.innerHTML='<div class="yard" id="yard"></div><div class="hrow"><p class="cslab" style="text-align:center;font-size:20px">捕まえた　<span id="cc">'+cnt+'</span>/'+n+'</p>'+'<button type="button" class="zkb" id="zpk">部位をえらぶ</button>'+'</div>';document.getElementById("zpk").onclick=pickPart;
 var yard=document.getElementById("yard"),calm=matchMedia("(prefers-reduced-motion:reduce)").matches,YT=Math.max(6,Math.round(yard.clientHeight*.34)-62),busy=0,as=[];
 D.forEach(function(d,i){if(caught[i])return;var kind=d.n==="豚ネギマ"?"p":"r",el=document.createElement("div");el.className="an "+kind+(calm?"":" go");el.setAttribute("role","button");el.setAttribute("tabindex","0");el.setAttribute("aria-label",kind==="p"?"豚":"ニワトリ");el.innerHTML=anHTML(kind)+'';yard.appendChild(el);
