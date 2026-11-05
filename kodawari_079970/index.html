@@ -843,6 +843,21 @@ body.shopen{overflow:hidden}
 .shv.shhide{position:absolute;left:0;right:0;top:0;height:0;overflow:hidden;visibility:hidden;pointer-events:none}
 .shb .pgl{display:block;text-align:center;margin:0 0 6px;font-size:15px}
 .shb .pgl b{display:inline-block;padding:3px 14px;border-radius:999px;background:rgba(255,250,240,.75);border:1px solid #dcc28a;color:#6b4a22!important;-webkit-text-fill-color:#6b4a22!important}
+/* V339 冒頭画面を整える */
+.chat{min-height:0!important}
+.chat .lead{min-height:170px;line-height:1.75!important}
+.chat .lead .gp{display:block;height:.55em}
+.chat .mo{min-height:40px!important}
+.chat.hasopt{min-height:250px!important}
+.chat.hasopt .mo{min-height:96px!important}
+.chat .mo .small{opacity:.55}
+/* V339b */
+.chat.hasopt{min-height:0!important}
+.chat.hasopt .lead{min-height:110px}
+.chat.hasopt .mo{min-height:0!important;margin-top:14px}
+/* V339c 冒頭の位置を固定 */
+.intro main{justify-content:flex-start!important;padding-top:max(10vh,40px)!important}
+.intro #v{flex:0 0 auto}
 </style>
 </head>
 <body><div id="bgl" aria-hidden="true"></div>
@@ -1150,7 +1165,7 @@ function go(n){if(n===-1){var pv=loadProf();if(pv){profile=pv;seenIntro=true;RET
 var tok=0,pending=null,reduced=matchMedia("(prefers-reduced-motion:reduce)").matches;
 var AC=function(t){return '<span style="color:var(--acc)">'+t+'</span>'};
 var S=[
-{t:'<b>ご来店ありがとうございます。<br>大将の江田です。<br>お待ちいただく間に、<br>「まずはこれを<br>食べてほしい」と思う<br>'+AC(String(D.length).replace(/\d/g,function(c){return String.fromCharCode(c.charCodeAt(0)+65248)})+'本の焼き鳥')+'を<br>紹介させてください。</b>'},
+{t:'<b>ご来店ありがとうございます。<br>大将の江田です。<i class="gp"></i>お待ちいただく間に、<br>「まずはこれを<br>食べてほしい」と思う<br>'+AC(String(D.length).replace(/\d/g,function(c){return String.fromCharCode(c.charCodeAt(0)+65248)})+'本の焼き鳥')+'を<br>紹介させてください。</b>'},
 {t:'<b>その前に、'+AC('2つだけ')+'<br>聞かせてください。<br>まず、性別は？</b>',q:"gender",o:["男性","女性","秘密"]},
 {t:'<b>ありがとうございます。<br>続いて、年齢は？</b>',q:"age",o:["34歳以下","35歳以上"]},
 {t:'<b>ありがとうございます！<br>焼き鳥の話は、ニワトリから。<br>実は今、'+AC('ニワトリ')+'が<br>走り回っています。</b>'},
@@ -1174,7 +1189,7 @@ function typeIn(el,html,my,cb){
   if(reduced)finish();else t=setTimeout(step,150)
 }
 function scene(i,my){if(my!==tok)return;
-  var sc=S[i],mw=document.getElementById("mw");
+  var sc=S[i],mw=document.getElementById("mw");mw.classList.toggle("hasopt",!!(sc.o||sc.end));
   mw.innerHTML='<p class="lead" id="mt"></p><div class="mo" id="mo"></div>';
   var mt=document.getElementById("mt"),mo=document.getElementById("mo");
   typeIn(mt,sc.t,my,function(){
