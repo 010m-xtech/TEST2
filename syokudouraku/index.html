@@ -39,7 +39,7 @@
     width: 68px; height: 68px; display: flex; flex-direction: column; align-items: center; justify-content: center; transform: rotate(-8deg); background: rgba(255,255,255,.5); }
   .stamp-count b { font-family: "Shippori Mincho", serif; font-size: 20px; line-height: 1; }
   .stamp-count span { font-size: 9px; letter-spacing: .1em; margin-top: 2px; }
-  .store-badge { margin-top: 10px; display: inline-block; font-size: 12px; font-weight: 700; line-height: 1.6;
+  .store-badge { margin-top: 0; display: block; background: none !important; border: 0 !important; padding: 0 !important; font-size: 12px; font-weight: 700; line-height: 1.6;
     background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; }
   .store-badge:empty { display: none; }
   .store-badge b { color: var(--accent); }
@@ -50,7 +50,10 @@
   #japan path.pref:hover { filter: brightness(1.08) drop-shadow(0 3px 4px rgba(0,0,0,.2)); }
   #japan.zooming path.pref:not(.active) { opacity: .25; }
   #japan .visited-mark { pointer-events: none; }
-  #japan path.pref.visited:not(.gold) { filter: saturate(1.5) brightness(.9); }
+  #japan path.pref.red { stroke: #FFE3DD; }
+  .map-legend { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 12px; font-weight: 700; }
+  .map-legend span { display: inline-flex; align-items: center; gap: 5px; background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; }
+  .map-legend i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
   #japan path.pref.gold { stroke: #FFF6D8; animation: goldGlow 2.4s ease-in-out infinite alternate; }
   @keyframes goldGlow { from { filter: drop-shadow(0 0 2px rgba(233,180,60,.5)); } to { filter: drop-shadow(0 0 9px rgba(255,200,70,.95)); } }
   .map-hint { position: absolute; left: 50%; bottom: max(22px, env(safe-area-inset-bottom)); transform: translateX(-50%);
@@ -252,6 +255,25 @@
   .intro-card small { color: var(--accent); font-weight: 700; font-size: 11px; letter-spacing: .15em; }
   .intro-card b { font-size: 20px; }
   .intro-card span { font-size: 13px; color: var(--muted); }
+  .intro-tap { position: absolute; top: 40px; bottom: 0; z-index: 2; }
+  .intro-tap.left { left: 0; width: 35%; }
+  .intro-tap.right { right: 0; width: 65%; }
+  .intro-skip, .intro-start { position: relative; z-index: 3; }
+  .intro-skip { position: absolute; }
+  .intro-scene.on .zoomy { animation: introZoom 2.5s ease-in-out forwards; }
+  @keyframes introZoom { 0%, 15% { transform: scale(1); } 70%, 100% { transform: scale(1.28) translateY(4%); } }
+  .intro-scene.on .zoomy { filter: none; }
+  .intro-modes { position: absolute; left: 4%; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 5px; background: rgba(255,255,255,.95);
+    border-radius: 999px; padding: 5px; box-shadow: 0 4px 12px rgba(0,0,0,.18); }
+  .intro-modes b { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-family: "Shippori Mincho", serif; font-size: 14px; color: var(--muted); }
+  .intro-scene.on .intro-modes b { animation: modeOn 2.5s steps(1) forwards; }
+  .intro-modes b:nth-child(1) { animation-delay: 0s !important; } .intro-modes b:nth-child(2) { animation-delay: -1.9s !important; }
+  .intro-modes b:nth-child(3) { animation-delay: -1.4s !important; } .intro-modes b:nth-child(4) { animation-delay: -.9s !important; } .intro-modes b:nth-child(5) { animation-delay: -.4s !important; }
+  @keyframes modeOn { 0%, 19% { background: var(--ink); color: #fff; } 20%, 100% { background: none; color: var(--muted); } }
+  .intro-pinch { position: absolute; right: 12%; bottom: 14%; font-size: 40px; opacity: 0; }
+  .intro-scene.on .intro-pinch { animation: pinch 2.5s ease-in-out forwards; }
+  @keyframes pinch { 0%, 10% { opacity: 0; transform: scale(.8); } 25% { opacity: 1; } 70% { transform: scale(1.25); opacity: 1; } 100% { opacity: 0; } }
+  .intro-plane-svg { overflow: visible; }
   .intro-cap { min-height: 3.2em; margin: 22px 0 10px; font-size: 18px; font-weight: 800; text-align: center; line-height: 1.6; letter-spacing: .04em; }
   .intro-start { visibility: hidden; border: 0; background: var(--accent); color: #fff; font-weight: 800; font-size: 16px; padding: 14px 44px; border-radius: 999px;
     box-shadow: 0 8px 20px rgba(184,50,42,.3); }
@@ -401,11 +423,9 @@
       <div class="dio-shadow"></div>
     </div>
     <div class="dio-tools" id="dio-tools">
-      <button data-act="rotl" aria-label="左に回す">⟲</button>
       <button data-act="out" aria-label="縮小">－</button>
       <button data-act="reset" aria-label="元に戻す">◎</button>
       <button data-act="in" aria-label="拡大">＋</button>
-      <button data-act="rotr" aria-label="右に回す">⟳</button>
     </div>
     <div class="dio-info">
       <div class="dio-clock" id="dio-clock"></div>
@@ -430,7 +450,9 @@
 
 <!-- ===== オープニング：遊び方（3コマ × 2.5秒） ===== -->
 <div id="intro" hidden>
-  <div class="intro-bars"><i><b></b></i><i><b></b></i><i><b></b></i></div>
+  <div class="intro-bars"><i><b></b></i><i><b></b></i><i><b></b></i><i><b></b></i></div>
+  <div class="intro-tap left" id="intro-prev" aria-label="前へ"></div>
+  <div class="intro-tap right" id="intro-next" aria-label="次へ"></div>
   <button class="intro-skip" id="intro-skip">スキップ</button>
   <div class="intro-stage">
     <!-- 1. 地図 -->
@@ -443,8 +465,14 @@
       <svg class="intro-map dim" id="intro-map2" viewBox="0 0 1640 1490"></svg>
       <img class="intro-dio" id="intro-dio" alt="">
     </div>
-    <!-- 3. ピン → おすすめ -->
+    <!-- 3. 季節・昼夜・拡大 -->
     <div class="intro-scene" data-n="2">
+      <img class="intro-dio still zoomy" id="intro-dio3" alt="">
+      <div class="intro-modes"><b>春</b><b>夏</b><b>秋</b><b>冬</b><b>🌙</b></div>
+      <div class="intro-pinch">🤏</div>
+    </div>
+    <!-- 4. ピン → おすすめ -->
+    <div class="intro-scene" data-n="3">
       <img class="intro-dio still" id="intro-dio2" alt="">
       <div class="intro-pin">酒</div>
       <div class="intro-finger tap3">👆</div>
@@ -815,17 +843,24 @@ const FULL_VIEW = [0, 0, 1640, 1490];
 // 沖縄県は本土の地図データに無いので、右下に枠で表示
 const OKINAWA_PATH = "M1342,1418 1352,1402 1366,1394 1374,1380 1392,1368 1402,1350 1418,1342 1428,1326 1446,1316 1452,1300 1466,1296 1472,1306 1462,1318 1450,1334 1436,1346 1424,1362 1404,1376 1390,1392 1376,1404 1362,1420 1348,1428Z";
 
+// 県の色分け：金＝特におすすめ（STORE.featured）、赤＝メニューに載せている県、緑＝そのほか
+const GREENS = { "北海道": "#8FBF7F", "東北": "#9BC98A", "関東": "#A8D095", "中部": "#94C487", "近畿": "#A2CC91", "中国": "#8DC07E", "四国": "#9CC88B", "九州": "#93C384" };
+const isFeatured = pref => (STORE.featured || []).includes(pref);
+function prefTier(pref) { return isFeatured(pref) ? 'gold' : storeItems(pref).length ? 'red' : 'green'; }
+function prefFill(pref) {
+  const t = prefTier(pref);
+  return t === 'gold' ? 'url(#gold)' : t === 'red' ? '#D2493C' : GREENS[(SAKE_BY_PREF[pref] || {}).region] || '#9BC98A';
+}
+
 function renderMap() {
   const prefs = Object.entries(JAPAN_PREFECTURE_PATHS).map(([name, d]) => {
-    const t = SAKE_BY_PREF[name];
-    const gold = storeItems(name).length > 0;
-    return `<path class="pref${gold ? ' gold' : ''}" d="${d}" data-pref="${name}" fill="${gold ? 'url(#gold)' : REGION_COLORS[t ? t.region : '中部']}"></path>`;
+    return `<path class="pref ${prefTier(name)}" d="${d}" data-pref="${name}" fill="${prefFill(name)}"></path>`;
   }).join('');
   $('prefs').innerHTML = prefs;
   $('okinawa').innerHTML = `
     <rect x="1290" y="1270" width="220" height="190" rx="14" fill="none" stroke="#C9BEA9" stroke-dasharray="6 6" stroke-width="2"/>
     <text x="1300" y="1296" font-size="20" fill="#9A8F7E" font-family="Noto Sans JP">沖縄</text>
-    <path class="pref${storeItems('沖縄県').length ? ' gold' : ''}" d="${OKINAWA_PATH}" data-pref="沖縄県" fill="${storeItems('沖縄県').length ? 'url(#gold)' : REGION_COLORS['九州']}"></path>`;
+    <path class="pref ${prefTier('沖縄県')}" d="${OKINAWA_PATH}" data-pref="沖縄県" fill="${prefFill('沖縄県')}"></path>`;
   renderMarks();
 }
 
@@ -846,7 +881,8 @@ function pinsFor(pref) {
 function applyStore() {
   if (STORE.accent) document.documentElement.style.setProperty('--accent', STORE.accent);
   const prefs = Object.keys(STORE.items || {}).filter(p => storeItems(p).length);
-  $('store-badge').innerHTML = STORE.name ? `${STORE.name}｜こだわりの産地 <b>${prefs.length}</b> 県` : '';
+  const hasGold = Object.keys(STORE.items || {}).some(isFeatured) || (STORE.featured || []).length;
+  $('store-badge').innerHTML = prefs.length ? `<div class="map-legend">${hasGold ? '<span><i style="background:linear-gradient(135deg,#B07F22,#F3D27A)"></i>特におすすめ</span>' : ''}<span><i style="background:#D2493C"></i>メニューの産地</span></div>` : '';
 }
 
 function renderMarks() {
@@ -861,9 +897,6 @@ function renderMarks() {
     const cx = b.x + b.width / 2, cy = b.y + b.height / 2;
     const r = Math.max(5, Math.min(12, Math.min(b.width, b.height) * .2));
     p.classList.add('visited');
-    marks += `<g class="visited-mark" transform="translate(${cx},${cy - r * 1.4}) rotate(-12)">
-      <circle r="${r}" fill="rgba(255,255,255,.85)" stroke="#B8322A" stroke-width="2.5"/>
-      <text text-anchor="middle" dominant-baseline="central" font-size="${r * 1.05}" fill="#B8322A" font-family="Shippori Mincho" font-weight="800">酒</text></g>`;
   });
   $('marks').innerHTML = marks;
   $('stamp-num').textContent = visited.size;
@@ -963,6 +996,17 @@ function prefCenter(name) {
   return [b.x + b.width / 2, b.y + b.height / 2];
 }
 
+// かわいい飛行機のイラスト（上から見た形・右向き）
+const PLANE_SVG = `
+  <path d="M-30,-4 L-42,-17 Q-41,-21 -36,-20 L-22,-6 Z M-30,4 L-42,17 Q-41,21 -36,20 L-22,6 Z" fill="#E4573F" stroke="#3A2E2A" stroke-width="2.2" stroke-linejoin="round"/>
+  <path d="M-6,-6 L-16,-34 Q-14,-39 -8,-37 L14,-6 Z M-6,6 L-16,34 Q-14,39 -8,37 L14,6 Z" fill="#E4573F" stroke="#3A2E2A" stroke-width="2.2" stroke-linejoin="round"/>
+  <path d="M-34,-6 Q-38,0 -34,6 L20,8 Q36,7 38,0 Q36,-7 20,-8 Z" fill="#FFFDF7" stroke="#3A2E2A" stroke-width="2.4" stroke-linejoin="round"/>
+  <path d="M-30,-1.6 L24,-1.6 L24,1.6 L-30,1.6 Z" fill="#E4573F"/>
+  <path d="M27,-6.2 Q38,-4 38,0 Q38,4 27,6.2 Q30,0 27,-6.2 Z" fill="#E4573F"/>
+  <ellipse cx="22" cy="0" rx="4" ry="4.6" fill="#7CC6EE" stroke="#3A2E2A" stroke-width="1.6"/>
+  <circle cx="-4" cy="-4.2" r="1.6" fill="#7CC6EE"/><circle cx="4" cy="-4.2" r="1.6" fill="#7CC6EE"/><circle cx="12" cy="-4.2" r="1.6" fill="#7CC6EE"/>
+  <circle cx="-4" cy="4.2" r="1.6" fill="#7CC6EE"/><circle cx="4" cy="4.2" r="1.6" fill="#7CC6EE"/><circle cx="12" cy="4.2" r="1.6" fill="#7CC6EE"/>`;
+
 // 出発地から目的の県まで、飛行機が弧を描いて飛ぶ
 function flyPlane(to) {
   const from = prefCenter(STORE.origin || '東京都');
@@ -983,11 +1027,8 @@ function flyPlane(to) {
     <g id="fl-target" transform="translate(${to[0]} ${to[1]})" opacity="0">
       <circle r="${26*u}" fill="none" stroke="#B8322A" stroke-width="${3*u}"><animate attributeName="r" values="${10*u};${34*u}" dur="1s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0" dur="1s" repeatCount="indefinite"/></circle>
       <circle r="${7*u}" fill="#B8322A" stroke="#fff" stroke-width="${2.5*u}"/></g>
-    <g id="fl-shadow" opacity=".22"><ellipse rx="${28*u}" ry="${10*u}" fill="#000"/></g>
-    <g id="fl-plane"><g transform="scale(${2.6*u})">
-      <path d="M22,0 L14,-3 L2,-3 L-6,-17 L-11,-17 L-6,-3 L-14,-3 L-18,-9 L-21,-9 L-19,0 L-21,9 L-18,9 L-14,3 L-6,3 L-11,17 L-6,17 L2,3 L14,3 Z"
-        fill="#fff" stroke="#1F1B16" stroke-width="1.6" stroke-linejoin="round"/>
-      <path d="M14,-3 Q24,0 14,3" fill="#B8322A"/></g></g>`;
+    <g id="fl-shadow" opacity=".18"><g transform="scale(${1.5*u})"><g fill="#000" stroke="none">${PLANE_SVG.replace(/fill="[^"]+"/g, 'fill="#000"').replace(/stroke="[^"]+"/g, '')}</g></g></g>
+    <g id="fl-plane"><g transform="scale(${1.6*u})">${PLANE_SVG}</g></g>`;
   const plane = $('fl-plane'), shadow = $('fl-shadow'), trail = $('fl-trail'), target = $('fl-target');
   const ms = Math.min(1900, 900 + dist * 1.4);
   return new Promise(res => {
@@ -998,7 +1039,7 @@ function flyPlane(to) {
       const ang = Math.atan2(y2 - y, x2 - x) * 180 / Math.PI;
       const alt = Math.sin(Math.PI * k);           // 離陸→上昇→着陸
       plane.setAttribute('transform', `translate(${x} ${y - alt * 18 * u}) rotate(${ang}) scale(${0.8 + alt * 0.5})`);
-      shadow.setAttribute('transform', `translate(${x + alt * 10 * u} ${y + alt * 8 * u}) scale(${1 - alt * 0.4})`);
+      shadow.setAttribute('transform', `translate(${x + alt * 22 * u} ${y + alt * 26 * u}) rotate(${ang}) scale(${0.8 - alt * 0.15})`);
       let d = `M${from[0]},${from[1]}`;
       for (let i = 1; i <= 24; i++) { const [px, py] = at(k * i / 24); d += ` L${px},${py}`; }
       trail.setAttribute('d', d);
@@ -1090,10 +1131,10 @@ function showTown(town) {
   const any = pins.sake || pins.food;
   $('town-hint').style.display = '';
   $('town-hint-text').textContent = any ? (pins.sake && pins.food ? 'お酒とフードのピンをタップ' : pins.food ? 'フードのピンをタップ' : 'お酒のピンをタップ')
-    : 'ドラッグで回す・ピンチで拡大';
-  const gold = storeItems(town.pref).length > 0;
+    : 'ピンチ・ダブルタップで拡大';
+  const gold = isFeatured(town.pref), red = !gold && storeItems(town.pref).length > 0;
   $('gold-ribbon').hidden = !gold;
-  $('gold-ribbon').textContent = `✦ ${STORE.name || 'このお店'}の産地 ✦`;
+  $('gold-ribbon').textContent = '✦ 特におすすめの産地 ✦';
   const dio = DIORAMAS[town.pref];
   dioMode = !!(dio && dio.img);
   $('diorama').hidden = !dioMode;
@@ -1114,7 +1155,7 @@ function showTown(town) {
 function setTime(t) {
   currentTime = t;
   document.querySelectorAll('#time-switch button').forEach(b => b.classList.toggle('on', b.dataset.time === t));
-  if (dioMode) { $('diorama').classList.toggle('gold', storeItems(current.pref).length > 0); LookFX.render(); return; }
+  if (dioMode) { $('diorama').classList.toggle('gold', isFeatured(current.pref)); LookFX.render(); return; }
   const svg = $('town-svg');
   svg.innerHTML = drawTown(current, TIMES[t], t);
   svg.style.width = (svg.clientHeight * W / H) + 'px';
@@ -1641,8 +1682,7 @@ function setupTilt() {
       moved = 99; applyView(false); return;
     }
     const dx = e.clientX - last[0], dy = e.clientY - last[1]; last = [e.clientX, e.clientY]; moved += Math.abs(dx) + Math.abs(dy);
-    if (view.zoom > 1.05) { view.x += dx; view.y += dy; }          // 拡大中は移動
-    else { view.ry += dx * 0.35; view.rx -= dy * 0.25; }           // 通常はくるっと回す
+    if (view.zoom > 1.05) { view.x += dx; view.y += dy; }          // 拡大しているときだけ、見たい場所へ動かせる
     applyView(false);
   });
   const up = e => {
@@ -1850,7 +1890,7 @@ function openSheet(t, mode = 'sake') {
   const list = arr => { const body = arr.map(it => itemHTML(it, all.indexOf(it))).join(''); return STORE.layout === 'list' ? `<div class="item-list">${body}</div>` : body; };
   const mini = arr => `<div class="item-list">${arr.map(it => { const k = KINDS[it.kind] || KINDS.other;
     return `<div class="item-row"><span>${k.icon}</span><div><div class="r-name">${it.name}</div><div class="r-sub">${it.from || ''}</div></div><div class="r-menu">${it.menu || ''}</div></div>`; }).join('')}</div>`;
-  let html = `<div class="store-eyebrow">${STORE.name || ''}</div>
+  let html = `<div class="store-eyebrow">${isFeatured(t.pref) ? '✦ 特におすすめ' : 'こだわりの産地'}</div>
     <h3 class="store-heading mincho">${(mode === 'food' ? (STORE.foodHeading || '{pref}から届く、当店の食材') : (STORE.heading || '{pref}のお酒')).replace('{pref}', t.pref)}</h3>`;
 
   if (mode === 'sake') {
@@ -1891,27 +1931,27 @@ function closeSheet() {
 }
 
 /* =========================================================
-   オープニング：遊び方（3コマ × 2.5秒）
+   オープニング：遊び方（4コマ × 2.5秒）
+   画面の右側をタップで次へ、左側をタップで前へ
    ========================================================= */
 const INTRO_KEY = 'meisan-map-intro-seen';
 const INTRO_CAPS = [
-  '① 金色に光る県が<br>お店のこだわりの産地',
-  '② タップすると飛行機でひとっ飛び<br>その県の街へ',
-  '③ ピンをタップすると<br>おすすめのお酒と料理'
+  '① 地図の色に注目<br><span style="color:#D2493C">赤</span>＝メニューの産地　<span style="color:#B07F22">金</span>＝特におすすめ',
+  '② 県をタップすると<br>飛行機でその街へひとっ飛び',
+  '③ 季節や昼・夜を切り替えて<br>ピンチで近づいて街を眺めよう',
+  '④ ピンをタップすると<br>おすすめのお酒と料理'
 ];
 let introTimer = null;
 function buildIntro() {
-  const golds = Object.keys(STORE.items || {}).filter(p => storeItems(p).length);
-  const sample = golds.find(p => DIORAMAS[p] && DIORAMAS[p].img) || '宮城県';
-  const paths = Object.entries(JAPAN_PREFECTURE_PATHS).map(([n, d]) => {
-    const g = golds.includes(n);
-    return `<path d="${d}" class="${g ? 'gold' : ''}" data-p="${n}" fill="${g ? 'url(#gold)' : REGION_COLORS[(SAKE_BY_PREF[n] || {}).region] || '#ddd'}"/>`;
-  }).join('');
+  const withImg = p => DIORAMAS[p] && DIORAMAS[p].img;
+  const sample = (STORE.featured || []).find(withImg) || Object.keys(STORE.items || {}).find(p => storeItems(p).length && withImg(p)) || '宮城県';
+  const paths = Object.entries(JAPAN_PREFECTURE_PATHS).map(([n, d]) =>
+    `<path d="${d}" class="${prefTier(n)}" data-p="${n}" fill="${prefFill(n)}"/>`).join('');
   const defs = document.querySelector('#japan defs').outerHTML;
   $('intro-map').innerHTML = defs + paths;
-  $('intro-map2').innerHTML = defs + paths + '<g id="intro-flight"></g>';
+  $('intro-map2').innerHTML = defs + paths.replace(/class="(green|red)"/g, 'class="$1" style="opacity:.35"') + '<g id="intro-flight"></g>';
   const img = (DIORAMAS[sample] || {}).img || '';
-  $('intro-dio').src = img; $('intro-dio2').src = img;
+  $('intro-dio').src = img; $('intro-dio2').src = img; $('intro-dio3').src = img;
   // 指は金色の県の上へ
   const tgt = $('intro-map').querySelector(`path[data-p="${sample}"]`);
   return { tgt, sample };
@@ -1926,28 +1966,39 @@ function playIntro() {
       const k = Math.min(r.width / 1640, r.height / 1490), ox = (r.width - 1640 * k) / 2, oy = (r.height - 1490 * k) / 2;
       Object.assign($('intro-finger').style, { left: (ox + (b.x + b.width / 2) * k - 14) + 'px', top: (oy + (b.y + b.height / 2) * k - 6) + 'px' });
       // 2コマ目：東京から金色の県へ飛ぶ線
-      const from = $('intro-map').querySelector(`path[data-p="${STORE.origin || '東京都'}"]`);
+      let from = $('intro-map').querySelector(`path[data-p="${STORE.origin || '東京都'}"]`);
+      if (from) { const fb0 = from.getBBox(); if (Math.hypot(fb0.x - b.x, fb0.y - b.y) < 400) from = $('intro-map').querySelector(`path[data-p="${sample === '福岡県' ? '北海道' : '福岡県'}"]`); }
       if (from) {
         const fb = from.getBBox(), f = [fb.x + fb.width / 2, fb.y + fb.height / 2], t = [b.x + b.width / 2, b.y + b.height / 2];
         const c = [(f[0] + t[0]) / 2, Math.min(f[1], t[1]) - 220];
         $('intro-flight').innerHTML = `<path d="M${f[0]},${f[1]} Q${c[0]},${c[1]} ${t[0]},${t[1]}" fill="none" stroke="#B8322A" stroke-width="7" stroke-dasharray="18 14" class="intro-route"/>
-          <text font-size="150" fill="#1F1B16" stroke="#fff" stroke-width="6" paint-order="stroke" dy="50" text-anchor="middle" class="intro-plane">✈<animateMotion dur="1.2s" fill="freeze" rotate="auto" path="M${f[0]},${f[1]} Q${c[0]},${c[1]} ${t[0]},${t[1]}"/></text>`;
+          <g class="intro-plane"><g transform="scale(6)">${PLANE_SVG}</g><animateMotion dur="1.3s" fill="freeze" rotate="auto" path="M${f[0]},${f[1]} Q${c[0]},${c[1]} ${t[0]},${t[1]}"/></g>`;
       }
     }
   });
-  let n = -1;
+  let n = 0;
   const show = i => {
-    scenes.forEach((s, j) => s.classList.toggle('on', j === i));
-    bars.forEach((b, j) => { b.classList.toggle('done', j < i); b.classList.toggle('now', j === i); });
+    n = i;
+    scenes.forEach((s, j) => {
+      const on = j === i;
+      // アニメーションを最初からやり直す
+      if (on) { s.classList.remove('on'); void s.offsetWidth; }
+      s.classList.toggle('on', on);
+    });
+    bars.forEach((b, j) => { b.classList.remove('now'); b.classList.toggle('done', j < i); });
+    void intro.offsetWidth; bars[i].classList.add('now');
     $('intro-cap').innerHTML = INTRO_CAPS[i];
-    if (i === 1) { const fl = $('intro-flight'); if (fl) fl.innerHTML = fl.innerHTML; }   // 飛行機のアニメを最初から
-    $('intro-start').classList.toggle('show', i === 2);
+    if (i === 1) { const fl = $('intro-flight'); if (fl) fl.innerHTML = fl.innerHTML; }   // 飛行機を最初から
+    $('intro-start').classList.toggle('show', i === INTRO_CAPS.length - 1);
+    clearTimeout(introTimer);
+    if (i < INTRO_CAPS.length - 1) introTimer = setTimeout(() => show(i + 1), 2500);
   };
-  const next = () => { n++; if (n > 2) { clearInterval(introTimer); return; } show(n); };
-  clearInterval(introTimer); next(); introTimer = setInterval(next, 2500);
+  introGo = d => { const k = n + d; if (k < 0) return show(0); if (k >= INTRO_CAPS.length) return closeIntro(); show(k); };
+  show(0);
 }
+let introGo = () => {};
 function closeIntro() {
-  clearInterval(introTimer); $('intro').hidden = true;
+  clearTimeout(introTimer); $('intro').hidden = true;
   try { localStorage.setItem(INTRO_KEY, '1'); } catch (e) {}
 }
 
@@ -1971,6 +2022,8 @@ $('dio-modes').addEventListener('click', e => {
 });
 $('dio-modes').addEventListener('pointerdown', e => e.stopPropagation());
 $('intro-skip').addEventListener('click', closeIntro);
+$('intro-prev').addEventListener('click', () => introGo(-1));
+$('intro-next').addEventListener('click', () => introGo(1));
 $('intro-start').addEventListener('click', closeIntro);
 $('map-help').addEventListener('click', playIntro);
 $('town-help').addEventListener('click', playIntro);
