@@ -497,6 +497,9 @@
   .insta-text{ flex:1; min-width:0; display:flex; flex-direction:column; gap:4px; line-break:strict; }
   .insta-l1{ font-size:16.5px; font-weight:700; line-height:1.5; }
   #farewellForm.locked{ opacity:.5; pointer-events:none; transition:opacity .4s ease; }
+  .farewell-back[hidden]{ display:none; }
+  #farewellDone{ margin-bottom:22px; }
+  #farewellDone .insta-card{ margin-top:22px; }
   .farewell-back{ text-align:center; margin:18px 0 0; font-size:14px; color:rgba(242,238,227,.7); letter-spacing:.06em; }
   .insta-l2{ font-size:14px; line-height:1.55; color: rgba(242,238,227,0.85); }
   .insta-text .ph{ display:inline-block; }
@@ -1209,15 +1212,6 @@
         <span class="air a1"></span><span class="air a2"></span><span class="air a3"></span>
       </div>
 
-      <div id="farewellForm" hidden>
-        <textarea id="farewellText" class="note-input" rows="4" maxlength="200" placeholder="どんなことでも、お気軽にどうぞ" aria-label="お店へのひとこと"></textarea>
-        <p class="note">お名前や連絡先は、書かなくて大丈夫です</p>
-        <div class="btn-row" style="flex-direction: column;">
-          <button class="btn btn-primary" id="farewellSend" type="button" style="width:100%" disabled>送って水槽に戻る</button>
-          <button class="btn btn-primary" id="farewellSkip" type="button" style="width:100%">このまま水槽に戻る</button>
-        </div>
-      </div>
-
       <div id="farewellDone" hidden>
         <a class="insta-card" id="instaLink" href="https://www.instagram.com/izakayakojiki?psln=czk4Zm1zdXo4a3Ux" target="_blank" rel="noopener">
           <img class="insta-icon" src="instagram.webp" width="56" height="56" alt="Instagram">
@@ -1227,8 +1221,18 @@
           </span>
           <span class="insta-arrow" aria-hidden="true">›</span>
         </a>
-        <p class="farewell-back" id="farewellBack">タップで水槽にもどります</p>
       </div>
+
+      <div id="farewellForm" hidden>
+        <textarea id="farewellText" class="note-input" rows="4" maxlength="200" placeholder="どんなことでも、お気軽にどうぞ" aria-label="お店へのひとこと"></textarea>
+        <p class="note">お名前や連絡先は、書かなくて大丈夫です</p>
+        <div class="btn-row" style="flex-direction: column;">
+          <button class="btn btn-primary" id="farewellSend" type="button" style="width:100%" disabled>送って水槽に戻る</button>
+          <button class="btn btn-primary" id="farewellSkip" type="button" style="width:100%">このまま水槽に戻る</button>
+        </div>
+      </div>
+
+      <p class="farewell-back" id="farewellBack" hidden>タップで水槽にもどります</p>
     </section>
 
     <section class="screen" data-screen="ask"></section>
@@ -2729,7 +2733,7 @@ function hideFarewellForm(){
   fwEl('farewellForm').classList.remove('locked'); fwEl('farewellText').readOnly = false; fwEl('farewellSkip').disabled = false; clearTimeout(farewellTimer); const f = fwEl('farewellForm'); f.hidden = true; f.classList.remove('pop-in'); }
 function resetFarewellUI(){
   clearTimeout(farewellReturnTimer);
-  hideFarewellForm(); fwEl('farewellDone').hidden = true;
+  hideFarewellForm(); fwEl('farewellDone').hidden = true; fwEl('farewellBack').hidden = true;
   fwEl('farewellText').value = ''; fwEl('farewellSend').disabled = true;
   farewellTalk.img.classList.remove('done'); farewellFinished = false;
 }
@@ -2770,7 +2774,7 @@ function finishFarewell(kind){
   farewellTalk.img.classList.add('done');
   if (kind !== 'sent' && !surveyReview) sendLog('ひとこと(スキップ)');
   farewellTalk.say(FAREWELL_THANKS, { wave: '', cls: 'thanks' });
-  fwEl('farewellDone').hidden = false; fwEl('farewellDone').classList.add('pop-in');
+  fwEl('farewellDone').hidden = false; fwEl('farewellDone').classList.add('pop-in'); fwEl('farewellBack').hidden = false;
   startFarewellReturn();
   document.getElementById('header-back-btn').style.display = 'none';
   screenHistory = [];
@@ -2781,7 +2785,7 @@ function showFarewellRepeat(){
   farewellTalk.stop();
   farewellTalk.img.classList.add('done');
   farewellTalk.say(FAREWELL_THANKS, { wave: '', cls: 'thanks' });
-  fwEl('farewellDone').hidden = false; fwEl('farewellDone').classList.add('pop-in');
+  fwEl('farewellDone').hidden = false; fwEl('farewellDone').classList.add('pop-in'); fwEl('farewellBack').hidden = false;
   startFarewellReturn();
   document.getElementById('header-back-btn').style.display = 'none';
   screenHistory = [];
