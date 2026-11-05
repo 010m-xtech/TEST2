@@ -826,6 +826,14 @@ body.shopen{overflow:hidden}
 .shp .cb::after,.shp .cb::before,.shp .lwt::after,.shp .sy::after{background:rgba(255,250,240,.9)!important}
 .shp .shtab{background:rgba(255,250,240,.55)}
 .shp .shcl,.shp .shmore{background:rgba(255,250,240,.85)}
+/* V333 コンパクトな丸形タブ */
+.shp .shtabs{display:flex;justify-content:center;gap:0;margin:2px 44px 10px 44px;padding:3px;border-radius:999px;background:rgba(255,250,240,.6);border:1px solid rgba(201,164,92,.55);width:auto;align-self:center}
+.shp .shtab{flex:0 1 auto;padding:6px 16px;border-radius:999px;border:0;background:transparent;font-size:14px;line-height:1.2;letter-spacing:0;color:#8a6a3c;-webkit-text-fill-color:#8a6a3c;box-shadow:none;min-height:0;white-space:nowrap}
+.shp .shtab.on{background:linear-gradient(180deg,#f3d995,#dcb764);color:#3a2a1c;-webkit-text-fill-color:#3a2a1c;box-shadow:0 1px 3px rgba(120,84,40,.25)}
+.shp .shtab:disabled{opacity:.5}
+.shp .shtab .shdot{top:3px;right:5px;width:8px;height:8px}
+.shp .shtab.shnew:not(.on){animation:none;box-shadow:0 0 0 2px rgba(255,213,74,.55) inset}
+.shp .shcl{top:9px;right:10px;width:32px;height:32px;font-size:20px}
 </style>
 </head>
 <body><div id="bgl" aria-hidden="true"></div>
@@ -1225,7 +1233,7 @@ if(nx1){nx1.style.display="none";var mo=new MutationObserver(function(){if(!nx1.
 var hp=false,fromPop=false;try{history.pushState({nmsh:1},"");hp=true}catch(e){}
 function onpop(){if(!closed){fromPop=true;cl()}}
 window.addEventListener("popstate",onpop);
-function cl(){if(closed)return;closed=true;window.removeEventListener("popstate",onpop);if(hp&&!fromPop){try{history.back()}catch(e){}}m.remove();document.body.classList.remove("shopen");window.SHFAST=false;v=oldv;tok++;window.curChef=null;if(ccount()>=NEED)noren(function(){go(D.length)});else{go(-2);if(ccount()>=COURSE_AT&&!courseSeen())setTimeout(openCourse,900)}}
+function cl(){if(closed)return;closed=true;window.removeEventListener("popstate",onpop);if(hp&&!fromPop){try{history.back()}catch(e){}}m.remove();document.body.classList.remove("shopen");window.SHFAST=false;v=oldv;tok++;window.curChef=null;if(ccount()>=NEED)noren(function(){go(D.length)});else if(ccount()>=COURSE_AT&&!courseSeen()){try{localStorage.setItem(CKEY2,"1")}catch(e){}trk("course4");MIDREW=true;noren(function(){go(D.length)})}else go(-2)}
 var mb=document.createElement("button");mb.type="button";mb.className="shmore";mb.textContent="▼ つづきがあります";mb.hidden=true;m.querySelector(".shp").insertBefore(mb,document.getElementById("shx"));
 mb.onclick=function(){shb.scrollBy({top:Math.round(shb.clientHeight*.7),behavior:reduced?"auto":"smooth"})};
 var iv=setInterval(function(){if(closed||!m.isConnected){clearInterval(iv);return}mb.hidden=(shb.scrollHeight-shb.scrollTop-shb.clientHeight)<40},300);
@@ -1332,7 +1340,8 @@ v.innerHTML='<div id="fch" class="fch"></div><div id="fbw" class="fbw" hidden><t
 var my=tok,t=document.getElementById("fbt");t.value=dr;t.oninput=function(){try{localStorage.setItem(FT,t.value)}catch(e){}};
 chef(document.getElementById("fch"),["ご覧いただきありがとうございました。","少しでも楽しんで\nいただけていたら幸いです。","もしよろしかったら、\nお店のことや料理のことなど\nどんなことでも、\nひとこといただけたら嬉しいです。"],function(){if(my!==tok)return;var w=document.getElementById("fbw"),b=document.getElementById("fbk");w.hidden=false;w.classList.add("anim-fade");b.hidden=false;b.classList.add("anim-fade");autoSc(b)});
 document.getElementById("fbk").onclick=function(){var b=this;if(b.disabled)return;trk("feedback","",t.value);b.disabled=true;t.disabled=true;document.getElementById("fbw").hidden=true;chef(document.getElementById("fch"),["ありがとうございました。","⟦1⟧この後も楽しんでいってください。","⟦1⟧よかったらインスタとTikTokも覗いてみてください！","お店のことや大将のこと、なんでも載せちゃってます！"],function(){if(my!==tok)return;b.parentNode.insertBefore(snsRow("anim-fade","margin-top:20px"),b);b.disabled=false;b.textContent="もう一度遊ぶ";b.classList.add("anim-fade");b.onclick=function(){caught=D.map(function(){return false});saveCaught();go(-1)};autoSc(b)})}}
-function reward(){
+var MIDREW=false;
+function reward(){var mid=MIDREW;MIDREW=false;
 v.innerHTML=''+
 '<div class="hero-container" style="margin-top: 16px;">'+
 '<img src="'+TCH+'" class="hero-image hero-photo" alt="大将">'+
@@ -1342,19 +1351,19 @@ v.innerHTML=''+
 '<p class="anim-fade" style="animation-delay:2.9s"><span class="ln2"><b><span style="color:var(--acc)">ご予約制</span>です。</b></span><span class="ln2"><b>ご予約の際に、上記コースご予約の旨を</b></span><span class="ln2"><b>お伝えください。</b></span></p>'+
 '<p class="anim-fade" style="animation-delay:3.3s;margin-top:6px;text-align:center"><button type="button" class="zkb" id="crs">コース内容を見る</button></p>'+
 '<div id="rend">'+
-'<p class="lead anim-fade" style="animation-delay:4.2s;margin-top: 28px; line-height: 1.6; font-size: 20px; white-space: normal;"><b>次にお会いできるのを、楽しみにしております。</b></p>'+
+'<p class="lead anim-fade" style="animation-delay:4.2s;margin-top: 28px; line-height: 1.6; font-size: 20px; white-space: normal;"><b>'+(mid?"続きも、どうぞ楽しんでいってください。":"次にお会いできるのを、楽しみにしております。")+'</b></p>'+
 '<p class="lead anim-fade" style="animation-delay:4.6s;text-align: right; margin-top: 8px;"><b>江田</b></p></div>'+
 '</div></div>'+
 '</div>'+
-'<button class="btn fin" id="rp" style="margin-top: 32px;">'+(fbSeen()?"もう一度遊ぶ":"さいごに")+'</button>';
-if(fbSeen()){var rb=document.getElementById("rp");var rt=document.createElement("p");rt.className="anim-fade";rt.setAttribute("style","color:#fffaf0;-webkit-text-fill-color:#fffaf0;text-shadow:0 1px 3px rgba(0,0,0,.6);animation-delay:5.1s;margin-top:28px;text-align:center;font-weight:700;font-size:clamp(12px,4vw,16px);white-space:nowrap");rt.innerHTML="<b>インスタとTikTokも覗いてみてください！</b>";rb.parentNode.insertBefore(rt,rb);rb.parentNode.insertBefore(snsRow("anim-fade","animation-delay:5.3s;margin-top:12px"),rb);rb.style.marginTop="18px"}
+'<button class="btn fin" id="rp" style="margin-top: 32px;">'+(mid?"続きを遊ぶ":fbSeen()?"もう一度遊ぶ":"さいごに")+'</button>';
+if(!mid&&fbSeen()){var rb=document.getElementById("rp");var rt=document.createElement("p");rt.className="anim-fade";rt.setAttribute("style","color:#fffaf0;-webkit-text-fill-color:#fffaf0;text-shadow:0 1px 3px rgba(0,0,0,.6);animation-delay:5.1s;margin-top:28px;text-align:center;font-weight:700;font-size:clamp(12px,4vw,16px);white-space:nowrap");rt.innerHTML="<b>インスタとTikTokも覗いてみてください！</b>";rb.parentNode.insertBefore(rt,rb);rb.parentNode.insertBefore(snsRow("anim-fade","animation-delay:5.3s;margin-top:12px"),rb);rb.style.marginTop="18px"}
 (function(){var ph=v.querySelector(".hero-photo"),my=tok,more=document.getElementById("rmore");try{var lg=document.querySelector("#hd img");if(lg)document.getElementById("fsw").style.setProperty("--lg","url("+lg.src+")")}catch(e){}
 function fin(){if(ph)ph.classList.remove("rtalk");more.hidden=false;autoSc(more);var w=document.getElementById("fsw");if(reduced){w.classList.add("op");return}setTimeout(function(){if(my!==tok)return;w.classList.add("op")},900)}
 if(ph&&!reduced)ph.classList.add("rtalk");
-setTimeout(function(){if(my!==tok)return;chef(document.getElementById("rch"),["ここまで読んでくれて、ありがとうございます。あらためて、コースのご案内です。"],fin)},reduced?0:700)})();
+setTimeout(function(){if(my!==tok)return;chef(document.getElementById("rch"),[mid?"ここで、当店のコースを\nひとつだけご紹介します。":"ここまで読んでくれて、ありがとうございます。あらためて、コースのご案内です。"],fin)},reduced?0:700)})();
 window.courseList=function(){var m=document.createElement("div");m.className="zk";var it=["白肝","ハツ","ささみ","豚ネギマ","もも","せせり","手羽先","つくね","野菜 2種"];m.innerHTML='<div class="zkp" role="dialog" aria-label="コース内容"><b class="zkt">コース内容</b><div class="zkl" style="text-align:left;display:grid;grid-template-columns:1fr 1fr;gap:6px;overflow:visible">'+it.map(function(x,i){return '<div class="zkc on" style="margin:0;padding:8px 10px"><b class="zkn">'+x+'</b></div>'}).join("")+'</div><p style="margin:10px 0 0;font-size:16px;line-height:1.5;text-align:center"><b>串物10種　税込4,000円</b></p><p style="margin:6px 0 10px;font-size:14px;line-height:1.5;text-align:center"><b>※飲み放題は付きません。<br>※コースの内容は変更になる場合があります。</b></p><button type="button" class="btn zkx">閉じる</button></div>';document.body.appendChild(m);m.onclick=function(e){if(e.target===m)m.remove()};m.querySelector(".zkx").onclick=function(){m.remove()}};
 document.getElementById("crs").onclick=window.courseList;
-document.getElementById("rp").onclick=function(){if(fbSeen()){caught=D.map(function(){return false});saveCaught();go(-1)}else go(D.length+1)};
+document.getElementById("rp").onclick=function(){if(mid){go(-2);return}if(fbSeen()){caught=D.map(function(){return false});saveCaught();go(-1)}else go(D.length+1)};
 }
 (function(){
 var btn=null,taps=0,tt=0;
