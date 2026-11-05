@@ -747,7 +747,7 @@ body.shopen{overflow:hidden}
 .shb{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:2px 2px 24px}
 .shb::-webkit-scrollbar{width:0}
 .shv{display:block}
-.shb #nx1,.shb #nx{display:none!important}
+.shb #nx{display:none!important}.shb .pgl{display:none}
 .shx{margin-top:10px;width:100%;flex:none}
 /* V308 */
 :root{color-scheme:only light}
@@ -773,6 +773,27 @@ body.shopen{overflow:hidden}
 .shb .pf.shfold .tag,.shb .pf.shfold .tagp{display:none}
 .shb .pf.shfold{padding-top:6px!important;padding-bottom:6px!important}
 .shb .cf{margin-top:8px!important;margin-bottom:8px!important}
+/* V319 タブ切り替え */
+.shtabs{display:flex;gap:6px;flex:none;margin:0 0 10px;padding:0 2px}
+.shtab{flex:1;position:relative;font:800 15px/1.2 inherit;font-family:inherit;padding:10px 6px;border-radius:12px 12px 4px 4px;border:1px solid rgba(201,164,92,.45);background:rgba(36,26,18,.7);color:rgba(246,236,210,.65);-webkit-text-fill-color:currentColor}
+.shtab.on{background:linear-gradient(180deg,#e4c682,#c9a45c);color:#2a1c10;border-color:var(--gold)}
+.shtab:disabled{opacity:.45}
+.shdot{position:absolute;top:5px;right:8px;width:9px;height:9px;border-radius:50%;background:#ffd54a;box-shadow:0 0 0 2px #2a1c10}
+.shtab.shnew:not(.on){animation:shpl 1.6s ease-in-out infinite}
+@keyframes shpl{0%,100%{box-shadow:0 0 0 0 rgba(255,213,74,0)}50%{box-shadow:0 0 0 4px rgba(255,213,74,.45)}}
+@media (prefers-reduced-motion:reduce){.shtab.shnew:not(.on){animation:none}}
+/* V319b */
+.shb .pf>svg{width:64%!important;height:auto!important;margin:0 auto;display:block}
+/* V320 正解の部位をはっきり */
+.shb .pf>svg{width:78%!important}
+.pf.shrev .hs:not(.on) .mk{opacity:0!important;transition:opacity .4s}
+.pf.shrev .hs:not(.on) .ov,.pf.shrev .hs:not(.on) .ov2{opacity:.16!important}
+.pf.shrev .hs:not(.on) .hl,.pf.shrev .hs:not(.on) .zr{opacity:0!important}
+.pf.shrev .hs.on .ov,.pf.shrev .hs.on .ov2{opacity:1!important;stroke:#fff3b0;stroke-width:7;paint-order:stroke;filter:drop-shadow(0 0 9px rgba(255,200,60,.95));animation:shg 1.5s ease-in-out infinite}
+@keyframes shg{0%,100%{filter:drop-shadow(0 0 5px rgba(255,200,60,.7))}50%{filter:drop-shadow(0 0 14px rgba(255,200,60,1))}}
+@media (prefers-reduced-motion:reduce){.pf.shrev .hs.on .ov,.pf.shrev .hs.on .ov2{animation:none}}
+/* V320b */
+.pf.shrev .hs.on .ov,.pf.shrev .hs.on .ov2{fill:#ff9a1f!important}
 </style>
 </head>
 <body><div id="bgl" aria-hidden="true"></div>
@@ -1156,14 +1177,18 @@ function cl(){m.remove()}m.onclick=function(e){if(e.target===m)cl()};m.querySele
 var SHEET_ON=null;
 function openSheet(d){var old=document.getElementById("shw");if(old)old.remove();trk("sheet",d.n);
 var m=document.createElement("div");m.id="shw";m.className="shw";
-m.innerHTML='<div class="shp" role="dialog" aria-label="ニワトリの話"><div class="shb" id="shb"><div class="shv" id="shA"></div></div><button type="button" class="btn shx" id="shx">'+(ccount()>=NEED?"特別なメニューへ":"前の画面に戻る")+'</button></div>';
+m.innerHTML='<div class="shp" role="dialog" aria-label="ニワトリの話"><div class="shtabs" role="tablist"><button type="button" class="shtab on" id="shtA" role="tab">部位のこと</button><button type="button" class="shtab" id="shtB" role="tab" disabled>当店のこだわり<i class="shdot" hidden></i></button></div><div class="shb" id="shb"><div class="shv" id="shA"></div></div><button type="button" class="btn shx" id="shx">'+(ccount()>=NEED?"特別なメニューへ":"前の画面に戻る")+'</button></div>';
 document.body.appendChild(m);document.body.classList.add("shopen");window.SHFAST=true;
 var nx1=null,oldv=v,shb=document.getElementById("shb"),A=document.getElementById("shA"),closed=false,chained=false;
 v=A;tok++;
-function chain(){if(chained||closed)return;chained=true;if(nx1)nx1.style.display="none";var pfx=A.querySelector(".pf");if(pfx)pfx.classList.add("shfold");A.querySelectorAll("[id]").forEach(function(e){e.removeAttribute("id")});var B=document.createElement("div");B.className="shv";B.id="shB";shb.appendChild(B);v=B;item2(d);setTimeout(function(){var nx=B.querySelector("#nx");if(nx)nx.hidden=true},0)}
+var B=null,tA=document.getElementById("shtA"),tB=document.getElementById("shtB"),dot=tB.querySelector(".shdot");
+function show(w){if(closed)return;var isB=w==="B";if(isB&&!B){chained=true;A.querySelectorAll("[id]").forEach(function(e){e.removeAttribute("id")});B=document.createElement("div");B.className="shv";B.id="shB";shb.appendChild(B);v=B;item2(d);setTimeout(function(){var nx=B.querySelector("#nx");if(nx)nx.hidden=true},0)}
+A.style.display=isB?"none":"";if(B)B.style.display=isB?"":"none";tA.classList.toggle("on",!isB);tB.classList.toggle("on",isB);tA.setAttribute("aria-selected",!isB);tB.setAttribute("aria-selected",isB);if(isB)dot.hidden=true;shb.scrollTop=0}
+function ready(){if(tB.disabled===false)return;tB.disabled=false;dot.hidden=false;tB.classList.add("shnew")}
+tA.onclick=function(){show("A")};tB.onclick=function(){show("B")};
 try{item(d)}catch(e){}
 nx1=A.querySelector("#nx1");
-if(nx1){var mo=new MutationObserver(function(){if(!nx1.hidden){mo.disconnect();setTimeout(chain,500)}});mo.observe(nx1,{attributes:true,attributeFilter:["hidden"]});if(!nx1.hidden){mo.disconnect();setTimeout(chain,500)}nx1.onclick=chain}
+if(nx1){nx1.textContent="当店のこだわりへ";var mo=new MutationObserver(function(){if(!nx1.hidden){mo.disconnect();ready()}});mo.observe(nx1,{attributes:true,attributeFilter:["hidden"]});if(!nx1.hidden){mo.disconnect();ready()}nx1.onclick=function(){show("B")}}
 var hp=false,fromPop=false;try{history.pushState({nmsh:1},"");hp=true}catch(e){}
 function onpop(){if(!closed){fromPop=true;cl()}}
 window.addEventListener("popstate",onpop);
@@ -1239,7 +1264,7 @@ var pf=document.getElementById("pf"),nx1=document.getElementById("nx1"),tvh=docu
 nx1.onclick=function(){item2(d)};
 function done1(){nx1.hidden=false;nx1.classList.add("rise");autoSc(nx1)}
 if(nofind){pf.remove();document.getElementById("cq").remove();var h0=document.getElementById("cf1");chef(h0,[d.p].concat(d.tv?d.tv.split("|"):[]),function(){if(d.n==="豚ネギマ")ngmShow(tvh,done1);else done1()},dn(d));if(d.tv){var cb0=h0.querySelector(".cb"),ck0=document.createElement("img");ck0.className="tvc";ck0.src=CHK;ck0.alt="";ck0.onclick=function(ev){ev.stopPropagation();chickRun()};cb0.appendChild(ck0)}}
-else{var q="「"+d.n+"」は、この部位です。";var fnd=false;finder(pf,d,function(){if(fnd)return;fnd=true;var pm=pf.querySelector(".pfm");if(pm){pm.style.display="none"}setTimeout(function(){var pt=PARTS[TARGET[d.n]],h=document.getElementById("cf1");var ps=pt[1].split("|");if(d.tv)ps=ps.concat(d.tv.split("|"));chef(h,ps,d.n==="せせり"?function(){var bx=h.querySelector(".cb");if(bx&&!bx.querySelector(".tit")){var ti=document.createElement("img");ti.className="tit";ti.alt="";ti.src=TIT;bx.appendChild(ti)}done1()}:done1,pt[0]);if(d.tv){var cb=h.querySelector(".cb"),ck=document.createElement("img");ck.className="tvc";ck.src=CHK;ck.alt="";ck.onclick=function(ev){ev.stopPropagation();chickRun()};cb.appendChild(ck)}autoSc(h)},900)});chef(document.getElementById("cq"),[q],function(){if(my!==tok)return;pf.hidden=false;pf.classList.add("show");setTimeout(function(){if(my!==tok||fnd)return;var hs=pf.querySelector('.hs[data-p="'+TARGET[d.n]+'"]');if(hs){try{hs.dispatchEvent(new MouseEvent("click",{bubbles:true}))}catch(e){}}},calm0?200:900)})}}
+else{var q="「"+d.n+"」は、この部位です。";var fnd=false;finder(pf,d,function(){if(fnd)return;fnd=true;var pfi=pf.querySelector(".pf");if(pfi)pfi.classList.add("shrev");var pm=pf.querySelector(".pfm");if(pm){pm.style.display="none"}setTimeout(function(){var pt=PARTS[TARGET[d.n]],h=document.getElementById("cf1");var ps=pt[1].split("|");if(d.tv)ps=ps.concat(d.tv.split("|"));chef(h,ps,d.n==="せせり"?function(){var bx=h.querySelector(".cb");if(bx&&!bx.querySelector(".tit")){var ti=document.createElement("img");ti.className="tit";ti.alt="";ti.src=TIT;bx.appendChild(ti)}done1()}:done1,pt[0]);if(d.tv){var cb=h.querySelector(".cb"),ck=document.createElement("img");ck.className="tvc";ck.src=CHK;ck.alt="";ck.onclick=function(ev){ev.stopPropagation();chickRun()};cb.appendChild(ck)}autoSc(h)},900)});chef(document.getElementById("cq"),[q],function(){if(my!==tok)return;pf.hidden=false;pf.classList.add("show");setTimeout(function(){if(my!==tok||fnd)return;var hs=pf.querySelector('.hs[data-p="'+TARGET[d.n]+'"]');if(hs){try{hs.dispatchEvent(new MouseEvent("click",{bubbles:true}))}catch(e){}}},calm0?200:900)})}}
 var TIT="data:image/webp;base64,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";
 var LW={"砂肝":"オレの鍛え上げた胃袋。\nしっかり味わってみぃ‼","せせり":"ぼくはただのニワトリ！\n巨人じゃないよ〜","手羽先":"阿波踊りで許して！","ハツ":"ドキドキした…♡","豚ネギマ":"ニワトリさんの中に紛れ込んじゃって\nゴメンナサイ…","つくね":"その卵黄、\nわが子かもしれん…","白肝":"肝がすわってます。\nとろけるけど"};
 function lwChars(t){var n=0;return t.split("\n").map(function(l){return l.split("").map(function(c){return'<span class="lwc" style="animation-delay:'+(.55+.07*n++).toFixed(2)+'s">'+c+"</span>"}).join("")}).join("<br>")}
