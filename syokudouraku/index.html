@@ -2344,7 +2344,7 @@ function playIntro() {
 let introGo = () => {};
 function closeIntro() {
   clearTimeout(introTimer); $('intro').hidden = true;
-  try { localStorage.setItem(INTRO_KEY, '1'); } catch (e) {}
+  try { sessionStorage.setItem(INTRO_KEY, '1'); } catch (e) {}
 }
 
 /* =========================================================
@@ -2375,7 +2375,8 @@ $('intro-next').addEventListener('click', () => introGo(1));
 $('intro-start').addEventListener('click', closeIntro);
 $('map-help').addEventListener('click', playIntro);
 $('town-help').addEventListener('click', playIntro);
-(function () { let seen = false; try { seen = localStorage.getItem(INTRO_KEY); } catch (e) {} if (!seen) playIntro(); })();
+// QRコードやURLから入るたびに遊び方を出す（同じ画面での再読み込みでは出さない）
+(function () { let seen = false; try { seen = sessionStorage.getItem(INTRO_KEY); } catch (e) {} if (!seen) playIntro(); })();
 if (SMALL_SCREEN.matches) $('map-hint').textContent = '地方をタップして、街へ出かけよう';
 $('back-btn').addEventListener('click', backToMap);
 $('sheet-close').addEventListener('click', closeSheet);
