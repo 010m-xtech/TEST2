@@ -705,7 +705,7 @@ li.mine{background:#F7D37A1F; border-radius:12px}
   <section class="screen" id="s-rank" aria-label="ランキング" hidden>
     <div class="top">
       <button class="icon-btn" type="button" id="rankBack" aria-label="戻る"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      <h2>ランキング TOP5</h2><span></span>
+      <h2>ランキング TOP20</h2><span></span>
     </div>
     <div class="body">
       <div class="tabs" role="tablist" aria-label="ランキングの期間">
@@ -1513,8 +1513,9 @@ function updateSaveButton(){
 // claude.ai の外(GitHubなど)では、この端末の中にランキングを残す
 const LOCAL_KEY = "happyring.records", LOCAL_MAX = 100;
 const localRecords = () => { const v = store.get(LOCAL_KEY, []); return Array.isArray(v) ? v : []; };
+const RANK_N = 20; // ランキングに出す人数
 function loadLocalBoards(){
-  const all = localRecords(), top = arr => arr.sort((a, b) => b.score - a.score).slice(0, 5).map(r => ({ id: r.id, data: () => r }));
+  const all = localRecords(), top = arr => arr.sort((a, b) => b.score - a.score).slice(0, RANK_N).map(r => ({ id: r.id, data: () => r }));
   boards.week = top(all.filter(r => r.createdAt >= startOf("week")));
   boards.month = top(all.filter(r => r.createdAt >= startOf("month")));
 }
@@ -1618,31 +1619,29 @@ function startOf(kind){
   return d.getTime() + DAY_START_HOUR * 3600e3;
 }
 
-async function predictRank(){
-  if (!last) return;
-  try {
-    if (!db) {
-      const all = localRecords();
-      const rw = all.filter(r => r.score > last.total && r.createdAt >= startOf("week")).length + 1;
-      const el = $("rankline"); el.textContent = "";
-      const sp = document.createElement("span");
-      if (rw <= 5) { sp.className = "hot"; sp.textContent = `今週の${rw}位に入れます`; } else sp.textContent = `今週の${rw}位の記録`;
-      el.append(sp); return;
-    }
-    // 自分より上の記録を50件まで数える(読み込みを増やしすぎないため)
-    const col = db.collection("scores");
-    const [month, week] = await Promise.all([
-      col.where("month", "==", monthKey()).where("score", ">", last.total).orderBy("score", "desc").limit(50).get(),
-      col.where("week", "==", weekKey()).where("score", ">", last.total).orderBy("score", "desc").limit(50).get(),
-    ]);
-    const rm = month.size + 1, rw = week.size + 1;
-    const el = $("rankline"); el.textContent = "";
-    const s = document.createElement("span");
-    const r = n => n > 50 ? "50位より下" : `${n}位`;
-    if (rw <= 5) { s.className = "hot"; s.textContent = `今週の${rw}位` + (rm <= 5 ? `・今月の${rm}位` : "") + "に入れます"; }
-    else s.textContent = `今週の${r(rw)}・今月の${r(rm)}の記録`;
-    el.append(s);
-  } catch (_) {}
+// 順位の予想は、もう読み込んである「TOP20」だけを使う(追加の読み込みはゼロ)
+// TOP20に入るなら順位を、入らないなら「TOP20まであと何点か」を出す
+function predictRank(){
+  if (!last || savedId) return; // 記録したあとは、出ている文をそのまま残す
+  const el = $("rankline");
+  if (!db) loadLocalBoards();
+  if (db && (!boards.week || !boards.month)) { el.textContent = ""; return; } // まだ読み込み中(届いたらもう一度呼ばれる)
+  const part = (k, label) => {
+    const docs = boards[k] || [];
+    if (boardErrors[k]) return null;
+    const scores = docs.map(d => Number((d.data() || {}).score) || 0);
+    const edge = scores[RANK_N - 1];
+    if (scores.length < RANK_N || last.total >= edge) return { hot: true, text: `${label}の${scores.filter(x => x > last.total).length + 1}位` };
+    return { hot: false, text: `${label}TOP${RANK_N}まで あと${edge - last.total}点` };
+  };
+  const ps = [part("week", "今週"), part("month", "今月")].filter(Boolean);
+  const hot = ps.filter(p => p.hot).map(p => p.text), cold = ps.filter(p => !p.hot).map(p => p.text);
+  el.textContent = "";
+  if (hot.length) { const sp = document.createElement("span"); sp.className = "hot"; sp.textContent = hot.join("・") + "に入れます"; el.append(sp); }
+  if (cold.length) {
+    if (hot.length) el.append(document.createElement("br"));
+    cold.forEach((t, i) => { if (i) el.append("・"); const sp = document.createElement("span"); sp.style.whiteSpace = "nowrap"; sp.textContent = t; el.append(sp); }); // 「あと◯点」の途中で折り返さない
+  }
 }
 
 let tab = "week";
@@ -1657,6 +1656,16 @@ document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click
   renderBoard();
 }));
 
+// ランキングの写真は、画面に見えてきた行の分だけ読む(下までスクロールしない人の読み込みを減らす)
+let thumbObs = null;
+function lazyThumb(id, imgEl){
+  if (!("IntersectionObserver" in window)) { loadThumb(id, imgEl); return; }
+  if (!thumbObs) thumbObs = new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting) return;
+    thumbObs.unobserve(e.target); loadThumb(e.target.dataset.id, e.target);
+  }), { rootMargin: "150px 0px" });
+  imgEl.dataset.id = id; thumbObs.observe(imgEl);
+}
 async function loadThumb(id, imgEl){
   if (!db) { const r = localRecords().find(x => x.id === id); if (r && /^data:image\/jpeg;base64,/.test(r.img || "")) imgEl.src = r.img; return; }
   if (!thumbs.has(id)) {
@@ -1671,6 +1680,7 @@ async function loadThumb(id, imgEl){
 
 function renderBoard(){
   const docs = boards[tab];
+  if (thumbObs) thumbObs.disconnect(); // 作り直す前の行は見張らない
   const ol = $("board"); ol.innerHTML = "";
   const emptyRow = msg => { const li = document.createElement("li"); const p = document.createElement("p"); p.className = "empty"; p.textContent = msg; li.append(p); ol.append(li); };
   $("localNote").hidden = !!db; $("localClear").hidden = !!db || !localRecords().length;
@@ -1691,7 +1701,7 @@ function renderBoard(){
     const li = document.createElement("li"); if (d.id === savedId) li.className = "mine";
     li.innerHTML = `<span class="pos${rank === 1 ? " p1" : ""}"></span><img class="thumb" alt=""><span class="who"></span><span class="pts"></span>`;
     li.children[0].textContent = rank;
-    loadThumb(d.id, li.children[1]);
+    lazyThumb(d.id, li.children[1]);
     const who = li.children[2]; who.textContent = String(v.name || "名もなき呑み人");
     const sub = document.createElement("span");
     const dt = v.createdAt ? new Date(Number(v.createdAt)) : null;
@@ -1802,7 +1812,7 @@ $("saveForm").addEventListener("submit", async e => {
       const rec = { id: "l" + Date.now(), name: name.slice(0, 12), memo, score: last.total, rings: last.rings, createdAt: last.at, hash: photoHash || "", img: thumb || "" };
       all.push(rec);
       // 古いものから消して、端末の保存場所があふれないようにする(上位は残す)
-      while (all.length > LOCAL_MAX) { const keep = all.slice().sort((a, b) => b.score - a.score).slice(0, 10).map(r => r.id); const i = all.findIndex(r => !keep.includes(r.id)); all.splice(i < 0 ? 0 : i, 1); }
+      while (all.length > LOCAL_MAX) { const keep = all.slice().sort((a, b) => b.score - a.score).slice(0, RANK_N).map(r => r.id); const i = all.findIndex(r => !keep.includes(r.id)); all.splice(i < 0 ? 0 : i, 1); }
       store.set(LOCAL_KEY, all);
       savedId = rec.id; savedName = rec.name;
       $("saveSheet").hidden = true;
@@ -2130,10 +2140,10 @@ function startRemoteBoards(store){
   db = store; boardErrors.week = boardErrors.month = "";
   const col = db.collection("scores");
   let unsub = [], keys = "", retry = null;
-  const sub = (k, q) => q.orderBy("score", "desc").limit(5).onSnapshot(
-    snap => { boards[k] = snap.docs; boardErrors[k] = ""; if (tab === k) renderBoard(); },
+  const sub = (k, q) => q.orderBy("score", "desc").limit(RANK_N).onSnapshot(
+    snap => { boards[k] = snap.docs; boardErrors[k] = ""; if (tab === k) renderBoard(); predictRank(); },
     e => { // 止まった読み込みは30秒後に読み直す(インデックスを作った直後などに、開き直さなくても出るように)
-      boards[k] = []; boardErrors[k] = String((e && e.message) || "error"); if (tab === k) renderBoard();
+      boards[k] = []; boardErrors[k] = String((e && e.message) || "error"); if (tab === k) renderBoard(); predictRank();
       if (!retry) retry = setTimeout(() => { retry = null; keys = ""; watch(); }, 30e3);
     }
   );
