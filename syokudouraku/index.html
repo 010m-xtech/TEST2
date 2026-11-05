@@ -823,7 +823,9 @@ const LookFX = (() => {
 
   function load(img, key) {
     stop(); state.key = key; state.cache = {}; state.info = null;
-    const scene = $('dio-scene'); scene.style.opacity = 0; img.style.opacity = 1;
+    state.night = false;                    // 県に着いたときは、いつも朝（夜はボタンで選んだときだけ）
+    // 元の絵は見せずに、季節の色を作ってから表示する（緑→秋色に変わる途中を見せない）
+    const scene = $('dio-scene'); scene.style.opacity = 0; img.style.opacity = 0;
     setTimeout(() => {                      // 画面の切り替えを先に見せてから計算する
       try { state.info = analyze(img); } catch (e) { state.info = null; }
       render();
@@ -1934,7 +1936,7 @@ function setupDiorama(town, d) {
     setTime(currentTime);
   };
   const key = d.img.split('/').pop().replace(/\.\w+$/, '');
-  img.onload = () => { img.style.opacity = 1; LookFX.load(img, key); };
+  img.onload = () => LookFX.load(img, key);
   img.src = d.img;
   if (img.complete && img.naturalWidth) LookFX.load(img, key);
   img.alt = `${town.pref}のジオラマ`;
