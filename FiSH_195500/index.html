@@ -524,7 +524,7 @@
   .ch{
     display:inline-block; white-space:pre; opacity:0;
     animation: chIn .16s ease-out forwards;
-    animation-delay: calc(var(--t0, .6s) + var(--i) * var(--ts, .04s));
+    animation-delay: calc(var(--t0, .4s) + var(--i) * var(--ts, .025s));
   }
   @keyframes chIn{ to{ opacity:1; } }
   .ch.wave{ color: var(--shu); }
@@ -2408,14 +2408,12 @@ function onSurveyChange(){
 
 // ---- 魚がしゃべる(吹き出し)。アンケート画面と、最初の画面で共用 ----
 const SURVEY_LINES = [
-  { text: 'ご来店、\nありがとうございます！', wave: '', hold: 0.6, sub: 'タップで次へ' },
-  { text: 'ここでは、\nお魚たちに関する\n豆知識と、', wave: '豆知識', hold: 0.8, sub: 'タップで次へ' },
-  { text: '相性の良い日本酒を\nご案内します！\nぜひ、たのしんで\nいってください！', wave: '日本酒', hold: 0.8, sub: 'タップで次へ' },
+  { text: 'ご来店、\nありがとうございます！\nお魚の豆知識と日本酒を\nご案内します！', wave: '日本酒', hold: 0.8, sub: 'タップで次へ' },
   { text: 'その前に、最初に\nお二つだけ、\n聞かせてくださいね。', wave: 'お二つだけ', sub: 'タップするだけです' }
 ];
-const TALK_T0 = 0.6, TALK_TS = 0.04;                                   // 1文字目が出るまで / 1文字ごとの間隔(秒)。CSSの --t0, --ts と同じ値
+const TALK_T0 = 0.4, TALK_TS = 0.025;                                   // 1文字目が出るまで / 1文字ごとの間隔(秒)。CSSの --t0, --ts と同じ値
 const talkSettle = (text) => TALK_T0 + [...text.replace(/\n/g, '')].length * TALK_TS + 0.25;   // 吹き出しの文字が出きるまでの秒数
-const SURVEY_THANKS = 'ありがとうございます。\nそれでは、水槽へ\nご案内しますね。\nどうぞ、ごゆっくり\nお楽しみください。';
+const SURVEY_THANKS = 'ありがとうございます。\nそれでは、水槽へ\nご案内しますね。';
 const THANKS_WAVE   = '';                  // お礼の言葉は、強調せず、そのまま
 // 魚ごとの「口」の位置(画像の左端からの割合 x, 上端からの割合 y)。左向きの絵での位置
 const MOUTH = {
@@ -2616,7 +2614,7 @@ function playSurveyIntro(){
 // 最初の画面(魚を選ぶ画面)で、魚が話して案内する
 const SELECT_LINES = {
   // 冒頭の質問を答え済みの方には、冒頭と同じ案内を、水槽の魚が話す
-  welcome: SURVEY_LINES[0], explain1: SURVEY_LINES[1], explain2: SURVEY_LINES[2],
+  welcome: SURVEY_LINES[0],
   action:  { text: '気になるお魚を、\nタップして\n捕まえてくださいね。', wave: 'タップ' },
   more:    { text: 'ほかのお魚も、\n捕まえてみませんか？', wave: '' },
   all:     { text: '全部のお魚に、\n会えましたね。', wave: '' }
@@ -2628,7 +2626,7 @@ function startSelectTalk(){
   const n = caught.size, total = fishList.length;
   let lines;
   if (selectNeedsExplain)  lines = [SELECT_LINES.action];                                                // 冒頭で説明を聞いたあとは、案内だけ
-  else if (!selectGreeted) lines = [SELECT_LINES.welcome, SELECT_LINES.explain1, SELECT_LINES.explain2, SELECT_LINES.action];   // 回答済みの方が水槽を開いたとき   // ページを開いて最初は、捕まえた数にかかわらず、案内を最後まで話す
+  else if (!selectGreeted) lines = [SELECT_LINES.welcome, SELECT_LINES.action];   // 回答済みの方が水槽を開いたとき   // ページを開いて最初は、捕まえた数にかかわらず、案内を最後まで話す
   else if (n === 0)        lines = [SELECT_LINES.action];
   else if (n >= total)     lines = [SELECT_LINES.all];
   else                     lines = [SELECT_LINES.more];
