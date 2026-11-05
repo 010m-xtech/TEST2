@@ -204,7 +204,7 @@
     transition: filter .8s ease;
   }
   .aqua-fish.unknown{
-    filter: brightness(0) invert(1) opacity(.28) drop-shadow(0 0 0 rgba(0,0,0,0));
+    filter: brightness(0) invert(1) opacity(.72) drop-shadow(0 0 7px rgba(140,215,255,.95));
   }
   .aqua-fish.pop{ animation: pop .7s ease; }
   @keyframes pop{ 0%{ scale:1; } 35%{ scale:1.28; } 100%{ scale:1; } }
@@ -621,6 +621,25 @@
   .sheet-sake .menu-notice{ margin-bottom:16px; font-size:13px; }
   .sheet-back{ width:100%; margin-top:26px; background:rgba(227,203,148,.14); border:1px solid var(--gold-soft); color:var(--kinari); }
   body.sheet-open{ overflow:hidden; }
+  .sheet-tabs{ display:flex; gap:6px; padding:12px 56px 10px 14px; border-bottom:1px solid rgba(227,203,148,.22); flex:0 0 auto; }
+  .sheet-tab{ flex:1; max-width:130px; padding:8px 0; border-radius:999px; border:1px solid transparent; background:transparent; color:rgba(242,238,227,.6);
+    font-family:var(--font-gothic); font-size:14px; font-weight:700; letter-spacing:.08em; cursor:pointer; transition:background .25s, color .25s; }
+  .sheet-tab.on{ background:var(--gold); color:#10203a; }
+  .fish-sheet.tab-sake #detailHero, .fish-sheet.tab-sake .fish-story{ display:none; }
+  .fish-sheet:not(.tab-sake) #sheetSake{ display:none; }
+  .fish-sheet.tab-sake #sheetSake{ margin-top:0; padding-top:4px; border-top:0; animation: fadeUp .4s ease both; }
+  .sheet-scroll .dex-stage{ height:140px; margin-bottom:4px; }
+  .sheet-scroll .dex-stage::before{ width:132px; height:132px; }
+  .sheet-scroll .dex-stage::after{ width:148px; height:148px; }
+  .sheet-scroll .dex-hero .dex-fishwrap img{ max-height:118px; }
+  .sheet-scroll .dex-hero{ margin-bottom:16px; }
+  .sheet-close{ top:9px; }
+  .sheet-scroll{ overflow-x:hidden; }
+  .sheet-scroll img{ max-width:100%; height:auto; }
+  .sheet-scroll .trivia-illustration-wrap img{ max-width:100%; }
+  .sheet-scroll .phrase, .sheet-scroll .story-lead, .sheet-scroll p{ overflow-wrap:anywhere; }
+  .sheet-scroll .story-lead{ margin-left:0; margin-right:0; }
+  @media (max-width:400px){ .sheet-scroll .story-lead{ font-size:16px; letter-spacing:0; } }
   .finish-pill{ position:fixed; left:50%; bottom:calc(16px + env(safe-area-inset-bottom)); z-index:57; transform:translate(-50%,16px); opacity:0; pointer-events:none;
     padding:12px 28px; border-radius:999px; border:1px solid var(--gold-soft); background:rgba(10,24,44,.82); color:var(--kinari);
     -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); font-family:var(--font-gothic); font-size:15px; font-weight:700; letter-spacing:.06em;
@@ -997,7 +1016,7 @@
   }
 
   /* --- 水槽: 奥行き(奥は小さく・かすみ・ゆっくり) と 手前/奥の泡 --- */
-  .aqua-item.far{ opacity:.82; filter: blur(.6px); }
+  .aqua-item.far{ opacity:.92; filter: blur(.4px); }
   .aqua-back, .aqua-front{ position:absolute; inset:0; pointer-events:none; overflow:hidden; opacity:0; transition: opacity .9s ease; }
   .aqua-front{ position:fixed; z-index:12; }
   body.on-select .aqua-back, body.on-select .aqua-front{ opacity:1; }
@@ -1027,7 +1046,7 @@
   @keyframes catchRise{ 0%{ transform:translate(0,10px) scale(.3); opacity:0; } 20%{ opacity:1; } 100%{ transform:translate(var(--dx),-120px) scale(1.15); opacity:0; } }
   .aqua-fish.flash{ animation: catchFlash .95s ease-out; }
   @keyframes catchFlash{
-    0%{ filter: brightness(0) invert(1) opacity(.28) drop-shadow(0 0 0 rgba(0,0,0,0)); }
+    0%{ filter: brightness(0) invert(1) opacity(.72) drop-shadow(0 0 7px rgba(140,215,255,.95)); }
     35%{ filter: brightness(1.5) invert(0) opacity(1) drop-shadow(0 0 22px rgba(255,236,170,.95)); }
     100%{ filter: brightness(1) invert(0) opacity(1) drop-shadow(0 4px 6px rgba(0,0,0,.5)); }
   }
@@ -1259,6 +1278,10 @@
   <div class="sheet-backdrop" onclick="closeSheet()"></div>
   <div class="sheet-panel" role="dialog" aria-modal="true" aria-label="魚の情報">
     <button class="sheet-close" type="button" onclick="closeSheet()" aria-label="閉じる"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div class="sheet-tabs" role="tablist">
+      <button type="button" class="sheet-tab on" id="tabFish" role="tab" onclick="setSheetTab('fish')">お魚</button>
+      <button type="button" class="sheet-tab" id="tabSake" role="tab" onclick="setSheetTab('sake')">日本酒</button>
+    </div>
     <div class="sheet-scroll" id="sheetScroll">
       <div class="fish-hero dex-hero" id="detailHero">
         <div class="dex-stage">
@@ -1429,9 +1452,8 @@ const fishList = [
     id: "aji", name: "真鯵", kana: "まあじ", img: "maaji.webp",
     lead: "旨みが豊富で、料理を選ばない万能の青魚。",
     about: [
-      { k: "特徴", v: "通年出回りますが、**旬は初夏から夏**。旨みが豊富な青魚です。" },
-      { k: "味わい", v: "皮目の香ばしさと、脂の甘みのバランスが絶妙です。" },
-      { k: "魅力", v: "ほどよい脂と**澄んだ旨み**が魅力。幅広く親しまれてきた魚です。" }
+      { k: "特徴", v: "旨みが豊富で、幅広く親しまれてきた青魚です。" },
+      { k: "味わい", v: "皮目の香ばしさと、脂の甘みのバランスが絶妙。ほどよい脂と**澄んだ旨み**が魅力です。" }
     ],
     interaction: {
       type: "quiz",
@@ -1451,9 +1473,8 @@ const fishList = [
     id: "katsuo", name: "カツオ", kana: "かつお", img: "katsuo.webp",
     lead: "春と秋、年に2回の旬を迎える赤身魚の代表格。",
     about: [
-      { k: "特徴", v: "春の「初鰹」と秋の「戻り鰹」で**年に2回が旬**。鉄分も豊富です。" },
-      { k: "味わい", v: "藁焼きの香ばしさと、赤身ならではの濃い旨みが特徴です。" },
-      { k: "魅力", v: "さっぱりとした身質ながら、**力強い旨み**があります。" }
+      { k: "特徴", v: "春は「初鰹」、秋は「戻り鰹」。**鉄分**も豊富です。" },
+      { k: "味わい", v: "藁焼きの香ばしさと、赤身ならではの濃い旨み。さっぱりした身質ながら**力強い旨み**があります。" }
     ],
     interaction: {
       type: "quiz",
@@ -1479,9 +1500,8 @@ const fishList = [
     id: "maguro", name: "まぐろ", kana: "まぐろ", img: "maguro.webp",
     lead: "赤身・中トロ・大トロ。部位で味わいが変わる刺身の主役。",
     about: [
-      { k: "特徴", v: "寿司や刺身の主役。**部位**によって、脂ののり方が大きく違います。" },
-      { k: "味わい", v: "赤身は**さっぱりとした酸味と旨み**、トロは**濃厚な脂の甘み**です。" },
-      { k: "魅力", v: "**部位ごと**に、脂ののりや味わいが大きく違うのが魅力です。" }
+      { k: "特徴", v: "寿司や刺身の主役。**部位**ごとに、脂ののりや味わいが大きく違います。" },
+      { k: "味わい", v: "赤身は**さっぱりとした酸味と旨み**、トロは**濃厚な脂の甘み**です。" }
     ],
     interaction: {
       type: "quiz",
@@ -1520,9 +1540,8 @@ const fishList = [
     id: "salmon", name: "サーモン", kana: "さーもん", img: "sa-mon.webp",
     lead: "子どもから大人まで人気。とろける脂の甘みが魅力。",
     about: [
-      { k: "特徴", v: "脂がたっぷり乗った、とろけるような食感の魚です。" },
-      { k: "味わい", v: "豊かな脂の甘みと、なめらかな舌触りが魅力です。" },
-      { k: "魅力", v: "**とろけるような食感**と、やわらかな脂の甘みが魅力です。" }
+      { k: "特徴", v: "脂がたっぷり乗った魚です。" },
+      { k: "味わい", v: "**とろけるような食感**と、豊かな脂の甘み。舌触りもなめらかです。" }
     ],
     interaction: {
       type: "quiz",
@@ -1541,9 +1560,8 @@ const fishList = [
     id: "hirame", name: "ヒラメ", kana: "ひらめ", img: "hirame.webp",
     lead: "上品な旨みとコリコリの食感。冬は脂ののる「寒ビラメ」。",
     about: [
-      { k: "特徴", v: "高級白身魚。**冬**に脂がのり、「寒ビラメ」と呼ばれます。" },
-      { k: "味わい", v: "淡白で上品な旨みと、コリコリとした弾力が楽しめます。" },
-      { k: "魅力", v: "身は上品な淡白さ。**えんがわ**は脂がのり、特有の甘みがあります。" }
+      { k: "特徴", v: "高級白身魚。脂ののる冬は「寒ビラメ」と呼ばれます。" },
+      { k: "味わい", v: "淡白で上品な旨みと、コリコリとした弾力。**えんがわ**は脂がのり、特有の甘みがあります。" }
     ],
     interaction: {
       type: "flip",
@@ -1565,8 +1583,7 @@ const fishList = [
     lead: "アジの仲間でも特に味がよいとされる高級魚。",
     about: [
       { k: "特徴", v: "身が締まり、**上品な脂の甘み**がある高級魚です。" },
-      { k: "味わい", v: "青魚特有のクセがなく、白身魚のような上品な甘さです。" },
-      { k: "魅力", v: "しっかりとした**歯ごたえ**と脂の甘みを、同時に味わえる魚です。" }
+      { k: "味わい", v: "青魚特有のクセがなく、白身魚のような上品な甘さ。しっかりした**歯ごたえ**も楽しめます。" }
     ],
     interaction: {
       type: "quiz",
@@ -1587,8 +1604,7 @@ const fishList = [
     lead: "栄養が豊富で、香りと脂の旨みが魅力の青魚。",
     about: [
       { k: "特徴", v: "青魚の代表で、**EPAやDHA**が豊富です。新鮮なら刺身でも絶品。" },
-      { k: "味わい", v: "青魚ならではの豊かな香りと、とろけるような脂の旨みです。" },
-      { k: "魅力", v: "**鮮度のよいもの**ほど、クセが少なく澄んだ味わいです。" }
+      { k: "味わい", v: "青魚ならではの豊かな香りと、とろけるような脂の旨み。**鮮度のよいもの**ほどクセが少なく、澄んだ味わいです。" }
     ],
     interaction: {
       type: "flip",
@@ -1605,8 +1621,7 @@ const fishList = [
     lead: "噛むほどに旨みが広がる、日本で一番身近なタコ。",
     about: [
       { k: "特徴", v: "日本で最も一般的に食べられるタコ。**弾力**がしっかりしています。" },
-      { k: "味わい", v: "噛めば噛むほど、**濃厚な旨み**が広がります。" },
-      { k: "魅力", v: "**吸盤**のコリコリとした食感も、魅力のひとつです。" }
+      { k: "味わい", v: "噛めば噛むほど**濃厚な旨み**が広がります。**吸盤**のコリコリとした食感も魅力です。" }
     ],
     interaction: {
       type: "quiz",
@@ -1633,8 +1648,7 @@ const fishList = [
     lead: "土用の丑の日でおなじみ。ふっくら香ばしい味わい。",
     about: [
       { k: "特徴", v: "ふっくらとした身と、香ばしいタレの相性が抜群です。" },
-      { k: "味わい", v: "皮目は**パリッと香ばしく**、身はふっくら柔らかな食感です。" },
-      { k: "魅力", v: "**濃厚な脂の旨み**が魅力。ご飯もお酒も進む魚です。" }
+      { k: "味わい", v: "皮目は**パリッと香ばしく**、身はふっくら柔らか。**濃厚な脂の旨み**で、ご飯もお酒も進みます。" }
     ],
     interaction: {
       type: "flip",
@@ -1648,9 +1662,8 @@ const fishList = [
     id: "yariika", name: "ヤリイカ", kana: "やりいか", img: "ika.webp",
     lead: "上品な甘みと歯切れのよさが魅力。冬から春が旬。",
     about: [
-      { k: "特徴", v: "**冬から春**が旬。透き通るような身が特徴です。" },
-      { k: "味わい", v: "上品な甘みと、柔らかくも歯切れのよい食感です。" },
-      { k: "魅力", v: "噛むほどに、イカ本来の**優しい旨み**が広がります。" }
+      { k: "特徴", v: "透き通るような身が特徴です。" },
+      { k: "味わい", v: "上品な甘みと、柔らかくも歯切れのよい食感。噛むほどに**優しい旨み**が広がります。" }
     ],
     interaction: {
       type: "quiz",
@@ -1671,8 +1684,7 @@ const fishList = [
     lead: "名前のとおり、とろける強い甘みが特徴。",
     about: [
       { k: "特徴", v: "正式名称は**「ホッコクアカエビ」**。強い甘みが特徴です。" },
-      { k: "味わい", v: "口に入れるととろける甘みと、ねっとり滑らかな口当たり。" },
-      { k: "魅力", v: "身は**とろける甘み**、頭の味噌は濃厚な旨みが魅力です。" }
+      { k: "味わい", v: "口に入れるととろける甘みと、ねっとり滑らかな口当たり。頭の味噌は濃厚な旨みです。" }
     ],
     interaction: {
       type: "flip",
@@ -2324,19 +2336,23 @@ function openSheet(){
   clearTimeout(sheetCloseTimer);
   sakeSeenFor = null;
   updateFinishPill();
+  setSheetTab('fish', true);
   document.getElementById('sheetScroll').scrollTop = 0;
   sh.classList.add('show');
   sh.setAttribute('aria-hidden', 'false');
   document.body.classList.add('sheet-open');
   sendLog('画面', { screen: 'detail' });
   requestAnimationFrame(() => requestAnimationFrame(() => sh.classList.add('open')));
-  if (sakeObserver) sakeObserver.disconnect();
-  if ('IntersectionObserver' in window) {
-    sakeObserver = new IntersectionObserver((es) => {
-      if (es.some(e => e.isIntersecting)) { logSakeSeen(); sendLog('画面', { screen: 'menu' }); sakeObserver.disconnect(); }
-    }, { root: document.getElementById('sheetScroll'), threshold: 0.35 });
-    sakeObserver.observe(document.getElementById('sheetSake'));
-  } else { logSakeSeen(); }
+}
+
+function setSheetTab(name, silent){
+  const sh = document.getElementById('fishSheet');
+  const sake = name === 'sake';
+  sh.classList.toggle('tab-sake', sake);
+  document.getElementById('tabFish').classList.toggle('on', !sake);
+  document.getElementById('tabSake').classList.toggle('on', sake);
+  document.getElementById('sheetScroll').scrollTop = 0;
+  if (sake && !silent) { logSakeSeen(); sendLog('画面', { screen: 'menu' }); }
 }
 
 function closeSheet(instant){
@@ -2345,7 +2361,6 @@ function closeSheet(instant){
   sh.classList.remove('open');
   sh.setAttribute('aria-hidden', 'true');
   document.body.classList.remove('sheet-open');
-  if (sakeObserver) sakeObserver.disconnect();
   clearTimeout(sheetCloseTimer);
   const done = () => sh.classList.remove('show');
   if (instant || REDUCED_MOTION) done(); else sheetCloseTimer = setTimeout(done, 480);
@@ -2865,7 +2880,7 @@ const ICON = {
   fish:  '<svg ' + SVGA + '><path d="M3 12c3-5 8-6 12-3l4-3v12l-4-3c-4 3-9 2-12-3z"/><circle cx="8.2" cy="11" r=".8" fill="currentColor"/></svg>',
   drop:  '<svg ' + SVGA + '><path d="M12 3c3 4 6 7 6 11a6 6 0 0 1-12 0c0-4 3-7 6-11z"/></svg>'
 };
-const ABOUT_ICON = { '特徴': ICON.fish, '味わい': ICON.drop, '魅力': ICON.spark };
+const ABOUT_ICON = { '特徴': ICON.fish, '味わい': ICON.drop };
 const DEX_SEASON = {   // 本文に書いてある旬だけを表示(m=旬の月)
   aji:{t:'初夏〜夏',m:[5,6,7,8]}, katsuo:{t:'春・秋',m:[3,4,5,9,10,11]}, hirame:{t:'冬',m:[12,1,2]}, yariika:{t:'冬〜春',m:[12,1,2,3,4]}
 };
