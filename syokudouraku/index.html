@@ -386,6 +386,32 @@
   .store-eyebrow { font-size: 12px; color: var(--accent); font-weight: 700; letter-spacing: .15em; }
   .store-heading { font-size: 21px; font-weight: 800; margin: 4px 0 16px; line-height: 1.4; }
   /* 写真つきメニュー（雑誌風） */
+  #sheet { --mc: #A8322A; --mc2: #D9822B; --tint: #FBF0E3; --tint2: #F6E2CC; }
+  #sheet.m-food { --mc: #2F6F52; --mc2: #7DAE6A; --tint: #EEF5EC; --tint2: #DCEBD8; }
+  #sheet.m-sake, #sheet.m-food { background: linear-gradient(180deg, var(--tint) 0, var(--paper) 260px); }
+  .menu-banner { position: relative; overflow: hidden; display: flex; align-items: center; gap: 14px; margin: 4px 0 18px; padding: 18px 16px; border-radius: 20px; color: #fff;
+    background: linear-gradient(135deg, var(--mc), var(--mc2)); box-shadow: 0 8px 20px rgba(0,0,0,.14); }
+  .menu-banner::before { content: ""; position: absolute; inset: 0; opacity: .16;   /* 青海波の模様 */
+    background: radial-gradient(circle at 50% 100%, transparent 9px, #fff 10px, transparent 11px, transparent 15px, #fff 16px, transparent 17px) 0 0 / 36px 18px,
+                radial-gradient(circle at 50% 100%, transparent 9px, #fff 10px, transparent 11px, transparent 15px, #fff 16px, transparent 17px) 18px 9px / 36px 18px; }
+  .mb-emblem { position: relative; flex: none; width: 58px; height: 58px; border-radius: 50%; display: grid; place-items: center; font-size: 30px; font-weight: 800;
+    background: rgba(255,255,255,.16); border: 2px solid rgba(255,255,255,.85); box-shadow: inset 0 0 0 4px rgba(255,255,255,.12); }
+  .mb-text { position: relative; min-width: 0; padding-right: 30px; }
+  .mb-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .12em; opacity: .9; }
+  .mb-heading { margin: 4px 0 0; font-size: 18px; font-weight: 800; line-height: 1.45; }
+  #sheet .sheet-close { z-index: 2; }
+  #sheet .mag { background: #fff; border-radius: 22px; padding: 16px 16px 18px; box-shadow: 0 6px 22px rgba(60,40,20,.08); border: 1px solid rgba(0,0,0,.04); margin-bottom: 18px; }
+  #sheet .mag-kind { display: inline-flex; align-items: center; gap: 4px; background: var(--tint2); color: var(--mc); padding: 3px 10px; border-radius: 999px; }
+  #sheet .mag-title { font-size: 22px; border-bottom: 0; padding-bottom: 0; margin: 10px 0 12px; }
+  #sheet .mag-title::after { content: ""; display: block; width: 44px; height: 3px; border-radius: 3px; margin-top: 8px; background: linear-gradient(90deg, var(--mc), var(--mc2)); }
+  #sheet .mag-photo { border-radius: 16px; box-shadow: 0 0 0 4px #fff, 0 0 0 5px var(--tint2), 0 10px 22px rgba(0,0,0,.14); margin: 4px 4px 0; }
+  #sheet .mag-story { font-size: 14px; }
+  #sheet .mag-point { background: var(--tint); border: 0; border-left: 4px solid var(--mc); border-radius: 4px 14px 14px 4px; }
+  #sheet .mag-point h5 { color: var(--mc); display: flex; align-items: center; gap: 6px; }
+  #sheet .mag-point h5::before { content: "◆"; font-size: 9px; color: var(--mc2); }
+  #sheet .mag-tags span { background: var(--tint); border-color: var(--tint2); color: var(--mc); font-weight: 700; }
+  #sheet .mag-about h5 { color: var(--mc); }
+  #sheet .mag-about { border-top: 1px dashed var(--tint2); }
   .mag { margin-bottom: 14px; }
   .mag-kind { font-size: 11px; font-weight: 700; color: var(--accent); letter-spacing: .1em; }
   .mag-kind span { color: var(--muted); font-weight: 500; letter-spacing: 0; }
@@ -1131,7 +1157,7 @@ function setupMapEvents() {
     if (!p || e.pointerType !== 'mouse') { tip.style.opacity = 0; return; }
     const t = SAKE_BY_PREF[p.dataset.pref];
     const r = wrap.getBoundingClientRect();
-    tip.innerHTML = `${p.dataset.pref}<span style="font-weight:400;color:#776E62;margin-left:8px">${t ? t.name : ''}</span>`;
+    tip.textContent = p.dataset.pref;
     tip.style.left = (e.clientX - r.left + 14) + 'px';
     tip.style.top = (e.clientY - r.top + 14) + 'px';
     tip.style.opacity = 1;
@@ -1602,8 +1628,6 @@ function drawTown(town, C, time) {
         <path d="M0,40 L-12,20 A24,24 0 1 1 12,20Z" fill="#2F7A55" stroke="#fff" stroke-width="3"/>
         <text x="0" y="5" text-anchor="middle" font-size="20" font-family="Shippori Mincho" font-weight="800" fill="#fff">食</text></g></g>
       <circle class="ripple" cx="${fx}" cy="${fy}" r="40" fill="none" stroke="#fff" stroke-width="3" style="animation-delay:-.6s"/>
-      <g transform="translate(${fx} ${fy - 50})"><rect x="-70" y="-16" width="140" height="28" rx="14" fill="#fff" opacity=".95"/>
-        <text x="0" y="4" text-anchor="middle" font-size="14" font-weight="700" fill="#1F1B16" font-family="Noto Sans JP">${fpins.foodIcon} ${fpins.foodName}</text></g>
     </g>`;
   }
 
@@ -1921,11 +1945,11 @@ function setupDiorama(town, d) {
   const pins = pinsFor(town.pref);
   Object.assign($('dio-pin').style, { left: px + '%', top: py + '%' });
   $('dio-pin').hidden = !pins.sake;
-  $('dio-pin-chip').textContent = pins.sakeName ? '🍶 ' + pins.sakeName : '';
+  $('dio-pin-chip').textContent = '';   // ピンには名前を出さない
   const [foodX, foodY] = d.food || [Math.min(85, px + 25), py + 6];
   Object.assign($('dio-pin-food').style, { left: foodX + "%", top: foodY + "%" });
   $('dio-pin-food').hidden = !pins.food;
-  $('dio-food-chip').textContent = pins.food ? pins.foodIcon + ' ' + pins.foodName : '';
+  $('dio-food-chip').textContent = '';
   $('dio-pin-food').querySelector('b').textContent = '食';
   // 金色のきらめき
   let sp = '';
@@ -2180,16 +2204,14 @@ function itemHTML(it, i) {
       <h4 class="mag-title mincho">${it.name}</h4>
       ${it.image ? `      <div class="mag-photo"${it.aspect ? ` style="aspect-ratio:${it.aspect}"` : ''}>
         <img src="${photo(it.image)}" alt="${it.name}" loading="lazy" decoding="async">
-        ${it.poem ? `<div class="mag-poem mincho">${it.poem}</div>` : ''}
       </div>` : ''}
       ${filled(it.awards) ? `<div class="mag-awards">${it.awards.filter(a => filled(a.title)).map(a => `<div class="mag-award ${a.medal || ''}"><b>${a.year}</b><div><div class="aw-t">${a.title}</div>${a.note ? `<div class="aw-n">${a.note}</div>` : ''}</div></div>`).join('')}</div>` : ''}
       ${filled(it.tags) ? `<div class="mag-tags">${it.tags.filter(filled).map(x => `<span>${x}</span>`).join('')}</div>` : ''}
-      ${(it.photos || []).filter(ph => filled(ph.src)).map(ph => `<figure class="mag-sub"><img src="${photo(ph.src)}" alt="" loading="lazy" decoding="async">${ph.caption ? `<figcaption>${ph.caption}</figcaption>` : ''}</figure>`).join('')}
+      ${(it.photos || []).filter(ph => filled(ph.src)).map(ph => `<figure class="mag-sub"><img src="${photo(ph.src)}" alt="" loading="lazy" decoding="async"></figure>`).join('')}
       ${it.story ? `<p class="mag-story">${it.story}</p>` : ''}
       ${filled(it.points) ? `<div class="mag-point"><h5 class="mincho">ここがおいしい</h5><ol class="mag-points">${it.points.filter(filled).map(x => `<li>${x}</li>`).join('')}</ol></div>` : ''}
       ${it.point ? `<div class="mag-point"><h5 class="mincho">${it.kind === 'sake' ? 'こだわり' : '素材のこだわり'}</h5><p>${it.point}</p></div>` : ''}
-      ${it.about && (filled(it.about.text) || filled(it.about.image)) ? `<div class="mag-about"><h5 class="mincho">${it.about.title || ''}</h5>${it.about.image ? `<figure class="mag-sub"><img src="${photo(it.about.image)}" alt="" loading="lazy" decoding="async">${it.about.caption ? `<figcaption>${it.about.caption}</figcaption>` : ''}</figure>` : ''}<p>${it.about.text || ''}</p></div>` : ''}
-      ${it.menu ? `<span class="item-menu">🍽 ${it.menu}</span>` : ''}
+      ${it.about && (filled(it.about.text) || filled(it.about.image)) ? `<div class="mag-about"><h5 class="mincho">${it.about.title || ''}</h5>${it.about.image ? `<figure class="mag-sub"><img src="${photo(it.about.image)}" alt="" loading="lazy" decoding="async"></figure>` : ''}<p>${it.about.text || ''}</p></div>` : ''}
       ${it.source ? `<p class="mag-source">${it.source}</p>` : ''}
     </article>`;
 }
@@ -2202,8 +2224,12 @@ function openSheet(t, mode = 'sake') {
   const useDefault = STORE.showDefaultSake === true && !sakes.length;
   const dots = [];   // [id, 辛さ, 濃さ]
   const list = arr => { const body = arr.map(it => itemHTML(it, all.indexOf(it))).join(''); return STORE.layout === 'list' ? `<div class="item-list">${body}</div>` : body; };
-  let html = `<div class="store-eyebrow">${isFeatured(t.pref) ? '✦ 特におすすめ' : 'こだわりの産地'}</div>
-    <h3 class="store-heading mincho">${(mode === 'food' ? (STORE.foodHeading || '{pref}から届く、当店の食材') : (STORE.heading || '{pref}のお酒')).replace('{pref}', t.pref)}</h3>`;
+  const head = (mode === 'food' ? (STORE.foodHeading || '{pref}から届く、当店の食材') : (STORE.heading || '{pref}のお酒')).replace('{pref}', t.pref);
+  let html = `<div class="menu-banner">
+      <div class="mb-emblem mincho">${mode === 'food' ? '食' : '酒'}</div>
+      <div class="mb-text"><div class="mb-eyebrow">${isFeatured(t.pref) ? '✦ 特におすすめの産地' : 'こだわりの産地'}｜${t.pref}</div>
+        <h3 class="mb-heading mincho">${head}</h3></div>
+    </div>`;
 
   if (mode === 'sake') {
     if (sakes.length) {
@@ -2218,6 +2244,7 @@ function openSheet(t, mode = 'sake') {
   }
 
   html += `<p class="disclaimer">${useDefault && mode === 'sake' ? '※ 地酒は県ごとの代表的な銘柄の一例です。味わいは目安です。' : ''}${STORE.note || ''}</p>`;
+  $('sheet').classList.toggle('m-food', mode === 'food'); $('sheet').classList.toggle('m-sake', mode !== 'food');
   $('sheet-body').innerHTML = html;
   $('sheet-bg').classList.add('show');
   $('sheet').classList.add('show');
