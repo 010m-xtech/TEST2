@@ -1,3 +1,4 @@
+[SETUP.md](https://github.com/user-attachments/files/34413606/SETUP.3.md)
 [SETUP.md](https://github.com/user-attachments/files/34210151/SETUP.2.md)
 # 共有ランキングの準備(Firebase・無料)
 
@@ -5,8 +6,8 @@
 Googleの無料サービス「Firebase」の中にある「Firestore」をデータの置き場所に使います。
 最初に1回だけ、20分ほどの作業です。料金はかかりません(無料の Spark プランのまま)。
 
-ランキングは **「今日」(朝5時で切り替え)と「今週」(月曜の朝5時で切り替え)** の2つです。
-週が終わった記録と写真(お店用の大きい写真は、その日が終わったら)は、手順 3-4 のスプレッドシートが1時間ごとに自動で Firebase から消します。
+ランキングは **「今週」(月曜の朝5時で切り替え)と「今月」(1日の朝5時で切り替え)** の2つです。
+週と月の両方が終わった記録と写真(お店用の大きい写真は、その日が終わったら)は、手順 3-4 のスプレッドシートが1時間ごとに自動で Firebase から消します。
 
 ## 0. 他の担当者の Google アカウントで作るとき
 
@@ -52,9 +53,9 @@ service cloud.firestore {
     match /scores/{id} {
       allow read: if true;
       allow create: if signedIn()
-        && d().keys().hasOnly(['name','score','rings','scores','createdAt','hash','day','week','uid','expireAt'])
-        && d().keys().hasAll(['name','score','rings','createdAt','day','week','uid','expireAt'])
-        && d().expireAt is timestamp && d().expireAt < request.time + duration.value(9, 'd')
+        && d().keys().hasOnly(['name','score','rings','scores','createdAt','hash','day','week','month','uid','expireAt'])
+        && d().keys().hasAll(['name','score','rings','createdAt','day','week','month','uid','expireAt'])
+        && d().expireAt is timestamp && d().expireAt < request.time + duration.value(35, 'd')
         && d().uid == request.auth.uid
         && existsAfter(/databases/$(database)/documents/private/$(id))
         && d().name is string && d().name.size() >= 1 && d().name.size() <= 12
@@ -66,7 +67,8 @@ service cloud.firestore {
         && d().createdAt <= request.time.toMillis() + 300000
         && d().createdAt >= request.time.toMillis() - 21600000
         && d().day is string && d().day.size() == 10
-        && d().week is string && d().week.size() == 10;
+        && d().week is string && d().week.size() == 10
+        && d().month is string && d().month.size() == 7;
       allow delete: if signedIn() && resource.data.uid == request.auth.uid;
       allow update: if false;
     }
@@ -88,7 +90,7 @@ service cloud.firestore {
       allow read: if true;
       allow create: if signedIn()
         && d().keys().hasOnly(['img','uid','expireAt'])
-        && d().expireAt is timestamp && d().expireAt < request.time + duration.value(9, 'd')
+        && d().expireAt is timestamp && d().expireAt < request.time + duration.value(35, 'd')
         && d().uid == request.auth.uid
         && d().img is string && d().img.size() < 60000
         && d().img.matches('^data:image/jpeg;base64,[A-Za-z0-9+/=]+$')
@@ -122,9 +124,9 @@ service cloud.firestore {
 
 ## 3-3. 古い記録と写真を自動で消す
 
-ランキングは「今日」と「今週」だけなので、週が終わった記録と写真は残しておく必要がありません。
+ランキングは「今週」と「今月」だけなので、週と月の両方が終わった記録と写真は残しておく必要がありません。
 データには「消してよい日時」(`expireAt`)が付いています。
-- 記録(`scores`)・ランキングの写真(`thumbs`): その週が終わる、次の月曜の朝5時
+- 記録(`scores`)・ランキングの写真(`thumbs`): その月が終わる、次の月の1日の朝5時(月末の記録で、週が月をまたぐときは、その週が終わる次の月曜の朝5時)
 - お店用の大きい写真(`photos`): その日が終わる、次の朝5時(容量のほとんどがこの写真なので、毎日消します。見たいときは、その日のうちに Firebase の画面で見てください)
 
 **次の手順 3-4 のスプレッドシートを設定すると、1時間ごとに、この日時を過ぎたものを自動で消します。** 無料プランのまま、ずっと動き続けます。
@@ -160,7 +162,7 @@ service cloud.firestore {
    12行目の `PROJECT_ID` が、Firebase の歯車 →「プロジェクトの設定」にある **プロジェクト ID**(`'nagonomise-happyring'`)になっていることを確かめます。上の 💾(保存)を押します。
 6. 上の関数の選択で **`setup`** を選び、「▶ 実行」を押します。
    「承認が必要です」→ 自分のアカウント →「詳細」→「(安全ではないページ)に移動」→「許可」と進みます(自分で作ったスクリプトなので大丈夫です)。
-7. スプレッドシートに「記録」シートができ、これまでの記録が入れば完了です。あとは1時間ごとに自動で増え、週が終わった記録と写真は自動で消えます。
+7. スプレッドシートに「記録」シートができ、これまでの記録が入れば完了です。あとは1時間ごとに自動で増え、週と月が終わった記録と写真は自動で消えます。
    すぐ取り込みたいときは、関数 `importRecords` を選んで「▶ 実行」を押します。
 
 - 端末は「iPhone iOS 18.1 / LINE」のように、OS と開いたアプリまでです(機種名はスマホが教えてくれないことが多いです)。この設定より前の記録は「-」になります。
@@ -199,15 +201,15 @@ const FIREBASE_CONFIG = { apiKey: "AIza...", authDomain: "happyring-xxxx.firebas
 1. QRコードのページを開き、ランキング画面を開きます。
 2. 「ランキングを読み込めませんでした」と、その下に `https://console.firebase.google.com/...` のリンクが出ます。
 3. そのリンクを開き、「インデックスを作成」を押します。
-4. 「今日」と「今週」のタブで1回ずつ(合計2回)出ます。どちらも作成してください。
+4. 「今週」と「今月」のタブで1回ずつ(合計2回)出ます。どちらも作成してください。
 5. 数分待つと、ランキングが表示されるようになります。
 
 リンクが出ないときは、Firestore の「インデックス」タブ →「複合」→「インデックスを作成」で、次の2つを作ります。
 
 | コレクション | フィールド1 | フィールド2 |
 |---|---|---|
-| `scores` | `day`(昇順) | `score`(降順) |
 | `scores` | `week`(昇順) | `score`(降順) |
+| `scores` | `month`(昇順) | `score`(降順) |
 
 ## 7. 鍵(APIキー)を、お店のページ専用にする(強くおすすめ)
 
@@ -245,8 +247,8 @@ Firebase のウェブ用の `apiKey` は、ページに書いて公開する前�
 
 - **無料枠**: 1日あたり読み込み5万回・書き込み2万回まで無料です。1日に数百人が遊ぶくらいなら十分に収まります。
   Spark(無料)プランのままなら、枠を超えても請求は来ません(その日は止まるだけです)。
-- **「今日」の区切り**: 朝5時で切り替わります。閉店が日付をまたいでも、その晩は同じ「今日」です。
-- **「今週」の区切り**: 月曜の朝5時で切り替わります。
+- **「今週」の区切り**: 月曜の朝5時で切り替わります。閉店が日付をまたいでも、その晩は同じ日として数えます。
+- **「今月」の区切り**: 1日の朝5時で切り替わります。
 - **記録を消したいとき**: 記録した本人は、同じスマホのランキング画面の「自分の記録を消す」で消せます。
   お店が今すぐ消すときは、Firebase の画面の「Firestore」→「データ」で、**`scores` と `thumbs` から同じIDのドキュメント**を削除します
   (ゲームに出ている名前・点数は `scores`、写真は `thumbs`)。`photos` はお店用の大きい写真で、ゲームには出ません。感想は、スプレッドシートに残ります。
