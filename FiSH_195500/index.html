@@ -630,10 +630,17 @@
   .ask-actions[hidden]{ display:none; }
   .ask-actions.pop-in{ animation: fadeUp .5s ease both; }
   .ask-actions .btn{ flex:1; padding:15px 0; font-size:17px; }
-  .sheet-tabs{ display:flex; gap:6px; padding:12px 56px 10px 14px; border-bottom:1px solid rgba(227,203,148,.22); flex:0 0 auto; }
-  .sheet-tab{ flex:1; max-width:130px; padding:8px 0; border-radius:999px; border:1px solid transparent; background:transparent; color:rgba(242,238,227,.6);
-    font-family:var(--font-gothic); font-size:14px; font-weight:700; letter-spacing:.08em; cursor:pointer; transition:background .25s, color .25s; }
-  .sheet-tab.on{ background:var(--gold); color:#10203a; }
+  .sheet-tabs{ display:flex; gap:8px; padding:12px 54px 12px 14px; border-bottom:1px solid rgba(227,203,148,.22); flex:0 0 auto; }
+  .sheet-tab{ position:relative; flex:1; max-width:150px; display:flex; align-items:center; justify-content:center; gap:6px; padding:10px 0; border-radius:999px;
+    border:1.5px solid rgba(227,203,148,.55); background:rgba(227,203,148,.06); color:var(--kinari);
+    font-family:var(--font-gothic); font-size:15px; font-weight:700; letter-spacing:.06em; cursor:pointer; transition:background .25s, color .25s; }
+  .sheet-tab.on{ background:var(--gold); border-color:var(--gold); color:#10203a; }
+  .sheet-tab.sake:not(.on){ border-color:var(--gold); background:rgba(227,203,148,.14); animation: sakePulse 2.4s ease-in-out infinite; }
+  .sheet-badge{ position:absolute; top:-9px; right:-4px; font-style:normal; font-size:10.5px; line-height:1; padding:3px 7px; border-radius:999px; background:var(--shu); color:#fff; letter-spacing:.04em; box-shadow:0 2px 8px rgba(0,0,0,.4); }
+  .fish-sheet.sake-seen .sheet-badge, .sheet-tab.on .sheet-badge{ display:none; }
+  .fish-sheet.sake-seen .sheet-tab.sake{ animation:none; }
+  @keyframes sakePulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(227,203,148,0); } 50%{ box-shadow:0 0 0 5px rgba(227,203,148,.28), 0 0 16px rgba(227,203,148,.35); } }
+  @media (prefers-reduced-motion: reduce){ .sheet-tab.sake:not(.on){ animation:none; } }
   .fish-sheet.tab-sake #detailHero, .fish-sheet.tab-sake .fish-story{ display:none; }
   .fish-sheet:not(.tab-sake) #sheetSake{ display:none; }
   .fish-sheet.tab-sake #sheetSake{ margin-top:0; padding-top:4px; border-top:0; animation: fadeUp .4s ease both; }
@@ -1091,6 +1098,27 @@
   }
   .brand-since::after{ content:''; flex:0 0 22px; height:1px; background: linear-gradient(90deg, var(--gold-soft), transparent); }
   @media (max-width:340px){ .brand h1{ font-size:17px; } .brand-since{ font-size:7.5px; letter-spacing:.26em; } }
+
+  /* ===== washi bubble: 和紙の札のような吹き出し(水槽・金のあしらいになじませる) ===== */
+  .talk-bubble{
+    --paper-top:#FEFAEE; --paper-bot:#F2E9D2;
+    background:
+      radial-gradient(120% 90% at 18% 0%, rgba(255,255,255,.75), rgba(255,255,255,0) 55%),
+      repeating-linear-gradient(97deg, rgba(150,120,70,.035) 0 1px, rgba(255,255,255,0) 1px 5px),
+      linear-gradient(180deg, var(--paper-top), var(--paper-bot));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.95), inset 0 -10px 18px rgba(176,140,70,.10), 0 0 0 1px rgba(227,203,148,.55);
+    filter: drop-shadow(0 10px 18px rgba(2,10,24,.50)) drop-shadow(0 0 10px rgba(227,203,148,.22));
+  }
+  .talk-bubble::before{ border-color: transparent #F8F1DF transparent transparent; }
+  .stage-head .talk-bubble::before{ border-color: transparent transparent var(--paper-top) transparent; }
+  .talk-bubble::after{
+    content:''; position:absolute; inset:5px; border-radius:inherit; pointer-events:none;
+    border:1px solid rgba(176,132,52,.55);
+    border-radius:calc(22px - 5px);
+  }
+  .stage-head .talk-bubble::after{ border-radius:calc(30px - 5px); inset:6px; }
+  .talk-bubble.compact::after{ inset:4px; border-radius:14px; }
+  .talk-bubble .talk-main::after{ content:none; }
 </style>
 </head>
 <body>
@@ -1302,8 +1330,8 @@
   <div class="sheet-panel" role="dialog" aria-modal="true" aria-label="魚の情報">
     <button class="sheet-close" type="button" onclick="closeSheet()" aria-label="閉じる"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <div class="sheet-tabs" role="tablist">
-      <button type="button" class="sheet-tab on" id="tabFish" role="tab" onclick="setSheetTab('fish')">お魚</button>
-      <button type="button" class="sheet-tab" id="tabSake" role="tab" onclick="setSheetTab('sake')">日本酒</button>
+      <button type="button" class="sheet-tab on" id="tabFish" role="tab" onclick="setSheetTab('fish')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12c3-5 8-6.5 12-4.5 2 1 3.5 2.5 6 4.5-2.5 2-4 3.5-6 4.5-4 2-9 .5-12-4.5z"/><circle cx="16.5" cy="11" r=".6" fill="currentColor"/></svg><span>お魚</span></button>
+      <button type="button" class="sheet-tab sake" id="tabSake" role="tab" onclick="setSheetTab('sake')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 3h5M10.5 3v3.2C10.5 8 7.5 9 7.5 12.5V19a2 2 0 002 2h5a2 2 0 002-2v-6.5C16.5 9 13.5 8 13.5 6.2V3"/><path d="M7.5 14h9"/></svg><span>日本酒</span><i class="sheet-badge">おすすめ</i></button>
     </div>
     <div class="sheet-scroll" id="sheetScroll">
       <div class="fish-hero dex-hero" id="detailHero">
@@ -2378,6 +2406,7 @@ function openSheet(){
   sheetViews++;
   clearTimeout(nudgeTimer);
   updateFinishPill();
+  document.getElementById('fishSheet').classList.remove('sake-seen');
   setSheetTab('fish', true);
   document.getElementById('sheetScroll').scrollTop = 0;
   sh.classList.add('show');
@@ -2393,6 +2422,7 @@ function setSheetTab(name, silent){
   sh.classList.toggle('tab-sake', sake);
   document.getElementById('tabFish').classList.toggle('on', !sake);
   document.getElementById('tabSake').classList.toggle('on', sake);
+  if (sake) sh.classList.add('sake-seen');
   document.getElementById('sheetScroll').scrollTop = 0;
   if (sake && !silent) { logSakeSeen(); sendLog('画面', { screen: 'menu' }); }
 }
