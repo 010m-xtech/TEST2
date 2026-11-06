@@ -3941,7 +3941,7 @@
       const cb = onStoryEnd;
       onStoryEnd = null;
       if (cb) cb();
-      setTimeout(() => { if (mfPos !== null && !mfShowVisible) mfShowMap(mfPos); }, 700);
+      setTimeout(() => { if (mfPos !== null && !mfShowVisible) { mfShowMap(mfPos); mfTryDepart(); } }, 700);
     }
 
     storyIntro.addEventListener('click', (e) => {
@@ -5482,7 +5482,7 @@
     // 設定方法は bubble/sheet-apps-script.gs の先頭を参照
     const SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzzAtdQ_cj1OZQHOHZFof5sPY7K7jyxJnr1BZnUm4d023brm3Xh6jnPDqXMmes1IZ4D/exec';
     const SHEET_SECRET = 'kanpai-memories';   // Apps Script 側と同じ合言葉にする
-    const STALE_RESET_MS = 50 * 60 * 1000;     // 50分写真が届かなければリセット（次のお客様が途中から始まらないように）
+    const STALE_RESET_MS = 40 * 60 * 1000;     // 40分写真が届かなければリセット（次のお客様が途中から始まらないように）
     const RESUME_ASK_MS = 20 * 60 * 1000;      // 20分以上止まっている旅は、開いたときに「新しく始める／続きから」を聞く
 
     const stateDocRef = () => doc(db, 'artifacts', appId, 'public', 'data', 'meter', 'state');
@@ -5838,8 +5838,8 @@
       mfBubble.classList.remove('show');
       appContainer.classList.remove('mf-result');
       mfShowMap(mfPos);
-      // 次の写真がもう届いていれば、待たずに次の名所へ
-      if (mfLandedCount() > mfPos) { clearTimeout(mfWaitTimer); mfWaitTimer = setTimeout(mfTryDepart, 800); }
+      // 出発は時刻表どおり（自分だけ先に出発しないように）
+      mfTryDepart();
     }
 
     // ---------- 地図：写真の丸（スポット）で、行った街・次の街・まだの街 ----------
@@ -5941,10 +5941,9 @@
       mfPos = pos;
       mfTraveling = false;
       mfArrivedAt = Date.now();
-      // 写真が続けて届いていたら、この名所の紹介を見てもらってから次へ（名所を飛ばさない）
-      clearTimeout(mfWaitTimer); mfWaitTimer = null;
-      if (pos > 0 && mfLandedCount() > pos) {
-        mfWaitTimer = setTimeout(mfTryDepart, MF_MIN_STAY_MS);
+      // 写真が続けて届いていたら、この名所の紹介を見てもらってから次へ（出発の時刻は時刻表で、みんな同じ）
+      clearTimeout(mfWaitTimer); mfWaitTimer = setTimeout(mfTryDepart, 50);
+      if (pos > 0 && mfTimetable().length > pos) {
         mfLater(() => showToast('<span class="toast-dot"></span><span class="truncate">📸 次の写真も届いています！このあと次の名所へ</span>', 3000), 3400);
       }
       mfMeasureGround();
@@ -5964,12 +5963,15 @@
     }
 
     // ---------- 次の街へ：地図の上で出発 → 街並みを走る（約4秒）→ 到着 ----------
-    function mfTravel(from, to) {
+    function mfTravel(from, to, lateMs = 0) {
       mfTimers.forEach(clearTimeout); mfTimers = [];
       mfTraveling = true;
       const lastPhoto = memoriesOfRound(meterState.round)[to - 1];
       const express = !!(lastPhoto && lastPhoto.drink === 'beer');
-      const travelMs = express ? 2800 : MF_TRAVEL_MS;
+      // 遅れて出発したときは、その分を縮めてみんなと同じ時刻に着く
+      const late = Math.max(0, lateMs);
+      const mapPhase = Math.max(0, MF_MAP_PHASE - late);
+      const travelMs = Math.max(600, (express ? 2800 : MF_TRAVEL_MS) - Math.max(0, late - MF_MAP_PHASE));
       mfRoad.classList.toggle('express', express);
       if (express) showToast('<span class="toast-dot"></span><span class="truncate">🍺 生ビール速達便！ビールの一枚で、特急出発！</span>', 2600);
       mfPos = to;
@@ -6003,8 +6005,8 @@
           if (q < 1) requestAnimationFrame(tick);
         };
         tick();
-      }, 1200);
-      mfLater(() => mfArrive(to), 1200 + travelMs);
+      }, mapPhase);
+      mfLater(() => mfArrive(to), mapPhase + travelMs);
     }
 
     // ---------- 枚数に合わせて旅を進める（renderMeter から毎回呼ばれる） ----------
@@ -6013,28 +6015,51 @@
     const MF_MIN_STAY_MS = 2600 + 8000;
     let mfRound = null, mfWaitTimer = null, mfTraveling = false, mfArrivedAt = 0;
     function mfLandedCount() { return memoriesOfRound(meterState.round).filter(m => !pendingFlightIds.has(m.id)).length; }
-    function mfTryDepart() {
-      mfWaitTimer = null;
-      if (mfShowVisible || storyActive) return;
-      if (pendingFlightIds.size) { mfWaitTimer = setTimeout(mfTryDepart, 500); return; }
-      if (mfTraveling) return; // 走っている途中：着いたら mfArrive が次を決める
-      const pos = Math.min(MF_CITIES.length, mfLandedCount());
-      if (pos <= mfPos) return;
-      // 着いたばかりで紹介を出している途中なら、少し見てもらってから
-      const stay = mfStage.classList.contains('show') ? MF_MIN_STAY_MS - (Date.now() - mfArrivedAt) : 0;
-      if (stay > 0) {
-        mfWaitTimer = setTimeout(mfTryDepart, stay);
-        if (stay > 3000) showToast('<span class="toast-dot"></span><span class="truncate">📸 次の写真が届いています！まもなく次の名所へ出発</span>', 2600);
-        return;
-      }
-      mfTravel(mfPos, mfPos + 1);
+    // ===== 旅の時刻表：同じ席のスマホで、トラックの出発・到着を同じ時刻にそろえる =====
+    // 名所k への出発 ＝ 「k枚目の写真が届いた時刻＋2.6秒」と「ひとつ前の名所に着いてから紹介を見る時間のあと」の遅いほう
+    // （時刻はすべて共通の時計 sharedNow。写真の時刻はサーバー時刻 serverAt）
+    const MF_DEPART_DELAY = 2600, MF_MAP_PHASE = 1200;
+    const mfTravelMsOf = (to) => { const m = memoriesOfRound(meterState.round)[to - 1]; return m && m.drink === 'beer' ? 2800 : MF_TRAVEL_MS; };
+    function mfPhotoAt(m) {
+      if (m.serverAt && typeof m.serverAt.toMillis === 'function') return m.serverAt.toMillis();
+      return (m.timestamp || 0) + (m.userId === currentUserId() ? clockOffset : 0); // 送信中の自分の写真など
     }
+    function mfTimetable() {
+      const dep = []; let prevArrive = -Infinity;
+      memoriesOfRound(meterState.round).slice(0, MF_CITIES.length).forEach((m, i) => {
+        const d = Math.max(mfPhotoAt(m) + MF_DEPART_DELAY, prevArrive + MF_MIN_STAY_MS);
+        dep.push(d);
+        prevArrive = d + MF_MAP_PHASE + mfTravelMsOf(i + 1);
+      });
+      return dep;
+    }
+    // この時刻までに着いているはずの名所の数
+    function mfArrivedBy(t) {
+      let n = 0;
+      mfTimetable().forEach((d, i) => { if (t >= d + MF_MAP_PHASE + mfTravelMsOf(i + 1)) n = i + 1; });
+      return n;
+    }
+    function mfTryDepart() {
+      clearTimeout(mfWaitTimer); mfWaitTimer = null;
+      if (mfShowVisible || storyActive || mfTraveling || mfPos === null) return;
+      const dep = mfTimetable(), k = mfPos + 1;
+      if (k > dep.length || k > MF_CITIES.length) return;
+      const now = sharedNow(), d = dep[k - 1];
+      if (now < d) { mfWaitTimer = setTimeout(mfTryDepart, Math.min(d - now, 60000)); return; }
+      // 画面を消していた などで遅れていたら、みんなが着いている名所まで一気に進める
+      const behind = mfArrivedBy(now);
+      if (behind >= k) { mfArrive(behind); return; }
+      mfTravel(mfPos, k, now - d); // 少し遅れているだけなら、その分走る時間を縮めて追いつく
+    }
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) mfTryDepart(); });
     function updateJourney(n) {
       const pos = Math.max(0, Math.min(MF_CITIES.length, n));
       const round = meterState.round;
       if (mfPos === null || storyActive || mfShowVisible) {
         mfRound = round;
-        if (mfPos !== pos) { mfPos = pos; mfMarkReached(pos); mfShowMap(pos); }
+        // 開いたとき・オープニング中：時刻表で「いま着いているはずの名所」に置く
+        const at = Math.min(pos, mfArrivedBy(sharedNow()));
+        if (mfPos !== at) { mfPos = at; mfMarkReached(at); mfShowMap(at); }
         return;
       }
       if (round !== mfRound) {
@@ -6044,7 +6069,7 @@
         mfArrive(pos);
         return;
       }
-      if (pos > mfPos && !mfWaitTimer) mfWaitTimer = setTimeout(mfTryDepart, 2600);
+      if (pos > mfPos) mfTryDepart();
     }
 
     // ---------- 走る場面の街並み（区間ごとに景色が変わる） ----------
@@ -6523,7 +6548,9 @@
         console.warn('Meter state snapshot error:', error);
         scheduleListenerRetry();
       });
+      let memSnapCount = 0;
       unsubMemories = onSnapshot(memoriesColRef(), (snapshot) => {
+        if (memSnapCount++ > 0 && !snapshot.metadata.fromCache) snapshot.docChanges().forEach((ch) => { if (ch.type !== 'removed' && !ch.doc.metadata.hasPendingWrites) noteServerTime(ch.doc.data().serverAt); });
         const list = [];
         snapshot.forEach((d) => list.push({ id: d.id, ...d.data() }));
         handleMemories(list);
@@ -6614,7 +6641,7 @@
         if (count >= METER_GOAL) return 'full';
         const newCount = count + 1;
         tx.set(doc(memoriesColRef(), id), {
-          round, no: newCount, img, caption, drink, userId, timestamp: now, // no＝その旅の何枚目か（＝どの名所に連れて行った写真か）
+          round, no: newCount, img, caption, drink, userId, timestamp: now, serverAt: serverTimestamp(), // no＝その旅の何枚目か（＝どの名所に連れて行った写真か）
           // 演出後に消し損ねても、Firestore の TTL で自動削除されるように
           expireAt: Timestamp.fromMillis(now + MEMORY_TTL_MS)
         });
