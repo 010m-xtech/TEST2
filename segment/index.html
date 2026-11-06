@@ -165,6 +165,264 @@
 #seg-app .toast{position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);background:var(--ink);color:var(--card);padding:8px 14px;border-radius:8px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s}
 #seg-app .toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){#seg-app *{transition:none!important}}
+
+/* ===================== デザイン：高級感・シネマティック（元の配色のまま） ===================== */
+#seg-app{
+  --serif:inherit;
+  --night:#0e131b;                 /* タイトル帯・結果バーの深い紺（元の文字色 #1d2430 をさらに深く） */
+  --hair:rgba(29,36,48,.14);       /* 細い線 */
+  --edge:#c3c8d0;                  /* 白い立体ボタンの側面 */
+  --edge-dark:#070a0f;             /* 紺の立体ボタンの側面 */
+  --shadow:0 1px 0 rgba(255,255,255,.9) inset, 0 18px 40px -24px rgba(14,19,27,.45), 0 2px 6px -3px rgba(14,19,27,.18);
+  --grain:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'> <filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/></filter> <rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  letter-spacing:.03em;
+  font-feature-settings:"palt";
+}
+@media (prefers-color-scheme:dark){
+  #seg-app:not([data-theme="light"]){
+    --night:#07090d; --hair:rgba(255,255,255,.09); --edge:#0a0d12; --edge-dark:#000;
+    --shadow:0 1px 0 rgba(255,255,255,.04) inset, 0 20px 44px -22px rgba(0,0,0,.9);
+  }
+}
+#seg-app[data-theme="dark"]{
+  --night:#07090d; --hair:rgba(255,255,255,.09); --edge:#0a0d12; --edge-dark:#000;
+  --shadow:0 1px 0 rgba(255,255,255,.04) inset, 0 20px 44px -22px rgba(0,0,0,.9);
+}
+
+/* フィルムの粒子（全体にうっすら） */
+#seg-app::after{
+  content:""; position:absolute; inset:0; z-index:20; pointer-events:none;
+  background-image:var(--grain); background-size:160px 160px;
+  opacity:.07; mix-blend-mode:multiply;
+}
+@media (prefers-color-scheme:dark){ #seg-app:not([data-theme="light"])::after{mix-blend-mode:screen;opacity:.05} }
+#seg-app[data-theme="dark"]::after{mix-blend-mode:screen;opacity:.05}
+
+/* --- タイトル：映画のタイトルカード風 --- */
+#seg-app .head{padding-top:0}
+#seg-app h1{
+  position:relative; overflow:hidden;
+  margin:0 -16px 0; padding:30px 22px 12px;
+  background:
+    radial-gradient(90% 120% at 50% -10%, rgba(255,255,255,.14), transparent 55%),
+    radial-gradient(140% 100% at 50% 120%, rgba(0,0,0,.55), transparent 60%),
+    linear-gradient(180deg, #1d2430, var(--night));
+  color:#f5f5f2;
+  font-family:var(--serif); font-weight:800;
+  font-size:24px; line-height:1.45; letter-spacing:.14em;
+  text-align:center; border:0;
+  text-shadow:0 2px 14px rgba(0,0,0,.6);
+}
+#seg-app .lead{
+  margin:0 -16px 18px; padding:2px 24px 26px;
+  background:linear-gradient(180deg, var(--night), #121821);
+  color:rgba(245,245,242,.86); text-align:center;
+  font-size:13.5px; line-height:1.85; letter-spacing:.06em;
+  position:relative;
+}
+#seg-app .lead::after{        /* 帯の下端：レターボックスの細線 */
+  content:""; position:absolute; left:0; right:0; bottom:0; height:3px;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.22), transparent);
+}
+
+/* 見出しラベル */
+#seg-app .field > span{
+  font-size:12px; letter-spacing:.18em; font-weight:600; margin-bottom:6px;
+}
+#seg-app input[type=text]{
+  border-radius:4px; border:1px solid var(--line-strong);
+  background:var(--card); box-shadow:0 1px 2px rgba(14,19,27,.08) inset;
+}
+#seg-app input[type=text]:focus{outline:none;border-color:var(--ink);box-shadow:0 0 0 3px rgba(29,36,48,.14)}
+
+/* --- 立体ボタン（共通） --- */
+#seg-app .hist-btn,#seg-app .search-links a,#seg-app .btn,#seg-app .c-go,#seg-app .seg-toggle button{
+  position:relative; border-radius:6px; letter-spacing:.08em;
+  transition:transform .09s ease, box-shadow .09s ease, background .2s ease, color .2s ease;
+  -webkit-tap-highlight-color:transparent; touch-action:manipulation;
+}
+/* 白い立体ボタン */
+#seg-app .hist-btn,#seg-app .search-links a.off,#seg-app .btn{
+  background:linear-gradient(180deg, var(--card) 0%, var(--card) 55%, color-mix(in srgb, var(--card) 92%, var(--ink)) 100%);
+  border:1px solid var(--line-strong); color:var(--ink);
+  box-shadow:0 1px 0 rgba(255,255,255,.9) inset, 0 4px 0 var(--edge), 0 10px 18px -10px rgba(14,19,27,.45);
+}
+#seg-app .hist-btn:active,#seg-app .search-links a.off:active,#seg-app .btn:active{
+  transform:translateY(4px);
+  box-shadow:0 1px 0 rgba(255,255,255,.6) inset, 0 0 0 var(--edge), 0 2px 4px -2px rgba(14,19,27,.35);
+}
+/* 紺の立体ボタン（主要な操作） */
+#seg-app .search-links a.on,#seg-app .btn.primary{
+  background:linear-gradient(180deg, #2c3546 0%, #1d2430 50%, var(--night) 100%);
+  border:1px solid #070a0f; color:#f5f5f2;
+  box-shadow:0 1px 0 rgba(255,255,255,.18) inset, 0 4px 0 var(--edge-dark), 0 12px 20px -10px rgba(14,19,27,.7);
+}
+#seg-app .search-links a.on:active,#seg-app .btn.primary:active{
+  transform:translateY(4px);
+  box-shadow:0 1px 0 rgba(255,255,255,.12) inset, 0 0 0 var(--edge-dark), 0 2px 4px -2px rgba(0,0,0,.5);
+}
+@media (prefers-color-scheme:dark){
+  #seg-app:not([data-theme="light"]) .search-links a.on,#seg-app:not([data-theme="light"]) .btn.primary{
+    background:linear-gradient(180deg,#ffffff,#d9dde3); color:#0e131b; border-color:#9aa3b0;
+    box-shadow:0 1px 0 #fff inset, 0 4px 0 #6b7689, 0 12px 20px -10px rgba(0,0,0,.8);
+  }
+}
+#seg-app[data-theme="dark"] .search-links a.on,#seg-app[data-theme="dark"] .btn.primary{
+  background:linear-gradient(180deg,#ffffff,#d9dde3); color:#0e131b; border-color:#9aa3b0;
+  box-shadow:0 1px 0 #fff inset, 0 4px 0 #6b7689, 0 12px 20px -10px rgba(0,0,0,.8);
+}
+#seg-app .search-links{gap:10px;margin-bottom:14px}
+#seg-app .search-links a{min-height:54px}
+#seg-app .search-links a.off{border-style:solid}
+#seg-app .hist-btn{margin-bottom:16px}
+
+/* セグメント色の「見る」ボタン */
+#seg-app .c-go{border-radius:6px;box-shadow:0 1px 0 rgba(255,255,255,.25) inset, 0 4px 0 color-mix(in srgb, var(--k,var(--ink)) 55%, #000)}
+#seg-app .c-go:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(255,255,255,.2) inset}
+
+/* 切り替え（県・エリア）：溝の中で選んだ駒が浮く */
+#seg-app .seg-toggle{
+  border:1px solid var(--hair); border-radius:8px; padding:4px; gap:4px; overflow:visible;
+  background:color-mix(in srgb, var(--bg) 80%, var(--ink) 6%);
+  box-shadow:0 2px 5px rgba(14,19,27,.16) inset;
+}
+#seg-app .seg-toggle button + button{border-left:0}
+#seg-app .seg-toggle button{border-radius:5px;background:transparent;min-height:46px;color:var(--ink)}
+#seg-app .seg-toggle button[aria-pressed=false]:active{transform:translateY(2px)}
+#seg-app .seg-toggle button[aria-pressed=true]{
+  background:linear-gradient(180deg, #2c3546, #1d2430 55%, var(--night));
+  color:#f5f5f2; font-weight:700;
+  box-shadow:0 1px 0 rgba(255,255,255,.18) inset, 0 3px 0 var(--edge-dark), 0 8px 14px -8px rgba(14,19,27,.7);
+  transform:translateY(-1px);
+}
+@media (prefers-color-scheme:dark){
+  #seg-app:not([data-theme="light"]) .seg-toggle button[aria-pressed=true]{background:linear-gradient(180deg,#fff,#d9dde3);color:#0e131b;box-shadow:0 1px 0 #fff inset,0 3px 0 #6b7689}
+}
+#seg-app[data-theme="dark"] .seg-toggle button[aria-pressed=true]{background:linear-gradient(180deg,#fff,#d9dde3);color:#0e131b;box-shadow:0 1px 0 #fff inset,0 3px 0 #6b7689}
+
+/* --- カード：角を控えめに、深い影 --- */
+#seg-app .group,#seg-app .history,#seg-app .c-box{border:1px solid var(--hair);border-radius:8px;box-shadow:var(--shadow)}
+#seg-app .notice{
+  border:1px solid var(--hair); border-left:3px solid var(--ink); border-radius:4px;
+  background:var(--card); box-shadow:var(--shadow); line-height:1.8;
+}
+#seg-app .notice b{font-family:var(--serif);letter-spacing:.14em}
+#seg-app .groups{gap:18px}
+#seg-app .g-head{padding:16px;border-bottom:1px solid var(--hair);position:relative}
+#seg-app .g-head::after{content:"";position:absolute;left:16px;right:16px;bottom:-1px;height:1px;background:linear-gradient(90deg,var(--k),transparent)}
+#seg-app .g-title b{font-family:var(--serif);font-weight:800;letter-spacing:.04em}
+#seg-app .g-badge{
+  width:34px;height:34px;border-radius:50%;font-family:var(--serif);font-size:16px;font-weight:800;
+  box-shadow:0 1px 0 rgba(255,255,255,.35) inset, 0 3px 0 rgba(0,0,0,.28), 0 6px 10px -4px rgba(0,0,0,.35);
+}
+#seg-app .g-count{font-family:var(--serif);letter-spacing:.06em}
+
+/* --- 項目：押せる丸 --- */
+#seg-app .item{transition:background-color .2s ease}
+#seg-app .mark{
+  width:30px;height:30px;
+  background:linear-gradient(180deg, var(--card), color-mix(in srgb, var(--card) 90%, var(--ink)));
+  border:1px solid var(--line-strong);
+  box-shadow:0 1px 0 rgba(255,255,255,.9) inset, 0 3px 0 var(--edge);
+  transition:transform .09s ease, box-shadow .09s ease, border-width .12s ease;
+}
+#seg-app .item:active .mark{transform:translateY(3px);box-shadow:0 0 0 var(--edge)}
+#seg-app .item.on .mark{
+  border:8px solid var(--k);
+  box-shadow:0 0 0 3px color-mix(in srgb, var(--k) 18%, transparent), 0 1px 0 color-mix(in srgb, var(--k) 55%, #000);
+  transform:translateY(2px);
+}
+
+/* --- 結果バー：エンドロール風の深い紺 --- */
+#seg-app .result{
+  background:
+    radial-gradient(120% 140% at 50% 0%, rgba(255,255,255,.08), transparent 55%),
+    linear-gradient(180deg, #1d2430, var(--night));
+  color:#f5f5f2; border-top:0; border-radius:14px 14px 0 0;
+  box-shadow:0 -1px 0 rgba(255,255,255,.08) inset, 0 -16px 36px -14px rgba(14,19,27,.55);
+}
+#seg-app .r-label{color:rgba(245,245,242,.6);letter-spacing:.24em;font-size:11px}
+#seg-app .r-seg{font-family:var(--serif);font-weight:800;letter-spacing:.06em;color:#fff}
+#seg-app .tie{color:rgba(245,245,242,.78)}
+#seg-app .cell{
+  border:1px solid rgba(255,255,255,.14); border-radius:6px;
+  background:rgba(255,255,255,.05); color:rgba(245,245,242,.82);
+}
+#seg-app .cell b{font-family:var(--serif);color:#fff}
+#seg-app .cell.top{border:1px solid var(--k);background:color-mix(in srgb, var(--k) 30%, transparent);box-shadow:0 0 0 1px var(--k) inset, 0 6px 16px -6px var(--k)}
+#seg-app .result .btn{color:#f5f5f2;background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.22);box-shadow:0 1px 0 rgba(255,255,255,.15) inset,0 3px 0 #000}
+#seg-app .result .btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(255,255,255,.1) inset}
+#seg-app .result .btn.primary{background:linear-gradient(180deg,#ffffff,#d9dde3);color:#0e131b;border-color:#9aa3b0;box-shadow:0 1px 0 #fff inset,0 3px 0 #6b7689}
+#seg-app .result .btn.primary:active{box-shadow:0 1px 0 #fff inset}
+#seg-app .btns{gap:8px}
+#seg-app .btn{min-height:38px}
+#seg-app .status{background:rgba(255,255,255,.1);color:#f5f5f2;border:1px solid rgba(255,255,255,.2);letter-spacing:.1em}
+#seg-app .status.ok{background:var(--ok-bg);color:var(--ok);border-color:transparent}
+#seg-app .status.mid{background:var(--mid-bg);color:var(--mid);border-color:transparent}
+#seg-app .toast{background:#f5f5f2;color:#0e131b}
+
+/* --- 結果バー：普段は1行、タップで内訳を開く --- */
+#seg-app .result{padding-top:10px}
+#seg-app .r-top{gap:8px}
+#seg-app .r-main{
+  flex:1;min-width:0;display:block;text-align:left;border:0;background:transparent;color:inherit;
+  padding:4px 2px;margin:-4px -2px;cursor:pointer;border-radius:6px;
+}
+#seg-app .r-main:active{background:rgba(255,255,255,.06)}
+#seg-app .r-label{display:flex;align-items:center;gap:8px}
+#seg-app .r-more{display:inline-flex;align-items:center;gap:3px;padding:1px 8px 1px 9px;border:1px solid rgba(255,255,255,.28);border-radius:99px;font-size:11px;letter-spacing:.1em;color:rgba(245,245,242,.9)}
+#seg-app .r-chev{width:11px;height:11px;transition:transform .2s ease}
+#seg-app .result.open .r-chev{transform:rotate(180deg)}
+#seg-app .r-seg{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:16px;margin-top:2px}
+#seg-app .r-seg wbr{display:none}
+#seg-app .result.open .r-seg{white-space:normal;overflow:visible}
+#seg-app .result.open .r-seg wbr{display:inline}
+#seg-app .r-save{flex:none;min-height:44px;padding:0 16px;font-size:14.5px}
+#seg-app .r-detail{margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.12)}
+#seg-app .r-detail[hidden]{display:none}
+#seg-app .r-bars{grid-template-columns:repeat(4,1fr);margin-top:0;gap:6px}
+#seg-app .cell{padding:6px 2px 7px;line-height:1.2}
+#seg-app .c-k{display:block;font-size:12px;font-weight:700;opacity:.85}
+#seg-app .cell b{font-size:20px;margin:1px 0 2px}
+#seg-app .c-n{display:block;font-size:11px;letter-spacing:0;white-space:nowrap;color:rgba(245,245,242,.82)}
+#seg-app .r-foot{display:flex;align-items:center;gap:10px;margin-top:10px}
+#seg-app .r-foot .tie{flex:1;margin:0}
+#seg-app .r-reset{flex:none;min-height:40px;padding:0 14px}
+
+/* --- 内訳ボタン：見やすい白いピル --- */
+#seg-app .r-more{
+  padding:3px 10px 3px 11px; gap:4px;
+  background:#f5f5f2; color:#0e131b; border:1px solid #f5f5f2;
+  font-size:12px; font-weight:800; letter-spacing:.06em;
+  box-shadow:0 2px 0 #6b7689;
+}
+#seg-app .r-main:active .r-more{transform:translateY(2px);box-shadow:0 0 0 #6b7689}
+#seg-app .r-more .r-chev{width:11px;height:11px}
+#seg-app .lead{color:#ffffff!important}
+#seg-app .r-label{color:#ffffff!important}
+#seg-app .r-label{white-space:nowrap;letter-spacing:.06em!important}
+#seg-app .r-more{white-space:nowrap;flex:none}
+#seg-app .r-main:active{background:rgba(255,255,255,.08)}
+
+/* --- 暗い背景の上の文字をはっきり --- */
+#seg-app .r-label{color:#c9d2e0;font-size:12px;font-weight:700;letter-spacing:.14em}
+#seg-app .tie{color:#f5f5f2;font-weight:600}
+#seg-app .cell{color:#f5f5f2;border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.08)}
+#seg-app .c-k{opacity:1;color:#ffffff}
+#seg-app .c-n{color:#e6eaf0;font-weight:600}
+#seg-app .cell.top .c-n,#seg-app .cell.top .c-k{color:#fff}
+#seg-app .status{color:#ffffff;border-color:rgba(255,255,255,.45);background:rgba(255,255,255,.14)}
+#seg-app .result .btn{border-color:rgba(255,255,255,.45);color:#fff}
+#seg-app .r-detail{border-top-color:rgba(255,255,255,.22)}
+
+/* --- 明るい背景の上の、色の近い文字 --- */
+#seg-app .tag{background:var(--card);border:1px solid var(--line-strong);color:var(--ink)}
+#seg-app .g-title small{opacity:1;font-weight:600}
+#seg-app .item.on .tag{background:var(--card)}
+
+@media (prefers-reduced-motion:reduce){
+  #seg-app .hist-btn:active,#seg-app .search-links a:active,#seg-app .btn:active,#seg-app .c-go:active,#seg-app .item:active .mark{transform:none}
+}
 </style>
 </head>
 <body style="margin:0;background:#f5f5f2">
@@ -219,14 +477,20 @@
   <div class="result" id="seg-result" aria-live="polite">
     <div class="toast" id="seg-toast"></div>
     <div class="r-top">
-      <div class="r-main">
-        <div class="r-label">採用セグメント</div>
-        <div class="r-seg" id="r-seg">—</div>
-      </div>
+      <button type="button" class="r-main" id="r-toggle" aria-expanded="false" aria-controls="r-detail">
+        <span class="r-label">採用セグメント<span class="r-more"><span id="r-more-t">内訳を見る</span><svg class="r-chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 7.5 6 4l3.5 3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span>
+        <span class="r-seg" id="r-seg">—</span>
+      </button>
       <div class="status" id="r-status">未判定</div>
+      <button type="button" class="btn primary r-save" id="seg-save">保存</button>
     </div>
-    <div class="r-bars" id="r-bars"></div>
-    <p class="tie" id="r-tie"></p>
+    <div class="r-detail" id="r-detail" hidden>
+      <div class="r-bars" id="r-bars"></div>
+      <div class="r-foot">
+        <p class="tie" id="r-tie"></p>
+        <button type="button" class="btn r-reset" id="seg-reset">リセット</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -234,10 +498,10 @@
 (function(){
   /* ===================== 設定（ここを編集すれば項目・基準を変更できます） ===================== */
   var SEGMENTS = {
-    A:{ name:'A.ミドル・シニア女性層(F2F3)＆ファミリー層', short:'A', cls:'g-a', cell:'c-a' },
-    B:{ name:'B.若年女性層(F1)',                         short:'B', cls:'g-b', cell:'c-b' },
-    C:{ name:'C.若年男性層(M1)',                         short:'C', cls:'g-c', cell:'c-c' },
-    D:{ name:'D.ミドル・シニア男性層(M2M3)',              short:'D', cls:'g-d', cell:'c-d' }
+    A:{ name:'A.ミドル・シニア女性層(F2F3)＆ファミリー層', label:'F2F3・家族', short:'A', cls:'g-a', cell:'c-a' },
+    B:{ name:'B.若年女性層(F1)',                         label:'F1 女性', short:'B', cls:'g-b', cell:'c-b' },
+    C:{ name:'C.若年男性層(M1)',                         label:'M1 男性', short:'C', cls:'g-c', cell:'c-c' },
+    D:{ name:'D.ミドル・シニア男性層(M2M3)',              label:'M2M3 男性', short:'D', cls:'g-d', cell:'c-d' }
   };
   // 同数のときの優先順位
   var PRIORITY = {
@@ -434,12 +698,9 @@
     var bars = '';
     ORDER.forEach(function(k){
       var top = any && k===j.win ? ' top' : '';
-      bars += '<div class="cell '+SEGMENTS[k].cell+top+'">'+k+'<b>'+j.c[k]+'</b></div>';
+      bars += '<div class="cell '+SEGMENTS[k].cell+top+'"><span class="c-k">'+k+'</span><b>'+j.c[k]+'</b><span class="c-n">'+SEGMENTS[k].label+'</span></div>';
     });
-    bars += '<div class="btns"><button type="button" class="btn primary" id="seg-save">保存</button><button type="button" class="btn" id="seg-reset">リセット</button></div>';
     $('r-bars').innerHTML = bars;
-    $('seg-save').onclick = saveCurrent;
-    $('seg-reset').onclick = resetAll;
 
     var st = statusOf(j.max);
     var segEl = $('r-seg'), stEl = $('r-status'), tieEl = $('r-tie');
@@ -640,6 +901,18 @@
 
   $('seg-hist-toggle').addEventListener('click', function(){ setHistOpen($('seg-history').hidden); });
   $('seg-hist-q').addEventListener('input', renderHist);
+
+  // ---- 結果バー：ボタンと開閉 ----
+  $('seg-save').addEventListener('click', saveCurrent);
+  $('seg-reset').addEventListener('click', resetAll);
+  function toggleDetail(){
+    var open = $('r-detail').hidden;
+    $('r-detail').hidden = !open;
+    $('r-toggle').setAttribute('aria-expanded', open ? 'true' : 'false');
+    $('r-more-t').textContent = open ? '閉じる' : '内訳を見る';
+    $('seg-result').classList.toggle('open', open);
+  }
+  $('r-toggle').addEventListener('click', toggleDetail);
 
   // ---- 店名で食べログ / HOTPEPPER を検索 ----
   var pref = '愛知県', prefSa = 'SA33', prefTb = 'aichi';
