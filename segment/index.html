@@ -401,6 +401,7 @@
 #seg-app .r-main:active .r-more{transform:translateY(2px);box-shadow:0 0 0 #6b7689}
 #seg-app .r-more .r-chev{width:11px;height:11px}
 #seg-app .lead{color:#ffffff!important}
+#seg-app.typing .result{display:none}
 #seg-app .r-label{color:#ffffff!important}
 #seg-app .r-label{white-space:nowrap;letter-spacing:.06em!important}
 #seg-app .r-more{white-space:nowrap;flex:none}
@@ -903,6 +904,29 @@
 
   $('seg-hist-toggle').addEventListener('click', function(){ setHistOpen($('seg-history').hidden); });
   $('seg-hist-q').addEventListener('input', renderHist);
+
+  // ---- 文字入力中（キーボード表示中）は結果バーを隠す ----
+  function isTextInput(el){ return el && el.tagName === 'INPUT' && /^(text|search)$/i.test(el.type || 'text'); }
+  function setTyping(on){ root.classList.toggle('typing', !!on); }
+  root.addEventListener('focusin', function(e){ if(isTextInput(e.target)) setTyping(true); });
+  root.addEventListener('focusout', function(e){
+    if(!isTextInput(e.target)) return;
+    setTimeout(function(){ setTyping(isTextInput(document.activeElement) && root.contains(document.activeElement)); }, 60);
+  });
+  // キーボードを閉じても入力欄にフォーカスが残る端末向け：画面の高さで判定
+  if(window.visualViewport){
+    var baseH = window.innerHeight;
+    window.visualViewport.addEventListener('resize', function(){
+      var kb = window.visualViewport.height < baseH * 0.78;
+      if(!kb){ baseH = Math.max(baseH, window.innerHeight); }
+      var a = document.activeElement;
+      setTyping(kb && isTextInput(a) && root.contains(a));
+    });
+  }
+  // 入力欄で「完了」を押したらキーボードを閉じる
+  root.addEventListener('keydown', function(e){
+    if(e.key === 'Enter' && isTextInput(e.target)){ e.preventDefault(); e.target.blur(); }
+  });
 
   // ---- 結果バー：ボタンと開閉 ----
   $('seg-save').addEventListener('click', saveCurrent);
