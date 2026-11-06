@@ -2488,6 +2488,16 @@
       .mf-op-s:nth-of-type(2) .mf-op-phone { margin: 18px 0 40px !important; }
       .bt-op-beer2 { margin-top: 6px !important; }
     }
+  
+    /* 撮影ボタンのカメラ：大きく、写真が撮れるボタンだと分かるように */
+    .bt-cta-cam { width: 40px !important; height: 32px !important; margin: -8px 2px -8px 0 !important; flex-shrink: 0; }
+    @media (max-height: 720px) { .bt-cta-cam { width: 34px !important; height: 27px !important; margin: -6px 2px -6px 0 !important; } }
+    /* 1枚目の説明文：少し下に（下の余白が大きかったので） */
+    .bt-op-lead { margin-top: 44px !important; }
+    @media (max-height: 720px) { .bt-op-lead { margin-top: 30px !important; } }
+    @media (max-height: 600px) { .bt-op-lead { margin-top: 16px !important; } }
+    /* 「何かが起こる」の画面に「旅に出る」：下の文字はボタンの上へ */
+    .mf-op-s:has(.mf-op-go) .mf-op-foot { bottom: calc(env(safe-area-inset-bottom) + 86px); }
   </style>
 </head>
 <body class="flex justify-center items-start h-screen overflow-hidden bg-black">
@@ -2772,7 +2782,7 @@
     <!-- ======================================================== -->
     <div id="mfOpening" class="mf-op" role="dialog" aria-label="遊び方">
       <script>/* ガチャから戻ったとき：オープニングの1枚目が一瞬見えないよう、すぐ隠す */ if (/[?&]from=gacha\b/.test(location.search)) document.getElementById('mfOpening').classList.add('hidden');</script>
-      <div class="mf-op-top"><div class="mf-op-dots"><i></i><i></i><i></i><i></i><i></i></div><button type="button" class="mf-op-skip">スキップ ›</button></div>
+      <div class="mf-op-top"><div class="mf-op-dots"><i></i><i></i><i></i><i></i></div><button type="button" class="mf-op-skip">スキップ ›</button></div>
 
       <section class="mf-op-s on">
         <div class="mf-op-flag"></div>
@@ -2792,7 +2802,6 @@
         <div class="mf-op-phone"><div><img class="bt-phone-photo" src="kanpai.webp" alt="乾杯の写真"></div><img class="bt-phone-food" src="okonomi.webp" alt=""></div>
         <div class="mf-op-say">例：美味しい！</div>
         <div class="mf-op-beer">🍺 ビールの一枚は「生ビール速達便」で特急出発！</div>
-        <div class="bt-op-beer is-big bt-op-beer2"><img src="beer-mug.webp" alt=""><span><b>工場出荷2日以内</b>で<br>新鮮なビールが届いています<em>当店の美味しいビールのひみつも<br>ご覧ください！</em></span></div>
         <div class="bt-op-buddy"><span>撮ってね！</span><img src="chara.webp" alt=""></div>
         <p class="mf-op-foot">料理やお店の雰囲気など、写真はなんでもOK</p>
       </section>
@@ -2814,20 +2823,9 @@
         <p class="mf-op-p">それは、この席のみんなで<br>5枚そろえた人だけのおたのしみ</p>
         <div class="bt-op-buddy"><span>なにかな〜？</span><img src="chara.webp" alt=""></div>
         <p class="mf-op-foot">ドキドキしながら、旅を進めよう</p>
-      </section>
-
-      <section class="mf-op-s">
-        <p class="mf-op-h">旅のチケットを、どうぞ。</p>
-        <div class="mf-op-ticket">
-          <div class="mf-op-t-hd"><span>ぼてこ幸田号</span><span>🚚 NAGOYA → KOTA</span></div>
-          <div class="mf-op-t-bd"><div>出発<b class="sm">アサヒビール名古屋工場</b></div><div>行き先<b class="sm">ぼてこ幸田</b></div><div>経由<b class="sm">マルト水谷・岡崎・幸田</b></div><div>乗車<b class="sm">今座っている席の皆様が乗客です</b></div></div>
-          <div class="mf-op-t-perf"></div>
-          <ol class="mf-op-t-st"><li>ドリンクを撮って、ひとこと添えて乾杯！</li><li>各地で乾杯して、みんなで次の名所へ！！</li><li>名所ガチャは3回！進むほど当たりやすく、最後はハズレなし</li><li>5枚目のぼてこ幸田で…何かが起こる！？</li></ol>
-        </div>
-        <div class="bt-op-buddy is-ticket"><span>いってらっしゃい！</span><img src="chara.webp" alt=""></div>
-        <div class="mf-truck mf-op-truck2"></div>
         <button type="button" class="mf-op-go">旅に出る ›</button>
       </section>
+
     </div>
     <!-- 5枚目：真っ暗になってから花火 -->
     <!-- 前のお客様の旅が途中のとき -->
@@ -2912,7 +2910,7 @@
         </div>
 
         <button id="openCameraBtn" class="cta-camera active:scale-[0.98] transition">
-          <span class="flex items-center gap-2 font-serif-luxury text-[16px] font-bold tracking-[0.16em]"><svg class="bt-cta-mug bt-cta-cam" viewBox="0 0 32 26" aria-hidden="true"><path d="M11 3.5 L13 1 H19 L21 3.5 H28 A3 3 0 0 1 31 6.5 V22 A3 3 0 0 1 28 25 H4 A3 3 0 0 1 1 22 V6.5 A3 3 0 0 1 4 3.5 Z" fill="#fff" stroke="#7a3d16" stroke-width="1.6" stroke-linejoin="round"/><circle cx="16" cy="14" r="7" fill="#3a2418"/><circle cx="16" cy="14" r="4.6" fill="#6fb7e0"/><circle cx="14.3" cy="12.3" r="1.5" fill="#fff"/><rect x="24.5" y="6.5" width="3.6" height="2.4" rx="1" fill="#f47c2c"/></svg>美味しいビールで、乾杯写真を撮る</span>
+          <span class="flex items-center gap-2 font-serif-luxury text-[16px] font-bold tracking-[0.16em]"><svg class="bt-cta-cam" viewBox="0 0 32 26" aria-hidden="true"><path d="M11 3.5 L13 1 H19 L21 3.5 H28 A3 3 0 0 1 31 6.5 V22 A3 3 0 0 1 28 25 H4 A3 3 0 0 1 1 22 V6.5 A3 3 0 0 1 4 3.5 Z" fill="#fff" stroke="#7a3d16" stroke-width="1.6" stroke-linejoin="round"/><circle cx="16" cy="14" r="7" fill="#3a2418"/><circle cx="16" cy="14" r="4.6" fill="#6fb7e0"/><circle cx="14.3" cy="12.3" r="1.5" fill="#fff"/><rect x="24.5" y="6.5" width="3.6" height="2.4" rx="1" fill="#f47c2c"/></svg>美味しいビールで、乾杯写真を撮る</span>
           <span id="ctaSub" class="text-[10.5px] font-medium tracking-[0.12em] text-white/65">各地で乾杯して次の名所へ！！</span>
         </button>
 
@@ -5524,7 +5522,7 @@
     const MF_BOARD = [[72, 52], [228, 52], [228, 160], [72, 160], [72, 268], [228, 268]];
     const MF_SQ_W = 118, MF_SQ_H = 88;
     // トラックはいまいるマスの右上の角にのせる（マスの名前にかぶらないように）
-    const mfPinXY = (pos) => { const [x, y] = MF_BOARD[pos]; return [x + 36, y - 58]; };
+    const mfPinXY = (pos) => { const [x, y] = MF_BOARD[pos]; return [x + 32, y - 52]; };
     // 名所ガチャのマス：だんだん特別に（白 → 銀 → 金）
     const MF_GACHA_TIER = { 2: 'white', 3: 'silver', 4: 'gold' };
     const MF_GACHA_TIER_JP = { white: 'ガチャ', silver: '銀ガチャ', gold: '金ガチャ' };
@@ -5558,13 +5556,15 @@
       const segs = P.slice(1).map((b, k) => [P[k], b]);
       const segD = ([a, b]) => `M${a[0]} ${a[1]} L${b[0]} ${b[1]}`;
       const all = `M${P[0][0]} ${P[0][1]}` + P.slice(1).map(q => ` L${q[0]} ${q[1]}`).join('');
-      let road = `<path d="${all}" fill="none" stroke="#fff" stroke-width="18" stroke-linejoin="round" stroke-linecap="round" opacity=".95"/>`;
-      road += `<path d="${all}" fill="none" stroke="#f0b48a" stroke-width="3" stroke-dasharray="6 5" stroke-linejoin="round" stroke-linecap="round"/>`;
-      segs.forEach((sg, k) => { if (!preview && k < pos) road += `<path d="${segD(sg)}" fill="none" stroke="#f47c2c" stroke-width="5" stroke-linecap="round"/>`; });
-      // 進む向きの矢印（道の真ん中）
+      // 道：トラックが走る道路（アスファルト＋黄色い中央線）。通ったところは中央線がオレンジに
+      let road = `<path d="${all}" fill="none" stroke="#fff" stroke-width="24" stroke-linejoin="round" stroke-linecap="round" opacity=".9"/>`;
+      road += `<path d="${all}" fill="none" stroke="#5e5650" stroke-width="19" stroke-linejoin="round" stroke-linecap="round"/>`;
+      road += `<path d="${all}" fill="none" stroke="#ffd21f" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>`;
+      segs.forEach((sg, k) => { if (!preview && k < pos) road += `<path d="${segD(sg)}" fill="none" stroke="#f47c2c" stroke-width="3.2" stroke-linecap="round"/>`; });
+      // 進む向き：道路の上に白い矢印（＞＞）
       segs.forEach(([a, b]) => {
         const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, ang = Math.atan2(b[1] - a[1], b[0] - a[0]) * 180 / Math.PI;
-        road += `<path class="mf-sq-arrow" d="M-5 -6 L6 0 L-5 6 Z" transform="translate(${mx} ${my}) rotate(${ang})"/>`;
+        road += `<g transform="translate(${mx} ${my}) rotate(${ang})"><path d="M-8 -5 L-3 0 L-8 5 M1 -5 L6 0 L1 5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></g>`;
       });
       let sq = '';
       P.forEach(([cx, cy], k) => {
@@ -5574,21 +5574,21 @@
         const lit = isStart || visited || next;
         const tier = MF_GACHA_TIER[k];
         // マスは丸（以前の地図と同じ形）。丸の大きさは盤のマスくらい
-        const R = 38, cy0 = cy - 3;
+        const R = 32, cy0 = cy - 4;
         const qMark = (size, dark) => `<text x="${cx}" y="${cy0 + size * 0.36}" font-size="${size}" text-anchor="middle" font-weight="900" fill="${dark ? '#1a1a1a' : '#fff'}" stroke="${dark ? '#fff' : '#3a2008'}" stroke-width="3" paint-order="stroke">?</text>`;
         let icon;
         if (isStart) {
-          icon = `<circle cx="${cx}" cy="${cy0}" r="${R}" fill="#eaf5fb"/><g transform="translate(${cx - 25} ${cy0 - 20}) scale(1.3)"><rect x="0" y="12" width="24" height="16" fill="#e6ebef" stroke="#5a6670" stroke-width=".9"/><path d="M0 12 l6-5 6 5 6-5 6 5" fill="#f4f6f8" stroke="#5a6670" stroke-width=".9"/><g fill="#ffd38a"><rect x="3" y="16" width="5" height="5"/><rect x="10" y="16" width="5" height="5"/><rect x="17" y="16" width="5" height="5"/></g><rect x="26" y="2" width="6" height="26" rx="3" fill="#d3dbe2" stroke="#5a6670" stroke-width=".9"/><rect x="33" y="7" width="6" height="21" rx="3" fill="#d3dbe2" stroke="#5a6670" stroke-width=".9"/></g>`;
+          icon = `<circle cx="${cx}" cy="${cy0}" r="${R}" fill="#eaf5fb"/><g transform="translate(${cx - 21} ${cy0 - 17}) scale(1.08)"><rect x="0" y="12" width="24" height="16" fill="#e6ebef" stroke="#5a6670" stroke-width=".9"/><path d="M0 12 l6-5 6 5 6-5 6 5" fill="#f4f6f8" stroke="#5a6670" stroke-width=".9"/><g fill="#ffd38a"><rect x="3" y="16" width="5" height="5"/><rect x="10" y="16" width="5" height="5"/><rect x="17" y="16" width="5" height="5"/></g><rect x="26" y="2" width="6" height="26" rx="3" fill="#d3dbe2" stroke="#5a6670" stroke-width=".9"/><rect x="33" y="7" width="6" height="21" rx="3" fill="#d3dbe2" stroke="#5a6670" stroke-width=".9"/></g>`;
         } else if (visited) {
           icon = `<clipPath id="mfSqClip${k}"><circle cx="${cx}" cy="${cy0}" r="${R}"/></clipPath><image href="${c.img}" x="${cx - R}" y="${cy0 - R}" width="${R * 2}" height="${R * 2}" preserveAspectRatio="xMidYMid slice" clip-path="url(#mfSqClip${k})"/>
             <g transform="translate(${cx + R * 0.72} ${cy0 - R * 0.72})"><circle r="8" fill="#4b8b3b" stroke="#fff" stroke-width="1.6"/><path d="M-3.4 0 l2.3 2.6 l4.4 -5" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></g>`;
         } else if (isGoal) {
-          icon = `<circle cx="${cx}" cy="${cy0}" r="${R}" fill="url(#mfGbGold)"/><text class="mf-sq-goal" x="${cx}" y="${cy0 + 7}" font-size="21" text-anchor="middle" fill="#e2262c" stroke="#fff" stroke-width="4.5" paint-order="stroke">GOAL!</text>`;
+          icon = `<circle cx="${cx}" cy="${cy0}" r="${R}" fill="url(#mfGbGold)"/><text class="mf-sq-goal" x="${cx}" y="${cy0 + 7}" font-size="18" text-anchor="middle" fill="#e2262c" stroke="#fff" stroke-width="4" paint-order="stroke">GOAL!</text>`;
         } else if (tier) {
           // ガチャの絵に「？」を重ねる（何が出るかはおたのしみ）
-          icon = `<g class="mf-sq-icon">${mfGachaSVG(tier, cx, cy0, R * 2)}${qMark(30, true)}</g>`;
+          icon = `<g class="mf-sq-icon">${mfGachaSVG(tier, cx, cy0, R * 2)}${qMark(26, true)}</g>`;
         } else {
-          icon = `<g class="mf-sq-icon"><circle cx="${cx}" cy="${cy0}" r="${R}" fill="#8f8580"/>${qMark(32)}</g>`;
+          icon = `<g class="mf-sq-icon"><circle cx="${cx}" cy="${cy0}" r="${R}" fill="#8f8580"/>${qMark(28)}</g>`;
         }
         // 次に行くマスは、左上の番号に「NEXT」を並べて目立たせる
         const badge = (isStart ? 'START' : isGoal ? 'GOAL' : String(k).padStart(2, '0')) + (next ? ' NEXT ▶' : '');
