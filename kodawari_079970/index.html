@@ -1247,7 +1247,7 @@ function cl(){m.remove()}m.onclick=function(e){if(e.target===m)cl()};m.querySele
 var SHEET_ON=null;
 function openSheet(d){var old=document.getElementById("shw");if(old)old.remove();trk("sheet",d.n);
 var m=document.createElement("div");m.id="shw";m.className="shw";
-m.innerHTML='<div class="shp" role="dialog" aria-label="ニワトリの話"><button type="button" class="shcl" id="shcl" aria-label="閉じる">×</button><div class="shtabs" role="tablist"><button type="button" class="shtab on" id="shtA" role="tab">当店のこだわり</button><button type="button" class="shtab" id="shtB" role="tab" disabled>部位のこと<i class="shdot" hidden></i></button></div><div class="shb" id="shb"><div class="shv" id="shA"></div></div><button type="button" class="btn shx" id="shx">'+(ccount()>=NEED?"特別なメニューへ":"前の画面に戻る")+'</button></div>';
+m.innerHTML='<div class="shp" role="dialog" aria-label="ニワトリの話"><button type="button" class="shcl" id="shcl" aria-label="閉じる">×</button><div class="shtabs" role="tablist"><button type="button" class="shtab on" id="shtA" role="tab">当店のこだわり</button><button type="button" class="shtab" id="shtB" role="tab" disabled>部位のこと<i class="shdot" hidden></i></button></div><div class="shb" id="shb"><div class="shv" id="shA"></div></div><button type="button" class="btn shx" id="shx">'+(ccount()>=NEED?"さいごへ":"前の画面に戻る")+'</button></div>';
 document.body.appendChild(m);document.body.classList.add("shopen");window.SHFAST=true;
 var nx1=null,oldv=v,shb=document.getElementById("shb"),A=document.getElementById("shA"),closed=false,chained=false;
 v=A;tok++;
@@ -1262,7 +1262,7 @@ if(nx1){var mo=new MutationObserver(function(){if(!nx1.hidden){mo.disconnect();r
 var hp=false,fromPop=false;try{history.pushState({nmsh:1},"");hp=true}catch(e){}
 function onpop(){if(!closed){fromPop=true;cl()}}
 window.addEventListener("popstate",onpop);
-function cl(){if(closed)return;closed=true;window.removeEventListener("popstate",onpop);if(hp&&!fromPop){try{history.back()}catch(e){}}m.remove();document.body.classList.remove("shopen");window.SHFAST=false;v=oldv;tok++;window.curChef=null;if(ccount()>=NEED)noren(function(){go(D.length)});else if(ccount()>=COURSE_AT&&!courseSeen()){try{localStorage.setItem(CKEY2,"1")}catch(e){}trk("course4");MIDREW=true;noren(function(){go(D.length)})}else go(-2)}
+function cl(){if(closed)return;closed=true;window.removeEventListener("popstate",onpop);if(hp&&!fromPop){try{history.back()}catch(e){}}m.remove();document.body.classList.remove("shopen");window.SHFAST=false;v=oldv;tok++;window.curChef=null;if(ccount()>=NEED)noren(function(){go(D.length+1)});else if(ccount()>=COURSE_AT&&!courseSeen()){try{localStorage.setItem(CKEY2,"1")}catch(e){}trk("course4");MIDREW=true;noren(function(){go(D.length)})}else go(-2)}
 var mb=document.createElement("button");mb.type="button";mb.className="shmore";mb.textContent="▼ つづきがあります";mb.hidden=true;m.querySelector(".shp").insertBefore(mb,document.getElementById("shx"));
 mb.onclick=function(){shb.scrollBy({top:Math.round(shb.clientHeight*.7),behavior:reduced?"auto":"smooth"})};
 var iv=setInterval(function(){if(closed||!m.isConnected){clearInterval(iv);return}mb.hidden=(shb.scrollHeight-shb.scrollTop-shb.clientHeight)<40},300);
@@ -1286,7 +1286,7 @@ function cl(){m.remove()}m.onclick=function(e){if(e.target===m)cl()};m.querySele
 m.querySelectorAll(".zkpick").forEach(function(b){b.onclick=function(){var i=+b.getAttribute("data-i");caught[i]=true;saveCaught();trk("pick",D[i].n);cl();openSheet(D[i])}})}
 function hub(){var my=tok,n=D.length,cnt=ccount(),hq,hw;
 v.innerHTML='<div id="hq"></div><div id="hubw"></div>';hq=document.getElementById("hq");hw=document.getElementById("hubw");
-if(cnt>=NEED){noren(function(){go(D.length)});return}
+if(cnt>=NEED){noren(function(){go(D.length+1)});return}
 chef(hq,cnt===0?(RETURN?["ご来店ありがとうございます。大将の江田です。","走り回るニワトリを、\nタップして捕まえてください。\n部位の焼き鳥の話を\nお聞かせします。","途中で、ここだけの\n特別なコースのご案内も\nあります。"]:["走り回るニワトリを、タップして捕まえてください。"]):(!RESUMED&&RESUME0>0&&cnt>=RESUME0&&cnt<NEED?(RESUMED=true,["おかえりなさい。","これまでに"+RESUME0+"つ見ています。",leftMsg()]):[leftMsg()]));
 hw.innerHTML='<div class="yard" id="yard"></div><div class="hrow"><p class="cslab" style="text-align:center;font-size:20px">捕まえた　<span id="cc">'+cnt+'</span>/'+n+'</p>'+'<button type="button" class="zkb" id="zpk">部位をえらぶ</button>'+'</div>';document.getElementById("zpk").onclick=pickPart;
 var yard=document.getElementById("yard"),calm=matchMedia("(prefers-reduced-motion:reduce)").matches,YT=Math.max(6,Math.round(yard.clientHeight*.34)-62),busy=0,as=[];
@@ -1351,7 +1351,7 @@ var LW={"砂肝":"オレの鍛え上げた胃袋。\nしっかり味わってみ
 function lwChars(t){var n=0;return t.split("\n").map(function(l){return l.split("").map(function(c){return'<span class="lwc" style="animation-delay:'+(.55+.07*n++).toFixed(2)+'s">'+c+"</span>"}).join("")}).join("<br>")}
 function item2(d){
 trk("page2",d.n);tok++;window.scrollTo(0,0);
-v.innerHTML='<p class="pgl"><b>当店の'+dn(d)+'</b></p>'+'<div id="cf1"></div><div id="wd" hidden></div><div class="rv" id="rv"><div id="cf2"></div></div><button class="btn" id="nx" hidden>'+(ccount()>=NEED?'特別なメニューへ':'つぎの部位へ')+'</button>';
+v.innerHTML='<p class="pgl"><b>当店の'+dn(d)+'</b></p>'+'<div id="cf1"></div><div id="wd" hidden></div><div class="rv" id="rv"><div id="cf2"></div></div><button class="btn" id="nx" hidden>'+(ccount()>=NEED?'さいごへ':'つぎの部位へ')+'</button>';
 v.classList.remove("pgin");void v.offsetWidth;v.classList.add("pgin");
 var ok=false,rv=document.getElementById("rv"),nx=document.getElementById("nx"),wd=document.getElementById("wd");
 var fin=function(){if(ok)return;ok=true;rv.classList.add("show");var lwd=function(){if(d.n==="豚ネギマ"){var pt=document.querySelector(".pqt"),pa=document.querySelector(".pqa");if(pt){pt.innerHTML="<b>"+lwChars(LW[d.n])+"</b>";pa.classList.remove("pqh");void pa.offsetWidth;pa.classList.add("pqh");document.querySelectorAll(".pqk").forEach(function(x){x.disabled=true});nx.hidden=false;autoSc(nx);return}}if(d.n==="手羽先"){var aw2=document.querySelector(".awa");if(aw2){aw2.hidden=false;var bb=document.createElement("div");bb.className="awb";bb.innerHTML="<b>"+lwChars("もっと踊っちゃお♪")+"</b>";aw2.appendChild(bb);aw2.classList.remove("awx");void aw2.offsetWidth;aw2.classList.add("awx");var tk2=tok;setTimeout(function(){if(tk2!==tok)return;aw2.classList.remove("awx");aw2.classList.add("awp");bb.innerHTML="<b>"+lwChars("ゼェゼェ…")+"</b>"},matchMedia("(prefers-reduced-motion:reduce)").matches?2500:5200);aw2.querySelectorAll(".awc").forEach(function(c){var n=c.cloneNode(true);c.replaceWith(n)});autoSc(nx);return}}var k=d.n==="豚ネギマ"?"p":"r",r=document.createElement("div");r.className="lwr"+(k==="p"?" lwp":"");r.innerHTML='<div class="an '+k+' lwa">'+anHTML(k)+(d.n==="ハツ"?'<span class="lwh" aria-hidden="true"><i style="--hx:-14px;--hd:.5s">♥</i><i style="--hx:8px;--hd:.9s">♥</i><i style="--hx:-4px;--hd:1.4s">♥</i><i style="--hx:16px;--hd:1.9s">♥</i></span>':'')+'</div><div class="lwt"><b>'+lwChars(LW[d.n])+'</b></div>';nx.parentNode.insertBefore(r,nx);autoSc(nx)};if(d.t)chef(document.getElementById("cf2"),d.t.split("|"),function(){lwd();nx.hidden=false;autoSc(nx)},"味わいどころ");else{lwd();nx.hidden=false;autoSc(nx)}};
@@ -1360,7 +1360,7 @@ var cm=(d.w[5]&&d.w[0]==="cards")||d.w[0]==="seseri"||d.w[0]==="reasons",c1=docu
 if(cm){wd.hidden=false;wd.classList.add("show");wd.style.pointerEvents="none";c1.parentNode.insertBefore(wd,d.w[0]==="cards"?c1.nextSibling:c1);W[d.w[0]](wd,d.w,fin);autoSc(wd)}
 if(d.n==="手羽先"){var aw=document.createElement("div");aw.className="awa";aw.hidden=true;aw.setAttribute("aria-hidden","true");aw.innerHTML='<span class="awc l">えらいやっちゃ</span><span class="awc r">ヨイヨイヨイヨイ</span><div class="awd"><div class="awf"><div class="an r go">'+anHTML("r")+"</div></div></div>";wd.parentNode.insertBefore(aw,wd);var my2=tok,pt=setInterval(function(){if(my2!==tok){clearInterval(pt);return}if(c1.querySelectorAll(".cb p").length>=2){aw.hidden=false;clearInterval(pt)}},60)}
 chef(c1,d.i.split("|"),function(){if(cm){wd.style.pointerEvents="";if(d.w[0]==="seseri")fin();else if(d.w[0]==="reasons"&&window.rsGo)window.rsGo();return}if(d.w[0]==="none"){fin();return}wd.hidden=false;wd.classList.add("show");W[d.w[0]](wd,d.w,fin);autoSc(wd)});
-nx.onclick=function(){if(ccount()>=NEED)noren(function(){go(D.length)});else go(-2)}}
+nx.onclick=function(){if(ccount()>=NEED)noren(function(){go(D.length+1)});else go(-2)}}
 var FK="namihira_fb_seen_v1",FT="namihira_fb_text_v1";
 function fbSeen(){try{return localStorage.getItem(FK)==="1"}catch(e){return false}}
 function finale(){try{localStorage.setItem(FK,"1")}catch(e){}
