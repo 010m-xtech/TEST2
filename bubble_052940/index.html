@@ -2524,6 +2524,13 @@
     /* 吹き出しの文字：1行目（写真を撮って乾杯ボタンを押したら）が折り返さない大きさに */
     .bt-op-lead { width: min(94%, 400px) !important; padding: 12px 8px !important; font-size: min(20px, 4.75vw) !important; white-space: nowrap; margin-top: 12px !important; }
     .bt-op-lead small { font-size: min(14px, 3.5vw) !important; }
+  
+    /* 縦が長い画面の1枚目：お店の写真を少し低くして、キャラとトラックを下げる（吹き出しの場所をあける） */
+    @media (min-height: 721px) {
+      .mf-op-s:first-of-type .bt-op-store { height: 28% !important; }
+      .mf-op-s:first-of-type .bt-op-buddy.is-big { bottom: calc(28% + 10px) !important; }
+      .mf-op-s:first-of-type .mf-op-truck { bottom: calc(28% + 4px) !important; }
+    }
   </style>
 </head>
 <body class="flex justify-center items-start h-screen overflow-hidden bg-black">
@@ -3827,9 +3834,15 @@
     function btPlaceLead() {
       const lead = mfOp.querySelector('.bt-op-lead'), chara = mfOp.querySelector('.mf-op-s:first-of-type .bt-op-buddy img');
       if (!lead || !chara || !lead.offsetParent) return;
+      const logo = mfOp.querySelector('.mf-op-s:first-of-type .mf-op-logo');
       lead.style.removeProperty('margin-top');
+      if (logo) logo.style.removeProperty('margin-top');
       const gap = chara.getBoundingClientRect().top - 46 - lead.getBoundingClientRect().bottom;
-      if (gap > 0) lead.style.setProperty('margin-top', `${12 + Math.min(gap, 140)}px`, 'important');
+      if (gap <= 0) return;
+      // 空いた高さは、ロゴの上（4割）と吹き出しの上（6割）に分けて、間が空きすぎないように
+      const g = Math.min(gap, 220);
+      if (logo) logo.style.setProperty('margin-top', `${Math.round(parseFloat(getComputedStyle(logo).marginTop) + g * 0.4)}px`, 'important');
+      lead.style.setProperty('margin-top', `${Math.round(12 + g * 0.6)}px`, 'important');
     }
     window.addEventListener('resize', btPlaceLead);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(btPlaceLead);
@@ -5517,7 +5530,7 @@
     // 位置（pos）＝届いた写真の枚数。pos 1〜5 が MF_CITIES[pos - 1]
     // ==============================================
     const MF_CITIES = [
-      { key: 'maruto', day: '1日目　マルト水谷に到着', trivia: ["春日井市を拠点に、飲食店向けのお酒や業務用食品を届けている会社です", "「生ビール」は、熱で殺菌していないビールのこと。だからこそ鮮度がいのち", "樽詰めの生ビールは、朝いちばんに集荷して、その日のうちにお店へ向かいます"], it: 'Maruto Mizutani', jp: 'マルト水谷', img: 'city-maruto.webp', credit: '', copy: '樽詰めしたての生ビールが、マルト水谷に到着！', desc: 'アサヒビール名古屋工場で樽詰めされた新鮮な生ビールが、マルト水谷へ。朝いちばんに集荷して、岡崎へ出発します。', menuId: 'default_2', menuName: '生ビール' },
+      { key: 'maruto', day: '1日目　マルト水谷に到着', trivia: ["春日井市を拠点に、飲食店向けのお酒や業務用食品を届けている会社です", "「生ビール」は、熱で殺菌していないビールのこと。だからこそ鮮度がいのち", "ビール工場から出荷された新鮮なビールは、朝いちばんに集荷して、その日のうちにお店へ向かいます"], it: 'Maruto Mizutani', jp: 'マルト水谷', img: 'city-maruto.webp', credit: '', copy: 'ビール工場から出荷された新鮮なビールが、マルト水谷に到着！', desc: 'アサヒビール名古屋工場から出荷された新鮮なビールが、マルト水谷へ。朝いちばんに集荷して、岡崎へ出発します。', menuId: 'default_2', menuName: '生ビール' },
       { key: 'castle', day: '2日目　朝　岡崎へ', trivia: ["徳川家康は1542年、この岡崎城で生まれました", "いまの天守は、1959年に復元されたもの", "岡崎公園は「日本さくら名所100選」に選ばれています"], it: 'Okazaki Castle', jp: '岡崎城', img: 'city-castle.webp', credit: '', copy: '天下人のふるさとで、乾杯。', desc: '徳川家康が生まれた城。乙川のほとりの岡崎公園に、白い天守がそびえます。', menuId: 'default_0', menuName: 'お好み焼き' },
       { key: 'park', day: '2日目　昼　幸田町へ', trivia: ["幸田中央公園は、JR幸田駅から歩いて7分ほど", "幸田文化公園の桜の見ごろは、例年4月上旬から中旬", "しだれ桜の品種は、ヤエベニシダレザクラやウジョウシダレザクラなど"], it: 'Kota Parks', jp: '幸田中央公園・幸田文化公園', short: '幸田の公園', img: 'city-park.webp', credit: '幸田中央公園（写真：幸田町観光協会）', img2: 'city-park2.webp', credit2: '幸田文化公園のしだれ桜（写真：幸田町観光協会）', creditNote: '写真：幸田町観光協会', copy: '2つの公園で、ひと休みの乾杯。', desc: '幸田町の真ん中にある、2つの公園をめぐります。', parts: [{ h: '幸田中央公園', t: '幸田町役場のとなりにある、町の真ん中の公園。長いすべり台もあって、町のみんなの憩いの場です。' }, { h: '幸田文化公園', t: '約20種・500本の桜が植えられ、そのうち約350本が花笠のように垂れるしだれ桜。4月上旬〜中旬には「幸田しだれ桜まつり」が開かれます。' }], menuId: 'default_1', menuName: '焼きそば' },
       { key: 'honkoji', day: '2日目　夕方　本光寺へ', trivia: ["「三河のあじさい寺」。6月の紫陽花まつりには、約1万本のあじさいが咲きます", "山門に掲げられた「瑞雲山」は、本光寺の山号です", "深溝（ふこうず）松平家の菩提寺。宝物館は、紫陽花まつりの期間だけ公開されます"], it: 'Honkoji', jp: '本光寺', img: 'city-honkoji.webp', credit: '写真：幸田町観光協会', copy: 'あじさいの参道で、乾杯。', desc: '幸田町深溝にある、深溝松平家ゆかりのお寺。石畳の参道の両側に、あじさいがあふれるように咲きます。', menuId: 'default_1', menuName: '焼きそば' },
@@ -5658,7 +5671,7 @@
     }
     // トラックのひとこと（荷台の文字のかわりに、ときどき吹き出しで）
     const MF_TRUCK_SAY = ['美味しいビール運んでいます！', '工場出荷2日以内の美味しいビールです！', '生ビール速達中！', 'キッチンカーもやってるよ！'];
-    const MF_TRUCK_SAY_YELLOW = ['アサヒビール名古屋工場から出荷！', '樽詰めしたての生ビールです！', 'マルト水谷へ配送中！', '生ビール速達中！'];
+    const MF_TRUCK_SAY_YELLOW = ['アサヒビール名古屋工場から出荷！', 'ビール工場から出荷された新鮮なビールです！', 'マルト水谷へ配送中！', '生ビール速達中！'];
     let mfSayIdx = 0, mfSayTimer = null;
     function mfTruckSay(el) {
       if (!el) return;
@@ -5845,14 +5858,14 @@
         mfOpenBubble(i, true);
       }));
       const pill = document.getElementById('mfMapPill');
-      mfSetPill(pill, pos >= MF_CITIES.length ? '🎆 ぼてこ幸田に到着！まもなく花火' : pos === 0 ? `樽詰めしたて！次は <b>${MF_CITIES[0].jp}</b> へ` : `次は <b>${MF_CITIES[pos].short || MF_CITIES[pos].jp}</b> へ！`);
+      mfSetPill(pill, pos >= MF_CITIES.length ? '🎆 ぼてこ幸田に到着！まもなく花火' : pos === 0 ? `工場から出荷！次は <b>${MF_CITIES[0].jp}</b> へ` : `次は <b>${MF_CITIES[pos].short || MF_CITIES[pos].jp}</b> へ！`);
       mfPlaceMapTruck(mfPinXY(pos));
     }
     // 地図の下の案内：ぼてこのロゴと一体の札（ぼてこちゃんがのぞく）
     function mfSetPill(el, html) {
       el.innerHTML = `<img class="mf-pill-logo" src="logo-banner.webp" alt="ぼてこ"><span class="mf-pill-txt">${html}</span><img class="mf-pill-chara" src="chara.webp" alt="">`;
     }
-    // 出発前：アサヒビール名古屋工場で樽詰め → マルト水谷 → ぼてこ幸田まで2日以内
+    // 出発前：アサヒビール名古屋工場から出荷 → マルト水谷 → ぼてこ幸田まで2日以内
     const BT_ASAHI_AUTO_HIDE_MS = 8000;
     function mfShowAsahi(on) {
       let el = document.getElementById('btAsahi');
@@ -5862,7 +5875,7 @@
         el.className = 'bt-asahi';
         el.innerHTML = `<button type="button" class="bt-asahi-x" aria-label="閉じる">✕</button>
           <svg class="bt-asahi-ill" viewBox="0 0 120 70" aria-hidden="true"><rect x="0" y="58" width="120" height="12" fill="#e9dcc4"/><rect x="6" y="26" width="58" height="32" fill="#e6ebef" stroke="#5a6670"/><path d="M6 26 l9-9 9 9 9-9 9 9 9-9 9 9" fill="#f4f6f8" stroke="#5a6670"/><g fill="#ffd38a"><rect x="12" y="34" width="8" height="8"/><rect x="26" y="34" width="8" height="8"/><rect x="40" y="34" width="8" height="8"/></g><rect x="70" y="10" width="13" height="48" rx="6.5" fill="#d3dbe2" stroke="#5a6670"/><rect x="86" y="18" width="13" height="40" rx="6.5" fill="#d3dbe2" stroke="#5a6670"/><g transform="translate(100 44)"><rect x="0" y="0" width="12" height="14" rx="2" fill="#c0c8d0" stroke="#5a6670"/><rect x="0" y="4" width="12" height="2" fill="#8a96a0"/><rect x="0" y="9" width="12" height="2" fill="#8a96a0"/></g><g transform="translate(86 50)"><rect x="0" y="0" width="12" height="8" rx="2" fill="#c0c8d0" stroke="#5a6670"/></g></svg>
-          <div class="bt-asahi-tx"><b>START　<span class="nw">アサヒビール名古屋工場</span></b><span>樽詰めされたばかりの新鮮な生ビールが出荷！<br>マルト水谷を通って、<em>2日以内</em>に ぼてこ幸田 へ届きます</span></div>`;
+          <div class="bt-asahi-tx"><b>START　<span class="nw">アサヒビール名古屋工場</span></b><span>ビール工場から出荷された新鮮なビール！<br>マルト水谷を通って、<em>2日以内</em>に ぼてこ幸田 へ届きます</span></div>`;
         appContainer.appendChild(el); // 写真のロープより前に出すため、地図の外に置く
         el.querySelector('.bt-asahi-x').addEventListener('click', (e) => { e.stopPropagation(); el.classList.add('closed'); el.classList.remove('show'); });
       }
@@ -6064,7 +6077,7 @@
     function mfBuildRoad(ci) {
       const B = 420;
       const scenes = [
-        // アサヒビール名古屋工場 → マルト水谷：朝の名古屋の街を、樽詰めの生ビールを積んで
+        // アサヒビール名古屋工場 → マルト水谷：朝の名古屋の街を、工場から出荷された新鮮なビールを積んで
         { sky: 'linear-gradient(#9fd0f5, #e8f4ff 70%, #fff3df)',
           far: `<rect x="40" y="${B - 150}" width="170" height="150" fill="#e3e9ee"/><path d="M40 ${B - 150} l17 -18 17 18 17 -18 17 18 17 -18 17 18 17 -18 17 18 17 -18 17 18" fill="#f3f6f8"/>${[0, 1, 2, 3, 4, 5].map(k => `<rect x="${54 + k * 25}" y="${B - 120}" width="14" height="14" fill="#ffd38a" opacity=".8"/>`).join('')}<rect x="230" y="${B - 220}" width="34" height="220" rx="17" fill="#d4dce3"/><rect x="272" y="${B - 190}" width="34" height="190" rx="17" fill="#d4dce3"/><rect x="314" y="${B - 205}" width="34" height="205" rx="17" fill="#d4dce3"/><text x="125" y="${B - 160}" font-size="15" font-weight="900" fill="#5a6670" text-anchor="middle">ビール工場</text>`,
           near: `<rect x="0" y="${B - 40}" width="440" height="10" fill="#9aa4ac"/>${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(k => `<rect x="${k * 44}" y="${B - 52}" width="4" height="22" fill="#8a949c"/>`).join('')}${[[60, 0], [96, 0], [78, -30], [300, 0], [336, 0], [318, -30]].map(([x, dy]) => `<g transform="translate(${x} ${B - 30 + dy})"><rect x="-16" y="-30" width="32" height="30" rx="5" fill="#c4ccd3" stroke="#6a747c"/><rect x="-16" y="-22" width="32" height="3" fill="#8a949c"/><rect x="-16" y="-9" width="32" height="3" fill="#8a949c"/></g>`).join('')}` + mfCobble(B, false) },
