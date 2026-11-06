@@ -5823,7 +5823,13 @@
       tap('.mf-bubble-x', mfCloseBubble);
       const gacha = mfBubble.querySelector('.bt-gacha');
       if (gacha) gacha.addEventListener('click', (e) => e.stopPropagation());
-      tap('.mf-b-go', () => { if (MF_CITIES[mfPos]) mfCloseBubble(); else requestFinale(); });
+      tap('.mf-b-go', () => {
+        if (MF_CITIES[mfPos]) { mfCloseBubble(); return; }
+        // フィナーレ：押したらすぐ「まもなく」と見せる（始まるまでの数秒、反応がないように見えないように）
+        const b = mfBubble.querySelector('.bt-finale');
+        if (b && !b.disabled) { b.disabled = true; b.classList.add('is-wait'); b.innerHTML = '🎆 まもなく花火ショー！<small>みんなの画面で始まります…</small>'; }
+        requestFinale();
+      });
       // 紹介はいつでもたたんだり開いたりできる（写真を大きく見たいとき）
       tap('.mf-b-fold', () => { mfBubble.classList.add('folded'); requestAnimationFrame(mfLiftTruck); });
       tap('.mf-b-bar', () => { mfBubble.classList.remove('folded'); mfBubble.scrollTop = 0; requestAnimationFrame(mfLiftTruck); });
@@ -6498,7 +6504,13 @@
             // まだ始まっていないときだけ（ほかの席が先に押していたら、そのまま）
             if ((st.count || 0) >= METER_GOAL && (st.showStartAt || 0) > startAt) tx.update(stateDocRef(), { showStartAt: startAt, serverAt: serverTimestamp() });
           });
-        } catch (e) { console.warn('Finale request failed:', e); finaleRequested = false; }
+        } catch (e) {
+          console.warn('Finale request failed:', e); finaleRequested = false;
+          // 送れなかったら、もう一度押せるように戻す
+          const b = mfBubble.querySelector('.bt-finale');
+          if (b) { b.disabled = false; b.classList.remove('is-wait'); b.innerHTML = '🎆 フィナーレへ！<small>押すと、みんなの画面で花火ショーが始まります</small>'; }
+          showToast('<span class="toast-dot"></span><span class="truncate">うまく送れませんでした。電波を確認して、もう一度「フィナーレへ」を押してください</span>', 3500);
+        }
       }
       checkShowTrigger();
     }
@@ -8639,6 +8651,9 @@
       if (isShowPlaying) return;
       isShowPlaying = true;
       if (storyActive) endStoryIntro();
+      // すぐに夜の場面へ暗くしはじめる（写真の読み込み・みんなとそろえる待ち時間も、画面が動いて見えるように）
+      mfBubble.classList.remove('show');
+      document.getElementById('mfNight').classList.add('show');
       const showNo = (meterState.totalShows || 0) + 1;
       const baseKey = PREVIEW_THEME || (SHOW_THEMES[meterState.showTheme] ? meterState.showTheme : pickShowTheme());
       const seed = meterState.showStartAt || Date.now();
