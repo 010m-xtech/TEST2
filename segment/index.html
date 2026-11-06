@@ -183,9 +183,9 @@
     <div class="field" style="margin-bottom:8px">
       <span>検索する県（食べログ・HOTPEPPER共通）</span>
       <div class="seg-toggle three" id="seg-pref">
-        <button type="button" data-pref="愛知県" data-sa="SA33" aria-pressed="true">愛知</button>
-        <button type="button" data-pref="三重県" data-sa="SA34" aria-pressed="false">三重</button>
-        <button type="button" data-pref="岐阜県" data-sa="SA31" aria-pressed="false">岐阜</button>
+        <button type="button" data-pref="愛知県" data-sa="SA33" data-tb="aichi" aria-pressed="true">愛知</button>
+        <button type="button" data-pref="三重県" data-sa="SA34" data-tb="mie" aria-pressed="false">三重</button>
+        <button type="button" data-pref="岐阜県" data-sa="SA31" data-tb="gifu" aria-pressed="false">岐阜</button>
       </div>
     </div>
     <div class="search-links">
@@ -276,8 +276,9 @@
   var LINK_TARGET = '_top';
   // 「導入見送り」のときも案内ボタンを出す場合は true
   var SHOW_ON_SKIP = false;
-  // 食べログ内の検索ページのURL。{q}=店舗名（2か所に入ります）、{area}=選んだ県。食べログは複数県を同時に指定できないため、県を切り替えて検索します
-  var TABELOG_URL = 'https://tabelog.com/rstLst/?vs=1&sa={area}&sk={q}&lid=hd_search1&vac_net=&svd=&svt=1900&svps=2&hfc=1&sw={q}';
+  // 食べログ内の検索ページのURL。{pref}=県のローマ字（aichi / mie / gifu）、{q}=店舗名
+  // URLの頭を県のページ（tabelog.com/aichi/ など）にすることで、その県のお店だけが検索されます
+  var TABELOG_URL = 'https://tabelog.com/{pref}/rstLst/?vs=1&sk={q}&sw={q}';
   // HOTPEPPER内の検索ページのURL。{q}=店舗名、{sa}=選んだ県のエリアコード（愛知=SA33 / 三重=SA34 / 岐阜=SA31）
   var HOTPEPPER_URL = 'https://www.hotpepper.jp/CSP/psh010/doBasic?FWT={q}&SA={sa}';
   // 項目文中のこの語句に、リンクを自動で付けます
@@ -641,12 +642,12 @@
   $('seg-hist-q').addEventListener('input', renderHist);
 
   // ---- 店名で食べログ / HOTPEPPER を検索 ----
-  var pref = '愛知県', prefSa = 'SA33';
+  var pref = '愛知県', prefSa = 'SA33', prefTb = 'aichi';
   function setPref(name){
     Array.prototype.forEach.call(document.querySelectorAll('#seg-pref button'), function(x){
       var on = x.getAttribute('data-pref') === name;
       x.setAttribute('aria-pressed', on ? 'true':'false');
-      if(on){ pref = name; prefSa = x.getAttribute('data-sa'); }
+      if(on){ pref = name; prefSa = x.getAttribute('data-sa'); prefTb = x.getAttribute('data-tb'); }
     });
     refreshSearchUi();
   }
@@ -685,7 +686,7 @@
     });
   }
   bindSearch('seg-s-tabelog', function(name){
-    return TABELOG_URL.replace('{area}', encodeURIComponent(pref)).split('{q}').join(encodeURIComponent(name));
+    return TABELOG_URL.replace('{pref}', prefTb).split('{q}').join(encodeURIComponent(name));
   });
   bindSearch('seg-s-hotpepper', function(name){
     return HOTPEPPER_URL.replace('{sa}', prefSa).split('{q}').join(encodeURIComponent(name));
