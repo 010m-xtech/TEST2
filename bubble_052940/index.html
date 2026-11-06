@@ -2498,6 +2498,32 @@
     @media (max-height: 600px) { .bt-op-lead { margin-top: 16px !important; } }
     /* 「何かが起こる」の画面に「旅に出る」：下の文字はボタンの上へ */
     .mf-op-s:has(.mf-op-go) .mf-op-foot { bottom: calc(env(safe-area-inset-bottom) + 86px); }
+  
+    /* 撮影ボタン：グレーのカメラを左に、文字は「写真を撮る」と撮るもののれい（縦の真ん中そろえ） */
+    .cta-camera .bt-cta-row { display: flex !important; align-items: center; justify-content: center; gap: 12px; width: 100%; }
+    .cta-camera .bt-cta-cam { width: 44px !important; height: 36px !important; margin: 0 !important; filter: drop-shadow(0 2px 2px rgba(60, 30, 10, 0.35)); }
+    .cta-camera .bt-cta-tx { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15; text-align: left; }
+    .cta-camera .bt-cta-tx b { font-family: var(--bt-jp); font-weight: 400; font-size: 21px; letter-spacing: 0.08em; color: #fff; }
+    .cta-camera .bt-cta-tx small { margin-top: 3px; font-family: 'M PLUS Rounded 1c', sans-serif; font-size: 11.5px; font-weight: 800; letter-spacing: 0.04em; color: #fff3e0; }
+    #ctaSub { display: none !important; }
+    @media (max-height: 720px) {
+      .cta-camera .bt-cta-cam { width: 38px !important; height: 31px !important; }
+      .cta-camera .bt-cta-tx b { font-size: 18.5px; }
+      .cta-camera .bt-cta-tx small { font-size: 10.5px; margin-top: 2px; }
+    }
+    /* オープニング1枚目：説明文を、ぼてこちゃんから出る吹き出しに */
+    .bt-op-lead { display: block; width: min(92%, 380px); margin-left: auto !important; margin-right: auto !important; padding: 12px 12px 12px; border-radius: 22px; background: #fff; border: 3px solid #f47c2c; box-shadow: 0 5px 0 rgba(244, 124, 44, 0.22); }
+    .bt-op-lead::before, .bt-op-lead::after { content: ''; position: absolute; }
+    .bt-op-lead::before { right: 46px; bottom: -40px; width: 40px; height: 42px; background: #f47c2c; clip-path: polygon(0 0, 62% 0, 100% 100%); }
+    .bt-op-lead::after { right: 51px; bottom: -30.5px; width: 30px; height: 34px; background: #fff; clip-path: polygon(0 0, 62% 0, 100% 100%); }
+    .bt-op-lead { margin-top: 58px !important; }
+    @media (max-height: 720px) { .bt-op-lead { margin-top: 34px !important; } }
+    @media (max-height: 600px) { .bt-op-lead { margin-top: 14px !important; padding: 8px 10px !important; } .bt-op-lead::before { bottom: -30px; height: 32px; } .bt-op-lead::after { bottom: -21px; height: 24px; } }
+    .mf-op-s:first-of-type .bt-op-buddy span { display: none !important; }
+  
+    /* 吹き出しの文字：1行目（写真を撮って乾杯ボタンを押したら）が折り返さない大きさに */
+    .bt-op-lead { width: min(94%, 400px) !important; padding: 12px 8px !important; font-size: min(20px, 4.75vw) !important; white-space: nowrap; margin-top: 12px !important; }
+    .bt-op-lead small { font-size: min(14px, 3.5vw) !important; }
   </style>
 </head>
 <body class="flex justify-center items-start h-screen overflow-hidden bg-black">
@@ -2910,8 +2936,8 @@
         </div>
 
         <button id="openCameraBtn" class="cta-camera active:scale-[0.98] transition">
-          <span class="flex items-center gap-2 font-serif-luxury text-[16px] font-bold tracking-[0.16em]"><svg class="bt-cta-cam" viewBox="0 0 32 26" aria-hidden="true"><path d="M11 3.5 L13 1 H19 L21 3.5 H28 A3 3 0 0 1 31 6.5 V22 A3 3 0 0 1 28 25 H4 A3 3 0 0 1 1 22 V6.5 A3 3 0 0 1 4 3.5 Z" fill="#fff" stroke="#7a3d16" stroke-width="1.6" stroke-linejoin="round"/><circle cx="16" cy="14" r="7" fill="#3a2418"/><circle cx="16" cy="14" r="4.6" fill="#6fb7e0"/><circle cx="14.3" cy="12.3" r="1.5" fill="#fff"/><rect x="24.5" y="6.5" width="3.6" height="2.4" rx="1" fill="#f47c2c"/></svg>美味しいビールで、乾杯写真を撮る</span>
-          <span id="ctaSub" class="text-[10.5px] font-medium tracking-[0.12em] text-white/65">各地で乾杯して次の名所へ！！</span>
+          <span class="bt-cta-row"><svg class="bt-cta-cam" viewBox="0 0 32 26" aria-hidden="true"><path d="M11 3.5 L13 1 H19 L21 3.5 H28 A3 3 0 0 1 31 6.5 V22 A3 3 0 0 1 28 25 H4 A3 3 0 0 1 1 22 V6.5 A3 3 0 0 1 4 3.5 Z" fill="#9aa0a6" stroke="#4f5459" stroke-width="1.6" stroke-linejoin="round"/><rect x="3.5" y="6.5" width="5" height="2.4" rx="1" fill="#c8ccd0"/><circle cx="16" cy="14" r="7.4" fill="#e6e8ea" stroke="#4f5459" stroke-width="1.2"/><circle cx="16" cy="14" r="5" fill="#2f3337"/><circle cx="14.4" cy="12.4" r="1.6" fill="#fff" opacity=".9"/><rect x="24.5" y="6.5" width="3.6" height="2.4" rx="1" fill="#e6e8ea"/></svg><span class="bt-cta-tx"><b>写真を撮る</b><small>ビール・お好み焼き・思い出など</small></span></span>
+          <span id="ctaSub" hidden>各地で乾杯して次の名所へ！！</span>
         </button>
 
         <input type="file" id="cameraFallbackInput" accept="image/*" capture="environment" class="hidden">
@@ -3797,10 +3823,21 @@
       let h = `<rect x="0" y="0" width="300" height="318" fill="#8fd0ea"/><path d="${land ? land.getAttribute('d') : ''}" fill="#d6e7a8" stroke="#6f8f45" stroke-width=".8" opacity=".5"/>` + board.road + board.squares;
       mfOp.querySelector('.mf-op-map').innerHTML = h;
     }
+    // 1枚目：説明の吹き出しを、下のぼてこちゃんの頭のすぐ上まで下げる（画面の高さに合わせて）
+    function btPlaceLead() {
+      const lead = mfOp.querySelector('.bt-op-lead'), chara = mfOp.querySelector('.mf-op-s:first-of-type .bt-op-buddy img');
+      if (!lead || !chara || !lead.offsetParent) return;
+      lead.style.removeProperty('margin-top');
+      const gap = chara.getBoundingClientRect().top - 46 - lead.getBoundingClientRect().bottom;
+      if (gap > 0) lead.style.setProperty('margin-top', `${12 + Math.min(gap, 140)}px`, 'important');
+    }
+    window.addEventListener('resize', btPlaceLead);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(btPlaceLead);
     function mfOpShow(i) {
       clearTimeout(mfOpTimer);
       mfOpIdx = Math.max(0, Math.min(mfOpSlides.length - 1, i));
       mfOpSlides.forEach((el, k) => el.classList.toggle('on', k === mfOpIdx));
+      if (mfOpIdx === 0) requestAnimationFrame(btPlaceLead);
       mfOp.querySelectorAll('.mf-op-dots i').forEach((el, k) => el.classList.toggle('on', k === mfOpIdx));
       mfOp.classList.toggle('dark', mfOpSlides[mfOpIdx].classList.contains('mf-op-dark'));
       // 最後のチケットは自動では閉じない（「旅に出る」を押す）
