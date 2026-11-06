@@ -89,7 +89,7 @@
   .map-legend { display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px; font-weight: 700; }
   .map-legend span { display: inline-flex; align-items: center; gap: 5px; background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 4px 9px; }
   .map-legend i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
-  #japan path.pref.gold { stroke: #FFF6D8; }
+  #japan path.pref.gold { stroke: #FFFBEA; stroke-width: 1.8; filter: drop-shadow(0 0 3px rgba(255,190,20,.95)) drop-shadow(0 0 8px rgba(255,215,90,.8)); }
   @keyframes goldGlow { from { filter: drop-shadow(0 0 2px rgba(233,180,60,.5)); } to { filter: drop-shadow(0 0 9px rgba(255,200,70,.95)); } }
   .map-hint { position: absolute; left: 50%; bottom: max(22px, env(safe-area-inset-bottom)); transform: translateX(-50%);
     background: var(--ink); color: #fff; font-size: 13px; padding: 10px 18px; border-radius: 999px; white-space: nowrap;
@@ -312,6 +312,15 @@
   .intro-scene.on .zoomy { animation: introZoom 3s ease-in-out forwards; }
   @keyframes introZoom { 0%, 25% { transform: scale(1); } 75%, 100% { transform: scale(1.55) translate(2%, 6%); } }
   .intro-stage { overflow: hidden; border-radius: 18px; }
+  /* 遊び方①：地図の下の「お酒のメニュー」「食事のメニュー」ボタンの見本 */
+  .intro-mbar { position: absolute; left: 8px; right: 8px; bottom: 8px; display: flex; gap: 6px; }
+  .intro-mbar:empty { display: none; }
+  .intro-mbar span { flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 4px; border-radius: 12px; color: #fff; font-size: 11px; font-weight: 800; white-space: nowrap; box-shadow: 0 4px 10px rgba(0,0,0,.2); }
+  .intro-mbar i { font-style: normal; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-family: "Shippori Mincho", serif; font-size: 11px; border: 1.5px solid rgba(255,255,255,.85); }
+  .intro-mbar .s { background: linear-gradient(135deg, #A8322A, #D9822B); } .intro-mbar .f { background: linear-gradient(135deg, #2F6F52, #7DAE6A); }
+  .intro-scene.on .intro-mbar span { animation: mbarPop 3s ease-in-out both; }
+  .intro-scene.on .intro-mbar span + span { animation-delay: .15s; }
+  @keyframes mbarPop { 0%, 8% { transform: translateY(30px); opacity: 0; } 22% { transform: none; opacity: 1; } 70% { transform: none; } 78% { transform: scale(1.07); } 86%, 100% { transform: none; } }
   .intro-scene.on .zoomy { filter: none; }
   .intro-modes { position: absolute; left: 4%; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 5px; background: rgba(255,255,255,.95);
     border-radius: 999px; padding: 5px; box-shadow: 0 4px 12px rgba(0,0,0,.18); }
@@ -385,6 +394,56 @@
   /* お店のこだわり食材 */
   .store-eyebrow { font-size: 12px; color: var(--accent); font-weight: 700; letter-spacing: .15em; }
   .store-heading { font-size: 21px; font-weight: 800; margin: 4px 0 16px; line-height: 1.4; }
+  /* ---- 地図の下の「お酒のメニュー」「食事のメニュー」 ---- */
+  #map-hint { display: none !important; }
+  #map-wrap { margin-bottom: 0; }
+  .mbar { flex: none; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px 12px max(12px, env(safe-area-inset-bottom)); }
+  .mbar button { display: flex; align-items: center; gap: 8px; border: 0; border-radius: 16px; padding: 11px 12px; color: #fff; box-shadow: 0 6px 14px rgba(0,0,0,.15); }
+  .mbar .s { background: linear-gradient(135deg, #A8322A, #D9822B); } .mbar .f { background: linear-gradient(135deg, #2F6F52, #7DAE6A); }
+  .mbar i { font-style: normal; flex: none; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font-family: "Shippori Mincho", serif; font-weight: 800; font-size: 19px; border: 2px solid rgba(255,255,255,.85); background: rgba(255,255,255,.15); }
+  .mbar b { font-size: 14px; white-space: nowrap; }
+  .mbar[hidden] { display: none; }
+  #mpanel-bg { position: fixed; inset: 0; background: rgba(20,15,10,.45); z-index: 69; opacity: 0; pointer-events: none; transition: opacity .3s; }
+  #mpanel-bg.show { opacity: 1; pointer-events: auto; }
+  #mpanel { position: fixed; left: 0; right: 0; bottom: 0; margin: 0 auto; max-width: 440px; height: 80%; background: var(--paper); border-radius: 24px 24px 0 0; z-index: 70;
+    box-shadow: 0 -10px 40px rgba(0,0,0,.25); display: flex; flex-direction: column; transform: translateY(105%); transition: transform .45s cubic-bezier(.2,.9,.25,1); }
+  #mpanel.show { transform: none; }
+  #mpanel { --c: #A8322A; } #mpanel.food { --c: #2F6F52; }
+  .mp-head { padding: 10px 16px 0; } .mp-grip { width: 44px; height: 5px; border-radius: 9px; background: var(--line); margin: 0 auto 10px; }
+  .mp-ttl { display: flex; align-items: center; gap: 10px; }
+  .mp-ttl i { font-style: normal; flex: none; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: #fff; background: var(--c); font-family: "Shippori Mincho", serif; font-weight: 800; font-size: 20px; }
+  .mp-ttl h3 { margin: 0; font-size: 19px; } .mp-ttl small { display: block; font-size: 11px; color: var(--muted); font-weight: 700; }
+  .mp-x { margin-left: auto; flex: none; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: #fff; }
+  .mp-tabs { display: flex; gap: 6px; margin: 12px -16px 0; padding: 0 16px 2px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+  .mp-tabs:empty, .mp-taste:empty { display: none; }
+  .mp-tabs button { flex: none; font-size: 12.5px; font-weight: 800; padding: 6px 14px; border-radius: 99px; background: #fff; border: 1px solid var(--line); color: var(--muted); }
+  .mp-tabs button.on { background: var(--c); color: #fff; border-color: var(--c); }
+  .t-a { --t: #2E8A6A; --tl: #E3F3EC; } .t-b { --t: #D0567E; --tl: #FBE6EE; } .t-c { --t: #C9952E; --tl: #FBF1DC; } .t-d { --t: #7A4426; --tl: #F1E3D9; }
+  .mp-taste { display: flex; align-items: center; gap: 5px; margin: 8px 0 0; flex-wrap: wrap; }
+  .mp-taste small { font-size: 10.5px; font-weight: 800; color: var(--muted); margin-right: 2px; }
+  .mp-taste button { font-size: 11.5px; font-weight: 800; padding: 4px 11px; border-radius: 99px; background: var(--tl); border: 1.5px solid var(--tl); color: var(--t); }
+  .mp-taste button.on { background: var(--t); border-color: var(--t); color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.18); }
+  .mp-grid { flex: 1; min-height: 0; overflow: auto; display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: max-content; gap: 10px; padding: 12px 16px max(20px, env(safe-area-inset-bottom)); align-content: start; }
+  .mp-empty { grid-column: 1 / -1; text-align: center; color: var(--muted); font-size: 13px; padding: 30px 0; }
+  .mc { display: block; width: 100%; padding: 0; border: 0; text-align: left; background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 12px rgba(60,40,20,.12); position: relative; }
+  .mc:active { transform: scale(.97); }
+  .mc .ph { height: 92px; position: relative; }
+  .mc .ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .mc .tx { height: 100%; display: grid; place-items: center; color: #fff; font-family: "Shippori Mincho", serif; font-weight: 800; font-size: 14px; text-align: center; padding: 8px; line-height: 1.4; position: relative;
+    background: linear-gradient(135deg, #A8322A, #D9822B); }
+  .mc .tx.f { background: linear-gradient(135deg, #2F6F52, #7DAE6A); }
+  .mc .tx::before { content: ""; position: absolute; inset: 0; opacity: .16; background: radial-gradient(circle at 50% 100%, transparent 7px, #fff 8px, transparent 9px, transparent 12px, #fff 13px, transparent 14px) 0 0 / 28px 14px; }
+  .mc .tx span { position: relative; }
+  .mc .tag { position: absolute; top: 6px; left: 6px; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 99px; color: #fff; background: var(--t); border: 1.5px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+  .mc .gold { position: absolute; top: 6px; right: 6px; font-size: 9.5px; font-weight: 800; color: #5A3A00; background: linear-gradient(135deg, #FFE07A, #D99A12); padding: 2px 7px; border-radius: 99px; border: 1.5px solid #fff; }
+  .mc .bd { padding: 7px 9px 9px; } .mc .ty { font-size: 10px; font-weight: 800; color: var(--c); letter-spacing: .05em; }
+  .mc .n { font-size: 12.5px; font-weight: 800; line-height: 1.35; min-height: 2.7em; color: var(--ink); }
+  .mc .pf { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; font-size: 10.5px; color: var(--muted); font-weight: 700; }
+  .mc .pf em { font-style: normal; color: var(--c); font-weight: 800; }
+  /* カードから来たとき：押すピンを光らせる */
+  .dio-pin.guide { z-index: 6; }
+  .dio-pin.guide .mark { box-shadow: 0 0 0 4px #FFD23F, 0 0 22px 6px rgba(255,200,40,.9); }
+  .dio-pin.guide .pin-chip { background: var(--ink); color: #fff; font-size: 12px; font-weight: 800; padding: 5px 11px; top: -36px; }
   /* 写真つきメニュー（雑誌風） */
   #sheet { --mc: #A8322A; --mc2: #D9822B; --tint: #FBF0E3; --tint2: #F6E2CC; }
   #sheet.m-food { --mc: #2F6F52; --mc2: #7DAE6A; --tint: #EEF5EC; --tint2: #DCEBD8; }
@@ -492,8 +551,8 @@
       <defs>
         <!-- お店の産地の県：金色にきらめく -->
         <linearGradient id="gold" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="260" y2="260" spreadMethod="reflect">
-          <stop offset="0" stop-color="#B07F22"/><stop offset=".35" stop-color="#E9C35A"/><stop offset=".5" stop-color="#FFF3C4"/>
-          <stop offset=".65" stop-color="#E9C35A"/><stop offset="1" stop-color="#B07F22"/>
+          <stop offset="0" stop-color="#D99A12"/><stop offset=".3" stop-color="#FFC824"/><stop offset=".5" stop-color="#FFE98A"/>
+          <stop offset=".7" stop-color="#FFC824"/><stop offset="1" stop-color="#D99A12"/>
         </linearGradient>
       </defs>
       <g id="prefs"></g>
@@ -507,6 +566,10 @@
     <div id="pref-tip"></div>
     <button class="region-back" id="region-back">← 全国</button>
     <div class="map-hint" id="map-hint">県をタップして、街へ出かけよう</div>
+  </div>
+  <div class="mbar" id="mbar">
+    <button class="s" data-menu="sake"><i>酒</i><b>お酒のメニュー</b></button>
+    <button class="f" data-menu="food"><i>食</i><b>食事のメニュー</b></button>
   </div>
 </section>
 
@@ -578,6 +641,7 @@
     <div class="intro-scene" data-n="0">
       <svg class="intro-map" id="intro-map" viewBox="0 0 1640 1490"></svg>
       <div class="intro-finger" id="intro-finger">👆</div>
+      <div class="intro-mbar" id="intro-mbar"></div>
     </div>
     <!-- 2. 県の街並み → 近づいて見る -->
     <div class="intro-scene" data-n="1">
@@ -610,6 +674,18 @@
   <button class="sheet-close" id="sheet-close" aria-label="閉じる">✕</button>
   <div id="sheet-body"></div>
 </article>
+
+<!-- ===== メニュー一覧（酒・食のボタンから） ===== -->
+<div id="mpanel-bg"></div>
+<div id="mpanel" role="dialog" aria-label="メニュー一覧">
+  <div class="mp-head">
+    <div class="mp-grip"></div>
+    <div class="mp-ttl"><i id="mp-emblem">酒</i><div><h3 class="mincho" id="mp-title">お酒のメニュー</h3><small>カードを押すと、その産地へ旅します</small></div><button class="mp-x" id="mp-close" aria-label="閉じる">✕</button></div>
+    <div class="mp-tabs" id="mp-tabs"></div>
+    <div class="mp-taste" id="mp-taste"></div>
+  </div>
+  <div class="mp-grid" id="mp-grid"></div>
+</div>
 
 <script>
   // うまく表示されないときに原因が分かるよう、エラーを画面に出す
@@ -1020,7 +1096,7 @@ const REGION_ORDER = ["北海道", "東北", "関東", "中部", "近畿", "中�
 const MAP_PAL = {
   spring: ['#B4DCA0', '#BEE2AA', '#C8E7B5', '#AFD99B', '#C3E4AF', '#AAD596', '#BADFA6', '#B1DA9D'],
   summer: ['#6FB35E', '#7CBD69', '#88C475', '#73B662', '#80BF6D', '#6AAF59', '#79BA66', '#70B45F'],
-  autumn: ['#BDB86A', '#C7C077', '#CFC683', '#B5B265', '#C3BD72', '#ADAD60', '#BFBA6E', '#B8B568'],
+  autumn: ['#93A66E', '#9DAE78', '#A7B682', '#8DA068', '#9AAB75', '#879B62', '#98A971', '#91A46B'],
   winter: ['#EEF3F5', '#F5F8F9', '#E7EEF1', '#F1F5F7', '#EAF0F3', '#E3EBEE', '#F0F4F6', '#ECF1F4']
 };
 const seasonOfMonth = m => [3, 4, 5].includes(m) ? 'spring' : [6, 7, 8].includes(m) ? 'summer' : [9, 10, 11].includes(m) ? 'autumn' : 'winter';
@@ -1086,7 +1162,7 @@ const mapFx = (() => {
 })();
 
 function renderMap() {
-  const prefs = Object.entries(JAPAN_PREFECTURE_PATHS).map(([name, d]) => {
+  const prefs = Object.entries(JAPAN_PREFECTURE_PATHS).sort((a, b) => (prefTier(a[0]) === 'gold') - (prefTier(b[0]) === 'gold')).map(([name, d]) => {
     return `<path class="pref ${prefTier(name)}" d="${d}" data-pref="${name}" fill="${prefFill(name)}"></path>`;
   }).join('');
   $('prefs').innerHTML = prefs;
@@ -1131,7 +1207,7 @@ function applyStore() {
   if (STORE.accent) document.documentElement.style.setProperty('--accent', STORE.accent);
   const prefs = Object.keys(STORE.items || {}).filter(p => storeItems(p).length);
   const hasGold = Object.keys(STORE.items || {}).some(isFeatured) || (STORE.featured || []).length;
-  $('store-badge').innerHTML = prefs.length ? `<div class="map-legend">${hasGold ? '<span><i style="background:linear-gradient(135deg,#B07F22,#F3D27A)"></i>特におすすめ</span>' : ''}<span><i style="background:#D2493C"></i>メニューの産地</span></div>` : '';
+  $('store-badge').innerHTML = prefs.length ? `<div class="map-legend">${hasGold ? '<span><i style="background:linear-gradient(135deg,#D99A12,#FFE07A);box-shadow:0 0 5px rgba(255,190,20,.9)"></i>特におすすめ</span>' : ''}<span><i style="background:#D2493C"></i>おすすめ</span></div>` : '';
 }
 
 function renderMarks() {
@@ -1411,6 +1487,7 @@ async function openPrefecture(path) {
 
 async function backToMap() {
   if (busy) return;
+  guide = null;
   busy = true;
   closeSheet();
   $('curtain').classList.add('show');
@@ -1468,8 +1545,8 @@ function showTown(town) {
   const pins = pinsFor(town.pref);
   const any = pins.sake || pins.food;
   $('town-hint').style.display = '';
-  $('town-hint-text').textContent = any ? (pins.sake && pins.food ? 'お酒とフードのピンをタップ' : pins.food ? 'フードのピンをタップ' : 'お酒のピンをタップ')
-    : '＋ボタンで近づいて見てみよう';
+  $('town-hint-text').textContent = guide && guide.pref === town.pref ? `${guide.name}は「${guide.mode === 'food' ? '食' : '酒'}」のピンへ`
+    : any ? (pins.sake && pins.food ? '「酒」「食」のピンをタップ' : pins.food ? '「食」のピンをタップ' : '「酒」のピンをタップ') : '＋ボタンで近づいて見てみよう';
   const gold = isFeatured(town.pref), red = !gold && storeItems(town.pref).length > 0;
   $('gold-ribbon').hidden = !gold;
   $('gold-ribbon').textContent = '✦ 特におすすめの産地 ✦';
@@ -1947,11 +2024,14 @@ function setupDiorama(town, d) {
   const pins = pinsFor(town.pref);
   Object.assign($('dio-pin').style, { left: px + '%', top: py + '%' });
   $('dio-pin').hidden = !pins.sake;
-  $('dio-pin-chip').textContent = '';   // ピンには名前を出さない
+  // ピンには名前を出さない。カードから来たときだけ、押すピンを光らせて「ここをタップ」
+  const gd = guide && guide.pref === town.pref ? guide.mode : '';
+  $('dio-pin').classList.toggle('guide', gd === 'sake'); $('dio-pin-food').classList.toggle('guide', gd === 'food');
+  $('dio-pin-chip').textContent = gd === 'sake' ? '👆 ここをタップ' : '';
   const [foodX, foodY] = d.food || [Math.min(85, px + 25), py + 6];
   Object.assign($('dio-pin-food').style, { left: foodX + "%", top: foodY + "%" });
   $('dio-pin-food').hidden = !pins.food;
-  $('dio-food-chip').textContent = '';
+  $('dio-food-chip').textContent = gd === 'food' ? '👆 ここをタップ' : '';
   $('dio-pin-food').querySelector('b').textContent = '食';
   // 金色のきらめき
   let sp = '';
@@ -2041,8 +2121,8 @@ function setupTilt() {
     if (act === 'reset') return resetView();
     applyView();
   });
-  $('dio-pin').addEventListener('click', e => { e.stopPropagation(); openSheet(current, 'sake'); });
-  $('dio-pin-food').addEventListener('click', e => { e.stopPropagation(); openSheet(current, 'food'); });
+  $('dio-pin').addEventListener('click', e => { e.stopPropagation(); clearGuide(); openSheet(current, 'sake'); });
+  $('dio-pin-food').addEventListener('click', e => { e.stopPropagation(); clearGuide(); openSheet(current, 'food'); });
 }
 
 /* ---- ジオラマの動き：水面のゆらぎ・波頭・船の航跡 ---- */
@@ -2266,14 +2346,82 @@ function closeSheet() {
    画面の右側をタップで次へ、左側をタップで前へ
    ========================================================= */
 const INTRO_KEY = 'meisan-map-intro-seen';
-const INTRO_CAPS = [
-  '① 日本地図から行きたい県をタップして旅に出よう<br><span style="color:#D2493C">赤</span>と<span style="color:#B07F22">金色</span>の県はおすすめ',
-  '② その県の街並みが見られます<br>＋ボタンで近づいて、よ～く見てみよう',
-  '③ 春夏秋冬、朝と夜で街並みが変わります<br>日本の四季と一日を感じてね',
-  '④「酒」「食」のマークを押すと<br>お店のこだわりのお酒と素材のメニューが見られます'
-];
+/* =========================================================
+   メニュー一覧（地図の下の「お酒のメニュー」「食事のメニュー」）
+   ========================================================= */
+const SAKE_TYPES = ['ビール', '日本酒', '焼酎', 'ワイン', 'サワー・その他'];
+const TASTES = { 'すっきり': 't-a', '華やか': 't-b', 'まろやか': 't-c', 'コク': 't-d' };
+let guide = null;                       // カードから選んだメニュー（街で押すピンを光らせる）
+const mp = { mode: 'sake', type: 'すべて', taste: '' };
+function clearGuide() { guide = null; $('dio-pin').classList.remove('guide'); $('dio-pin-food').classList.remove('guide'); $('dio-pin-chip').textContent = ''; $('dio-food-chip').textContent = ''; }
+function allMenu(mode) {
+  const out = [];
+  Object.keys(STORE.items || {}).forEach(pref => storeItems(pref).forEach(it => { if ((it.kind === 'sake') === (mode === 'sake')) out.push({ it, pref }); }));
+  return out.sort((a, b) => isFeatured(b.pref) - isFeatured(a.pref));   // 特におすすめを上に
+}
+function renderPanel() {
+  const s = mp.mode === 'sake', all = allMenu(mp.mode);
+  $('mpanel').classList.toggle('food', !s);
+  $('mp-emblem').textContent = s ? '酒' : '食';
+  $('mp-title').textContent = s ? 'お酒のメニュー' : '食事のメニュー';
+  const types = SAKE_TYPES.filter(t => all.some(x => x.it.type === t));
+  $('mp-tabs').innerHTML = s && types.length ? ['すべて', ...types].map(t => `<button data-type="${t}" class="${t === mp.type ? 'on' : ''}">${t}</button>`).join('') : '';
+  const tastes = Object.keys(TASTES).filter(k => all.some(x => x.it.taste === k));
+  $('mp-taste').innerHTML = s && tastes.length ? '<small>味で探す</small>' + tastes.map(k => `<button data-taste="${k}" class="${TASTES[k]} ${k === mp.taste ? 'on' : ''}">${k}</button>`).join('') : '';
+  let list = all;
+  if (s && mp.type !== 'すべて') list = list.filter(x => x.it.type === mp.type);
+  if (s && mp.taste) list = list.filter(x => x.it.taste === mp.taste);
+  $('mp-grid').innerHTML = list.length ? list.map(({ it, pref }) => `
+    <button class="mc" data-pref="${pref}" data-name="${it.name.replace(/"/g, '&quot;')}">
+      <div class="ph">${it.image ? `<img src="${photo(it.image)}" alt="" loading="lazy" decoding="async">` : `<div class="tx ${s ? '' : 'f'}"><span>${it.name}</span></div>`}
+        ${s && TASTES[it.taste] ? `<span class="tag ${TASTES[it.taste]}">${it.taste}</span>` : ''}${isFeatured(pref) ? '<span class="gold">特におすすめ</span>' : ''}</div>
+      <div class="bd">${s && it.type ? `<div class="ty">${it.type}</div>` : ''}<div class="n">${it.name}</div><div class="pf"><span>📍${pref}</span><em>旅する ›</em></div></div>
+    </button>`).join('') : '<p class="mp-empty">この条件のメニューは、いまはありません</p>';
+}
+function openPanel(mode) {
+  if (busy) return;
+  Object.assign(mp, { mode, type: 'すべて', taste: '' });
+  renderPanel(); $('mp-grid').scrollTop = 0;
+  $('mpanel-bg').classList.add('show'); $('mpanel').classList.add('show');
+}
+function closePanel() { $('mpanel-bg').classList.remove('show'); $('mpanel').classList.remove('show'); }
+function setupPanel() {
+  const any = m => allMenu(m).length > 0;
+  $('mbar').querySelector('[data-menu="sake"]').hidden = !any('sake');
+  $('mbar').querySelector('[data-menu="food"]').hidden = !any('food');
+  $('mbar').hidden = !any('sake') && !any('food');
+  $('mbar').addEventListener('click', e => { const b = e.target.closest('[data-menu]'); if (b) openPanel(b.dataset.menu); });
+  $('mp-close').addEventListener('click', closePanel); $('mpanel-bg').addEventListener('click', closePanel);
+  $('mp-tabs').addEventListener('click', e => { const b = e.target.closest('[data-type]'); if (b) { mp.type = b.dataset.type; renderPanel(); } });
+  $('mp-taste').addEventListener('click', e => { const b = e.target.closest('[data-taste]'); if (b) { mp.taste = mp.taste === b.dataset.taste ? '' : b.dataset.taste; renderPanel(); } });
+  $('mp-grid').addEventListener('click', async e => {
+    const c = e.target.closest('.mc'); if (!c || busy) return;
+    closePanel();
+    guide = { mode: mp.mode, pref: c.dataset.pref, name: c.dataset.name };
+    const path = $('japan').querySelector(`path.pref[data-pref="${c.dataset.pref}"]`);
+    await wait(250);
+    if (path) openPrefecture(path);
+  });
+}
+
+// 遊び方の文：お店が登録したメニュー（お酒だけ・食事だけ・両方・なし）に合わせて言い方を変える
+function introCaps() {
+  const hasS = allMenu('sake').length > 0, hasF = allMenu('food').length > 0;
+  const btn = hasS && hasF ? 'メニューのボタン' : hasS ? '「お酒のメニュー」' : '「食事のメニュー」';
+  const pin = hasS && hasF ? '「酒」「食」のピン' : hasS ? '「酒」のピン' : '「食」のピン';
+  const legend = '<span style="color:#D99A12">金</span>は特におすすめ、<span style="color:#D2493C">赤</span>はおすすめ';
+  return [
+    hasS || hasF ? `① 気になる県を押すか<br>${btn}を押して旅に出よう<br>${legend}` : '① 気になる県を押して<br>旅に出よう',
+    '② トラックでその県の街並みへ<br>＋ボタンで近づいて、よ～く見てみよう',
+    '③ 春夏秋冬で街並みが変わります<br>🌙ボタンで夜の街にも',
+    hasS || hasF ? `④ 光る${pin}を押すと<br>当店のこだわりのメニューが見られます` : '④ 47都道府県、ぜんぶ旅してみよう<br>右上の〇に、旅した県の数がたまります'
+  ];
+}
+let INTRO_CAPS = [];
 let introTimer = null;
 function buildIntro() {
+  INTRO_CAPS = introCaps();
+  $('intro-mbar').innerHTML = (allMenu('sake').length ? '<span class="s"><i>酒</i>お酒のメニュー</span>' : '') + (allMenu('food').length ? '<span class="f"><i>食</i>食事のメニュー</span>' : '');
   const withImg = p => DIORAMAS[p] && DIORAMAS[p].img;
   const sample = (STORE.featured || []).find(withImg) || Object.keys(STORE.items || {}).find(p => storeItems(p).length && withImg(p)) || '宮城県';
   const paths = Object.entries(JAPAN_PREFECTURE_PATHS).map(([n, d]) =>
@@ -2359,6 +2507,7 @@ function closeIntro() {
 })();
 applyStore();
 renderMap();
+setupPanel();
 $('map-season').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setMapSeason(b.dataset.s); });
 mapFx.start();
 setMapSeason(mapSeason);
