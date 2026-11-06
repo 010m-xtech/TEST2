@@ -3292,7 +3292,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, doc, onSnapshot, runTransaction, writeBatch, getDocs, updateDoc, increment, Timestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, collection, doc, onSnapshot, runTransaction, writeBatch, getDocs, updateDoc, increment, Timestamp, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // ==============================================
     // 0. クラウド保存＆リアルタイム同期の初期化
@@ -5489,6 +5489,16 @@
     const memoriesColRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'memories');
 
     let meterState = { round: 1, count: 0, showStartAt: 0, totalShows: 0, updatedAt: 0 };
+    // ===== みんなのスマホで同じ時計を使う（フィナーレをそろえるため） =====
+    // スマホの時計は数秒ずれていることがあるので、Firestore のサーバー時刻（serverAt）との差を覚えておく
+    let clockOffset = 0, clockSynced = false, stateSnapCount = 0;
+    const sharedNow = () => Date.now() + clockOffset;
+    function noteServerTime(ts) {
+      if (!ts || typeof ts.toMillis !== 'function') return;
+      const est = ts.toMillis() - Date.now(); // ＝時計の差 −（届くまでの時間）。一番大きい値が一番正確
+      if (est < -30000 || est > 30000) return;
+      if (!clockSynced || est > clockOffset) { clockOffset = est; clockSynced = true; }
+    }
     let allMemories = [];
     let knownMemoryIds = null;      // 初回スナップショットでは通知を出さない
     let pendingFlightIds = new Set(); // メーターへ飛行中の写真
@@ -6431,7 +6441,7 @@
       if (s.count < METER_GOAL || !s.showStartAt) return;
       const key = `${s.round}_${s.showStartAt}`;
       if (key === lastPlayedShowKey) return;
-      const elapsed = Date.now() - s.showStartAt;
+      const elapsed = sharedNow() - s.showStartAt;
       // 開始時刻のすぐ前になるまでは待つ（「フィナーレへ」が押されると開始時刻が今になる）
       if (elapsed < -FINALE_DELAY_MS - 4000) return;
       if (elapsed < SHOW_DURATION) {
@@ -6452,7 +6462,7 @@
       finaleRequested = true;
       setTimeout(() => { finaleRequested = false; }, 4000);
       try { initAudio(); } catch (e) {}
-      const startAt = Date.now() + FINALE_DELAY_MS;
+      const startAt = sharedNow() + FINALE_DELAY_MS;
       if (useLocalMeter || !db) {
         handleState({ ...meterState, showStartAt: startAt });
       } else {
@@ -6461,7 +6471,7 @@
             const snap = await tx.get(stateDocRef());
             const st = snap.exists() ? snap.data() : {};
             // まだ始まっていないときだけ（ほかの席が先に押していたら、そのまま）
-            if ((st.count || 0) >= METER_GOAL && (st.showStartAt || 0) > startAt) tx.update(stateDocRef(), { showStartAt: startAt });
+            if ((st.count || 0) >= METER_GOAL && (st.showStartAt || 0) > startAt) tx.update(stateDocRef(), { showStartAt: startAt, serverAt: serverTimestamp() });
           });
         } catch (e) { console.warn('Finale request failed:', e); finaleRequested = false; }
       }
@@ -6506,6 +6516,8 @@
       if (unsubMemories) unsubMemories();
       unsubState = onSnapshot(stateDocRef(), (snap) => {
         cloudStateReceived = true;
+        // 開いた直後の1回目は古い書き込みのことがあるので、時計合わせには使わない
+        if (stateSnapCount++ > 0 && snap.exists() && !snap.metadata.hasPendingWrites && !snap.metadata.fromCache) noteServerTime(snap.data().serverAt);
         handleState(snap.exists() ? snap.data() : null);
       }, (error) => {
         console.warn('Meter state snapshot error:', error);
@@ -6607,6 +6619,7 @@
           expireAt: Timestamp.fromMillis(now + MEMORY_TTL_MS)
         });
         tx.set(stateDocRef(), {
+          serverAt: serverTimestamp(),
           round,
           count: newCount,
           totalShows,
@@ -7098,6 +7111,24 @@
     const REVEAL_POP_AT = 2700;      // 王冠が抜ける瞬間
     const LAUNCH_AT = 4200;          // 「スワイプで打ち上げ」が始まる時刻
     const LAUNCH_WAIT_MAX = 15000;   // 誰も乾杯しなければ自動で打ち上げ
+    const LAUNCH_SYNC_MS = 700;      // だれかが乾杯してから、みんなのスマホで打ち上がるまで（届くのを待つ）
+    const SHOW_PREP_MS = 2200;       // 「フィナーレへ」から夜の場面までの準備時間（写真の読み込み）
+    let showKeyStart = 0;            // いま見ているショーの開始時刻（打ち上げの合図がこのショーのものか確かめる）
+    // だれかが乾杯したら、打ち上げの時刻を全員に送る（先に押した人の時刻が使われる）
+    async function requestLaunch() {
+      const at = sharedNow() + LAUNCH_SYNC_MS;
+      launch.localAt = at; // 送れなくても、自分の画面はこの時刻に打ち上げ
+      if (useLocalMeter || !db || !showKeyStart) return;
+      try {
+        await runTransaction(db, async (tx) => {
+          const snap = await tx.get(stateDocRef());
+          const st = snap.exists() ? snap.data() : {};
+          if (st.showStartAt !== showKeyStart) return;
+          if (st.launchFor === showKeyStart && st.launchAt && st.launchAt <= at) return;
+          tx.update(stateDocRef(), { launchAt: at, launchFor: showKeyStart, serverAt: serverTimestamp() });
+        });
+      } catch (e) { console.warn('Launch sync failed:', e); }
+    }
     const LAUNCH_FLIGHT = 950;       // コルクが夜空へ昇る時間
     const LAUNCH_NECK_Y = 0.6;       // 打ち上げ待ちのシャンパンの口の高さ（画面の高さに対する割合）
     const MAIN_LEN = 17800;          // 本編の長さ（最後のMVPを長めに見せる）
@@ -8455,7 +8486,8 @@
     function runShow(items, info) {
       return new Promise((resolve) => {
         const { ev: events, scheduleMain } = buildShowTimeline(items, info);
-        const t0 = performance.now();
+        const t0 = performance.now() - (info.lateMs || 0);
+        showKeyStart = info.showKey || 0;
         let finished = false;
         let lastNow = t0, avgDt = 16;
         let showEndAt = Infinity;
@@ -8472,7 +8504,12 @@
 
           // ===== スワイプで打ち上げ =====
           if (launch.state === 'idle' && showNow >= LAUNCH_AT) startLaunchWait();
-          if (launch.state === 'wait' && (launch.requested || showNow >= launch.waitStart + LAUNCH_WAIT_MAX)) beginLaunch();
+          if (launch.state === 'wait') {
+            if (launch.requested && !launch.sent) { launch.sent = true; requestLaunch(); }
+            const s = meterState;
+            const sharedAt = (s.launchFor && s.launchFor === showKeyStart && s.launchAt) ? s.launchAt : Infinity;
+            if (sharedNow() >= Math.min(sharedAt, launch.localAt || Infinity) || showNow >= launch.waitStart + LAUNCH_WAIT_MAX) beginLaunch();
+          }
           if (launch.state === 'flying' && showNow >= launch.flyStart + LAUNCH_FLIGHT) {
             launch.state = 'done';
             launchBurst(items);
@@ -8630,12 +8667,18 @@
       tctx.clearRect(0, 0, SW, SH);
       sctx.clearRect(0, 0, SW, SH);
       mfShowVisible = true;
+      // 写真の読み込みにかかる時間はスマホごとに違うので、開始時刻＋SHOW_PREP_MS にそろえて始める
+      const prepAt = (meterState.showStartAt || sharedNow()) + SHOW_PREP_MS;
+      const waitPrep = prepAt - sharedNow();
+      let lateMs = 0;
+      if (waitPrep > 0) await sleep(waitPrep);
+      else lateMs = Math.min(-waitPrep, 8000); // 遅れた分は、ショーを先に進めて追いつく
       await mfNightIntro();
       showOverlay.classList.remove('hidden');
       requestAnimationFrame(() => showOverlay.classList.remove('opacity-0'));
       setTimeout(() => document.getElementById('mfNight').classList.remove('show', 'rise'), 900);
 
-      await runShow(items, { showNo, mvp });
+      await runShow(items, { showNo, mvp, lateMs, showKey: meterState.showStartAt });
 
       cheerWrap.classList.add('hidden');
       clearShowTrucks();
