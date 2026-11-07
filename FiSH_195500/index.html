@@ -2503,7 +2503,7 @@ function onSurveyChange(){
 
 // ---- 魚がしゃべる(吹き出し)。アンケート画面と、最初の画面で共用 ----
 const SURVEY_LINES = [
-  { text: 'ご来店、\nありがとうございます！\nお魚の豆知識と日本酒を\nご案内します！', wave: '日本酒', hold: 0.8, sub: 'タップで次へ' },
+  { text: 'ご来店、\nありがとうございます！\nお魚の豆知識と日本酒を\nご案内します！', wave: '日本酒', interval: 1.8, sub: 'タップで次へ' },
   { text: 'その前に、最初に\nお二つだけ、\n聞かせてくださいね。', wave: 'お二つだけ', sub: 'タップするだけです' }
 ];
 const TALK_T0 = 0.4, TALK_TS = 0.025;                                   // 1文字目が出るまで / 1文字ごとの間隔(秒)。CSSの --t0, --ts と同じ値
@@ -2582,7 +2582,7 @@ function createFishTalk(root){
     say(ln.text, { wave: ln.wave, withSub: !!ln.sub, subText: ln.sub });
     if (seq.i === seq.lines.length - 1 && seq.onLast) seq.onLast(ln);
     if (seq.i < seq.lines.length - 1) {
-      const ms = (talkSettle(ln.text) + (ln.hold == null ? 1.9 : ln.hold)) * 1000;
+      const ms = ln.interval != null ? ln.interval * 1000 : (talkSettle(ln.text) + (ln.hold == null ? 1.9 : ln.hold)) * 1000;   // interval: 次の吹き出しに切り替わるまでの秒数(指定時)
       timers.push(setTimeout(() => { if (seq) { seq.i++; speakCurrent(); } }, ms));
     }
   }
