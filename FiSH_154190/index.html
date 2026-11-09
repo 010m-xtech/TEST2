@@ -1783,7 +1783,9 @@ if (!fishDeviceId) {
 
 function sendLog(action, extra) {
   if (!GAS_ENABLED) return;
-  const payload = Object.assign({ shop: 'minozushi', deviceId: fishDeviceId, action: action }, extra || {});
+  let ua = '', scr = '';
+  try { ua = (navigator.userAgent || '').slice(0, 300); scr = screen.width + 'x' + screen.height + ' / ' + window.innerWidth + 'x' + window.innerHeight; } catch (e) {}
+  const payload = Object.assign({ shop: 'minozushi', deviceId: fishDeviceId, action: action, ua: ua, screen: scr }, extra || {});
   fetch(GAS_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain' },
@@ -1813,7 +1815,7 @@ const fishList = [
       ],
       explanation: "傷みやすく、**「ねこまたぎ」**と呼ばれるほど人気がなく、捨てられることも多かったそうです。"
     },
-    trivia: "**泳ぎ続けないと息ができない**ので、寝ている間も泳いでいます。",
+    trivia: "「**まぐろ**」は、目が大きくて**黒い**ことから\n「目黒」と呼ばれた、という説があります。",
     parts: {
       img: __IMG.maguro,
       title: "部位をタップして、味を見る",
@@ -1844,7 +1846,7 @@ const fishList = [
       front: "アマエビは、大きくなると<br>性別が変わるって本当？",
       back: "本当です！<br>生まれた時はすべてオスで、<br>数年（4〜6歳ごろ）たつと<br>メスに性転換します。"
     },
-    trivia: "少し時間がたつと、**アミノ酸が増え**、\nより甘くなります。",
+    trivia: "「**えび**」は、もとは**ブドウ**のこと。\n**ブドウ色**に似た色から呼ばれるように\nなった、といわれています。",
     ownerNote: "",
   },
   {
@@ -1906,7 +1908,7 @@ const fishList = [
       front: "「サバを読む」は、なぜサバなの？",
       back: "傷みやすいサバを急いで数えて売ったため、<br><b class='em'>数をごまかしたから</b>と言われています。"
     },
-    trivia: "**「サバの生き腐れ」**と言われるほど\n傷みやすく、酢で締めた\n**〆さば**が定番になりました。",
+    trivia: "「**さば**」の名前は、**小さな歯**が並ぶ姿から、\nという説があります。（諸説あり）",
     ownerNote: "",
   },
   {
@@ -1927,7 +1929,7 @@ const fishList = [
       ],
       explanation: "「**めでたい**」と語呂が合い、\n**赤い色**も祝いの色。\n**姿も美しい**ので、祝いの席の定番に。"
     },
-    trivia: "**「腐っても鯛」**は、\n立派なものは傷んでも\n値打ちがある、という意味。",
+    trivia: "「**たい**」は、平たい体から**「平魚」**と\n呼ばれたのが元、という説があります。",
     ownerNote: "",
   },
   {
@@ -1966,7 +1968,7 @@ const fishList = [
       ],
       explanation: "もとは履物の**「下足」**。そこから**足**を指して「ゲソ」と呼ぶようになったと言われます。"
     },
-    trivia: "イカの足は**10本**。\nうち**2本だけ**長く「触腕」といい、\n獲物を素早くつかまえます。",
+    trivia: "漢字の「**烏賊**」は、**カラスを襲う賊**という意味。\n死んだふりでカラスを引きずり込む、\nという中国の言い伝えから。",
     ownerNote: "",
   },
   {
