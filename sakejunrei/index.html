@@ -139,7 +139,7 @@
     /* 瓶（ベース写真＋ラベル）。写真と同じ 3:10 の枠に、ラベルを％で重ねる */
     .bottle { position: relative; display: flex; justify-content: center; }
     .bottle-frame { position: relative; height: 100%; aspect-ratio: 3 / 10; container-type: size; }
-    .bottle-base { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+    .bottle-base { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; filter: url(#knockout-white); }   /* 白い背景を透明に（揺れても白い四角が出ない） */
     .sake-label, .wine-label {
       position: absolute; overflow: hidden; border-radius: 1px;
       box-shadow: inset 0 0 0 1px rgba(0,0,0,.18), 0 0 0 0.6px rgba(0,0,0,.25);
@@ -165,7 +165,7 @@
     .wine-label-origin { font-size: 6.5cqw; font-weight: 600; letter-spacing: .1em; opacity: .7; }
 
     /* 写真は白い背景を紙になじませ、瓶だけが浮かぶように */
-    .bottle-photo { mix-blend-mode: multiply; object-fit: cover; }
+    .bottle-photo { object-fit: cover; filter: url(#knockout-white); }   /* 白い背景を透明に */
     .sold-out .bottle-photo { filter: grayscale(1); opacity: .45 !important; }
     .sold-out .bottle, .sold-out .dim { filter: grayscale(1); opacity: .45; }
     .stamp {
@@ -247,14 +247,6 @@
     .rd-body { font-size: 15px; font-weight: 500; line-height: 1.9; letter-spacing: .03em; color: #3d362f; }
     .rd-chip { font-size: 14px; font-weight: 600; padding: 4px 12px; border: 1px solid #cdbd9f; border-radius: 9999px; background: rgba(255,255,255,.5); }
     .trivia-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border: 1px dashed var(--shu); border-radius: 2px; color: var(--shu); font-size: 13.5px; font-weight: 700; letter-spacing: .1em; }
-    .btn-enji {
-      width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px; border-radius: 3px;
-      font-size: 15px; font-weight: 700; letter-spacing: .1em; color: #fff6ee;
-      background: linear-gradient(to bottom, color-mix(in srgb, var(--shu) 82%, #fff), var(--shu) 55%, color-mix(in srgb, var(--shu) 80%, #000));
-      border-bottom: 4px solid color-mix(in srgb, var(--shu) 65%, #000); box-shadow: 0 6px 20px color-mix(in srgb, var(--shu) 40%, transparent);
-      transition: transform .1s, border-bottom-width .1s;
-    }
-    .btn-enji:active { transform: translateY(3px); border-bottom-width: 1px; }
     .btn-line { flex: 1; padding: 12px; border-radius: 3px; border: 1px solid var(--shu); color: var(--shu); font-size: 14px; font-weight: 700; letter-spacing: .1em; }
     .match-box { border: 1.5px solid var(--shu); border-radius: 4px; background: rgba(255,255,255,.45); }
     /* 商品ページの中身は、上から順にふわっと出る */
@@ -372,20 +364,68 @@
     .mcard .kw-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
     .mcard .kw-row span { font-size: 11.5px; font-weight: 700; color: var(--c); background: color-mix(in srgb, var(--c) 10%, transparent); padding: 1px 7px; border-radius: 2px; }
 
-    /* 商品ページは、押したカードの位置から広がる */
-    #product-view { background: #f1eadc; }
+    /* 商品ページ（瓶がカードから飛んでくる） */
+    #product-view { background: rgba(241,234,220,1); }
+
+
+    /* ===== 1. 注ぐ演出 ===== */
+    .pour-stage { position: relative; width: 230px; height: 270px; flex-shrink: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .pour-bottle { position: absolute; left: 53px; top: 19px; transform-origin: 50% 50%; z-index: 2; }
+    .pour-cup { position: absolute; left: 154px; top: 214px; width: 64px; height: 44px; z-index: 1; filter: drop-shadow(0 4px 4px rgba(60,40,20,.18)); }
+    .pour-cup.is-glass { left: 160px; top: 168px; width: 54px; height: 81px; }
+    .pour-liquid { transform-box: fill-box; transform-origin: 50% 100%; transform: scaleY(0); }
+    .pour-stream {
+      position: absolute; left: 184px; top: 168px; width: 3px; height: 54px; border-radius: 3px; z-index: 1;
+      background: linear-gradient(to bottom, transparent, var(--liquid) 20%, var(--liquid)); transform-origin: 50% 0; transform: scaleY(0); opacity: 0;
+    }
+    .pour-cup.is-glass ~ .pour-stream, .pour-stage:has(.is-glass) .pour-stream { top: 150px; height: 44px; left: 186px; }
+
+    /* ===== 5. 瓶がゆらゆら・光が走る ===== */
+    @keyframes sway { 0%, 100% { transform: rotate(-1.1deg); } 50% { transform: rotate(1.1deg); } }
+    .mcard-shelf .sway { transform-origin: 50% 100%; animation: sway 4.6s ease-in-out infinite; animation-delay: calc(var(--i, 0) * -0.47s); }
+    @keyframes shine { 0%, 82% { transform: translateX(-160%) skewX(-18deg); } 100% { transform: translateX(260%) skewX(-18deg); } }
+    .mcard-shelf .bottle-frame { overflow: hidden; }
+    .mcard-shelf .bottle-frame::after {
+      content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 45%; pointer-events: none;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent); mix-blend-mode: soft-light;
+      animation: shine 7s ease-in-out infinite; animation-delay: calc(var(--i, 0) * -0.7s);
+    }
+
+    /* ===== 6. 季節のヘッダー ===== */
+    .season-label {
+      font-family: "Shippori Mincho", serif; font-size: 12px; font-weight: 800; letter-spacing: .2em; color: #fbf4ea;
+      border: 1px solid rgba(242,217,168,.6); border-radius: 3px; padding: 2px 8px 2px 10px; background: rgba(0,0,0,.08);
+    }
+    @keyframes fall {
+      0% { transform: translate(0, -30px) rotate(0); opacity: 0; }
+      10% { opacity: 1; }
+      50% { transform: translate(var(--sx), 120px) rotate(160deg); }
+      90% { opacity: 1; }
+      100% { transform: translate(calc(var(--sx) * -0.5), 260px) rotate(320deg); opacity: 0; }
+    }
+    .fx-fall { position: absolute; top: 0; display: block; animation: fall linear infinite; }
+    .fx-fall svg { display: block; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .mcard-shelf .sway, .mcard-shelf .bottle-frame::after, .fx-fall { animation: none !important; }
+      .mcard-shelf .bottle-frame::after { display: none; }
+    }
   </style>
 </head>
 <body class="font-sans text-ink antialiased">
   <div class="max-w-md mx-auto min-h-screen relative pb-28">
 
     <!-- ヘッダー -->
-    <header class="hero px-4 pt-6 pb-4">
-      <span class="eyebrow">TODAY'S MENU</span>
-      <h1 id="menu-title" class="font-mincho font-extrabold text-[28px] leading-tight mt-1"></h1>
-      <p id="menu-count" class="text-xs text-white/70 mt-1"></p>
+    <header class="hero relative overflow-hidden px-4 pt-6 pb-4">
+      <div id="season-fx" class="absolute inset-0 pointer-events-none" aria-hidden="true"></div>
+      <div class="relative flex items-center justify-between">
+        <span class="eyebrow">TODAY'S MENU</span>
+        <span id="season-label" class="season-label"></span>
+      </div>
+      <h1 id="menu-title" class="relative font-mincho font-extrabold text-[28px] leading-tight mt-1"></h1>
+      <p id="menu-count" class="relative text-xs text-white/70 mt-1"></p>
 
-      <div role="tablist" class="mt-4 flex gap-1 p-1 rounded-full bg-white/10 border border-white/15">
+      <div role="tablist" class="relative mt-4 flex gap-1 p-1 rounded-full bg-white/10 border border-white/15">
         <button role="tab" class="tab" data-tab="menu" onclick="setTab('menu')"><i class="fa-solid fa-book-open mr-1.5 text-xs"></i>お品書き</button>
         <button role="tab" class="tab" data-tab="shindan" onclick="setTab('shindan')"><i class="fa-solid fa-wand-magic-sparkles mr-1.5 text-xs"></i>好み診断</button>
       </div>
@@ -495,17 +535,15 @@
   <!-- お知らせ（相性をリセットしたときなど） -->
   <div id="toast" class="fixed left-1/2 bottom-8 -translate-x-1/2 translate-y-4 z-[80] px-5 py-3 rounded-full bg-ink text-white text-sm font-bold shadow-xl opacity-0 pointer-events-none whitespace-nowrap"></div>
 
-  <!-- 店員さんに見せる画面 -->
-  <div id="order-screen" class="fixed inset-0 z-[70] hidden bg-[#FFFEFB] overflow-y-auto">
-    <div class="max-w-md mx-auto px-6 py-8">
-      <div class="flex items-center justify-between">
-        <span class="eyebrow">FOR STAFF</span>
-        <button onclick="closeOrderScreen()" class="h-9 px-4 rounded-full bg-ink text-white text-xs font-bold">閉じる</button>
-      </div>
-      <p class="font-hand text-lg mt-4">こちらをお願いします</p>
-      <ol id="order-list" class="mt-4 space-y-4"></ol>
-    </div>
-  </div>
+  <!-- 飛んでいる瓶の写真の白い背景を透明にするフィルター（白に近いほど透ける） -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <filter id="knockout-white" color-interpolation-filters="sRGB">
+      <!-- 明るさから「白さ」を出し、白いところほど透明に（色はそのまま） -->
+      <feColorMatrix in="SourceGraphic" type="matrix" result="alpha"
+        values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -4 -4 -4 0 11.6" />
+      <feComposite in="SourceGraphic" in2="alpha" operator="in" />
+    </filter>
+  </svg>
 
   <script src="taste-chart.js"></script>
   <script src="taste-diagnosis.js"></script>
@@ -602,7 +640,7 @@
         <div class="relative ${sizeClass}">
           <div class="absolute inset-0">${bottleIllustration(d, "w-full h-full")}</div>
           <img src="${esc(d.image)}" alt="${esc(d.name)}" loading="lazy" class="bottle-photo absolute inset-0 w-full h-full opacity-0 transition-opacity duration-300" style="object-position:${esc(d.imagePosition || "center")}"
-               onload="this.style.opacity=1; this.previousElementSibling.remove()" onerror="this.remove()">
+               onload="this.style.opacity=1; if (this.previousElementSibling) this.previousElementSibling.remove()" onerror="this.remove()">
         </div>`;
     }
 
@@ -692,7 +730,30 @@
           <i class="fa-solid ${t.icon} text-base"></i>${esc(c)}<span class="cat-count">${available().filter(d => d.category === c).length}</span>
         </button>`; }).join("");
     }
-    function setCategory(c) { state.category = c; state.filters = {}; renderMenu(); }
+    let flipping = false;
+    function setCategory(c) {
+      if (c === state.category || flipping) return;
+      const apply = () => { state.category = c; state.filters = {}; renderMenu(); };
+      const inView = el => { const r = el.getBoundingClientRect(); return r.bottom > 0 && r.top < window.innerHeight; };
+      const oldCards = [...document.querySelectorAll("#special-list .menu-card, #board-grid .menu-card")].filter(inView);
+      if (reduceMotion() || !oldCards.length) { apply(); flipIn(); return; }
+      flipping = true;
+      // いまのカードが順番に裏返って消える
+      const outs = oldCards.slice(0, 10).map((el, i) => el.animate([
+        { transform: "perspective(800px) rotateY(0)", opacity: 1 },
+        { transform: "perspective(800px) rotateY(90deg)", opacity: .6 }
+      ], { duration: 200, delay: i * 45, easing: "ease-in", fill: "forwards" }));
+      Promise.all(outs.map(a => a.finished)).then(() => { apply(); flipIn(); flipping = false; });
+    }
+    // 新しいカードが順番にめくれて出てくる
+    function flipIn() {
+      if (reduceMotion()) return;
+      [...document.querySelectorAll("#special-list .menu-card, #board-grid .menu-card")].slice(0, 12).forEach((el, i) => el.animate([
+        { transform: "perspective(800px) rotateY(-90deg)", opacity: .6 },
+        { transform: "perspective(800px) rotateY(8deg)", opacity: 1, offset: .75 },
+        { transform: "perspective(800px) rotateY(0)", opacity: 1 }
+      ], { duration: 340, delay: i * 55, easing: "ease-out", fill: "backwards" }));
+    }
 
     function renderTasteFilters() {
       document.getElementById("taste-filters").innerHTML = filtersFor(state.category).map(f => `
@@ -778,7 +839,7 @@
             <span class="mcard-limited">限定</span>
             <div class="mcard-shelf">
               <span class="mcard-type">${esc(cardTypeWord(d))}</span>
-              ${bottleSvg(d, "w-[54px] h-[180px] relative")}
+              <div data-hero-src class="sway" style="--i:${(d.id.length * 7) % 10}">${bottleSvg(d, "w-[54px] h-[180px] relative")}</div>
             </div>
             <div class="mcard-body dim">
               <p class="mcard-kana">${esc([d.prefecture, d.grade].filter(Boolean).join("・"))}</p>
@@ -803,7 +864,7 @@
               ${d.prefecture ? `<span class="mcard-pref">${esc(d.prefecture)}</span>` : ""}
               <span class="mcard-type">${esc(cardTypeWord(d))}</span>
               ${state.sortByMatch ? `<span class="mcard-rank">${i + 1}位</span>` : ""}
-              ${bottleSvg(d, "w-[52px] h-[172px] relative")}
+              <div data-hero-src class="sway" style="--i:${i % 10}">${bottleSvg(d, "w-[52px] h-[172px] relative")}</div>
             </div>
             <div class="mcard-body dim">
               ${sameAsName(d) ? "" : `<p class="mcard-kana">${esc(displayKana(d))}</p>`}
@@ -1113,9 +1174,13 @@
 
           <!-- 瓶（手で切り抜いたような形）＋ はんこ -->
           <div class="flex items-center justify-center gap-5 mt-5 pv-in" style="--d:${n++}">
-            <div class="photo-frame w-[176px] h-[250px]">
-              <div class="glow w-24 h-48 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" style="background:${c}; opacity:.35"></div>
-              ${bottleSvg(d, "w-[70px] h-[232px] relative")}
+            <div class="pour-stage" onclick="pour()" role="button" aria-label="もう一杯注ぐ" style="--liquid:${liquidColor(d)}">
+              <div class="photo-frame absolute left-0 top-[10px] w-[176px] h-[250px]">
+                <div class="glow w-24 h-48 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" style="background:${c}; opacity:.35"></div>
+              </div>
+              <div data-hero-dst class="pour-bottle">${bottleSvg(d, "w-[70px] h-[232px] relative")}</div>
+              <span class="pour-stream"></span>
+              ${cupSvg(d)}
             </div>
             <div class="stamp-col">
               <span class="hanko hanko-stamp">${esc(hanko)}</span>
@@ -1195,13 +1260,6 @@
             </div>
           </section>` : ""}
 
-          <!-- スタッフに見せる -->
-          ${d.soldOut ? "" : `
-          <div class="mt-8 pv-in" style="--d:${n++}">
-            <button class="btn-enji" onclick="openStaffView('${d.id}')"><i class="fa-solid fa-bell-concierge"></i>スタッフに見せる</button>
-            <p class="text-center text-xs text-[#6b6056] mt-2">タップすると、この1杯が大きく表示されます</p>
-          </div>`}
-
           <!-- これが好きなら -->
           ${sims.length ? `
           <section class="mt-8 pv-in" style="--d:${n++}">
@@ -1210,7 +1268,7 @@
             <div class="grid grid-cols-3 gap-2">
               ${sims.map(o => `
                 <button class="menu-card board-cell p-2 flex flex-col items-center text-center" onclick="openProduct('${o.id}', this)">
-                  <div class="flex items-end justify-center gap-1">${bottleSvg(o, "w-7 h-20")}${radar(o, 40)}</div>
+                  <div class="flex items-end justify-center gap-1"><div data-hero-src>${bottleSvg(o, "w-7 h-20")}</div>${radar(o, 40)}</div>
                   <span class="block font-mincho font-extrabold text-[13px] mt-1 leading-tight">${esc(o.name)}</span>
                   <span class="block text-[10px] text-muted">${esc([o.category, o.prefecture].filter(Boolean).join("・"))}</span>
                 </button>`).join("")}
@@ -1232,6 +1290,77 @@
       setTimeout(() => body.querySelectorAll(".meter-dot").forEach(el => el.style.left = el.dataset.left), 750);
     }
 
+    // ---- 注ぐ演出 ----
+    // お酒の色（日本酒は山吹がかった透明、にごりは白、ワインは赤・白・ロゼ）
+    function liquidColor(d) {
+      if (d.category === "ワイン") return { red: "rgba(122,23,48,.92)", white: "rgba(232,212,130,.85)", rose: "rgba(229,143,160,.88)" }[d.color] || "rgba(122,23,48,.92)";
+      if ((d.tags || []).includes("にごり")) return "rgba(250,248,240,.95)";
+      return d.color === "brown" ? "rgba(228,190,110,.85)" : "rgba(236,214,140,.75)";
+    }
+    // 蛇の目のお猪口（日本酒）／ワイングラス（ワイン）。中のお酒は .pour-liquid
+    function cupSvg(d) {
+      if (d.category === "ワイン") return `
+        <svg class="pour-cup is-glass" viewBox="0 0 60 90" aria-hidden="true">
+          <defs><clipPath id="glass-bowl"><path d="M8 4 h44 c2 24 -6 40 -22 42 c-16 -2 -24 -18 -22 -42 z"/></clipPath></defs>
+          <g clip-path="url(#glass-bowl)"><rect class="pour-liquid" x="0" y="4" width="60" height="44" style="fill:var(--liquid)"/></g>
+          <path d="M8 4 h44 c2 24 -6 40 -22 42 c-16 -2 -24 -18 -22 -42 z" fill="rgba(255,255,255,.18)" stroke="#b9ad98" stroke-width="1.4"/>
+          <path d="M30 46 v32" stroke="#b9ad98" stroke-width="2"/>
+          <ellipse cx="30" cy="82" rx="16" ry="4" fill="rgba(255,255,255,.5)" stroke="#b9ad98" stroke-width="1.4"/>
+          <path d="M14 10 c0 14 3 24 8 30" stroke="#fff" stroke-opacity=".7" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </svg>`;
+      return `
+        <svg class="pour-cup" viewBox="0 0 64 44" aria-hidden="true">
+          <defs><clipPath id="choko-in"><ellipse cx="32" cy="12" rx="26" ry="8"/><path d="M6 12 q2 22 26 24 q24 -2 26 -24 z"/></clipPath></defs>
+          <path d="M4 12 q2 26 28 28 q26 -2 28 -28 z" fill="#f6f1e6" stroke="#cfc3ad" stroke-width="1.2"/>
+          <g clip-path="url(#choko-in)">
+            <rect x="0" y="0" width="64" height="44" fill="#fffdf8"/>
+            <ellipse cx="32" cy="22" rx="11" ry="4.5" fill="none" stroke="#2f4f8f" stroke-width="3"/>
+            <rect class="pour-liquid" x="0" y="4" width="64" height="40" style="fill:var(--liquid)"/>
+          </g>
+          <ellipse cx="32" cy="12" rx="28" ry="9" fill="none" stroke="#cfc3ad" stroke-width="1.4"/>
+        </svg>`;
+    }
+    // 瓶が持ち上がって傾き、お猪口に注いで、もとに戻る
+    function pour() {
+      const stage = document.querySelector("#product-body .pour-stage");
+      if (!stage || stage.classList.contains("is-pouring")) return;
+      const bottle = stage.querySelector(".pour-bottle");
+      const stream = stage.querySelector(".pour-stream");
+      const liquid = stage.querySelector(".pour-liquid");
+      const glass = stage.querySelector(".pour-cup").classList.contains("is-glass");
+      if (reduceMotion()) { liquid.style.transform = "scaleY(1)"; return; }
+      stage.classList.add("is-pouring");
+      const T = 2100;
+      bottle.animate([
+        { transform: "none", easing: "cubic-bezier(.45,.05,.3,1)" },
+        { transform: "translate(6px,-34px) rotate(-6deg)", offset: .14, easing: "cubic-bezier(.45,.05,.3,1)" },
+        { transform: "translate(13px,-4px) rotate(124deg) scale(.82)", offset: .34, easing: "ease-in-out" },
+        { transform: "translate(14px,-2px) rotate(128deg) scale(.82)", offset: .7, easing: "cubic-bezier(.45,.05,.3,1)" },
+        { transform: "translate(6px,-30px) rotate(-4deg)", offset: .86, easing: "cubic-bezier(.45,.05,.3,1)" },
+        { transform: "none" }
+      ], { duration: T });
+      stream.animate([
+        { transform: "scaleY(0)", opacity: 0 },
+        { transform: "scaleY(0)", opacity: 1, offset: .33 },
+        { transform: "scaleY(1)", opacity: 1, offset: .4 },
+        { transform: "scaleY(1)", opacity: 1, offset: .68 },
+        { transform: "scaleY(1) translateY(100%)", opacity: 0, offset: .76 },
+        { transform: "scaleY(0)", opacity: 0 }
+      ], { duration: T });
+      const from = getComputedStyle(liquid).transform === "none" ? 0 : 1;
+      liquid.animate([
+        { transform: `scaleY(${from ? 0.15 : 0})` },
+        { transform: `scaleY(${from ? 0.15 : 0})`, offset: .38 },
+        { transform: "scaleY(1)", offset: .72 },
+        { transform: "scaleY(1)" }
+      ], { duration: T, fill: "forwards" }).onfinish = function () {
+        liquid.style.transform = "scaleY(1)"; this.cancel();
+        stage.classList.remove("is-pouring");
+        // 注ぎ終わりに、表面がきらっと
+        stage.querySelector(".pour-cup").animate([{ filter: "brightness(1)" }, { filter: "brightness(1.15)" }, { filter: "brightness(1)" }], { duration: 500 });
+      };
+    }
+
     function toggleTrivia(btn) {
       const open = btn.getAttribute("aria-expanded") !== "true";
       btn.setAttribute("aria-expanded", open);
@@ -1241,52 +1370,75 @@
       box.classList.toggle("opacity-0", !open); box.classList.toggle("opacity-100", open);
     }
 
-    // ---- カードの演出：押したカードが少し沈み、そのカードの位置から商品ページが広がる（閉じると元のカードへ戻る） ----
+    // ---- カードの演出：瓶が主役 ----
+    //   押すと、カードの瓶だけが浮き上がり、弧を描いて商品ページの瓶の位置へ。まわりの中身はあとから出てくる
+    //   閉じると、瓶が一覧のカードへ戻る
     const reduceMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let productOpen = false;
     let cardAnimating = false;
     let openedCardId = null;
-    const EASE_OUT = "cubic-bezier(.22,.9,.24,1)";
 
-    // 画面の中でのカードの位置を、ページの切り抜き（clip-path）に変換
-    function clipFromRect(r) {
-      const W = window.innerWidth, H = window.innerHeight;
-      return `inset(${Math.max(0, r.top)}px ${Math.max(0, W - r.right)}px ${Math.max(0, H - r.bottom)}px ${Math.max(0, r.left)}px round 8px)`;
+    // 瓶の分身を作って、from の位置から to の位置へ飛ばす
+    function flyBottle(fromEl, toRect, opts = {}, fromRect = null) {
+      const r = fromRect || fromEl.getBoundingClientRect();
+      const ghost = fromEl.cloneNode(true);
+      ghost.removeAttribute("data-hero-src"); ghost.removeAttribute("data-hero-dst");
+      Object.assign(ghost.style, { position: "fixed", left: r.left + "px", top: r.top + "px", width: r.width + "px", height: r.height + "px",
+        margin: "0", zIndex: "75", pointerEvents: "none", transformOrigin: "0 0", visibility: "visible",
+        mixBlendMode: "multiply" });   // 瓶の写真の白い背景を、下の紙になじませる
+      ghost.querySelectorAll("img").forEach(img => { img.style.mixBlendMode = "normal"; img.style.filter = "url(#knockout-white)"; });
+      document.body.appendChild(ghost);
+      const sx = toRect.width / r.width, sy = toRect.height / r.height;
+      const dx = toRect.left - r.left, dy = toRect.top - r.top;
+      const lift = opts.lift ?? -60;   // 弧のふくらみ（上へ）
+      const anim = ghost.animate([
+        { transform: "translate(0,0) scale(1,1) rotate(0)" },
+        { transform: `translate(${dx * 0.45}px, ${dy * 0.45 + lift}px) scale(${1 + (sx - 1) * 0.5}, ${1 + (sy - 1) * 0.5}) rotate(${opts.tilt ?? -6}deg)`, offset: .45 },
+        { transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy}) rotate(0)` }
+      ], { duration: opts.duration || 680, easing: "cubic-bezier(.45,.05,.25,1)", fill: "forwards" });
+      return { ghost, anim };
     }
-    const FULL_CLIP = "inset(0px 0px 0px 0px round 0px)";
 
     function openProduct(id, src) {
       const d = byId[id];
       if (!d || cardAnimating) return;
       const view = document.getElementById("product-view");
       const paper = document.getElementById("product-body");
-      const rect = src ? src.getBoundingClientRect() : null;
+      const srcBottle = src && src.querySelector("[data-hero-src]");
+      // 商品ページの中から次のお酒を開くときは、ページを描き直す前に瓶の位置と姿を控えておく
+      const fromInside = productOpen;
+      const fromRect = srcBottle ? srcBottle.getBoundingClientRect() : null;
+      const fromClone = srcBottle ? srcBottle.cloneNode(true) : null;
 
-      const show = () => {
-        renderProduct(d);
-        view.classList.remove("hidden");
-        view.scrollTop = 0;
-        document.body.style.overflow = "hidden";
-        productOpen = true;
-        openedCardId = src && src.dataset.card ? id : null;
-        if (reduceMotion()) return;
-        if (rect && rect.width) {
-          cardAnimating = true;
-          const a = view.animate([{ clipPath: clipFromRect(rect) }, { clipPath: FULL_CLIP }], { duration: 520, easing: EASE_OUT });
-          paper.animate([
-            { transform: `translateY(${Math.round(rect.top - 40)}px) scale(.94)`, opacity: .5 },
-            { transform: "none", opacity: 1 }
-          ], { duration: 520, easing: EASE_OUT });
-          a.onfinish = () => { cardAnimating = false; };
-        } else {
-          paper.animate([{ opacity: 0, transform: "translateY(16px)" }, { opacity: 1, transform: "none" }], { duration: 360, easing: EASE_OUT });
-        }
+      renderProduct(d);
+      view.classList.remove("hidden");
+      view.scrollTop = 0;
+      document.body.style.overflow = "hidden";
+      productOpen = true;
+      openedCardId = !fromInside && src && src.dataset.card ? id : openedCardId;
+
+      if (reduceMotion() || !srcBottle) {
+        paper.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300 });
+        setTimeout(pour, reduceMotion() ? 0 : 700);
+        return;
+      }
+      const dst = paper.querySelector("[data-hero-dst]");
+      dst.style.visibility = "hidden";
+      cardAnimating = true;
+      // 紙（ページ）はふわっと出る。瓶はカードから飛んでくる
+      view.animate([{ backgroundColor: "rgba(241,234,220,0)" }, { backgroundColor: "rgba(241,234,220,1)" }], { duration: 420, easing: "ease-out" });
+      paper.animate([{ opacity: 0, transform: "translateY(18px)" }, { opacity: 1, transform: "none" }], { duration: 480, easing: "ease-out" });
+      srcBottle.style.visibility = "hidden";
+      const { ghost, anim } = flyBottle(fromInside ? fromClone : srcBottle, dst.getBoundingClientRect(), {}, fromRect);
+      anim.onfinish = () => {
+        dst.style.visibility = "";
+        // 着地したときに、瓶が少し弾む
+        dst.animate([{ transform: "scale(1.05)" }, { transform: "scale(.98)" }, { transform: "scale(1)" }], { duration: 260, easing: "ease-out" });
+        setTimeout(pour, 380);
+        ghost.remove();
+        srcBottle.style.visibility = "";
+        cardAnimating = false;
       };
-
-      if (!src || reduceMotion()) { show(); return; }
-      // 押した瞬間、カードが少し沈む
-      src.animate([{ transform: "scale(1)" }, { transform: "scale(.95)" }], { duration: 120, easing: "ease-out", fill: "forwards" })
-        .onfinish = function () { show(); setTimeout(() => this.cancel(), 600); };
     }
 
     function closeProduct() {
@@ -1302,37 +1454,31 @@
         cardAnimating = false;
       };
       if (reduceMotion()) { done(); return; }
-      // 開いたカードが一覧に見えていれば、そのカードへ縮んで戻る。見えていなければ、ふわっと消える
+      const dst = paper.querySelector("[data-hero-dst]");
+      if (dst) dst.getAnimations().forEach(a => a.cancel());
       const card = openedCardId && document.querySelector(`[data-card="${openedCardId}"]`);
-      const r = card && card.getBoundingClientRect();
-      const visible = r && r.width && r.bottom > 0 && r.top < window.innerHeight;
+      const cardBottle = card && card.querySelector("[data-hero-src]");
+      const cr = cardBottle && cardBottle.getBoundingClientRect();
+      const dr = dst && dst.getBoundingClientRect();
+      const inView = rect => rect && rect.width && rect.bottom > 0 && rect.top < window.innerHeight;
       cardAnimating = true;
-      if (visible) {
-        view.animate([{ clipPath: FULL_CLIP }, { clipPath: clipFromRect(r) }], { duration: 420, easing: "cubic-bezier(.5,0,.25,1)", fill: "forwards" });
-        paper.animate([{ opacity: 1 }, { opacity: 0, offset: .8 }, { opacity: 0 }], { duration: 420, fill: "forwards" }).onfinish = () => {
+      // 紙はふわっと消える
+      paper.animate([{ opacity: 1 }, { opacity: 0, transform: "translateY(18px)" }], { duration: 300, easing: "ease-in", fill: "forwards" });
+      view.animate([{ backgroundColor: "rgba(241,234,220,1)" }, { backgroundColor: "rgba(241,234,220,0)" }], { duration: 420, fill: "forwards" });
+      if (inView(cr) && inView(dr)) {
+        // 瓶は一覧のカードへ戻る
+        cardBottle.style.visibility = "hidden";
+        const { ghost, anim } = flyBottle(dst, cr, { lift: -40, tilt: 5, duration: 560 });
+        dst.style.visibility = "hidden";
+        anim.onfinish = () => {
           done();
-          card.animate([{ transform: "scale(.96)" }, { transform: "scale(1)" }], { duration: 220, easing: EASE_OUT });
+          cardBottle.style.visibility = "";
+          ghost.remove();
+          cardBottle.animate([{ transform: "translateY(-4px)" }, { transform: "none" }], { duration: 200, easing: "ease-out" });
         };
       } else {
-        view.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 260, fill: "forwards" }).onfinish = done;
+        setTimeout(done, 420);
       }
-    }
-
-    // ---- スタッフに見せる（この1杯を大きく表示） ----
-    function openStaffView(id) {
-      const d = byId[id];
-      const kana = sameAsName(d) ? "" : displayKana(d);
-      document.getElementById("order-list").innerHTML = `
-        <li class="border-b-2 border-dashed border-line pb-5">
-          <p class="text-sm text-muted">${esc([d.category, d.prefecture, d.grade].filter(Boolean).join("・"))}</p>
-          ${kana ? `<p class="text-base text-muted mt-3 tracking-widest">${esc(kana)}</p>` : ""}
-          <p class="font-mincho font-extrabold text-5xl leading-tight mt-1">${esc(d.name)}</p>
-          ${d.maker ? `<p class="text-sm text-muted mt-3">${esc(d.maker)}</p>` : ""}
-        </li>`;
-      document.getElementById("order-screen").classList.remove("hidden");
-    }
-    function closeOrderScreen() {
-      document.getElementById("order-screen").classList.add("hidden");
     }
 
     // ---- 相性をリセット（診断の答えを消して、相性％と相性順を出さない状態に戻す） ----
@@ -1356,10 +1502,64 @@
     }
 
     // =============================================================
+    //  季節のヘッダー：月ごとに 桜（春）・青楓（夏）・紅葉（秋）・雪（冬）
+    //  試すときは URL の最後に ?season=spring / summer / autumn / winter を付ける
+    // =============================================================
+    // 葉のかたち（とがった先を n 個もつ星形。紅葉・青楓）
+    function leafPath(n, rOut, rIn) {
+      let d = "";
+      for (let k = 0; k < n; k++) {
+        const a = (k / n) * Math.PI * 2 - Math.PI / 2, b = ((k + .5) / n) * Math.PI * 2 - Math.PI / 2;
+        d += `${k ? "L" : "M"}${(Math.cos(a) * rOut).toFixed(1)},${(Math.sin(a) * rOut).toFixed(1)} L${(Math.cos(b) * rIn).toFixed(1)},${(Math.sin(b) * rIn).toFixed(1)} `;
+      }
+      return d + "Z";
+    }
+    // 桜の花びら1枚（上向き。先に切れ込み）
+    const SAKURA_PETAL = "M0 0 C-5 -2 -6.5 -8 -3 -10.5 L0 -8.6 L3 -10.5 C6.5 -8 5 -2 0 0 Z";
+    const SEASON_SHAPES = {
+      spring: { label: "春の品書き", color: "#f6c1cf", sakura: true },
+      summer: { label: "夏の品書き", color: "#9fd3a8", path: leafPath(7, 10, 4.2) },
+      autumn: { label: "秋の品書き", color: "#f0a04b", path: leafPath(7, 10, 4.2) },
+      winter: { label: "冬の品書き", color: "#ffffff", snow: true }
+    };
+    function shapeSvg(sh, size, opacity) {
+      const inner = sh.sakura
+        ? [0, 72, 144, 216, 288].map(r => `<path transform="rotate(${r})" d="${SAKURA_PETAL}" fill="${sh.color}"/>`).join("") + `<circle r="1.6" fill="#fff" opacity=".8"/>`
+        : sh.snow
+        ? `<g stroke="${sh.color}" stroke-width="1.6" stroke-linecap="round" fill="none">${[0, 60, 120].map(r => `<path transform="rotate(${r})" d="M0 -9 V9 M0 -6 l-3 -3 M0 -6 l3 -3 M0 6 l-3 3 M0 6 l3 3"/>`).join("")}</g>`
+        : `<path d="${sh.path}" fill="${sh.color}"/><path d="M0 3 V12" stroke="${sh.color}" stroke-width="1.4"/>`;
+      return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="-12 -12 24 24" opacity="${opacity}">${inner}</svg>`;
+    }
+    function currentSeason() {
+      const q = new URLSearchParams(location.search).get("season") || MENU_CONFIG.season;
+      if (SEASON_SHAPES[q]) return q;
+      const m = new Date().getMonth() + 1;
+      return m >= 3 && m <= 5 ? "spring" : m >= 6 && m <= 8 ? "summer" : m >= 9 && m <= 11 ? "autumn" : "winter";
+    }
+    function applySeason() {
+      const key = currentSeason(), sh = SEASON_SHAPES[key];
+      const hero = document.querySelector(".hero");
+      // 柄：大小の形を散らしたタイル
+      const tile = `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="90">` +
+        [[18, 20, 22, .22, 10], [78, 14, 14, .16, 40], [56, 62, 26, .18, -20], [104, 70, 12, .14, 70], [10, 74, 10, .12, 0]]
+          .map(([x, y, sz, op, rot]) => `<g transform="translate(${x} ${y}) rotate(${rot}) translate(${-sz / 2} ${-sz / 2})">${shapeSvg(sh, sz, op)}</g>`).join("") + `</svg>`;
+      hero.style.backgroundImage = `url("data:image/svg+xml,${encodeURIComponent(tile)}"), linear-gradient(to bottom, #b4452f, #a63d2a 45%, #8f3020)`;
+      document.getElementById("season-label").textContent = sh.label;
+      // 舞い散るもの
+      const fx = document.getElementById("season-fx");
+      if (reduceMotion()) { fx.innerHTML = ""; return; }
+      fx.innerHTML = Array.from({ length: 11 }, (_, k) => {
+        const size = 10 + (k * 7) % 9, left = (k * 37) % 100, dur = 7 + (k * 13) % 6, delay = -((k * 17) % 11);
+        return `<span class="fx-fall" style="left:${left}%; --sx:${(k % 2 ? 1 : -1) * (14 + k % 4 * 6)}px; animation-duration:${dur}s; animation-delay:${delay}s">${shapeSvg(sh, size, .85)}</span>`;
+      }).join("");
+    }
+
+    // =============================================================
     //  はじめに
     // =============================================================
     (function init() {
       document.title = MENU_CONFIG.title;
+      applySeason();
       document.getElementById("menu-title").textContent = MENU_CONFIG.title;
       document.getElementById("menu-count").textContent =
         `本日 ${available().length} 銘柄`;
