@@ -104,7 +104,7 @@ const DRINKS_DATABASE = [
       { label: "精米歩合", value: "50％" },
       { label: "アルコール度数", value: "16％" }
     ],
-    images: ["恵那山①.webp", "恵那山②.webp", "恵那山③.webp"],
+    images: ["images/恵那山①.webp", "images/恵那山②.webp", "images/恵那山③.webp"],
     gallery: [
       { wiki: "恵那山", file: "Mount_Ena.jpg", caption: "恵那山の伏流水を敷地内の井戸から汲み上げて使用。恵那山に降り積もった雨雪が、長い時間をかけて地中に染み込み磨かれてできた水は、日本酒をやわらかい味わいにします。" },
       { wiki: "馬籠宿", caption: "中山道・馬籠宿。石畳が続く歴史ある宿場町は、往時の面影を色濃く残し、訪れる人々をタイムスリップしたかのような気分にさせてくれます。" }
