@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>今日のお品書き</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Shippori+Mincho:wght@600;700;800&family=Klee+One:wght@400;600&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans JP"', 'sans-serif'],
+            mincho: ['"Shippori Mincho"', 'serif'],
+            hand: ['"Klee One"', 'cursive'],
+            serifEn: ['"Cinzel"', 'serif'],
+          },
+          // index.html と同じ色
+          colors: {
+            accent: 'rgb(var(--accent) / <alpha-value>)',
+            paper: '#F7F5F0',
+            surface: '#FFFFFF',
+            ink: '#1C1917',
+            muted: '#6B6560',
+            line: '#E7E2D9',
+            stamp: '#B91C1C',
+            ama: '#D9822B',   // 甘
+            uma: '#1F6B4F',   // 旨
+            kara: '#2F5D8A'   // 辛
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --accent: 31 107 79;
+      --cat: 43 76 126;          /* 種類ごとの色（日本酒＝藍、ワイン＝ボルドー。JSで切り替え） */
+      --gold: 201 162 83;
+    }
+    html, body { background: #F3EDE1; }
+    body {
+      /* 和紙っぽい、うっすらした繊維の模様 */
+      background-image:
+        radial-gradient(rgba(120, 100, 70, 0.05) 1px, transparent 1px),
+        radial-gradient(rgba(120, 100, 70, 0.04) 1px, transparent 1px);
+      background-size: 7px 7px, 13px 13px;
+      background-position: 0 0, 3px 5px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    /* ヘッダー：藍色ののれん＋青海波 */
+    .hero {
+      background-color: #1E2B4A; color: #fff;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='20' viewBox='0 0 40 20'%3E%3Cg fill='none' stroke='%23C9A253' stroke-opacity='.22' stroke-width='1'%3E%3Ccircle cx='20' cy='20' r='18'/%3E%3Ccircle cx='20' cy='20' r='13'/%3E%3Ccircle cx='20' cy='20' r='8'/%3E%3Ccircle cx='0' cy='10' r='18'/%3E%3Ccircle cx='0' cy='10' r='13'/%3E%3Ccircle cx='0' cy='10' r='8'/%3E%3Ccircle cx='40' cy='10' r='18'/%3E%3Ccircle cx='40' cy='10' r='13'/%3E%3Ccircle cx='40' cy='10' r='8'/%3E%3C/g%3E%3C/svg%3E"),
+        linear-gradient(180deg, #23345A 0%, #1A2440 100%);
+      border-bottom: 3px solid rgb(var(--gold));
+    }
+    .hero .eyebrow { color: rgb(var(--gold)); }
+    .hero .tab { color: rgba(255,255,255,.75); }
+    .hero .tab[aria-selected="true"] { background: #fff; color: #1E2B4A; }
+
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { scrollbar-width: none; }
+
+    .eyebrow { font-family: "Cinzel", serif; font-size: 11px; font-weight: 700; letter-spacing: 0.25em; color: rgb(var(--accent)); }
+    .special-card { background: linear-gradient(160deg, #FFF8E8 0%, #FFFFFF 55%); border: 1.5px solid rgb(var(--gold) / .7); border-radius: 16px; box-shadow: 0 8px 24px rgb(var(--gold) / .18); }
+    .card { background: #fff; border: 1px solid #E7E2D9; border-radius: 16px; box-shadow: 0 1px 2px rgba(28,25,23,.04), 0 6px 20px rgba(28,25,23,.06); }
+
+    /* 手書きボード風のマス目 */
+    .board-cell {
+      position: relative; background: #FFFEFB; border: 1.5px solid #2B2724; border-radius: 4px; overflow: hidden;
+      box-shadow: 2px 3px 0 rgba(43, 39, 36, 0.12);
+      transition: transform .15s;
+    }
+    .board-cell:active { transform: scale(0.97) rotate(-0.5deg); }
+    .pref-box { border: 1.5px solid #2B2724; font-family: "Klee One", cursive; font-weight: 600; }
+
+    /* 甘・旨・辛のまる印 */
+    .type-mark {
+      display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+      border: 2px solid currentColor; border-radius: 9999px;
+      font-family: "Klee One", cursive; font-weight: 600; line-height: 1;
+    }
+
+    /* 絞り込み（選んだものは黒） */
+    .seg { flex: 1; height: 36px; border-radius: 9999px; font-size: 13px; font-weight: 700; color: #6B6560; transition: all .15s; white-space: nowrap; }
+    .seg[aria-pressed="true"] { background: rgb(var(--cat)); color: #fff; box-shadow: 0 2px 8px rgb(var(--cat) / .3); }
+
+    .tab { flex: 1; height: 40px; border-radius: 9999px; font-size: 14px; font-weight: 700; color: #6B6560; transition: all .2s; }
+    .tab[aria-selected="true"] { background: #fff; color: #1C1917; box-shadow: 0 2px 8px rgba(28,25,23,.1); }
+
+    .cat-tab {
+      flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; height: 52px; border-radius: 14px;
+      font-family: "Shippori Mincho", serif; font-weight: 800; font-size: 19px; color: #78716C;
+      background: #fff; border: 1.5px solid #E7E2D9; transition: all .2s;
+    }
+    .cat-tab[aria-selected="true"] { color: #fff; border-color: transparent; background: var(--tab-bg); box-shadow: 0 6px 16px var(--tab-shadow); }
+    .cat-tab .cat-count { font-family: "Noto Sans JP", sans-serif; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 9999px; background: rgba(0,0,0,.06); }
+    .cat-tab[aria-selected="true"] .cat-count { background: rgba(255,255,255,.22); }
+
+    /* 瓶のうしろに、甘・旨・辛の色をほんのり */
+    .glow { position: absolute; border-radius: 9999px; filter: blur(10px); opacity: .5; pointer-events: none; }
+
+    .btn-primary {
+      display: flex; align-items: center; justify-content: center; gap: .5rem; width: 100%; height: 54px;
+      border-radius: 16px; background: rgb(var(--accent)); color: #fff;
+      font-family: "Shippori Mincho", serif; font-weight: 700; font-size: 16px; letter-spacing: .05em;
+      box-shadow: 0 8px 20px rgb(var(--accent) / .28); transition: transform .15s;
+    }
+    .btn-primary:active { transform: scale(0.97); }
+    .btn-secondary {
+      display: flex; align-items: center; justify-content: center; gap: .5rem; height: 54px; padding: 0 18px;
+      border-radius: 16px; background: #fff; border: 1px solid #E7E2D9; color: #1C1917; font-weight: 700; font-size: 14px;
+    }
+
+    /* 診断の選択肢（index.html と同じ見た目） */
+    .option-card {
+      display: flex; align-items: center; gap: 0.75rem; width: 100%; text-align: left;
+      padding: 16px; border-radius: 16px;
+      background: #fff; border: 1.5px solid #E7E2D9; color: #1C1917;
+      font-size: 15px; line-height: 1.6; transition: border-color 0.15s, background 0.15s, transform 0.15s;
+    }
+    .option-card:active { transform: scale(0.99); }
+    .option-card .option-check {
+      flex-shrink: 0; width: 22px; height: 22px; border-radius: 9999px; border: 1.5px solid #E7E2D9;
+      display: flex; align-items: center; justify-content: center; color: transparent; font-size: 11px;
+      transition: all 0.15s;
+    }
+    .option-card.is-selected { border-color: rgb(var(--accent)); background: rgb(var(--accent) / 0.06); }
+    .option-card.is-selected .option-check { background: rgb(var(--accent)); border-color: rgb(var(--accent)); color: #fff; }
+
+    /* 瓶（ベース写真＋ラベル）。写真と同じ 3:10 の枠に、ラベルを％で重ねる */
+    .bottle { position: relative; display: flex; justify-content: center; }
+    .bottle-frame { position: relative; height: 100%; aspect-ratio: 3 / 10; container-type: size; }
+    .bottle-base { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+    .sake-label, .wine-label {
+      position: absolute; overflow: hidden; border-radius: 1px;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.18), 0 0 0 0.6px rgba(0,0,0,.25);
+      background-image: linear-gradient(90deg, rgba(0,0,0,.10), rgba(255,255,255,.12) 40%, rgba(0,0,0,.14));
+    }
+    /* 日本酒のラベル：縦書き */
+    .sake-label {
+      writing-mode: vertical-rl; display: flex; align-items: center; justify-content: center; gap: 4cqw;
+      font-family: "Shippori Mincho", serif; line-height: 1;
+    }
+    .sake-label::before { content: ""; position: absolute; inset: 3cqw; border: 0.5cqw solid currentColor; opacity: .35; }
+    .sake-label-name { font-weight: 800; letter-spacing: .02em; white-space: nowrap; text-combine-upright: digits 2; }
+    .sake-label-kana { font-weight: 600; opacity: .85; white-space: nowrap; }
+    .sake-label-seal { position: absolute; left: 8cqw; bottom: 3cqh; width: 9cqw; height: 9cqw; background: #C0392B; border-radius: 1px; opacity: .85; }
+    /* ワインのラベル：横書き・カタカナ */
+    .wine-label {
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.2cqh; text-align: center;
+      font-family: "Shippori Mincho", serif; padding: 0 4cqw;
+    }
+    .wine-label::before { content: ""; position: absolute; inset: 4cqw; border: 0.6cqw double currentColor; opacity: .35; }
+    .wine-label-style { font-family: "Cinzel", serif; font-weight: 700; font-size: 7cqw; letter-spacing: .3em; opacity: .7; }
+    .wine-label-name { font-weight: 800; line-height: 1.15; }
+    .wine-label-origin { font-size: 6.5cqw; font-weight: 600; letter-spacing: .1em; opacity: .7; }
+
+    /* 写真は白い背景を紙になじませ、瓶だけが浮かぶように */
+    .bottle-photo { mix-blend-mode: multiply; object-fit: cover; }
+    .sold-out .bottle-photo { filter: grayscale(1); opacity: .45 !important; }
+    .sold-out .bottle, .sold-out .dim { filter: grayscale(1); opacity: .45; }
+    .stamp {
+      border: 2px solid #B91C1C; color: #B91C1C; border-radius: 6px; font-family: "Shippori Mincho", serif; font-weight: 800;
+      transform: rotate(-12deg); background: rgba(255,255,255,.85);
+    }
+
+    /* お品書きのカード */
+    .menu-card { display: block; width: 100%; text-align: left; transition: transform .15s; -webkit-tap-highlight-color: transparent; }
+    .menu-card:active { transform: scale(.97); }
+    .card-ghost { pointer-events: none; will-change: transform; transform-origin: 50% 50%; }
+
+    /* ===== 商品ページ（参考：診断アプリの「本日の1杯」） ===== */
+    #product-view { background: rgba(28, 25, 23, .55); }
+    .wa-paper {
+      --kinari: #f4eee2; --sumi: #2b2622; --kin: #a8864f;
+      background-color: var(--kinari);
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .38 0 0 0 0 .28 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+        radial-gradient(120% 80% at 50% 0%, rgba(255,255,255,.55), rgba(255,255,255,0) 60%),
+        radial-gradient(120% 90% at 50% 120%, rgba(120,90,50,.12), rgba(120,90,50,0) 60%);
+      color: var(--sumi); font-family: "Shippori Mincho", serif;
+    }
+    .pv-top {
+      position: sticky; top: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 12px; background: color-mix(in srgb, var(--kinari) 92%, transparent); backdrop-filter: blur(6px);
+    }
+    .pv-back {
+      display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px; border-radius: 9999px;
+      border: 1px solid var(--shu); color: var(--shu); font-size: 13px; font-weight: 700; background: rgba(255,255,255,.5);
+    }
+    .seigaiha {
+      height: 22px; background-color: #f4eee2; opacity: .55;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='20' viewBox='0 0 40 20'%3E%3Cg fill='%23f4eee2' stroke='%23a8864f' stroke-width='.8'%3E%3Ccircle cx='20' cy='20' r='19'/%3E%3Ccircle cx='20' cy='20' r='14'/%3E%3Ccircle cx='20' cy='20' r='9'/%3E%3Ccircle cx='0' cy='10' r='19'/%3E%3Ccircle cx='0' cy='10' r='14'/%3E%3Ccircle cx='0' cy='10' r='9'/%3E%3Ccircle cx='40' cy='10' r='19'/%3E%3Ccircle cx='40' cy='10' r='14'/%3E%3Ccircle cx='40' cy='10' r='9'/%3E%3C/g%3E%3C/svg%3E");
+      background-size: 28px 14px;
+      -webkit-mask-image: linear-gradient(to bottom, #000 30%, transparent); mask-image: linear-gradient(to bottom, #000 30%, transparent);
+    }
+    .wa-rule { display: flex; align-items: center; gap: .75rem; color: var(--shu); font-size: 13px; font-weight: 700; letter-spacing: .4em; }
+    .wa-rule::before, .wa-rule::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to right, transparent, var(--kin), transparent); }
+    .wa-rule > span { padding-left: .4em; white-space: nowrap; }
+    .photo-frame {
+      position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden;
+      background: color-mix(in srgb, var(--shu) 14%, #fff); box-shadow: 0 10px 24px rgba(60, 40, 20, .16);
+      border-radius: 46% 54% 50% 50% / 40% 44% 56% 60%;
+      -webkit-mask-image: -webkit-radial-gradient(white, black);
+    }
+    .stamp-col { display: flex; flex-direction: column; align-items: center; gap: .7rem; }
+    .hanko {
+      writing-mode: vertical-rl; color: #fff8f0; background: var(--shu); border-radius: 4px;
+      box-shadow: inset 0 0 0 2px var(--shu), inset 0 0 0 3px rgba(255,248,240,.85);
+      transform: rotate(-4deg); opacity: .92; font-size: 13px; font-weight: 700; letter-spacing: .15em; padding: 8px 5px;
+    }
+    .pref-seal {
+      writing-mode: vertical-rl; color: var(--shu); border: 1.5px solid var(--shu); border-radius: 3px;
+      font-size: 12px; font-weight: 700; letter-spacing: .1em; padding: 6px 3px; transform: rotate(3deg); background: rgba(255,255,255,.4);
+    }
+    @keyframes hankoStamp {
+      0% { opacity: 0; transform: scale(2.4) rotate(-14deg); }
+      55% { opacity: .95; transform: scale(.88) rotate(-3deg); }
+      72% { transform: scale(1.06) rotate(-5deg); }
+      100% { opacity: .92; transform: scale(1) rotate(-4deg); }
+    }
+    .hanko-stamp { opacity: 0; animation: hankoStamp .45s cubic-bezier(.3,1.4,.5,1) .9s forwards; }
+    .pname { display: flex; flex-direction: column; align-items: center; text-align: center; margin: 1.1rem auto .2rem; }
+    .pname-main { font-size: 26px; font-weight: 800; letter-spacing: .06em; line-height: 1.6; }
+    .pname-kana { font-size: 12px; letter-spacing: .16em; color: #6b6056; }
+    @keyframes markerDraw { to { background-size: 100% 62%; } }
+    .marker {
+      padding: 0 .35em; background-image: var(--marker); background-repeat: no-repeat; background-position: 0 92%; background-size: 0% 62%;
+      -webkit-box-decoration-break: clone; box-decoration-break: clone;
+      animation: markerDraw .8s cubic-bezier(.6,0,.3,1) .7s forwards;
+    }
+    .rd-catch { font-size: 19px; font-weight: 800; letter-spacing: .05em; line-height: 1.5; text-align: center; text-wrap: balance; }
+    .kw-chip { background: color-mix(in srgb, var(--shu) 11%, transparent); color: var(--shu); font-size: 13.5px; font-weight: 700; padding: 2px 10px; border-radius: 2px; }
+    .rd-meter { font-size: 14px; font-weight: 600; }
+    .meter-dot { box-shadow: 0 0 0 3px color-mix(in srgb, var(--shu) 20%, transparent); transition: left .9s cubic-bezier(.3,1.3,.5,1); }
+    .rd-point { font-size: 15.5px; font-weight: 600; line-height: 1.45; }
+    .point-num { flex-shrink: 0; width: 24px; height: 24px; border-radius: 9999px; border: 1px solid var(--shu); color: var(--shu); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+    .rd-body { font-size: 15px; font-weight: 500; line-height: 1.9; letter-spacing: .03em; color: #3d362f; }
+    .rd-chip { font-size: 14px; font-weight: 600; padding: 4px 12px; border: 1px solid #cdbd9f; border-radius: 9999px; background: rgba(255,255,255,.5); }
+    .trivia-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border: 1px dashed var(--shu); border-radius: 2px; color: var(--shu); font-size: 13.5px; font-weight: 700; letter-spacing: .1em; }
+    .btn-enji {
+      width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px; border-radius: 3px;
+      font-size: 15px; font-weight: 700; letter-spacing: .1em; color: #fff6ee;
+      background: linear-gradient(to bottom, color-mix(in srgb, var(--shu) 82%, #fff), var(--shu) 55%, color-mix(in srgb, var(--shu) 80%, #000));
+      border-bottom: 4px solid color-mix(in srgb, var(--shu) 65%, #000); box-shadow: 0 6px 20px color-mix(in srgb, var(--shu) 40%, transparent);
+      transition: transform .1s, border-bottom-width .1s;
+    }
+    .btn-enji:active { transform: translateY(3px); border-bottom-width: 1px; }
+    .btn-line { flex: 1; padding: 12px; border-radius: 3px; border: 1px solid var(--shu); color: var(--shu); font-size: 14px; font-weight: 700; letter-spacing: .1em; }
+    .match-box { border: 1.5px solid var(--shu); border-radius: 4px; background: rgba(255,255,255,.45); }
+    /* 商品ページの中身は、上から順にふわっと出る */
+    @keyframes pvIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+    .pv-in { opacity: 0; animation: pvIn .55s cubic-bezier(.2,.8,.2,1) forwards; animation-delay: calc(.25s + var(--d, 0) * .12s); }
+
+    /* 相性リセットなどのお知らせ */
+    #toast { transition: opacity .3s, transform .3s; }
+
+    @keyframes fade-up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+    .fade-up { animation: fade-up .45s cubic-bezier(.2,.8,.2,1) both; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body class="font-sans text-ink antialiased">
+  <div class="max-w-md mx-auto min-h-screen relative pb-28">
+
+    <!-- ヘッダー -->
+    <header class="hero px-4 pt-6 pb-4">
+      <span class="eyebrow">TODAY'S MENU</span>
+      <h1 id="menu-title" class="font-mincho font-extrabold text-[28px] leading-tight mt-1"></h1>
+      <p id="menu-count" class="text-xs text-white/70 mt-1"></p>
+
+      <div role="tablist" class="mt-4 flex gap-1 p-1 rounded-full bg-white/10 border border-white/15">
+        <button role="tab" class="tab" data-tab="menu" onclick="setTab('menu')"><i class="fa-solid fa-book-open mr-1.5 text-xs"></i>お品書き</button>
+        <button role="tab" class="tab" data-tab="shindan" onclick="setTab('shindan')"><i class="fa-solid fa-wand-magic-sparkles mr-1.5 text-xs"></i>好み診断</button>
+      </div>
+    </header>
+
+    <!-- ================= お品書き ================= -->
+    <main id="view-menu">
+      <!-- 種類（日本酒・ワイン） -->
+      <nav id="category-tabs" role="tablist" class="px-4 pt-4 flex gap-3"></nav>
+
+      <!-- 味で選ぶ（種類ごとに項目が変わる。日本酒＝甘口・辛口、ワイン＝赤・白／軽め・重め） -->
+      <section id="taste-filters" class="px-4 pt-4 space-y-2"></section>
+
+      <!-- 診断へのお誘い／診断済みなら相性順の切り替え -->
+      <section id="diagnosis-banner" class="px-4 pt-4"></section>
+
+      <section id="special-section" class="mt-5">
+        <div class="px-4 flex items-baseline justify-between">
+          <h2 class="font-mincho font-extrabold text-lg">限定・店主のおすすめ</h2>
+          <span class="text-[11px] text-muted">横にスクロール <i class="fa-solid fa-arrow-right"></i></span>
+        </div>
+        <div id="special-list" class="mt-2 flex gap-3 overflow-x-auto no-scrollbar px-4 pb-3 snap-x snap-mandatory"></div>
+      </section>
+
+      <section class="px-4 mt-4">
+        <div class="flex items-baseline justify-between">
+          <h2 id="lineup-title" class="font-mincho font-extrabold text-lg" style="color: rgb(var(--cat))">ラインナップ</h2>
+          <span id="lineup-count" class="text-xs text-muted"></span>
+        </div>
+        <div id="board-grid" class="mt-3 grid grid-cols-2 gap-3"></div>
+        <div id="board-empty" class="hidden text-center py-12">
+          <p class="text-sm text-muted">この味のお酒は、いまお休み中です</p>
+          <button onclick="resetFilters()" class="mt-3 text-sm font-bold text-accent">絞り込みをやめる</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- ================= 好み診断（index.html の診断と同じ流れ） ================= -->
+    <main id="view-shindan" class="hidden px-4">
+
+      <!-- はじめ -->
+      <section id="shindan-intro" class="pt-2">
+        <div class="card p-6 text-center overflow-hidden relative">
+          <div class="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-accent/5"></div>
+          <span class="eyebrow">TASTE DIAGNOSIS</span>
+          <p class="font-mincho font-extrabold text-2xl leading-snug mt-2"><span class="q-count"></span>つの質問で<br>あなたの好みがわかります</p>
+          <div id="intro-radar" class="flex justify-center mt-2"></div>
+          <p class="text-sm text-muted leading-relaxed">答えから好みの味わいを六角形にして、<br>今日のお品書きから相性のいいお酒を選びます。</p>
+          <button onclick="startDiagnosis()" class="btn-primary mt-5"><span>診断をはじめる</span><i class="fa-solid fa-arrow-right text-sm"></i></button>
+        </div>
+      </section>
+
+      <!-- 質問 -->
+      <section id="shindan-quiz" class="hidden pt-2">
+        <span id="quiz-step-label" class="eyebrow">QUESTION 1 / 4</span>
+        <div id="quiz-progress" class="flex gap-1.5 mt-3 mb-6"></div>
+        <h2 id="quiz-title" class="text-xl font-mincho font-bold text-ink leading-snug min-h-[3.5rem]"></h2>
+        <div id="quiz-options-container" class="space-y-3 mt-6"></div>
+      </section>
+
+      <!-- 分析中の演出 -->
+      <section id="shindan-analyzing" onclick="finishAnalyzing()" class="hidden pt-6 flex-col items-center text-center min-h-[70vh]">
+        <span class="eyebrow">ANALYZING YOUR TASTE</span>
+        <div id="analyzing-radar" class="mt-3"></div>
+        <p id="analyzing-step" class="font-mincho font-bold text-base text-ink h-7 whitespace-nowrap"></p>
+        <div id="analyzing-bar-track" class="w-48 h-1 rounded-full bg-line mt-4 overflow-hidden transition-opacity duration-300">
+          <div id="analyzing-bar" class="h-full bg-accent" style="width: 0%"></div>
+        </div>
+        <div id="analyzing-reveal" class="mt-6 opacity-0 scale-75 transition-all duration-500">
+          <p class="text-sm text-muted">あなたは</p>
+          <p id="analyzing-type" class="font-mincho font-extrabold text-[34px] text-ink leading-tight"></p>
+          <p class="text-sm text-muted">タイプ</p>
+        </div>
+        <p class="text-[11px] text-muted mt-8">タップでスキップ</p>
+      </section>
+
+      <!-- 結果 -->
+      <section id="shindan-result" class="hidden pt-2">
+        <div class="card p-5 fade-up">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <span class="eyebrow">YOUR TYPE</span>
+              <p class="text-sm text-muted mt-1">あなたは</p>
+              <p id="result-type" class="font-mincho font-extrabold text-[28px] leading-tight"></p>
+            </div>
+            <div class="flex-shrink-0 flex flex-col gap-1.5">
+              <button onclick="startDiagnosis()" class="h-8 px-3 rounded-full bg-paper border border-line text-xs font-bold"><i class="fa-solid fa-rotate-right mr-1"></i>再診断</button>
+              <button onclick="resetDiagnosis()" class="h-8 px-3 rounded-full bg-paper border border-line text-xs font-bold text-stamp"><i class="fa-solid fa-eraser mr-1"></i>相性リセット</button>
+            </div>
+          </div>
+          <p id="result-desc" class="text-sm text-muted leading-relaxed mt-2"></p>
+          <div id="result-radar" class="flex justify-center"></div>
+        </div>
+
+        <h2 class="font-mincho font-extrabold text-lg mt-6">今日のお品書きから、あなたへ</h2>
+        <p class="text-xs text-muted mt-0.5">タップすると、お酒のページで、あなたの好みと六角形で比べられます</p>
+        <div id="result-filter" class="flex gap-2 overflow-x-auto no-scrollbar mt-3 pb-1"></div>
+        <div id="recommendation-list" class="mt-2 space-y-2"></div>
+
+        <button onclick="showMenuByMatch()" class="btn-primary mt-6"><i class="fa-solid fa-book-open text-sm"></i><span>お品書きを相性順で見る</span></button>
+      </section>
+    </main>
+
+  </div>
+
+  <!-- 商品ページ（お品書きのカードを押すと、カードが回ってこのページに入る） -->
+  <div id="product-view" class="fixed inset-0 z-50 hidden overflow-y-auto overscroll-contain">
+    <div id="product-body" class="wa-paper max-w-md mx-auto min-h-full relative shadow-2xl"></div>
+  </div>
+
+  <!-- お知らせ（相性をリセットしたときなど） -->
+  <div id="toast" class="fixed left-1/2 bottom-8 -translate-x-1/2 translate-y-4 z-[80] px-5 py-3 rounded-full bg-ink text-white text-sm font-bold shadow-xl opacity-0 pointer-events-none whitespace-nowrap"></div>
+
+  <!-- 店員さんに見せる画面 -->
+  <div id="order-screen" class="fixed inset-0 z-[70] hidden bg-[#FFFEFB] overflow-y-auto">
+    <div class="max-w-md mx-auto px-6 py-8">
+      <div class="flex items-center justify-between">
+        <span class="eyebrow">FOR STAFF</span>
+        <button onclick="closeOrderScreen()" class="h-9 px-4 rounded-full bg-ink text-white text-xs font-bold">閉じる</button>
+      </div>
+      <p class="font-hand text-lg mt-4">こちらをお願いします</p>
+      <ol id="order-list" class="mt-4 space-y-4"></ol>
+    </div>
+  </div>
+
+  <script src="taste-chart.js"></script>
+  <script src="taste-diagnosis.js"></script>
+  <script src="menu-data.js"></script>
+  <script>
+    // =============================================================
+    //  データの下ごしらえ
+    // =============================================================
+    const TYPE_INFO = {
+      "甘": { word: "甘口", cls: "text-ama",  color: "#D9822B" },
+      "旨": { word: "旨口", cls: "text-uma",  color: "#1F6B4F" },
+      "辛": { word: "辛口", cls: "text-kara", color: "#2F5D8A" }
+    };
+    // 六角形の「甘み」から、甘・旨・辛の丸印を決める（type を書いたお酒はそちらを優先）
+    const typeFromTaste = t => t.sweetness >= 60 ? "甘" : t.sweetness <= 40 ? "辛" : "旨";
+
+    const drinks = TODAY_MENU.map(d => {
+      const taste = { ...NEUTRAL_PROFILE, ...(d.taste || {}) };
+      return { ...d, taste, tags: d.tags || [], type: TYPE_INFO[d.type] ? d.type : typeFromTaste(taste) };
+    });
+    const byId = Object.fromEntries(drinks.map(d => [d.id, d]));
+    const available = () => drinks.filter(d => !d.soldOut);
+    const CATEGORIES = [...new Set([...(MENU_CONFIG.categories || []), ...drinks.map(d => d.category)])]
+      .filter(c => drinks.some(d => d.category === c));
+
+    // ---- 味で選ぶ（種類ごとに、出す項目を変える） ----
+    const ALL = { key: "all", label: "指定なし" };
+    const SWEET_FILTER = { group: "sweet", label: "甘さ", options: [ALL,
+      { key: "amai",  label: "甘口", test: d => d.taste.sweetness >= 55 },
+      { key: "karai", label: "辛口", test: d => d.taste.sweetness <= 45 }] };
+    const BODY_FILTER = { group: "body", label: "重さ", options: [ALL,
+      { key: "light", label: "軽め", test: d => d.taste.body <= 45 },
+      { key: "heavy", label: "重め", test: d => d.taste.body >= 55 }] };
+    const FILTERS_BY_CATEGORY = {
+      "日本酒": [SWEET_FILTER],
+      "ワイン": [
+        { group: "color", label: "色", options: [ALL,
+          { key: "red",   label: "赤", test: d => d.color === "red" },
+          { key: "white", label: "白", test: d => d.color === "white" }] },
+        BODY_FILTER
+      ]
+    };
+    const filtersFor = c => FILTERS_BY_CATEGORY[c] || [SWEET_FILTER, BODY_FILTER];
+
+    const state = {
+      tab: "menu",
+      category: CATEGORIES[0],
+      filters: {},          // { sweet: "amai" } のように、選んでいる絞り込み
+      sortByMatch: false,
+      resultFilter: "おすすめ",
+      diagnosed: false
+    };
+
+    // ---- このブラウザの中だけに保存するもの（診断の答え） ----
+    const store = {
+      get(key, fallback) { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch (e) { return fallback; } },
+      set(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {} }
+    };
+
+    const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+    // =============================================================
+    //  瓶のイラスト（写真がなくても並べられるように）
+    // =============================================================
+    // 写真がないときの瓶：images/ の瓶の写真（sake-green.webp など）に、ラベルを重ねて名前を書く
+    //   label は、ベース写真の中でラベルを貼る位置（写真の幅・高さに対する％）
+    const BOTTLE_BASES = {
+      sake: {
+        images: { green: "images/sake-green.webp", brown: "images/sake-brown.webp" },
+        label: { l: 18, t: 55, w: 66, h: 41 }
+      },
+      wine: {
+        images: { red: "images/wine-red.webp", white: "images/wine-white.webp", rose: "images/wine-rose.webp" },
+        label: { red: { l: 15.8, t: 43.3, w: 67.8, h: 27.4 }, white: { l: 17.1, t: 48.7, w: 66.7, h: 34 }, rose: { l: 17.1, t: 48.7, w: 66.7, h: 34 } }
+      }
+    };
+    const WINE_STYLE_WORD = { red: "ROUGE", white: "BLANC", rose: "ROSÉ" };
+
+    function isLight(hex) {
+      const h = (hex || "#fff").replace("#", "");
+      const [r, g, b] = [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16));
+      return (r * 299 + g * 587 + b * 114) / 1000 > 150;
+    }
+    const toKatakana = s => String(s || "").replace(/[ぁ-ゖ]/g, c => String.fromCharCode(c.charCodeAt(0) + 0x60));
+    // ワインは一覧でもカタカナで見せる
+    const displayKana = d => d.category === "ワイン" ? toKatakana(d.kana || d.name) : (d.kana || "");
+    // 読みが名前と同じ（カタカナのワインなど）なら、読みの行は出さない
+    const sameAsName = d => displayKana(d).replace(/[・\s]/g, "") === String(d.name || "").replace(/[・\s]/g, "");
+
+    // 写真があれば写真、なければベース写真＋ラベル（写真が読めないときもベース写真）
+    function bottleSvg(d, sizeClass) {
+      if (!d.image) return bottleIllustration(d, sizeClass);
+      return `
+        <div class="relative ${sizeClass}">
+          <div class="absolute inset-0">${bottleIllustration(d, "w-full h-full")}</div>
+          <img src="${esc(d.image)}" alt="${esc(d.name)}" loading="lazy" class="bottle-photo absolute inset-0 w-full h-full opacity-0 transition-opacity duration-300" style="object-position:${esc(d.imagePosition || "center")}"
+               onload="this.style.opacity=1; this.previousElementSibling.remove()" onerror="this.remove()">
+        </div>`;
+    }
+
+    function bottleIllustration(d, sizeClass) {
+      const wine = d.category === "ワイン";
+      const base = BOTTLE_BASES[wine ? "wine" : "sake"];
+      const color = base.images[d.color] ? d.color : Object.keys(base.images)[0];
+      const r = wine ? base.label[color] : base.label;
+      const paper = d.label || "#F6F1E6";
+      const ink = isLight(paper) ? "#1C1917" : "#FFFFFF";
+      const pos = `left:${r.l}%; top:${r.t}%; width:${r.w}%; height:${r.h}%; background-color:${paper}; color:${ink};`;
+      let label;
+      if (wine) {
+        // 横書き：上に ROUGE / BLANC、まん中にカタカナの名前、下に産地
+        const lines = toKatakana(d.kana || d.name).split(/[・\s]+/).filter(Boolean);
+        const per = Math.max(3, ...lines.map(l => l.length));
+        const fs = `min(${(r.w * 0.86 / per).toFixed(2)}cqw, ${(r.h * 0.40 / lines.length).toFixed(2)}cqh)`;
+        label = `
+          <div class="wine-label" style="${pos}">
+            <span class="wine-label-style">${WINE_STYLE_WORD[color]}</span>
+            <span class="wine-label-name" style="font-size:${fs}">${lines.map(esc).join("<br>")}</span>
+            ${d.prefecture ? `<span class="wine-label-origin">${esc(d.prefecture)}</span>` : ""}
+          </div>`;
+      } else {
+        // 縦書き：右に漢字の名前（大きく）、左にかな（小さく）、下に朱色の落款
+        const name = (d.name || "").replace(/[（）()]/g, "").replace(/\s/g, "").slice(0, 7);
+        const kana = (d.kana || "").replace(/\s/g, "").slice(0, 12);
+        const fsName = `min(${(r.h * 0.62 / Math.max(2, name.length)).toFixed(2)}cqh, ${(r.w * 0.50).toFixed(2)}cqw)`;
+        const fsKana = `min(${(r.h * 0.62 / Math.max(4, kana.length)).toFixed(2)}cqh, ${(r.w * 0.18).toFixed(2)}cqw)`;
+        label = `
+          <div class="sake-label" style="${pos}">
+            <span class="sake-label-name" style="font-size:${fsName}">${esc(name)}</span>
+            ${kana ? `<span class="sake-label-kana" style="font-size:${fsKana}">${esc(kana)}</span>` : ""}
+            <span class="sake-label-seal"></span>
+          </div>`;
+      }
+      return `
+        <div class="bottle ${sizeClass}">
+          <div class="bottle-frame">
+            <img src="${base.images[color]}" alt="" aria-hidden="true" class="bottle-base" loading="lazy">
+            ${label}
+          </div>
+        </div>`;
+    }
+
+    function typeMark(d, size = "w-8 h-8 text-sm") {
+      const t = TYPE_INFO[d.type];
+      return `<span class="type-mark ${size} ${t.cls}" style="background:${t.color}1F" title="${t.word}">${esc(d.type)}</span>`;
+    }
+
+    // 六角形チャート（お酒のタイプの色で塗る）
+    function radar(d, size, labels = false) {
+      const c = TYPE_INFO[d.type].color;
+      return radarChartHtml([{ values: d.taste, fill: c + "33", stroke: c }], size, { labels, accent: c });
+    }
+
+    function metaLine(d) { return [d.category, d.prefecture, d.grade].filter(Boolean).join("・"); }
+
+    // =============================================================
+    //  タブ
+    // =============================================================
+    function setTab(tab) {
+      state.tab = tab;
+      document.querySelectorAll("[data-tab]").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === tab));
+      ["menu", "shindan"].forEach(v => document.getElementById("view-" + v).classList.toggle("hidden", v !== tab));
+      if (tab === "shindan") showShindanStep(state.diagnosed ? "result" : "intro");
+      else renderMenu();
+      window.scrollTo({ top: 0 });
+    }
+
+    // =============================================================
+    //  お品書き
+    // =============================================================
+    // 種類ごとのテーマ色（タブ・絞り込み・見出しに使う）
+    const CATEGORY_THEME = {
+      "日本酒": { rgb: "43 76 126", bg: "linear-gradient(135deg, #2B4C7E, #1E2B4A)", icon: "fa-bottle-droplet" },
+      "ワイン": { rgb: "140 47 75", bg: "linear-gradient(135deg, #9B3556, #5E1A33)", icon: "fa-wine-glass" }
+    };
+    const themeOf = c => CATEGORY_THEME[c] || { rgb: "31 107 79", bg: "linear-gradient(135deg, #2E7D5B, #1F6B4F)", icon: "fa-glass-water" };
+    function renderCategoryTabs() {
+      document.documentElement.style.setProperty("--cat", themeOf(state.category).rgb);
+      document.getElementById("category-tabs").innerHTML = CATEGORIES.map(c => {
+        const t = themeOf(c);
+        return `
+        <button role="tab" class="cat-tab" aria-selected="${c === state.category}" onclick="setCategory('${esc(c)}')"
+                style="--tab-bg:${t.bg}; --tab-shadow:rgb(${t.rgb} / .35)">
+          <i class="fa-solid ${t.icon} text-base"></i>${esc(c)}<span class="cat-count">${available().filter(d => d.category === c).length}</span>
+        </button>`; }).join("");
+    }
+    function setCategory(c) { state.category = c; state.filters = {}; renderMenu(); }
+
+    function renderTasteFilters() {
+      document.getElementById("taste-filters").innerHTML = filtersFor(state.category).map(f => `
+        <div class="flex items-center gap-2">
+          <span class="w-12 flex-shrink-0 text-xs font-bold text-muted">${f.label}</span>
+          <div class="flex-1 flex gap-1 p-1 rounded-full bg-surface border border-line">
+            ${f.options.map(o => `<button class="seg" aria-pressed="${(state.filters[f.group] || "all") === o.key}" onclick="setTasteFilter('${f.group}', '${o.key}')">${o.label}</button>`).join("")}
+          </div>
+        </div>`).join("");
+    }
+    function setTasteFilter(group, key) { state.filters[group] = key; renderMenu(); }
+    function resetFilters() { state.filters = {}; renderMenu(); }
+    function matchesFilters(d) {
+      return filtersFor(state.category).every(f => {
+        const o = f.options.find(x => x.key === (state.filters[f.group] || "all"));
+        return !o || !o.test || o.test(d);
+      });
+    }
+
+    function renderDiagnosisBanner() {
+      const box = document.getElementById("diagnosis-banner");
+      if (!state.diagnosed) {
+        box.innerHTML = `
+          <button onclick="setTab('shindan')" class="w-full rounded-2xl p-4 flex items-center gap-3 text-left text-white active:scale-[.99] transition-transform shadow-lg"
+                  style="background: linear-gradient(120deg, #1F6B4F 0%, #2B4C7E 100%)">
+            <span class="w-11 h-11 rounded-full bg-white/15 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-wand-magic-sparkles text-[#F2D27A]"></i></span>
+            <span class="flex-1 min-w-0">
+              <span class="block font-mincho font-extrabold">迷ったら、好み診断</span>
+              <span class="block text-xs text-white/75 mt-0.5">${QUESTIONS.length}つの質問で、あなたに合う1杯がわかります</span>
+            </span>
+            <i class="fa-solid fa-chevron-right text-white/70 text-sm"></i>
+          </button>`;
+        return;
+      }
+      box.innerHTML = `
+        <div class="card p-3 pl-4 flex items-center gap-3">
+          <div class="flex-1 min-w-0">
+            <p class="text-[11px] text-muted">あなたは</p>
+            <p class="font-mincho font-extrabold leading-tight truncate">${esc(TASTE_TYPES[getTasteTypeKey(userProfile)].name)} タイプ</p>
+          </div>
+          <div class="flex gap-1 p-1 rounded-full bg-paper border border-line flex-shrink-0">
+            <button class="seg px-3" aria-pressed="${!state.sortByMatch}" onclick="setSort(false)">いつもの順</button>
+            <button class="seg px-3" aria-pressed="${state.sortByMatch}" onclick="setSort(true)">相性順</button>
+          </div>
+        </div>
+        <button onclick="resetDiagnosis()" class="mt-2 ml-auto flex items-center gap-1.5 text-xs font-bold text-stamp px-1">
+          <i class="fa-solid fa-eraser"></i>相性をリセット
+        </button>`;
+    }
+    function setSort(on) { state.sortByMatch = on; renderMenu(); }
+
+    function statusBadge(d) {
+      if (d.soldOut) return `<span class="stamp absolute top-1/3 left-1/2 -translate-x-1/2 px-2 py-0.5 text-sm z-10 whitespace-nowrap">本日品切れ</span>`;
+      if (d.fewLeft) return `<span class="absolute top-2 left-2 z-10 text-[10px] font-bold text-white bg-stamp rounded-full px-2 py-0.5">残りわずか</span>`;
+      return "";
+    }
+    function matchBadge(d, cls = "") {
+      if (!state.diagnosed) return "";
+      return `<span class="${cls} inline-flex items-baseline gap-0.5 font-mincho font-extrabold text-accent leading-none"><span class="text-[10px] font-sans font-bold text-muted mr-0.5">相性</span><span class="text-lg">${getMatchPercent(d)}</span><span class="text-[10px]">%</span></span>`;
+    }
+
+    // お品書きのカード（押すと、カードが回って商品ページに入る）
+    function cardButton(d, cls, inner) {
+      return `<button class="menu-card ${cls}" onclick="openProduct('${d.id}', this)" aria-label="${esc(d.name)}のページを見る">${inner}</button>`;
+    }
+
+    function renderMenu() {
+      renderCategoryTabs();
+      renderTasteFilters();
+      renderDiagnosisBanner();
+
+      let list = drinks.filter(d => d.category === state.category && matchesFilters(d));
+      if (state.diagnosed && state.sortByMatch) list = [...list].sort((a, b) => getMatchPercent(b) - getMatchPercent(a));
+      // 相性順のときは、限定も一緒に並べる（おすすめ順がわかりやすいように）
+      const specials = state.sortByMatch ? [] : list.filter(d => d.special);
+      const regulars = state.sortByMatch ? list : list.filter(d => !d.special);
+
+      document.getElementById("special-section").classList.toggle("hidden", specials.length === 0);
+      document.getElementById("special-list").innerHTML = specials.map(d => cardButton(d, "snap-start flex-shrink-0 w-[78%]", `
+          <div class="special-card ${d.soldOut ? "sold-out" : ""} relative h-full text-left p-4 flex gap-3 overflow-hidden">
+            ${statusBadge(d)}
+            <span class="absolute top-0 right-4 text-[10px] font-bold text-white px-2 pt-1 pb-1.5 rounded-b-md" style="background:rgb(var(--gold))">限定</span>
+            <div class="glow w-16 h-36 left-3 top-10" style="background:${TYPE_INFO[d.type].color}"></div>
+            ${bottleSvg(d, "w-14 h-44 flex-shrink-0 relative")}
+            <div class="min-w-0 flex-1 flex flex-col dim">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                ${d.prefecture ? `<span class="pref-box text-[11px] px-1.5 rounded">${esc(d.prefecture)}</span>` : ""}
+                ${d.tags.map(t => `<span class="text-[10px] font-bold text-accent bg-accent/10 rounded-full px-2 py-0.5">${esc(t)}</span>`).join("")}
+              </div>
+              <p class="text-[11px] text-muted mt-2 min-h-[16px]">${sameAsName(d) ? "" : esc(displayKana(d))}</p>
+              <p class="font-mincho font-extrabold text-xl leading-tight">${esc(d.name)}</p>
+              <p class="text-xs text-muted mt-0.5">${esc(d.grade)}</p>
+              <p class="font-hand text-[13px] leading-relaxed mt-2 line-clamp-3">${esc(d.comment)}</p>
+              <div class="mt-auto pt-2 flex items-center justify-between gap-2">
+                ${matchBadge(d) || "<span></span>"}
+                <div class="flex items-center gap-1 flex-shrink-0">${radar(d, 44)}${typeMark(d)}</div>
+              </div>
+            </div>
+          </div>`)).join("");
+
+      document.getElementById("lineup-title").textContent = state.sortByMatch ? "あなたとの相性順" : (specials.length ? "今日のラインナップ" : `今日の${state.category}`);
+      document.getElementById("lineup-count").textContent = `${list.length} 銘柄`;
+      document.getElementById("board-grid").innerHTML = regulars.map((d, i) => cardButton(d, "", `
+          <div class="board-cell ${d.soldOut ? "sold-out" : ""} h-full text-left p-2.5 pb-3 flex flex-col">
+            ${statusBadge(d)}
+            <div class="flex justify-between items-start gap-1 dim min-h-[24px]">
+              ${state.sortByMatch ? `<span class="font-mincho font-extrabold text-sm ${i < 3 ? "text-accent" : "text-muted"}">${i + 1}位</span>` : "<span></span>"}
+              ${d.prefecture ? `<span class="pref-box text-xs px-1.5 py-0.5 rounded-sm flex-shrink-0">${esc(d.prefecture)}</span>` : ""}
+            </div>
+            <span class="absolute inset-x-0 top-0 h-1" style="background:${TYPE_INFO[d.type].color}"></span>
+            <div class="flex items-end gap-1 mt-1 relative">
+              <div class="glow w-10 h-28 left-1 top-4" style="background:${TYPE_INFO[d.type].color}"></div>
+              ${bottleSvg(d, "w-11 h-36 flex-shrink-0 relative")}
+              <div class="flex-1 min-w-0 pb-1 dim">
+                ${sameAsName(d) ? "" : `<p class="text-[10px] text-muted leading-tight">${esc(displayKana(d))}</p>`}
+                <p class="font-mincho font-extrabold text-[17px] leading-tight break-words mt-0.5">${esc(d.name)}</p>
+                <p class="font-hand text-[12px] leading-snug mt-1.5 text-ink/80 line-clamp-4">${esc(d.comment)}</p>
+              </div>
+            </div>
+            <div class="flex items-center justify-between mt-auto pt-2 dim">
+              <span class="flex items-center gap-1">${typeMark(d)}${radar(d, 36)}</span>
+              ${matchBadge(d)}
+            </div>
+          </div>`)).join("");
+
+      document.getElementById("board-empty").classList.toggle("hidden", list.length > 0);
+    }
+
+    // =============================================================
+    //  好み診断（index.html の診断と同じ質問・同じ動き）
+    // =============================================================
+    let currentStep = 0;
+    const SHINDAN_STEPS = ["intro", "quiz", "analyzing", "result"];
+    function showShindanStep(step) {
+      SHINDAN_STEPS.forEach(s => {
+        const el = document.getElementById("shindan-" + s);
+        el.classList.toggle("hidden", s !== step);
+        if (s === "analyzing") el.classList.toggle("flex", s === step);
+      });
+      if (step === "intro") {
+        animateRadarChart(document.getElementById("intro-radar"), [{ values: NEUTRAL_PROFILE, fill: "rgb(var(--accent) / 0.12)", stroke: "rgb(var(--accent))", dashed: true }], 200);
+      }
+      if (step === "result") renderResult();
+      window.scrollTo({ top: 0 });
+    }
+
+    function startDiagnosis() {
+      cancelAnalyzing();
+      currentStep = 0; quizAnswers = []; userProfile = { ...NEUTRAL_PROFILE }; userAnswerCounts = {};
+      showShindanStep("quiz");
+      renderQuiz();
+    }
+
+    function renderQuiz() {
+      if (currentStep >= QUESTIONS.length) { showAnalyzingScreen(); return; }
+      const qObj = QUESTIONS[currentStep];
+      document.getElementById("quiz-step-label").innerText = `QUESTION ${currentStep + 1} / ${QUESTIONS.length}`;
+      document.getElementById("quiz-title").innerText = qObj.q;
+
+      const container = document.getElementById("quiz-options-container");
+      container.innerHTML = "";
+      let answered = false;
+      qObj.options.forEach((opt, i) => {
+        const btn = document.createElement("button");
+        btn.className = "option-card fade-up";
+        btn.style.animationDelay = `${i * 50}ms`;
+        btn.innerHTML = '<span class="option-check"><i class="fa-solid fa-check"></i></span><span class="option-text"></span>';
+        btn.querySelector(".option-text").textContent = opt.text;
+        btn.onclick = function () {
+          if (answered) return;
+          answered = true;
+          btn.classList.add("is-selected");
+          // 選んだ状態を少し見せてから次の質問へ
+          setTimeout(() => answerQuestion(opt.profile), 220);
+        };
+        container.appendChild(btn);
+      });
+
+      document.getElementById("quiz-progress").innerHTML = QUESTIONS.map((_, i) =>
+        `<div class="h-1 flex-1 rounded-full transition-colors duration-300 ${i <= currentStep ? "bg-accent" : "bg-line"}"></div>`
+      ).join("");
+    }
+
+    function answerQuestion(profile) {
+      quizAnswers.push(profile);
+      userProfile = computeUserProfile();
+      currentStep++;
+      if (currentStep < QUESTIONS.length) renderQuiz();
+      else showAnalyzingScreen();
+    }
+
+    // ---- 分析中の演出 ----
+    //   六角形が揺れながら、項目が1つずつ決まっていき、最後にタイプを発表
+    let analyzingTimers = [];
+    let analyzingFrame = null;
+    let analyzingActive = false;
+
+    function cancelAnalyzing() {
+      analyzingActive = false;
+      analyzingTimers.forEach(clearTimeout);
+      analyzingTimers = [];
+      if (analyzingFrame) cancelAnimationFrame(analyzingFrame);
+      analyzingFrame = null;
+    }
+
+    function showAnalyzingScreen() {
+      cancelAnalyzing();
+      analyzingActive = true;
+      showShindanStep("analyzing");
+
+      const radarBox = document.getElementById("analyzing-radar");
+      const step = document.getElementById("analyzing-step");
+      const bar = document.getElementById("analyzing-bar");
+      const reveal = document.getElementById("analyzing-reveal");
+      reveal.classList.add("opacity-0", "scale-75");
+      bar.style.transition = "none"; bar.style.width = "0%";
+      document.getElementById("analyzing-bar-track").style.opacity = "1";
+      document.getElementById("analyzing-type").innerText = TASTE_TYPES[getTasteTypeKey(userProfile)].name;
+
+      const STEP_MS = 520;
+      const settled = {};
+      let highlight = null;
+      const start = performance.now();
+      const frame = now => {
+        const t = (now - start) / 1000;
+        const values = {};
+        TASTE_AXES.forEach((a, i) => {
+          // まだ決まっていない要素は、ゆらゆら揺れる
+          values[a.key] = settled[a.key] != null
+            ? settled[a.key]
+            : 50 + 35 * Math.sin(t * 7 + i * 1.7) * Math.cos(t * 3.1 + i);
+        });
+        renderRadarChart(radarBox, [{ values, fill: "rgb(var(--accent) / 0.2)", stroke: "rgb(var(--accent))" }], 230, { highlight });
+        analyzingFrame = requestAnimationFrame(frame);
+      };
+      analyzingFrame = requestAnimationFrame(frame);
+
+      TASTE_AXES.forEach((a, i) => {
+        analyzingTimers.push(setTimeout(() => {
+          highlight = a.key;
+          step.innerText = `${a.label}の好みを読み解いています…`;
+          bar.style.transition = `width ${STEP_MS}ms linear`;
+          bar.style.width = `${(i + 1) / TASTE_AXES.length * 100}%`;
+        }, 300 + i * STEP_MS));
+        analyzingTimers.push(setTimeout(() => { settled[a.key] = userProfile[a.key]; }, 300 + (i + 1) * STEP_MS - 120));
+      });
+      const doneAt = 300 + TASTE_AXES.length * STEP_MS;
+      analyzingTimers.push(setTimeout(() => {
+        highlight = null;
+        step.innerText = "あなたにぴったりの一杯が見つかりました";
+        document.getElementById("analyzing-bar-track").style.opacity = "0";
+        reveal.classList.remove("opacity-0", "scale-75");
+      }, doneAt));
+      analyzingTimers.push(setTimeout(finishAnalyzing, doneAt + 1500));
+    }
+
+    // 演出を終えて（またはタップでスキップして）結果へ
+    function finishAnalyzing() {
+      if (!analyzingActive) return;
+      cancelAnalyzing();
+      state.diagnosed = true;
+      state.resultFilter = "おすすめ";
+      store.set("menu-diagnosis", quizAnswers);
+      document.getElementById("result-radar")._radarValues = null; // 中心から大きくする
+      showShindanStep("result");
+    }
+
+    // ---- 結果：タイプと、相性の高い順のおすすめ ----
+    const RECOMMEND_FILTER = "おすすめ";
+    const RECOMMEND_COUNT = 3;
+    const getRankedDrinks = () => available()
+      .map(drink => ({ drink, match: getMatchPercent(drink) }))
+      .sort((a, b) => b.match - a.match);
+
+    function renderResult() {
+      const type = TASTE_TYPES[getTasteTypeKey(userProfile)];
+      document.getElementById("result-type").textContent = type.name + " タイプ";
+      document.getElementById("result-desc").textContent = type.desc;
+      animateRadarChart(document.getElementById("result-radar"),
+        [{ values: userProfile, fill: "rgb(var(--accent) / 0.2)", stroke: "rgb(var(--accent))" }], 230);
+      renderResultFilter();
+      renderRecommendations();
+    }
+
+    function renderResultFilter() {
+      document.getElementById("result-filter").innerHTML = [RECOMMEND_FILTER, ...CATEGORIES].map(c => {
+        const on = c === state.resultFilter;
+        return `<button onclick="state.resultFilter='${esc(c)}'; renderResultFilter(); renderRecommendations();"
+          class="flex-shrink-0 h-8 px-3.5 rounded-full text-[13px] font-bold border transition ${on ? "bg-accent border-accent text-white" : "bg-surface border-line text-ink"}">
+          ${c === RECOMMEND_FILTER ? '<i class="fa-solid fa-star text-[11px] mr-1"></i>' : ""}${esc(c)}</button>`;
+      }).join("");
+    }
+
+    // 相性の高い順に一覧を表示（順位は全体での順位）
+    function renderRecommendations() {
+      const rows = [];
+      getRankedDrinks().forEach(({ drink, match }, index) => {
+        if (state.resultFilter === RECOMMEND_FILTER ? index >= RECOMMEND_COUNT : drink.category !== state.resultFilter) return;
+        if (index === 0) {
+          // 1位はひと回り大きく、BEST MATCH として目立たせる
+          rows.push(`
+            <button onclick="openProduct('${drink.id}', this)" class="card w-full relative overflow-hidden text-left border-2 border-accent bg-accent/5 transition active:scale-[.99] fade-up">
+              <div class="absolute top-0 left-0 bg-accent text-white text-xs font-bold pl-3 pr-4 py-1 rounded-br-2xl"><i class="fa-solid fa-crown mr-1"></i>BEST MATCH</div>
+              <div class="flex items-center gap-3 px-4 pt-8 pb-3">
+                ${bottleSvg(drink, "w-9 h-28 flex-shrink-0")}
+                <div class="flex-1 min-w-0">
+                  <p class="font-mincho font-extrabold text-lg text-ink leading-snug">${esc(drink.name)}</p>
+                  <p class="text-xs text-muted truncate mt-0.5">${esc(metaLine(drink))}</p>
+                  <p class="text-xs text-accent font-bold mt-1.5 line-clamp-2">${esc(getMatchReason(drink))}</p>
+                </div>
+                <div class="text-right flex-shrink-0 font-mincho font-extrabold text-accent leading-none"><span class="text-[34px]">${match}</span><span class="text-sm">%</span></div>
+              </div>
+            </button>`);
+          return;
+        }
+        rows.push(`
+          <button onclick="openProduct('${drink.id}', this)" class="card w-full flex items-center gap-3 p-2.5 text-left transition active:scale-[.99] fade-up" style="animation-delay:${Math.min(rows.length, 8) * 40}ms">
+            <span class="w-5 text-center font-mincho font-bold text-sm ${index < 3 ? "text-accent" : "text-muted"}">${index + 1}</span>
+            ${bottleSvg(drink, "w-5 h-14 flex-shrink-0")}
+            <div class="flex-1 min-w-0">
+              <p class="font-mincho font-bold text-[15px] text-ink truncate">${esc(drink.name)}</p>
+              <p class="text-xs text-muted truncate mt-0.5">${esc(metaLine(drink))}</p>
+            </div>
+            <div class="w-11 h-11 flex-shrink-0">${radarChartHtml([{ values: drink.taste, fill: "rgb(var(--accent) / 0.25)", stroke: "rgb(var(--accent))" }], 44, { labels: false })}</div>
+            <div class="w-12 text-right flex-shrink-0 font-mincho font-extrabold text-accent leading-none"><span class="text-xl">${match}</span><span class="text-xs">%</span></div>
+          </button>`);
+      });
+      document.getElementById("recommendation-list").innerHTML = rows.join("") ||
+        `<p class="text-center text-sm text-muted py-8">いま出せるお酒がありません</p>`;
+    }
+
+    function showMenuByMatch() {
+      state.sortByMatch = true;
+      const best = getRankedDrinks()[0];
+      if (best) state.category = best.drink.category;
+      setTab("menu");
+    }
+
+    // =============================================================
+    //  商品ページ（お品書きのカードを押すと、カードが回ってこのページに入る）
+    //  見せ方は、診断アプリの「本日の1杯」と同じ（和紙・はんこ・筆のマーカー）
+    // =============================================================
+    const WINE_THEME = { red: "#8C2F4B", white: "#A8863A", rose: "#C45C7A" };
+    const WINE_WORD = { red: "赤", white: "白", rose: "ロゼ" };
+    // 商品ページの色：theme を書いたお酒はその色、日本酒は甘・旨・辛の色、ワインは赤・白・ロゼの色
+    const themeColor = d => d.theme || (d.category === "ワイン" ? (WINE_THEME[d.color] || WINE_THEME.red) : TYPE_INFO[d.type].color);
+    const POINT_NUMS = ["壱", "弐", "参", "肆", "伍"];
+
+    // チャートでいちばん目立つ2項目を、ひとことに
+    function strongAxes(d) {
+      return TASTE_AXES
+        .map(a => ({ a, v: d.taste[a.key] }))
+        .filter(x => Math.abs(x.v - 50) >= 10)
+        .sort((p, q) => Math.abs(q.v - 50) - Math.abs(p.v - 50))
+        .map(x => x.v >= 50 ? x.a.high : x.a.low);
+    }
+    function tasteSummary(d) {
+      const top = strongAxes(d).slice(0, 2);
+      return top.length ? `「${top.join("」と「")}」が特長` : "バランスのとれた味わい";
+    }
+
+    // 似ているお酒（六角形の形が近い順）
+    function similarTo(d) {
+      return available().filter(o => o.id !== d.id)
+        .map(o => ({ o, dist: Math.sqrt(TASTE_AXES.reduce((s, a) => s + a.weight * (o.taste[a.key] - d.taste[a.key]) ** 2, 0)) }))
+        .sort((a, b) => a.dist - b.dist).slice(0, 3).map(x => x.o);
+    }
+
+    // 中身が書いていないお酒は、味わいから作る
+    function productInfo(d) {
+      const strong = strongAxes(d);
+      return {
+        catch: d.catch || tasteSummary(d),
+        keywords: d.keywords && d.keywords.length ? d.keywords : strong.slice(0, 3),
+        points: d.points && d.points.length ? d.points : strong.slice(0, 3).map(w => `${w}を楽しめる`),
+        matching: Array.isArray(d.matching) ? d.matching : String(d.matching || "").split(/[\n・]/).map(x => x.trim()).filter(Boolean),
+        trivia: d.trivia || ""
+      };
+    }
+
+    // 筆で引いたようなマーカー（商品の色で塗る）
+    function markerStyle(color) {
+      const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 40' preserveAspectRatio='none'><path fill='${color}' fill-opacity='.38' d='M5 13C42 6 92 10 141 8s99-4 154 3c4 7 3 15-1 21-55 4-114 1-168 4-42 2-87 3-122-2-6-7-6-17-4-24z'/></svg>`;
+      return `--marker: url(&quot;data:image/svg+xml,${encodeURIComponent(svg)}&quot;)`;
+    }
+
+    // 0〜100 の値を、5つの点のメーターに
+    function meterRow(left, right, value) {
+      return `
+        <div class="rd-meter flex items-center gap-3">
+          <span class="w-14 text-right flex-shrink-0">${left}</span>
+          <div class="relative flex-1 h-[2px] bg-[#d9ccb3]">
+            ${[0, 25, 50, 75, 100].map(x => `<span class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#d9ccb3]" style="left:${x}%"></span>`).join("")}
+            <span class="meter-dot absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full" style="left:50%; background:var(--shu)" data-left="${Math.max(0, Math.min(100, value))}%"></span>
+          </div>
+          <span class="w-14 flex-shrink-0">${right}</span>
+        </div>`;
+    }
+
+    function renderProduct(d) {
+      const c = themeColor(d);
+      const info = productInfo(d);
+      const sims = similarTo(d);
+      const hanko = d.category === "ワイン" ? `${WINE_WORD[d.color] || ""}ワイン` : TYPE_INFO[d.type].word;
+      const kana = sameAsName(d) ? "" : displayKana(d);
+      const sub = [d.grade, d.maker].filter(Boolean).join("　");
+      let n = 0;   // 上から順にふわっと出す番号
+      const body = document.getElementById("product-body");
+      body.style.setProperty("--shu", c);
+      body.innerHTML = `
+        <div class="pv-top">
+          <button class="pv-back" onclick="closeProduct()"><i class="fa-solid fa-arrow-left text-xs"></i>お品書きへ</button>
+          <span class="text-xs font-bold tracking-widest" style="color:var(--shu)">${esc(d.category)}</span>
+        </div>
+        <div class="seigaiha"></div>
+        <div class="px-5 pb-10 -mt-1 ${d.soldOut ? "sold-out" : ""}">
+          <div class="wa-rule pv-in" style="--d:${n++}"><span>本日の1杯</span></div>
+
+          <!-- 瓶（手で切り抜いたような形）＋ はんこ -->
+          <div class="flex items-center justify-center gap-5 mt-5 pv-in" style="--d:${n++}">
+            <div class="photo-frame w-[176px] h-[250px]">
+              <div class="glow w-24 h-48 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" style="background:${c}; opacity:.35"></div>
+              ${bottleSvg(d, "w-[70px] h-[232px] relative")}
+            </div>
+            <div class="stamp-col">
+              <span class="hanko hanko-stamp">${esc(hanko)}</span>
+              ${d.prefecture ? `<span class="pref-seal">${esc(d.prefecture)}</span>` : ""}
+            </div>
+          </div>
+          ${d.soldOut ? `<p class="text-center mt-3"><span class="stamp inline-block px-3 py-1 text-base">本日品切れ</span></p>` : ""}
+
+          <!-- 名前（筆のマーカー）＋ 読み -->
+          <h2 class="pname pv-in" style="--d:${n++}">
+            <span class="pname-main"><span class="marker" style="${markerStyle(c)}">${esc(d.name)}</span></span>
+            ${kana ? `<span class="pname-kana">${esc(kana)}</span>` : ""}
+          </h2>
+          ${sub ? `<p class="text-center text-xs text-[#6b6056] tracking-wider pv-in" style="--d:${n - 1}">${esc(sub)}</p>` : ""}
+
+          <!-- キャッチコピー ＋ キーワード -->
+          <div class="mt-5 pv-in" style="--d:${n++}">
+            <p class="rd-catch">${esc(info.catch)}</p>
+            ${info.keywords.length ? `<ul class="flex flex-wrap justify-center gap-1.5 mt-3">${info.keywords.map(k => `<li class="kw-chip">${esc(k)}</li>`).join("")}</ul>` : ""}
+          </div>
+
+          ${state.diagnosed ? `
+          <!-- あなたとの相性 -->
+          <div class="match-box mt-6 p-4 text-center pv-in" style="--d:${n++}">
+            <p class="text-xs font-bold tracking-widest text-[#6b6056]">あなたとの相性</p>
+            <p class="font-extrabold leading-none mt-1" style="color:var(--shu)"><span class="text-[40px]">${getMatchPercent(d)}</span><span class="text-base">%</span></p>
+            <p class="text-sm font-bold mt-2" style="color:var(--shu)">${esc(getMatchReason(d))}</p>
+          </div>` : ""}
+
+          <!-- 味わい：メーター ＋ 六角形 -->
+          <section class="mt-7 pv-in" style="--d:${n++}">
+            <h3 class="wa-rule mb-4"><span>味わい</span></h3>
+            <div class="space-y-3 px-1">
+              ${meterRow("ドライ", "甘め", d.taste.sweetness)}
+              ${meterRow("軽やか", "濃厚", d.taste.body)}
+            </div>
+            <div id="pv-radar" class="flex justify-center mt-3"></div>
+            ${state.diagnosed ? `
+              <div class="flex justify-center gap-4 text-xs text-[#6b6056] -mt-1">
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full" style="background:${c}"></span>このお酒</span>
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full border-2 border-dashed border-[#6b6056] bg-white"></span>あなたの好み</span>
+              </div>` : `<p class="text-center text-xs text-[#6b6056] -mt-1">外側ほど、その味が強め</p>`}
+          </section>
+
+          <!-- ここがおいしい（壱・弐・参） -->
+          ${info.points.length ? `
+          <section class="mt-7 pv-in" style="--d:${n++}">
+            <h3 class="wa-rule mb-3"><span>ここがおいしい</span></h3>
+            <ol class="space-y-2.5">
+              ${info.points.map((pt, i) => `<li class="rd-point flex items-start gap-2.5"><span class="point-num">${POINT_NUMS[i] || i + 1}</span><span class="pt-0.5">${esc(pt)}</span></li>`).join("")}
+            </ol>
+          </section>` : ""}
+
+          <!-- 店主からのひとこと -->
+          ${d.comment ? `
+          <section class="mt-7 pv-in" style="--d:${n++}">
+            <h3 class="wa-rule mb-3"><span>店主からのひとこと</span></h3>
+            <p class="rd-body">${esc(d.comment)}</p>
+            ${d.specs && d.specs.length ? `<p class="text-xs text-[#6b6056] mt-2">${d.specs.map(esc).join("　/　")}</p>` : ""}
+          </section>` : ""}
+
+          <!-- 合わせたい肴 -->
+          ${info.matching.length ? `
+          <section class="mt-7 pv-in" style="--d:${n++}">
+            <h3 class="wa-rule mb-3"><span>合わせたい肴</span></h3>
+            <ul class="flex flex-wrap justify-center gap-2">${info.matching.map(m => `<li class="rd-chip">${esc(m)}</li>`).join("")}</ul>
+          </section>` : ""}
+
+          <!-- 豆知識（タップでひらく） -->
+          ${info.trivia ? `
+          <section class="mt-7 pv-in" style="--d:${n++}">
+            <button class="trivia-btn" onclick="toggleTrivia(this)" aria-expanded="false">
+              <span>豆知識をのぞく</span><i class="fa-solid fa-chevron-down text-[11px] transition-transform duration-300"></i>
+            </button>
+            <div class="grid grid-rows-[0fr] opacity-0 transition-all duration-500 ease-out" data-trivia>
+              <div class="overflow-hidden"><p class="rd-body px-3 pt-3">${esc(info.trivia)}</p></div>
+            </div>
+          </section>` : ""}
+
+          <!-- スタッフに見せる -->
+          ${d.soldOut ? "" : `
+          <div class="mt-8 pv-in" style="--d:${n++}">
+            <button class="btn-enji" onclick="openStaffView('${d.id}')"><i class="fa-solid fa-bell-concierge"></i>スタッフに見せる</button>
+            <p class="text-center text-xs text-[#6b6056] mt-2">タップすると、この1杯が大きく表示されます</p>
+          </div>`}
+
+          <!-- これが好きなら -->
+          ${sims.length ? `
+          <section class="mt-8 pv-in" style="--d:${n++}">
+            <h3 class="wa-rule mb-1"><span>これが好きなら</span></h3>
+            <p class="text-center text-xs text-[#6b6056] mb-3">六角形の形が近いお酒です</p>
+            <div class="grid grid-cols-3 gap-2">
+              ${sims.map(o => `
+                <button class="menu-card board-cell p-2 flex flex-col items-center text-center" onclick="openProduct('${o.id}', this)">
+                  <div class="flex items-end justify-center gap-1">${bottleSvg(o, "w-7 h-20")}${radar(o, 40)}</div>
+                  <span class="block font-mincho font-extrabold text-[13px] mt-1 leading-tight">${esc(o.name)}</span>
+                  <span class="block text-[10px] text-muted">${esc([o.category, o.prefecture].filter(Boolean).join("・"))}</span>
+                </button>`).join("")}
+            </div>
+          </section>` : ""}
+
+          <div class="flex gap-3 mt-8">
+            <button class="btn-line" onclick="closeProduct()">お品書きに戻る</button>
+            <button class="btn-line" onclick="closeProduct(); setTab('shindan')">${state.diagnosed ? "診断結果へ" : "好み診断へ"}</button>
+          </div>
+        </div>`;
+
+      // 六角形は中心から育つように（診断済みなら、あなたの好みを点線で重ねる）
+      const series = [{ values: d.taste, fill: c + "33", stroke: c }];
+      if (state.diagnosed) series.push({ values: userProfile, fill: "none", stroke: "#6B6560", dashed: true });
+      const radarBox = document.getElementById("pv-radar");
+      setTimeout(() => animateRadarChart(radarBox, series, 240, { accent: c }), 650);
+      // メーターの点は、まん中からそれぞれの位置へ
+      setTimeout(() => body.querySelectorAll(".meter-dot").forEach(el => el.style.left = el.dataset.left), 750);
+    }
+
+    function toggleTrivia(btn) {
+      const open = btn.getAttribute("aria-expanded") !== "true";
+      btn.setAttribute("aria-expanded", open);
+      btn.querySelector("i").style.transform = open ? "rotate(180deg)" : "";
+      const box = btn.nextElementSibling;
+      box.classList.toggle("grid-rows-[0fr]", !open); box.classList.toggle("grid-rows-[1fr]", open);
+      box.classList.toggle("opacity-0", !open); box.classList.toggle("opacity-100", open);
+    }
+
+    // ---- カードの演出：押したカードが持ち上がり、くるっと回りながら大きくなって、商品ページに切り替わる ----
+    const reduceMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let productOpen = false;
+    let cardAnimating = false;
+
+    function openProduct(id, src) {
+      const d = byId[id];
+      if (!d || cardAnimating) return;
+      const view = document.getElementById("product-view");
+      const paper = document.getElementById("product-body");
+
+      const show = () => {
+        renderProduct(d);
+        view.classList.remove("hidden");
+        view.scrollTop = 0;
+        document.body.style.overflow = "hidden";
+        productOpen = true;
+        if (!reduceMotion()) {
+          paper.animate([
+            { transform: "perspective(1400px) rotateY(-90deg) scale(.88)", opacity: .4 },
+            { transform: "perspective(1400px) rotateY(8deg) scale(1.01)", opacity: 1, offset: .7 },
+            { transform: "perspective(1400px) rotateY(0) scale(1)", opacity: 1 }
+          ], { duration: 520, easing: "cubic-bezier(.2,.8,.3,1)" });
+          view.animate([{ backgroundColor: "rgba(28,25,23,0)" }, { backgroundColor: "rgba(28,25,23,.55)" }], { duration: 400 });
+        }
+      };
+
+      if (!src || reduceMotion()) { show(); return; }
+
+      // 押したカードの分身を作って、その場から動かす
+      const r = src.getBoundingClientRect();
+      const ghost = src.cloneNode(true);
+      ghost.removeAttribute("onclick");
+      ghost.classList.add("card-ghost");
+      Object.assign(ghost.style, { position: "fixed", left: r.left + "px", top: r.top + "px", width: r.width + "px", height: r.height + "px", margin: "0", zIndex: "65" });
+      document.body.appendChild(ghost);
+      src.style.visibility = "hidden";
+      cardAnimating = true;
+
+      const dx = window.innerWidth / 2 - (r.left + r.width / 2);
+      const dy = window.innerHeight / 2 - (r.top + r.height / 2);
+      const grow = Math.min(1.7, (window.innerWidth * 0.8) / r.width);
+      const anim = ghost.animate([
+        { transform: "perspective(1000px) translate(0, 0) rotateY(0) scale(1)", filter: "drop-shadow(0 2px 4px rgba(0,0,0,.1))" },
+        { transform: "perspective(1000px) translate(0, -12px) rotateY(0) rotateZ(-2deg) scale(1.06)", filter: "drop-shadow(0 18px 24px rgba(0,0,0,.28))", offset: .28 },
+        { transform: `perspective(1000px) translate(${dx}px, ${dy}px) rotateY(90deg) scale(${grow})`, filter: "drop-shadow(0 30px 40px rgba(0,0,0,.3))" }
+      ], { duration: 560, easing: "cubic-bezier(.55,0,.35,1)", fill: "forwards" });
+      anim.onfinish = () => {
+        ghost.remove();
+        src.style.visibility = "";
+        cardAnimating = false;
+        show();
+      };
+    }
+
+    function closeProduct() {
+      if (!productOpen) return;
+      const view = document.getElementById("product-view");
+      const paper = document.getElementById("product-body");
+      const done = () => {
+        view.classList.add("hidden");
+        document.body.style.overflow = "";
+        productOpen = false;
+      };
+      if (reduceMotion()) { done(); return; }
+      paper.animate([
+        { transform: "perspective(1400px) rotateY(0) scale(1)", opacity: 1 },
+        { transform: "perspective(1400px) rotateY(90deg) scale(.88)", opacity: .3 }
+      ], { duration: 340, easing: "cubic-bezier(.5,0,.75,0)", fill: "forwards" }).onfinish = () => {
+        done();
+        paper.getAnimations().forEach(a => a.cancel());
+      };
+      view.animate([{ backgroundColor: "rgba(28,25,23,.55)" }, { backgroundColor: "rgba(28,25,23,0)" }], { duration: 340, fill: "forwards" })
+        .onfinish = function () { this.cancel(); };
+    }
+
+    // ---- スタッフに見せる（この1杯を大きく表示） ----
+    function openStaffView(id) {
+      const d = byId[id];
+      const kana = sameAsName(d) ? "" : displayKana(d);
+      document.getElementById("order-list").innerHTML = `
+        <li class="border-b-2 border-dashed border-line pb-5">
+          <p class="text-sm text-muted">${esc([d.category, d.prefecture, d.grade].filter(Boolean).join("・"))}</p>
+          ${kana ? `<p class="text-base text-muted mt-3 tracking-widest">${esc(kana)}</p>` : ""}
+          <p class="font-mincho font-extrabold text-5xl leading-tight mt-1">${esc(d.name)}</p>
+          ${d.maker ? `<p class="text-sm text-muted mt-3">${esc(d.maker)}</p>` : ""}
+        </li>`;
+      document.getElementById("order-screen").classList.remove("hidden");
+    }
+    function closeOrderScreen() {
+      document.getElementById("order-screen").classList.add("hidden");
+    }
+
+    // ---- 相性をリセット（診断の答えを消して、相性％と相性順を出さない状態に戻す） ----
+    function resetDiagnosis() {
+      cancelAnalyzing();
+      currentStep = 0; quizAnswers = []; userProfile = { ...NEUTRAL_PROFILE }; userAnswerCounts = {};
+      state.diagnosed = false;
+      state.sortByMatch = false;
+      store.set("menu-diagnosis", null);
+      if (state.tab === "shindan") showShindanStep("intro"); else renderMenu();
+      showToast("相性をリセットしました");
+    }
+
+    let toastTimer = null;
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.remove("opacity-0", "translate-y-4");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.add("opacity-0", "translate-y-4"), 2000);
+    }
+
+    // =============================================================
+    //  はじめに
+    // =============================================================
+    (function init() {
+      document.title = MENU_CONFIG.title;
+      document.getElementById("menu-title").textContent = MENU_CONFIG.title;
+      document.getElementById("menu-count").textContent =
+        `本日 ${available().length} 銘柄`;
+
+      // 前に診断していれば、その結果を使う
+      const saved = store.get("menu-diagnosis", null);
+      if (Array.isArray(saved) && saved.length === QUESTIONS.length) {
+        quizAnswers = saved;
+        userProfile = computeUserProfile();
+        state.diagnosed = true;
+      }
+      document.querySelectorAll(".q-count").forEach(el => el.textContent = QUESTIONS.length);
+      setTab("menu");
+    })();
+  </script>
+</body>
+</html>
