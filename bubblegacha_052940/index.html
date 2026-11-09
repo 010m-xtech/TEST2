@@ -10,6 +10,61 @@
       }
     })();
   </script>
+  <script>
+    // ===== 端末の利用記録をスプレッドシートへ（下の LOG_URL に Apps Script の URL を入れると動く） =====
+    // 記録するのは「できごと・端末ID（このスマホに保存したランダムな番号）・機種/OS・ブラウザ・画面サイズ・席」だけ（名前や写真は送らない）
+    (function () {
+      var LOG_URL = '';                       // ← スプレッドシートの Apps Script「ウェブアプリのURL」を貼る（空なら何も送らない）
+      var LOG_SECRET = 'boteko-device-log';   // Apps Script 側と同じ合言葉
+      var STORE = 'ぼてこ幸田';
+      var ua = navigator.userAgent;
+      function deviceId() {
+        try {
+          var k = 'beer_app_device_id', v = localStorage.getItem(k); // ガチャのアンケートと同じ番号（シートどうしで照らし合わせられる）
+          if (!v) { v = 'dev_' + Date.now() + '_' + Math.random().toString(36).slice(2, 11); localStorage.setItem(k, v); }
+          return v;
+        } catch (e) { return 'unknown'; }
+      }
+      function osName() {
+        var m;
+        if ((m = ua.match(/iPhone OS (\d+)[_.](\d+)/))) return 'iPhone（iOS ' + m[1] + '.' + m[2] + '）';
+        if ((m = ua.match(/iPad.*? OS (\d+)[_.](\d+)/))) return 'iPad（iOS ' + m[1] + '.' + m[2] + '）';
+        if (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) return 'iPad';
+        if ((m = ua.match(/Android (\d+(?:\.\d+)?)/))) return 'Android ' + m[1];
+        if (/Windows/.test(ua)) return 'Windows';
+        if (/Macintosh/.test(ua)) return 'Mac';
+        return 'その他';
+      }
+      function browserName() {
+        if (/\bLine\//i.test(ua)) return 'LINE';
+        if (/Instagram/i.test(ua)) return 'Instagram';
+        if (/FBAN|FBAV/.test(ua)) return 'Facebook';
+        if (/EdgA?\/|EdgiOS/.test(ua)) return 'Edge';
+        if (/CriOS|Chrome\//.test(ua)) return 'Chrome';
+        if (/FxiOS|Firefox/.test(ua)) return 'Firefox';
+        if (/Safari/.test(ua)) return 'Safari';
+        return 'その他';
+      }
+      // Android の Chrome は機種名を教えてくれる（iPhone は機種名が分からない）
+      var model = '';
+      var modelReady = (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues)
+        ? navigator.userAgentData.getHighEntropyValues(['model']).then(function (v) { model = (v && v.model) || ''; }).catch(function () {})
+        : Promise.resolve();
+      var seat = (function () { var n = parseInt(new URLSearchParams(location.search).get('seat'), 10); return n >= 1 && n <= 18 ? n + '番席' : ''; })();
+      window.btLog = function (event, detail, extra) {
+        if (!LOG_URL) return;
+        Promise.race([modelReady, new Promise(function (r) { setTimeout(r, 400); })]).then(function () {
+          try {
+            var data = { secret: LOG_SECRET, store: STORE, seat: seat, event: event, detail: detail || '', deviceId: deviceId(),
+              device: osName() + (model ? ' ' + model : ''), browser: browserName(), screen: screen.width + '×' + screen.height,
+              page: /gacha/.test(location.pathname) ? 'ガチャ' : '旅' };
+            if (extra) for (var k in extra) data[k] = extra[k];
+            fetch(LOG_URL, { method: 'POST', mode: 'no-cors', keepalive: true, headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(data) }).catch(function () {});
+          } catch (e) {}
+        });
+      };
+    })();
+  </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <script>
@@ -292,6 +347,7 @@
                         body: JSON.stringify(surveyData) 
                     });
                     setIsCompleted(true);
+                    btLog('アンケートに回答', gameResult || '');
                     
                     setTimeout(() => {
                         if (onComplete) onComplete();
@@ -457,19 +513,24 @@
               const savedPrizeId = localStorage.getItem(KEY_RESULT(stopNo));
               const savedSurvey = localStorage.getItem(KEY_SURVEY(stopNo));
               
+              const stopName = STOPS[stopNo] ? STOPS[stopNo].name.slice(3) : '';
               if (savedPrizeId !== null) {
                   setPrizeId(parseInt(savedPrizeId, 10));
                   setStage('result');
+                  btLog('ガチャ（結果をもう一度見た）', stopName);
               } else if (!canPlay(stopNo)) {
                   // まだその名所に着いていない（URLを書き換えて開いた など）
                   setStage('locked');
+                  btLog('ガチャ（まだ到着していない）', stopName);
               } else if (!isShooter(stopNo)) {
                   // 着いてはいるが、この名所に連れてきた写真を撮った人ではない
                   setStage('not_shooter');
+                  btLog('ガチャ（写真を撮った人ではない）', stopName);
               } else {
                   // 旅の画面でボタンを押したら、そのまま動画の演出から始める（ガチャの絵を押す手順はなし）
                   const prize = drawPrize(stopNo);
                   setPrizeId(prize.id);
+                  btLog('ガチャを回した', `${stopName}・${prize.rank}`);
                   localStorage.setItem(KEY_RESULT(stopNo), prize.id.toString());
                   setStage('playing_video');
               }
