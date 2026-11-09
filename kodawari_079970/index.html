@@ -1164,6 +1164,7 @@ text-shadow:0 0 1px rgba(40,12,2,.7),0 0 3px rgba(150,52,10,.45)}
 @media (prefers-reduced-motion:reduce){body.hubv .yard .yl::before,body.hubv .yard .yl b::before{animation:none!important}}
 body.hubv .yard .yd{z-index:auto!important}body.hubv .yard .yl{z-index:2}body.hubv .yard .yfm{z-index:600}
 @media (max-width:340px),(max-height:600px){body.hubv .yard .yl{scale:.8;transform-origin:50% 0}}
+body.hubv .hrow{display:none!important}body.hubv .htg{margin-bottom:clamp(6px,2vh,16px)}
 </style>
 </head>
 <body><div id="bgl" aria-hidden="true"></div>
@@ -1480,12 +1481,12 @@ var tok=0,pending=null,reduced=matchMedia("(prefers-reduced-motion:reduce)").mat
 var AC=function(t){return '<span style="color:var(--acc)">'+t+'</span>'};
 var S=[
 {t:'<b>ご来店ありがとうございます。<br>大将の江田です。<br><i class="gp"></i>お待ちいただく間に、<br>「まずはこれを食べてほしい」<br>と思う'+AC(String(D.length).replace(/\d/g,function(c){return String.fromCharCode(c.charCodeAt(0)+65248)})+'本の焼き鳥')+'を<br>紹介させてください。</b>'},
-{t:'<b>その前に、'+AC('2つだけ')+'<br>聞かせてください。<br>まず、性別は？</b>',q:"gender",o:["男性","女性","秘密"]},
+{t:'<b>その前に、<br>差し支えなければ、<br>'+AC('2つだけ')+'教えてください。<br>まず、性別は？</b>',q:"gender",o:["男性","女性","秘密"]},
 {t:'<b>ありがとうございます。<br>続いて、年齢は？</b>',q:"age",o:["34歳以下","35歳以上"]},
-{t:'<b>ありがとうございます！<br>焼き鳥の話は、ニワトリから。<br>実は今、'+AC('ニワトリ')+'が<br>走り回っています。</b>'},
-{t:'<b>ニワトリを捕まえると、<br>その部位の焼き鳥の話を<br>お聞かせします。<br>途中で、ここだけの<br>'+AC('特別なコース')+'のご案内も。<br>それでは、どうぞ。</b>',end:true,note:'※途中でやめても、続きからできます。'},
-{t:'<b>ご来店ありがとうございます。<br>大将の江田です。<br>ニワトリを捕まえると、<br>その部位の焼き鳥の話を<br>お聞かせします。<br>途中で、ここだけの<br>'+AC('特別なコース')+'のご案内も。</b>',end:true},
-{t:'<b>おかえりなさい。<br>ここまでの記録は、<br>残っています。<br>'+AC('続きから')+'どうぞ。</b>',end:true}
+{t:'<b>ご協力ありがとうございました。<br>焼き鳥の話は、ニワトリから。<br>次の画面で、<br>'+AC('ニワトリ')+'が走り回っています。</b>'},
+{t:'<b>ニワトリをタップして捕まえると、<br>その焼き鳥の話を<br>お聞かせします。<br>途中で、ここだけの<br>'+AC('特別なコース')+'のご案内も。<br>それでは、どうぞ。</b>',end:true,note:'※途中でやめても、続きからできます。'},
+{t:'<b>ご来店ありがとうございます。<br>大将の江田です。<br>ニワトリをタップして捕まえると、<br>その焼き鳥の話を<br>お聞かせします。<br>途中で、ここだけの<br>'+AC('特別なコース')+'のご案内も。</b>',end:true},
+{t:'<b>おかえりなさい。<br>ここまでの分は、<br>残っています。<br>'+AC('続きから')+'どうぞ。</b>',end:true}
 ];
 function after(ms,cb,my){var t=setTimeout(f,ms);function f(){if(my!==tok)return;clearTimeout(t);pending=null;cb()}pending=f}
 function typeIn(el,html,my,cb){
@@ -1582,8 +1583,8 @@ m.querySelectorAll(".zkpick").forEach(function(b){b.onclick=function(){var i=+b.
 function hub(){var my=tok,n=D.length,cnt=ccount(),hq,hw;
 v.innerHTML='<div id="hq"></div><div id="hubw"></div>';hq=document.getElementById("hq");hw=document.getElementById("hubw");
 if(cnt>=NEED){noren(function(){go(D.length+1)},1);return}
-chef(hq,cnt===0?(RETURN?["ニワトリを、\nタップして捕まえてください。"]:["走り回るニワトリを、タップして捕まえてください。"]):(!RESUMED&&RESUME0>0&&cnt>=RESUME0&&cnt<NEED?(RESUMED=true,["おかえりなさい。","これまでに"+RESUME0+"つ見ています。",leftMsg()]):[leftMsg()]));
-hw.innerHTML='<div class="yard" id="yard"></div>'+'<div class="htg" role="group" aria-label="お品書き">'+D.map(function(d,i){return'<button type="button" class="htf'+(caught[i]?' on':'')+'" data-i="'+i+'" style="--k:'+i+'" aria-label="'+dn(d)+(caught[i]?'（見ました）':'（まだ見ていません）')+'"><span>'+dn(d)+'</span></button>'}).join("")+'</div>'+'<div class="hrow"><p class="cslab" style="text-align:center;font-size:20px">捕まえた　<span id="cc">'+cnt+'</span>/'+n+'</p>'+'<button type="button" class="zkb" id="zpk">部位をえらぶ</button>'+'</div>';document.getElementById("zpk").onclick=pickPart;(function(){var hd=document.getElementById("hd"),mn=document.querySelector("main");if(hd&&mn){var t=mn.getBoundingClientRect().top+window.scrollY;document.documentElement.style.setProperty("--hdh",Math.round(t)+"px")}})();hw.querySelectorAll(".htf").forEach(function(b){b.onclick=function(){if(busy)return;var i=+b.getAttribute("data-i");caught[i]=true;saveCaught();trk("pick",D[i].n);b.classList.add("on");openSheet(D[i])}});
+chef(hq,cnt===0?(RETURN?["ニワトリを、\nタップして捕まえてください。"]:["走り回るニワトリを、タップして捕まえてください。","見たい部位は、\n下の札からも選べます。"]):(!RESUMED&&RESUME0>0&&cnt>=RESUME0&&cnt<NEED?(RESUMED=true,["おかえりなさい。","これまでに"+RESUME0+"つ見ています。",leftMsg()]):[leftMsg()]));
+hw.innerHTML='<div class="yard" id="yard"></div>'+'<div class="htg" role="group" aria-label="お品書き">'+D.map(function(d,i){return'<button type="button" class="htf'+(caught[i]?' on':'')+'" data-i="'+i+'" style="--k:'+i+'" aria-label="'+dn(d)+(caught[i]?'（見ました）':'（まだ見ていません）')+'"><span>'+dn(d)+'</span></button>'}).join("")+'</div>'+'<div class="hrow"><p class="cslab" style="text-align:center;font-size:20px">捕まえた　<span id="cc">'+cnt+'</span>/'+n+'</p>'+'</div>';(function(){var hd=document.getElementById("hd"),mn=document.querySelector("main");if(hd&&mn){var t=mn.getBoundingClientRect().top+window.scrollY;document.documentElement.style.setProperty("--hdh",Math.round(t)+"px")}})();hw.querySelectorAll(".htf").forEach(function(b){b.onclick=function(){if(busy)return;var i=+b.getAttribute("data-i");caught[i]=true;saveCaught();trk("pick",D[i].n);b.classList.add("on");openSheet(D[i])}});
 var yard=document.getElementById("yard");(function(){var e="";for(var q=0;q<9;q++)e+='<s style="left:'+(8+Math.random()*84).toFixed(1)+'%;--d:'+(6+Math.random()*6).toFixed(1)+'s;--dl:-'+(Math.random()*9).toFixed(1)+'s;--z:'+(2+Math.random()*2.2).toFixed(1)+'px;--x:'+((Math.random()-.5)*50).toFixed(0)+'px"></s>';yard.insertAdjacentHTML("afterbegin",'<div class="yd" aria-hidden="true"><i class="ywl"></i><i class="yfr2"></i><i class="yp yp1"></i><i class="yp yp2"></i><i class="ybm"></i><i class="yl yl1"><b></b></i><i class="yl yl2"><b></b></i><i class="yfl"></i><div class="ye">'+e+'</div></div><i class="yfm" aria-hidden="true"></i>')})();var calm=matchMedia("(prefers-reduced-motion:reduce)").matches,YT=Math.max(6,Math.round(yard.clientHeight*.34)-62),busy=0,as=[];
 D.forEach(function(d,i){if(caught[i])return;var kind=d.n==="豚ネギマ"?"p":"r",el=document.createElement("div");el.className="an "+kind+(calm?"":" go");el.setAttribute("role","button");el.setAttribute("tabindex","0");el.setAttribute("aria-label",kind==="p"?"豚":"ニワトリ");el.innerHTML=anHTML(kind)+'';yard.appendChild(el);
 var a={i:i,k:kind,el:el,w:el.offsetWidth,h:el.offsetHeight,x:0,y:0,vx:0,vy:0,tm:0,st:"run",tg:null};a.x=Math.random()*(yard.clientWidth-a.w);a.y=YT+Math.random()*(yard.clientHeight-a.h-YT-6);as.push(a);pick(a);place(a);
