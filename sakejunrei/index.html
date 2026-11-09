@@ -270,6 +270,110 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
     }
+
+    /* =============================================================
+       和のトーンにそろえる（和紙・墨・朱・金）。商品ページと同じ色づかい
+       ============================================================= */
+    :root { --shu: #a63d2a; --kin: #a8864f; --sumi: #2b2622; --kinari: #f4eee2; --usuzumi: #8a7d70; }
+    html, body { background-color: #f1eadc; }
+    body {
+      color: var(--sumi);
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .38 0 0 0 0 .28 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: auto;
+    }
+    /* ヘッダー：えんじの暖簾 */
+    .hero {
+      background-color: #8f3020;
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='20' viewBox='0 0 40 20'%3E%3Cg fill='none' stroke='%23f2d9a8' stroke-opacity='.14' stroke-width='1'%3E%3Ccircle cx='20' cy='20' r='18'/%3E%3Ccircle cx='20' cy='20' r='13'/%3E%3Ccircle cx='20' cy='20' r='8'/%3E%3Ccircle cx='0' cy='10' r='18'/%3E%3Ccircle cx='0' cy='10' r='13'/%3E%3Ccircle cx='0' cy='10' r='8'/%3E%3Ccircle cx='40' cy='10' r='18'/%3E%3Ccircle cx='40' cy='10' r='13'/%3E%3Ccircle cx='40' cy='10' r='8'/%3E%3C/g%3E%3C/svg%3E"),
+        linear-gradient(to bottom, #b4452f, #a63d2a 45%, #8f3020);
+      border-bottom: 3px solid var(--kin);
+      color: #fbf4ea;
+    }
+    .hero .eyebrow { color: #f2d9a8; }
+    .hero .tab { color: rgba(251,244,234,.75); }
+    .hero .tab[aria-selected="true"] { background: #fbf4ea; color: var(--shu); box-shadow: 0 2px 8px rgba(0,0,0,.18); }
+
+    /* 種類のタブ：下線で選ぶ */
+    .cat-tab, .cat-tab[aria-selected="true"] {
+      height: 50px; border-radius: 0; background: transparent !important; box-shadow: none !important;
+      border: none; border-bottom: 1px solid #d9ccb3; color: var(--usuzumi); font-size: 20px;
+    }
+    .cat-tab[aria-selected="true"] { color: var(--sumi); border-bottom: 3px solid var(--shu); }
+    .cat-tab .cat-count, .cat-tab[aria-selected="true"] .cat-count { background: rgba(43,38,34,.07); color: var(--usuzumi); }
+
+    /* 絞り込み：選んだものは朱 */
+    .seg[aria-pressed="true"] { background: var(--shu); color: #fbf4ea; box-shadow: 0 2px 8px rgba(166,61,42,.3); }
+    #taste-filters .rounded-full.border, #diagnosis-banner .rounded-full.border { background: #fffcf6; border-color: #e3d8c3; }
+
+    /* 見出し：両脇に金の細い線 */
+    .sec-rule { display: flex; align-items: center; gap: .75rem; font-family: "Shippori Mincho", serif; font-weight: 800; font-size: 16px; letter-spacing: .25em; color: var(--sumi); }
+    .sec-rule::before, .sec-rule::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to right, transparent, var(--kin), transparent); }
+    .sec-rule > span { padding-left: .25em; white-space: nowrap; }
+
+    /* 診断へのお誘い：えんじの札 */
+    .noren-banner {
+      background: linear-gradient(to bottom, #b4452f, #a63d2a 45%, #8f3020); color: #fbf4ea;
+      border-radius: 6px; border-bottom: 3px solid #6e2416; box-shadow: 0 8px 20px rgba(166,61,42,.28);
+    }
+    .paper-card { background: #fffcf6; border: 1px solid #e3d8c3; border-radius: 6px; box-shadow: 0 6px 16px rgba(60,40,20,.08); }
+
+    /* ===== お品書きのカード（上に瓶、下に名前とキャッチコピー） ===== */
+    .mcard {
+      position: relative; height: 100%; display: flex; flex-direction: column; overflow: hidden;
+      background: #fffcf6; border: 1px solid #e3d8c3; border-radius: 6px;
+      box-shadow: 0 1px 0 rgba(255,255,255,.9) inset, 0 6px 16px rgba(60,40,20,.10);
+    }
+    .mcard-shelf {
+      position: relative; display: flex; justify-content: center; align-items: flex-end; padding: 18px 0 12px;
+      background:
+        radial-gradient(55% 65% at 50% 72%, color-mix(in srgb, var(--c) 24%, transparent), transparent 72%),
+        linear-gradient(#f6efe2, #fbf7ef);
+      border-bottom: 1px solid #ece2cf;
+    }
+    .mcard-shelf::before {
+      content: ''; position: absolute; bottom: 9px; left: 50%; width: 60px; height: 9px; transform: translateX(-50%);
+      background: radial-gradient(closest-side, rgba(60,40,20,.28), transparent);
+    }
+    .mcard-pref {
+      position: absolute; top: 9px; left: 9px; writing-mode: vertical-rl; font-family: "Shippori Mincho", serif;
+      font-size: 12px; font-weight: 800; letter-spacing: .18em; color: var(--usuzumi);
+    }
+    .mcard-type {
+      position: absolute; top: 9px; right: 9px; writing-mode: vertical-rl; font-family: "Shippori Mincho", serif;
+      font-size: 12px; font-weight: 800; letter-spacing: .12em; color: #fff8f0; background: var(--c); border-radius: 3px; padding: 6px 3px;
+      box-shadow: inset 0 0 0 1.5px var(--c), inset 0 0 0 2.5px rgba(255,248,240,.85); transform: rotate(-3deg); opacity: .94;
+    }
+    .mcard-rank { position: absolute; left: 9px; bottom: 9px; font-family: "Shippori Mincho", serif; font-weight: 800; font-size: 15px; color: var(--shu); z-index: 2; }
+    .mcard-body { flex: 1; display: flex; flex-direction: column; padding: 10px 12px 12px; text-align: center; }
+    .mcard-kana { font-size: 11px; letter-spacing: .12em; color: var(--usuzumi); line-height: 1.3; }
+    .mcard-name { font-family: "Shippori Mincho", serif; font-weight: 800; font-size: 20px; line-height: 1.3; color: var(--sumi); margin-top: 2px; }
+    .mcard-catch {
+      font-family: "Shippori Mincho", serif; font-size: 13.5px; font-weight: 600; line-height: 1.6; color: #4a423b; margin-top: 6px;
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .mcard-name.is-long { font-size: 16.5px; }
+    .mcard-foot { margin-top: auto; padding-top: 9px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .mcard-foot-line { border-top: 1px dashed #e3d8c3; margin-top: 9px; }
+    .mcard-kw { font-size: 12px; font-weight: 700; color: var(--c); line-height: 1.4; text-align: left; }
+    .mcard-match { font-family: "Shippori Mincho", serif; font-weight: 800; color: var(--shu); line-height: 1; }
+    /* 限定の横長カード */
+    .mcard-wide { flex-direction: row; border-color: color-mix(in srgb, var(--kin) 60%, #e3d8c3); }
+    .mcard-wide .mcard-shelf { width: 40%; flex-shrink: 0; border-bottom: none; border-right: 1px solid #ece2cf; padding: 26px 0 14px; }
+    .mcard-wide .mcard-body { text-align: left; padding: 14px 14px 12px; }
+    .mcard-wide .mcard-name { font-size: 21px; word-break: keep-all; overflow-wrap: anywhere; }
+    .mcard-wide .mcard-foot { justify-content: space-between; }
+    .mcard-wide .mcard-shelf { align-items: center; }
+    .mcard-wide .mcard-shelf::before { bottom: auto; top: calc(50% + 86px); }
+    .mcard-wide .mcard-foot { margin-top: 10px; padding-top: 0; }
+    .mcard-limited { position: absolute; top: 0; right: 12px; z-index: 3; font-size: 11px; font-weight: 800; letter-spacing: .2em; color: #fff8f0; background: var(--kin); padding: 3px 7px 5px 9px; border-radius: 0 0 4px 4px; }
+    .mcard-note { font-size: 12.5px; line-height: 1.6; color: var(--usuzumi); margin-top: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .mcard .kw-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+    .mcard .kw-row span { font-size: 11.5px; font-weight: 700; color: var(--c); background: color-mix(in srgb, var(--c) 10%, transparent); padding: 1px 7px; border-radius: 2px; }
+
+    /* 商品ページは、押したカードの位置から広がる */
+    #product-view { background: #f1eadc; }
   </style>
 </head>
 <body class="font-sans text-ink antialiased">
@@ -299,18 +403,14 @@
       <section id="diagnosis-banner" class="px-4 pt-4"></section>
 
       <section id="special-section" class="mt-5">
-        <div class="px-4 flex items-baseline justify-between">
-          <h2 class="font-mincho font-extrabold text-lg">限定・店主のおすすめ</h2>
-          <span class="text-[11px] text-muted">横にスクロール <i class="fa-solid fa-arrow-right"></i></span>
-        </div>
-        <div id="special-list" class="mt-2 flex gap-3 overflow-x-auto no-scrollbar px-4 pb-3 snap-x snap-mandatory"></div>
+        <h2 class="sec-rule px-4"><span>限定・店主のおすすめ</span></h2>
+        <p class="text-center text-[11px] text-[color:var(--usuzumi)] mt-1">横にスクロールできます</p>
+        <div id="special-list" class="mt-3 flex items-start gap-3 overflow-x-auto no-scrollbar px-4 pb-4 snap-x snap-mandatory"></div>
       </section>
 
       <section class="px-4 mt-4">
-        <div class="flex items-baseline justify-between">
-          <h2 id="lineup-title" class="font-mincho font-extrabold text-lg" style="color: rgb(var(--cat))">ラインナップ</h2>
-          <span id="lineup-count" class="text-xs text-muted"></span>
-        </div>
+        <h2 class="sec-rule"><span id="lineup-title">ラインナップ</span></h2>
+        <p id="lineup-count" class="text-center text-[11px] text-[color:var(--usuzumi)] mt-1"></p>
         <div id="board-grid" class="mt-3 grid grid-cols-2 gap-3"></div>
         <div id="board-empty" class="hidden text-center py-12">
           <p class="text-sm text-muted">この味のお酒は、いまお休み中です</p>
@@ -555,7 +655,7 @@
 
     // 六角形チャート（お酒のタイプの色で塗る）
     function radar(d, size, labels = false) {
-      const c = TYPE_INFO[d.type].color;
+      const c = themeColor(d);   // カードや商品ページと同じ色
       return radarChartHtml([{ values: d.taste, fill: c + "33", stroke: c }], size, { labels, accent: c });
     }
 
@@ -578,8 +678,8 @@
     // =============================================================
     // 種類ごとのテーマ色（タブ・絞り込み・見出しに使う）
     const CATEGORY_THEME = {
-      "日本酒": { rgb: "43 76 126", bg: "linear-gradient(135deg, #2B4C7E, #1E2B4A)", icon: "fa-bottle-droplet" },
-      "ワイン": { rgb: "140 47 75", bg: "linear-gradient(135deg, #9B3556, #5E1A33)", icon: "fa-wine-glass" }
+      "日本酒": { rgb: "166 61 42", bg: "none", icon: "fa-bottle-droplet" },
+      "ワイン": { rgb: "166 61 42", bg: "none", icon: "fa-wine-glass" }
     };
     const themeOf = c => CATEGORY_THEME[c] || { rgb: "31 107 79", bg: "linear-gradient(135deg, #2E7D5B, #1F6B4F)", icon: "fa-glass-water" };
     function renderCategoryTabs() {
@@ -616,22 +716,21 @@
       const box = document.getElementById("diagnosis-banner");
       if (!state.diagnosed) {
         box.innerHTML = `
-          <button onclick="setTab('shindan')" class="w-full rounded-2xl p-4 flex items-center gap-3 text-left text-white active:scale-[.99] transition-transform shadow-lg"
-                  style="background: linear-gradient(120deg, #1F6B4F 0%, #2B4C7E 100%)">
-            <span class="w-11 h-11 rounded-full bg-white/15 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-wand-magic-sparkles text-[#F2D27A]"></i></span>
+          <button onclick="setTab('shindan')" class="noren-banner w-full p-4 flex items-center gap-3 text-left active:translate-y-[2px] transition-transform">
+            <span class="w-11 h-11 rounded-full border border-[#f2d9a8]/50 flex items-center justify-center flex-shrink-0 font-mincho font-extrabold text-[#f2d9a8]">診</span>
             <span class="flex-1 min-w-0">
-              <span class="block font-mincho font-extrabold">迷ったら、好み診断</span>
-              <span class="block text-xs text-white/75 mt-0.5">${QUESTIONS.length}つの質問で、あなたに合う1杯がわかります</span>
+              <span class="block font-mincho font-extrabold text-[17px] tracking-wider">迷ったら、好み診断</span>
+              <span class="block text-xs text-[#fbf4ea]/80 mt-0.5">${QUESTIONS.length}つの質問で、あなたに合う1杯がわかります</span>
             </span>
-            <i class="fa-solid fa-chevron-right text-white/70 text-sm"></i>
+            <i class="fa-solid fa-chevron-right text-[#fbf4ea]/70 text-sm"></i>
           </button>`;
         return;
       }
       box.innerHTML = `
-        <div class="card p-3 pl-4 flex items-center gap-3">
+        <div class="paper-card p-3 pl-4 flex items-center gap-3">
           <div class="flex-1 min-w-0">
             <p class="text-[11px] text-muted">あなたは</p>
-            <p class="font-mincho font-extrabold leading-tight truncate">${esc(TASTE_TYPES[getTasteTypeKey(userProfile)].name)} タイプ</p>
+            <p class="font-mincho font-extrabold text-[16px] leading-snug">${esc(TASTE_TYPES[getTasteTypeKey(userProfile)].name)}<br class="sm:hidden"> タイプ</p>
           </div>
           <div class="flex gap-1 p-1 rounded-full bg-paper border border-line flex-shrink-0">
             <button class="seg px-3" aria-pressed="${!state.sortByMatch}" onclick="setSort(false)">いつもの順</button>
@@ -656,8 +755,10 @@
 
     // お品書きのカード（押すと、カードが回って商品ページに入る）
     function cardButton(d, cls, inner) {
-      return `<button class="menu-card ${cls}" onclick="openProduct('${d.id}', this)" aria-label="${esc(d.name)}のページを見る">${inner}</button>`;
+      return `<button class="menu-card ${cls}" data-card="${d.id}" onclick="openProduct('${d.id}', this)" aria-label="${esc(d.name)}のページを見る">${inner}</button>`;
     }
+    // カードの右上のはんこ（日本酒は甘口・旨口・辛口、ワインは赤・白・ロゼ）
+    const cardTypeWord = d => d.category === "ワイン" ? (WINE_WORD[d.color] || "ワイン") : TYPE_INFO[d.type].word;
 
     function renderMenu() {
       renderCategoryTabs();
@@ -671,50 +772,49 @@
       const regulars = state.sortByMatch ? list : list.filter(d => !d.special);
 
       document.getElementById("special-section").classList.toggle("hidden", specials.length === 0);
-      document.getElementById("special-list").innerHTML = specials.map(d => cardButton(d, "snap-start flex-shrink-0 w-[78%]", `
-          <div class="special-card ${d.soldOut ? "sold-out" : ""} relative h-full text-left p-4 flex gap-3 overflow-hidden">
+      document.getElementById("special-list").innerHTML = specials.map(d => cardButton(d, "snap-start flex-shrink-0 w-[84%]", `
+          <div class="mcard mcard-wide ${d.soldOut ? "sold-out" : ""}" style="--c:${themeColor(d)}">
             ${statusBadge(d)}
-            <span class="absolute top-0 right-4 text-[10px] font-bold text-white px-2 pt-1 pb-1.5 rounded-b-md" style="background:rgb(var(--gold))">限定</span>
-            <div class="glow w-16 h-36 left-3 top-10" style="background:${TYPE_INFO[d.type].color}"></div>
-            ${bottleSvg(d, "w-14 h-44 flex-shrink-0 relative")}
-            <div class="min-w-0 flex-1 flex flex-col dim">
-              <div class="flex items-center gap-1.5 flex-wrap">
-                ${d.prefecture ? `<span class="pref-box text-[11px] px-1.5 rounded">${esc(d.prefecture)}</span>` : ""}
-                ${d.tags.map(t => `<span class="text-[10px] font-bold text-accent bg-accent/10 rounded-full px-2 py-0.5">${esc(t)}</span>`).join("")}
-              </div>
-              <p class="text-[11px] text-muted mt-2 min-h-[16px]">${sameAsName(d) ? "" : esc(displayKana(d))}</p>
-              <p class="font-mincho font-extrabold text-xl leading-tight">${esc(d.name)}</p>
-              <p class="text-xs text-muted mt-0.5">${esc(d.grade)}</p>
-              <p class="font-hand text-[13px] leading-relaxed mt-2 line-clamp-3">${esc(d.comment)}</p>
-              <div class="mt-auto pt-2 flex items-center justify-between gap-2">
-                ${matchBadge(d) || "<span></span>"}
-                <div class="flex items-center gap-1 flex-shrink-0">${radar(d, 44)}${typeMark(d)}</div>
+            <span class="mcard-limited">限定</span>
+            <div class="mcard-shelf">
+              <span class="mcard-type">${esc(cardTypeWord(d))}</span>
+              ${bottleSvg(d, "w-[54px] h-[180px] relative")}
+            </div>
+            <div class="mcard-body dim">
+              <p class="mcard-kana">${esc([d.prefecture, d.grade].filter(Boolean).join("・"))}</p>
+              <p class="mcard-name">${esc(d.name)}</p>
+              ${sameAsName(d) ? "" : `<p class="mcard-kana mt-0.5">${esc(displayKana(d))}</p>`}
+              <p class="mcard-catch">${esc(productInfo(d).catch)}</p>
+              <div class="kw-row">${productInfo(d).keywords.slice(0, 3).map(k => `<span>${esc(k)}</span>`).join("")}</div>
+              ${d.comment ? `<p class="mcard-note">${esc(d.comment)}</p>` : ""}
+              <div class="mcard-foot">
+                ${radar(d, 46)}
+                ${state.diagnosed ? `<span class="mcard-match"><span class="text-[11px] font-sans text-[color:var(--usuzumi)] mr-1">相性</span><span class="text-2xl">${getMatchPercent(d)}</span><span class="text-xs">%</span></span>` : ""}
               </div>
             </div>
           </div>`)).join("");
 
       document.getElementById("lineup-title").textContent = state.sortByMatch ? "あなたとの相性順" : (specials.length ? "今日のラインナップ" : `今日の${state.category}`);
-      document.getElementById("lineup-count").textContent = `${list.length} 銘柄`;
+      document.getElementById("lineup-count").textContent = `${list.length} 銘柄・押すとくわしく見られます`;
       document.getElementById("board-grid").innerHTML = regulars.map((d, i) => cardButton(d, "", `
-          <div class="board-cell ${d.soldOut ? "sold-out" : ""} h-full text-left p-2.5 pb-3 flex flex-col">
+          <div class="mcard ${d.soldOut ? "sold-out" : ""}" style="--c:${themeColor(d)}">
             ${statusBadge(d)}
-            <div class="flex justify-between items-start gap-1 dim min-h-[24px]">
-              ${state.sortByMatch ? `<span class="font-mincho font-extrabold text-sm ${i < 3 ? "text-accent" : "text-muted"}">${i + 1}位</span>` : "<span></span>"}
-              ${d.prefecture ? `<span class="pref-box text-xs px-1.5 py-0.5 rounded-sm flex-shrink-0">${esc(d.prefecture)}</span>` : ""}
+            <div class="mcard-shelf">
+              ${d.prefecture ? `<span class="mcard-pref">${esc(d.prefecture)}</span>` : ""}
+              <span class="mcard-type">${esc(cardTypeWord(d))}</span>
+              ${state.sortByMatch ? `<span class="mcard-rank">${i + 1}位</span>` : ""}
+              ${bottleSvg(d, "w-[52px] h-[172px] relative")}
             </div>
-            <span class="absolute inset-x-0 top-0 h-1" style="background:${TYPE_INFO[d.type].color}"></span>
-            <div class="flex items-end gap-1 mt-1 relative">
-              <div class="glow w-10 h-28 left-1 top-4" style="background:${TYPE_INFO[d.type].color}"></div>
-              ${bottleSvg(d, "w-11 h-36 flex-shrink-0 relative")}
-              <div class="flex-1 min-w-0 pb-1 dim">
-                ${sameAsName(d) ? "" : `<p class="text-[10px] text-muted leading-tight">${esc(displayKana(d))}</p>`}
-                <p class="font-mincho font-extrabold text-[17px] leading-tight break-words mt-0.5">${esc(d.name)}</p>
-                <p class="font-hand text-[12px] leading-snug mt-1.5 text-ink/80 line-clamp-4">${esc(d.comment)}</p>
+            <div class="mcard-body dim">
+              ${sameAsName(d) ? "" : `<p class="mcard-kana">${esc(displayKana(d))}</p>`}
+              <p class="mcard-name ${d.name.length > 7 ? "is-long" : ""}">${esc(d.name)}</p>
+              <p class="mcard-catch">${esc(productInfo(d).catch)}</p>
+              <div class="mcard-foot mcard-foot-line">
+                ${radar(d, 38)}
+                ${state.diagnosed
+                  ? `<span class="mcard-match"><span class="text-[10px] font-sans text-[color:var(--usuzumi)] mr-0.5">相性</span><span class="text-xl">${getMatchPercent(d)}</span><span class="text-[11px]">%</span></span>`
+                  : `<span class="mcard-kw">${productInfo(d).keywords.slice(0, 2).map(esc).join("<br>")}</span>`}
               </div>
-            </div>
-            <div class="flex items-center justify-between mt-auto pt-2 dim">
-              <span class="flex items-center gap-1">${typeMark(d)}${radar(d, 36)}</span>
-              ${matchBadge(d)}
             </div>
           </div>`)).join("");
 
@@ -1141,16 +1241,26 @@
       box.classList.toggle("opacity-0", !open); box.classList.toggle("opacity-100", open);
     }
 
-    // ---- カードの演出：押したカードが持ち上がり、くるっと回りながら大きくなって、商品ページに切り替わる ----
+    // ---- カードの演出：押したカードが少し沈み、そのカードの位置から商品ページが広がる（閉じると元のカードへ戻る） ----
     const reduceMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let productOpen = false;
     let cardAnimating = false;
+    let openedCardId = null;
+    const EASE_OUT = "cubic-bezier(.22,.9,.24,1)";
+
+    // 画面の中でのカードの位置を、ページの切り抜き（clip-path）に変換
+    function clipFromRect(r) {
+      const W = window.innerWidth, H = window.innerHeight;
+      return `inset(${Math.max(0, r.top)}px ${Math.max(0, W - r.right)}px ${Math.max(0, H - r.bottom)}px ${Math.max(0, r.left)}px round 8px)`;
+    }
+    const FULL_CLIP = "inset(0px 0px 0px 0px round 0px)";
 
     function openProduct(id, src) {
       const d = byId[id];
       if (!d || cardAnimating) return;
       const view = document.getElementById("product-view");
       const paper = document.getElementById("product-body");
+      const rect = src ? src.getBoundingClientRect() : null;
 
       const show = () => {
         renderProduct(d);
@@ -1158,63 +1268,54 @@
         view.scrollTop = 0;
         document.body.style.overflow = "hidden";
         productOpen = true;
-        if (!reduceMotion()) {
+        openedCardId = src && src.dataset.card ? id : null;
+        if (reduceMotion()) return;
+        if (rect && rect.width) {
+          cardAnimating = true;
+          const a = view.animate([{ clipPath: clipFromRect(rect) }, { clipPath: FULL_CLIP }], { duration: 520, easing: EASE_OUT });
           paper.animate([
-            { transform: "perspective(1400px) rotateY(-90deg) scale(.88)", opacity: .4 },
-            { transform: "perspective(1400px) rotateY(8deg) scale(1.01)", opacity: 1, offset: .7 },
-            { transform: "perspective(1400px) rotateY(0) scale(1)", opacity: 1 }
-          ], { duration: 520, easing: "cubic-bezier(.2,.8,.3,1)" });
-          view.animate([{ backgroundColor: "rgba(28,25,23,0)" }, { backgroundColor: "rgba(28,25,23,.55)" }], { duration: 400 });
+            { transform: `translateY(${Math.round(rect.top - 40)}px) scale(.94)`, opacity: .5 },
+            { transform: "none", opacity: 1 }
+          ], { duration: 520, easing: EASE_OUT });
+          a.onfinish = () => { cardAnimating = false; };
+        } else {
+          paper.animate([{ opacity: 0, transform: "translateY(16px)" }, { opacity: 1, transform: "none" }], { duration: 360, easing: EASE_OUT });
         }
       };
 
       if (!src || reduceMotion()) { show(); return; }
-
-      // 押したカードの分身を作って、その場から動かす
-      const r = src.getBoundingClientRect();
-      const ghost = src.cloneNode(true);
-      ghost.removeAttribute("onclick");
-      ghost.classList.add("card-ghost");
-      Object.assign(ghost.style, { position: "fixed", left: r.left + "px", top: r.top + "px", width: r.width + "px", height: r.height + "px", margin: "0", zIndex: "65" });
-      document.body.appendChild(ghost);
-      src.style.visibility = "hidden";
-      cardAnimating = true;
-
-      const dx = window.innerWidth / 2 - (r.left + r.width / 2);
-      const dy = window.innerHeight / 2 - (r.top + r.height / 2);
-      const grow = Math.min(1.7, (window.innerWidth * 0.8) / r.width);
-      const anim = ghost.animate([
-        { transform: "perspective(1000px) translate(0, 0) rotateY(0) scale(1)", filter: "drop-shadow(0 2px 4px rgba(0,0,0,.1))" },
-        { transform: "perspective(1000px) translate(0, -12px) rotateY(0) rotateZ(-2deg) scale(1.06)", filter: "drop-shadow(0 18px 24px rgba(0,0,0,.28))", offset: .28 },
-        { transform: `perspective(1000px) translate(${dx}px, ${dy}px) rotateY(90deg) scale(${grow})`, filter: "drop-shadow(0 30px 40px rgba(0,0,0,.3))" }
-      ], { duration: 560, easing: "cubic-bezier(.55,0,.35,1)", fill: "forwards" });
-      anim.onfinish = () => {
-        ghost.remove();
-        src.style.visibility = "";
-        cardAnimating = false;
-        show();
-      };
+      // 押した瞬間、カードが少し沈む
+      src.animate([{ transform: "scale(1)" }, { transform: "scale(.95)" }], { duration: 120, easing: "ease-out", fill: "forwards" })
+        .onfinish = function () { show(); setTimeout(() => this.cancel(), 600); };
     }
 
     function closeProduct() {
-      if (!productOpen) return;
+      if (!productOpen || cardAnimating) return;
       const view = document.getElementById("product-view");
       const paper = document.getElementById("product-body");
       const done = () => {
         view.classList.add("hidden");
         document.body.style.overflow = "";
         productOpen = false;
+        view.getAnimations().forEach(a => a.cancel());
+        paper.getAnimations().forEach(a => a.cancel());
+        cardAnimating = false;
       };
       if (reduceMotion()) { done(); return; }
-      paper.animate([
-        { transform: "perspective(1400px) rotateY(0) scale(1)", opacity: 1 },
-        { transform: "perspective(1400px) rotateY(90deg) scale(.88)", opacity: .3 }
-      ], { duration: 340, easing: "cubic-bezier(.5,0,.75,0)", fill: "forwards" }).onfinish = () => {
-        done();
-        paper.getAnimations().forEach(a => a.cancel());
-      };
-      view.animate([{ backgroundColor: "rgba(28,25,23,.55)" }, { backgroundColor: "rgba(28,25,23,0)" }], { duration: 340, fill: "forwards" })
-        .onfinish = function () { this.cancel(); };
+      // 開いたカードが一覧に見えていれば、そのカードへ縮んで戻る。見えていなければ、ふわっと消える
+      const card = openedCardId && document.querySelector(`[data-card="${openedCardId}"]`);
+      const r = card && card.getBoundingClientRect();
+      const visible = r && r.width && r.bottom > 0 && r.top < window.innerHeight;
+      cardAnimating = true;
+      if (visible) {
+        view.animate([{ clipPath: FULL_CLIP }, { clipPath: clipFromRect(r) }], { duration: 420, easing: "cubic-bezier(.5,0,.25,1)", fill: "forwards" });
+        paper.animate([{ opacity: 1 }, { opacity: 0, offset: .8 }, { opacity: 0 }], { duration: 420, fill: "forwards" }).onfinish = () => {
+          done();
+          card.animate([{ transform: "scale(.96)" }, { transform: "scale(1)" }], { duration: 220, easing: EASE_OUT });
+        };
+      } else {
+        view.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 260, fill: "forwards" }).onfinish = done;
+      }
     }
 
     // ---- スタッフに見せる（この1杯を大きく表示） ----
