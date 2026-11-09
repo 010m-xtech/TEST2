@@ -36,13 +36,14 @@ const STORE_CONFIG = {
 //       海外のお酒 → { country: "フランス", area: "ボルドー", lat: 44.84, lon: -0.58 }
 //                    （飛行機が日本から飛び立ち、途中で到着カードに切り替わります。
 //                      lat / lon は飛んでいく方角に使います。省略すると西北西の方角へ飛びます）
-//   taste       : 味わい。5つの要素を 0〜100 で書きます（50 がふつう）
+//   taste       : 味わい。6つの要素を 0〜100 で書きます（50 がふつう）
 //                   aroma      香りの華やかさ（0 = 控えめ・澄んだ香り ／ 100 = 華やか）
 //                   body       コク・濃厚さ  （0 = 軽やか ／ 100 = 濃厚）
 //                   sweetness  甘み          （0 = ドライ ／ 100 = 甘い）
 //                   acidity    酸味          （0 = まろやか ／ 100 = 酸味が強い）
 //                   bitterness 苦味・渋み    （0 = ほとんどない ／ 100 = しっかり）
-//                 5角形のチャートと、診断の相性（%）はここから計算されます。
+//                   umami      旨み          （0 = すっきり ／ 100 = 米や麦の旨みが豊か）
+//                 六角形のチャートと、診断の相性（%）はここから計算されます。
 //   tasteNotes  : 数字の根拠のメモ（画面には表示されません。見直すときのために残します）
 //
 // 【taste の決め方の目安】公開スペックがあればそれを優先し、なければ味の説明から推測します
@@ -50,6 +51,7 @@ const STORE_CONFIG = {
 //          酸味   … 酸度 1.6 → 50。0.1 ごとに ±5（例：1.8 → 60、1.3 → 35）
 //          香り   … 大吟醸 80前後 ／ 吟醸 65前後 ／ 純米・本醸造 35前後 ／ 生酛・山廃 30前後
 //          コク   … 精米歩合 50% → 35前後、70% → 60前後。生酛・山廃・熟成は +20
+//          旨み   … 純米・生酛・山廃・原酒は高め（65〜85）／ 大吟醸・淡麗は低め（35〜55）
 //   ビール 苦味   … IBU 10 → 15、30 → 45、60 以上 → 85
 //          コク   … ライト・ピルスナー 20〜30 ／ ペールエール 50 ／ スタウト・バーレイワイン 80〜
 //   ワイン コク   … ライト 25 ／ ミディアム 45 ／ フルボディ 80
@@ -84,7 +86,7 @@ const DRINKS_DATABASE = [
     name: "恵那山 純米吟醸",
     maker: "はざま酒造",
     origin: { country: "日本", prefecture: "岐阜県", area: "中津川市", lat: 35.487, lon: 137.500 },
-    taste: { aroma: 65, body: 40, sweetness: 55, acidity: 40, bitterness: 15 },
+    taste: { aroma: 65, body: 40, sweetness: 55, acidity: 40, bitterness: 15, umami: 60 },
     tasteNotes: [
       "香り65：純米吟醸。販売店の説明「洋梨のような吟醸香」、蔵の説明「穏やかに香るフルーツのような吟醸香」→ 華やかだが控えめ寄り",
       "コク40：精米歩合50%（山田錦）。「ふくよかな米の甘み」と「後味すっきり・軽やかな余韻」の両方の記載 → やや軽め",
@@ -114,7 +116,7 @@ const DRINKS_DATABASE = [
     name: "ROKU GIN (六)",
     maker: "サントリー",
     origin: { country: "日本", prefecture: "大阪府", area: "", lat: 34.693, lon: 135.502 },
-    taste: { aroma: 85, body: 35, sweetness: 30, acidity: 45, bitterness: 40 },
+    taste: { aroma: 85, body: 35, sweetness: 30, acidity: 45, bitterness: 40, umami: 20 },
     tasteNotes: [
       "香り85：桜花・桜葉・柚子などのボタニカル。公式「日本の四季を感じられる華やかな香り」",
       "コク35：アルコール度数47%だが、公式「スムースな口当たり」「爽快感と優しさ」→ 軽め",
@@ -143,7 +145,7 @@ const DRINKS_DATABASE = [
     name: "大七 純米生酛",
     maker: "大七酒造",
     origin: { country: "日本", prefecture: "福島県", area: "", lat: 37.585, lon: 140.431 },
-    taste: { aroma: 30, body: 80, sweetness: 35, acidity: 60, bitterness: 30 },
+    taste: { aroma: 30, body: 80, sweetness: 35, acidity: 60, bitterness: 30, umami: 80 },
     tasteNotes: [
       "甘み35：日本酒度 +3（公開値）→ 50 − 15",
       "酸味60：酸度 1.8（公開値）→ 50 + 10",
@@ -172,7 +174,7 @@ const DRINKS_DATABASE = [
     name: "シャトー・メルシャン",
     maker: "メルシャン",
     origin: { country: "日本", prefecture: "長野県", area: "", lat: 36.115, lon: 137.953 },
-    taste: { aroma: 75, body: 80, sweetness: 20, acidity: 50, bitterness: 65 },
+    taste: { aroma: 75, body: 80, sweetness: 20, acidity: 50, bitterness: 65, umami: 60 },
     tasteNotes: [
       "※「シャトー・メルシャン 桔梗ヶ原メルロー」として算出（実際に置く商品名の確認が必要）",
       "香り75：カシス・ダークチェリーなど黒い果実、ミント、樽由来のコーヒー・ヴァニラの香り",
@@ -202,7 +204,7 @@ const DRINKS_DATABASE = [
     name: "甲州 鳥居平畑",
     maker: "中央葡萄酒",
     origin: { country: "日本", prefecture: "山梨県", area: "", lat: 35.662, lon: 138.730 },
-    taste: { aroma: 65, body: 45, sweetness: 15, acidity: 55, bitterness: 25 },
+    taste: { aroma: 65, body: 45, sweetness: 15, acidity: 55, bitterness: 25, umami: 35 },
     tasteNotes: [
       "※「グレイス 甲州 鳥居平畑」（中央葡萄酒）として算出。アルコール度数12%",
       "香り65：黄りんご・洋梨などの果実香、白コショウのスパイス香、ロースト香。「香りのボリュームは豊か」",
