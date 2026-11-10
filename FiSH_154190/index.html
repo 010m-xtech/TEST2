@@ -2833,6 +2833,7 @@ function renderQuiz(f){
 function answerQuiz(f, idx, buttons, result, rTitle, rText, rExtra){
   const q = f.interaction;
   const correct = !!q.options[idx].isCorrect;
+  try { sendLog('クイズ回答', { fishId: f.id, fishName: f.name, value: correct ? '正解' : '不正解', message: q.options[idx].text }); } catch (e) {}
   buttons.forEach(b => b.disabled = true);
   buttons[idx].classList.add('selected');
 
@@ -2891,7 +2892,7 @@ function renderFlip(f){
       </div>
       <div class="flip-card-back"><p>${f.interaction.back}</p></div>
     </div>`;
-  card.addEventListener('click', () => card.classList.toggle('is-flipped'));
+  card.addEventListener('click', () => { card.classList.toggle('is-flipped'); try { sendLog('めくった', { fishId: f.id, fishName: f.name, value: card.classList.contains('is-flipped') ? '裏' : '表' }); } catch (e) {} });
   box.appendChild(card);
 }
 
@@ -2939,6 +2940,7 @@ function renderParts(f){
       btnMap[k].classList.toggle('active', k === id);
     });
     info.textContent = r.label + '：' + r.desc;
+    try { sendLog('部位タップ', { fishId: f.id, fishName: f.name, value: r.label }); } catch (e) {}
   }
 
   p.regions.forEach(r => {
@@ -3079,6 +3081,7 @@ function setFitLines(t){          // 改行位置を固定し、はみ出すと�
 }
 let menuRenderedFor = null;
 function switchFishTab(to){
+  try { var _f = fishById(currentFishId); sendLog('タブ切替', { fishId: _f ? _f.id : '', fishName: _f ? _f.name : '', value: to === 'menu' ? '一品' : '魚のこと' }); } catch (e) {}
   if (to === 'menu') { goToMenu(); } else { goScreen('detail', true); }
 }
 let sheetViews = 0, nudgeShown = false, nudgeTimer = null;
