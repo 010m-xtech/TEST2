@@ -76,27 +76,18 @@
 
         /* オープニング用のCSS */
         #intro-container {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0; /* 高さは指定せず、画面いっぱいに広げる（下端が余らないように） */
-            background: linear-gradient(#0D214B 0, #0D214B 37.5%, #081737 37.5%, #081737 100%); z-index: 9999;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(#0D214B 0, #0D214B 44.4%, #081737 44.4%, #081737 100%); z-index: 9999;
             display: flex; align-items: center; justify-content: center;
             transition: opacity 1s ease; cursor: pointer;
         }
-        /* オープニング動画：画面の短い辺と同じ大きさの正方形の枠を中央に置き、その中に動画の中央部分を表示する。
-           動画を画面より大きく広げないので、端末やアプリ内ブラウザによる見切れ・横ずれが起きない。
-           枠の外側は、動画の背景色（上が明るい紺・下が暗い紺）を延長して画面全体を同じ背景にする */
-        #intro-stage {
-            flex: none; position: relative; z-index: 1;
-            width: min(100vw, 100vh); height: min(100vw, 100vh);
-        }
-        @supports (width: 1dvh) {
-            #intro-stage { width: min(100vw, 100dvh); height: min(100vw, 100dvh); }
-        }
-        /* 枠の外側の背景：動画の端の色を延長して描く（動画と同じ色なので境目が出ない） */
-        #intro-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+        /* オープニング動画（縦長 720x1280・背景を動画の中に含めてある）：画面いっぱいに表示する。
+           スマホ縦では全面に、横長の画面（PCなど）では全体が見えるように収める */
         #intro-video {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; max-width: none;
-            object-fit: cover; object-position: center center; transition: opacity 1s ease;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; transition: opacity 1s ease;
         }
+        @media (min-aspect-ratio: 3/5) { #intro-video { object-fit: contain; } }
         #intro-logo {
             position: absolute; top: 0; right: 0; bottom: 0; left: 0; margin: auto; z-index: 10;
             max-width: 80%; max-height: 80%;
@@ -564,10 +555,7 @@
 
     <!-- オープニング（動画は src ではなく data-src。軽量モードでは読み込まない） -->
     <div id="intro-container">
-        <canvas id="intro-bg"></canvas>
-        <div id="intro-stage">
-            <video id="intro-video" data-src="opening.mp4" muted playsinline preload="auto"></video>
-        </div>
+        <video id="intro-video" data-src="opening_portrait.mp4" muted playsinline preload="auto"></video>
         <img id="intro-logo" src="koziki_title2.webp" alt="NO FISH NO LIFE">
         <div id="intro-skip-text">画面をタップしてスキップ</div>
     </div>
@@ -1143,45 +1131,6 @@
             introVideo.addEventListener('error', logoOnly);
             introVideo.play().catch(logoOnly);
 
-            // 動画の端の色を画面全体に延長して描く（枠の外を動画と同じ背景にする）
-            const bgCanvas = document.getElementById('intro-bg');
-            const introStage = document.getElementById('intro-stage');
-            const pxCanvas = document.createElement('canvas'); pxCanvas.width = pxCanvas.height = 1;
-            const drawIntroBg = () => {
-                if (introSkipped || !bgCanvas || !introStage) return;
-                try {
-                    const vw = introVideo.videoWidth, vh = introVideo.videoHeight;
-                    if (vw && vh && introVideo.readyState >= 2) {
-                        const K = 0.5;
-                        const c = introContainer.getBoundingClientRect(), st = introStage.getBoundingClientRect();
-                        const cw = Math.max(1, Math.round(c.width * K)), ch = Math.max(1, Math.round(c.height * K));
-                        if (bgCanvas.width !== cw || bgCanvas.height !== ch) { bgCanvas.width = cw; bgCanvas.height = ch; }
-                        const g = bgCanvas.getContext('2d');
-                        const sx = (st.left - c.left) * K, sy = (st.top - c.top) * K, ss = st.width * K, sh = st.height * K;
-                        const cropX = (vw - vh) / 2;
-                        // 上下は、動画の上端・下端の色を横方向にならべて塗る（泡の線が伸びず、端の明るさの違いにも合う）
-                        const t = pxCanvas.getContext('2d');
-                        const edge = (y) => {
-                            const gr = g.createLinearGradient(sx, 0, sx + ss, 0);
-                            for (let i = 0; i <= 6; i++) {
-                                t.drawImage(introVideo, cropX + (i / 6) * (vh - 1), y, 1, 1, 0, 0, 1, 1);
-                                const d = t.getImageData(0, 0, 1, 1).data;
-                                gr.addColorStop(i / 6, 'rgb(' + d[0] + ',' + d[1] + ',' + d[2] + ')');
-                            }
-                            return gr;
-                        };
-                        if (sy > 0.5) { g.fillStyle = edge(2); g.fillRect(0, 0, cw, sy + 2); }
-                        if (sy + sh < ch - 0.5) { g.fillStyle = edge(vh - 3); g.fillRect(0, sy + sh - 2, cw, ch - (sy + sh) + 2); }
-                        if (sx > 0.5) g.drawImage(introVideo, 0, 0, 4, vh, 0, sy, sx + 1, sh);
-                        if (sx + ss < cw - 0.5) g.drawImage(introVideo, vw - 4, 0, 4, vh, sx + ss - 1, sy, cw - (sx + ss) + 1, sh);
-                        g.drawImage(introVideo, cropX, 0, vh, vh, sx, sy, ss, sh);
-                    }
-                } catch (e) {}
-                if (introVideo.requestVideoFrameCallback) introVideo.requestVideoFrameCallback(drawIntroBg);
-                else requestAnimationFrame(drawIntroBg);
-            };
-            introVideo.addEventListener('playing', drawIntroBg, { once: true });
-            window.addEventListener('resize', () => { try { drawIntroBg(); } catch (e) {} });
 
             // 3.5秒たっても動画が動かなければロゴだけにする
             introTimeouts.push(setTimeout(() => {
