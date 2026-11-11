@@ -76,7 +76,7 @@
 
         /* オープニング用のCSS */
         #intro-container {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100vh; height: 100dvh;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; /* 高さは指定せず、画面いっぱいに広げる（下端が余らないように） */
             background: linear-gradient(#0D214B 0, #0D214B 37.5%, #081737 37.5%, #081737 100%); z-index: 9999;
             display: flex; align-items: center; justify-content: center;
             transition: opacity 1s ease; cursor: pointer;
@@ -1159,10 +1159,19 @@
                         const g = bgCanvas.getContext('2d');
                         const sx = (st.left - c.left) * K, sy = (st.top - c.top) * K, ss = st.width * K, sh = st.height * K;
                         const cropX = (vw - vh) / 2;
-                        // 上下は、動画の端の何もない場所の色（1ピクセル）で塗る（泡の線が伸びないようにする）
-                        const px = (x, y) => { const t = pxCanvas.getContext('2d'); t.drawImage(introVideo, x, y, 1, 1, 0, 0, 1, 1); const d = t.getImageData(0, 0, 1, 1).data; return 'rgb(' + d[0] + ',' + d[1] + ',' + d[2] + ')'; };
-                        if (sy > 0.5) { g.fillStyle = px(6, 6); g.fillRect(0, 0, cw, sy + 1); }
-                        if (sy + sh < ch - 0.5) { g.fillStyle = px(6, vh - 7); g.fillRect(0, sy + sh - 1, cw, ch - (sy + sh) + 1); }
+                        // 上下は、動画の上端・下端の色を横方向にならべて塗る（泡の線が伸びず、端の明るさの違いにも合う）
+                        const t = pxCanvas.getContext('2d');
+                        const edge = (y) => {
+                            const gr = g.createLinearGradient(sx, 0, sx + ss, 0);
+                            for (let i = 0; i <= 6; i++) {
+                                t.drawImage(introVideo, cropX + (i / 6) * (vh - 1), y, 1, 1, 0, 0, 1, 1);
+                                const d = t.getImageData(0, 0, 1, 1).data;
+                                gr.addColorStop(i / 6, 'rgb(' + d[0] + ',' + d[1] + ',' + d[2] + ')');
+                            }
+                            return gr;
+                        };
+                        if (sy > 0.5) { g.fillStyle = edge(2); g.fillRect(0, 0, cw, sy + 2); }
+                        if (sy + sh < ch - 0.5) { g.fillStyle = edge(vh - 3); g.fillRect(0, sy + sh - 2, cw, ch - (sy + sh) + 2); }
                         if (sx > 0.5) g.drawImage(introVideo, 0, 0, 4, vh, 0, sy, sx + 1, sh);
                         if (sx + ss < cw - 0.5) g.drawImage(introVideo, vw - 4, 0, 4, vh, sx + ss - 1, sy, cw - (sx + ss) + 1, sh);
                         g.drawImage(introVideo, cropX, 0, vh, vh, sx, sy, ss, sh);
