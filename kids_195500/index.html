@@ -249,8 +249,8 @@
         #game2-container .start-lead { font-size: 15px; color: #000; line-height: 1.9; margin: 0; max-width: 260px; }
 
         #game2-container .big-btn {
-            font-family: var(--font); font-weight: 900; font-size: 19px; color: #fff;
-            background: transparent; border: none; padding: 18px 48px;
+            font-family: var(--font); font-weight: 900; font-size: 22px; color: #fff;
+            background: transparent; border: none; padding: 22px 52px;
             filter: drop-shadow(3px 5px 0 rgba(0,0,0,0.15));
             cursor: pointer; position: relative;
             transition: transform .08s ease, filter .08s ease;
@@ -291,9 +291,9 @@
         #game2-container .q-img.multi { max-width: 30%; max-height: 110px; }
         #game2-container .q-img.silhouette { filter: brightness(0); }
 
-        #game2-container .ans-row { display: flex; gap: 16px; justify-content: center; margin-top: auto; margin-bottom: 56px; }
+        #game2-container .ans-row { display: flex; gap: 32px; justify-content: center; margin-top: auto; margin-bottom: 56px; }
         #game2-container .ans-btn {
-            flex: 1; max-width: 150px; aspect-ratio: 1 / 1; border: none; cursor: pointer;
+            flex: 1; max-width: 160px; aspect-ratio: 1 / 1; border: none; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
             filter: drop-shadow(3px 5px 0 rgba(0,0,0,0.15)); transition: transform .08s ease, filter .08s ease;
             background: transparent; position: relative; padding: 0;
@@ -403,11 +403,11 @@
         #game3-container .center-lead { font-size: 15px; color: #000; line-height: 1.9; margin: 0; max-width: 270px; }
 
         #game3-container .big-btn {
-            font-family: var(--g3-font); font-weight: 900; font-size: 22px;
+            font-family: var(--g3-font); font-weight: 900; font-size: 24px;
             color: #fff; background: var(--g3-shu);
             border: 3px solid var(--g3-sumi);
             border-radius: 40px 15px 50px 25px / 20px 40px 15px 45px;
-            padding: 16px 40px; box-shadow: 4px 6px 0 var(--g3-sumi);
+            padding: 20px 44px; box-shadow: 4px 6px 0 var(--g3-sumi);
             cursor: pointer; transition: all 0.15s; position: relative; z-index: 1;
         }
         #game3-container .big-btn:hover { animation: g3-wobble 1s ease-in-out infinite; }
@@ -491,9 +491,9 @@
             border: 2px dashed #D4C5AC; line-height: 1.6; text-align: left;
         }
 
-        #game3-container .nav-row { display: flex; gap: 12px; margin-top: auto; padding-top: 20px; }
+        #game3-container .nav-row { display: flex; gap: 18px; margin-top: auto; padding-top: 20px; }
         #game3-container .nav-btn {
-            flex: 1; font-family: var(--g3-font); font-weight: 900; font-size: 18px; padding: 12px 10px;
+            flex: 1; font-family: var(--g3-font); font-weight: 900; font-size: 22px; padding: 16px 10px; min-height: 60px;
             border-radius: 20px 10px 25px 15px / 15px 25px 10px 20px; border: 3px solid var(--g3-sumi);
             background: #fff; color: var(--g3-sumi); cursor: pointer; box-shadow: 3px 4px 0 var(--g3-sumi); transition: all 0.15s;
         }
@@ -501,6 +501,54 @@
         #game3-container .nav-btn:disabled { opacity: 0.5; box-shadow: 1px 2px 0 var(--g3-sumi); transform: translateY(2px); cursor: default; border-style: dashed;}
         #game3-container .nav-btn.primary { background: var(--g3-ai); color: #fff; border-radius: 15px 25px 10px 20px / 20px 10px 25px 15px; }
 
+
+        /* ===== ごほうび／はげまし演出（音なし） ===== */
+        #fx-layer { position: fixed; inset: 0; z-index: 100000; pointer-events: none; overflow: hidden; }
+        .fx-piece { position: absolute; left: 50%; top: 45%; font-size: 30px; line-height: 1; opacity: 0;
+            animation: fxFly 1.5s ease-out forwards; }
+        @keyframes fxFly {
+            0% { opacity: 0; transform: translate(-50%,-50%) scale(0.3) rotate(0deg); }
+            15% { opacity: 1; }
+            100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.2) rotate(var(--rot)); }
+        }
+        .fx-swim { position: absolute; left: -20%; font-size: 44px; line-height: 1; animation: fxSwim 2.4s ease-in-out forwards; }
+        @keyframes fxSwim {
+            0% { transform: translateX(0) translateY(0); }
+            50% { transform: translateX(65vw) translateY(-14px); }
+            100% { transform: translateX(135vw) translateY(0); }
+        }
+        .fx-bubble { position: absolute; bottom: -10%; font-size: 26px; line-height: 1; opacity: 0; animation: fxRise 2.2s ease-in forwards; }
+        @keyframes fxRise {
+            0% { opacity: 0; transform: translateY(0); }
+            20% { opacity: .9; }
+            100% { opacity: 0; transform: translateY(-85vh) translateX(var(--sx)); }
+        }
+        .fx-wobble { animation: fxWobble 0.9s ease-in-out; }
+        @keyframes fxWobble {
+            0%,100% { transform: rotate(0deg) scale(1); }
+            20% { transform: rotate(-6deg) scale(1.05); }
+            40% { transform: rotate(5deg) scale(0.97); }
+            60% { transform: rotate(-3deg) scale(1.02); }
+            80% { transform: rotate(2deg); }
+        }
+        .fx-hop { animation: fxHop 0.7s ease-out; }
+        @keyframes fxHop { 0% { transform: scale(0.6); } 55% { transform: scale(1.15); } 100% { transform: scale(1); } }
+
+        /* ===== すいそう：水の中の背景 ===== */
+        #g1-aqua-box { background: linear-gradient(#c9f0ff 0%, #78cbf0 40%, #2f89c6 100%) !important; }
+        #g1-aqua-box .aqua-rays { position: absolute; inset: -20% -10% 0 -10%; z-index: 0; pointer-events: none; opacity: .35;
+            background: repeating-linear-gradient(105deg, rgba(255,255,255,0) 0 28px, rgba(255,255,255,.55) 28px 52px, rgba(255,255,255,0) 52px 96px);
+            -webkit-mask-image: linear-gradient(#000, transparent 85%); mask-image: linear-gradient(#000, transparent 85%);
+            animation: aquaRays 9s ease-in-out infinite alternate; }
+        @keyframes aquaRays { from { transform: translateX(-18px); } to { transform: translateX(18px); } }
+        #g1-aqua-box .aqua-sand { position: absolute; left: 0; right: 0; bottom: 0; height: 38px; z-index: 1; pointer-events: none;
+            background: radial-gradient(ellipse 60px 14px at 20% 0, #f3dca4 98%, transparent 100%), radial-gradient(ellipse 80px 16px at 65% 0, #f3dca4 98%, transparent 100%), #e9cf8f; }
+        #g1-aqua-box .aqua-weed { position: absolute; bottom: 24px; z-index: 1; pointer-events: none; transform-origin: 50% 100%; animation: aquaSway 3.4s ease-in-out infinite alternate; }
+        @keyframes aquaSway { from { transform: rotate(-6deg); } to { transform: rotate(6deg); } }
+        #g1-aqua-box .aqua-bub { position: absolute; bottom: 20px; z-index: 2; pointer-events: none; border-radius: 50%;
+            border: 2px solid rgba(255,255,255,.85); background: rgba(255,255,255,.25); animation: aquaBub 6s ease-in infinite; }
+        @keyframes aquaBub { 0% { transform: translateY(0) translateX(0); opacity: 0; } 15% { opacity: .9; } 100% { transform: translateY(-300px) translateX(14px); opacity: 0; } }
+        #g1-aqua-box #g1-aquarium-fish-area { position: relative; z-index: 3; }
     </style>
 </head>
 <body class="flex items-center justify-center">
@@ -549,7 +597,7 @@
         <!-- スタート画面 -->
         <div id="screen-start" class="kirie-box p-8 text-center flex flex-col items-center justify-center min-h-[400px]">
             <h1 class="text-4xl font-bold mb-8 leading-snug kirie-title text-orange-600">おさかな<br>シルエット<br>クイズ</h1>
-            <button onclick="g1_startGame()" class="kirie-btn btn-orange text-2xl font-bold py-4 px-10 mb-4 w-full">スタート！</button>
+            <button onclick="g1_startGame()" class="kirie-btn btn-orange text-2xl font-bold py-5 px-10 mb-5 w-full">スタート！</button>
             <button onclick="showMenu()" class="kirie-btn btn-gray text-lg font-bold py-2 px-6 w-full">ゲーム を えらぶ</button>
         </div>
 
@@ -561,8 +609,8 @@
                 <div class="w-48 h-48 mb-2 relative flex justify-center items-center kirie-img-box p-2">
                     <img id="g1-fish-image" src="" alt="おさかな" class="max-w-full max-h-full object-contain">
                 </div>
-                <button onclick="g1_showHint()" id="g1-hint-btn" class="kirie-btn btn-green text-lg font-bold py-2 px-8 mb-4">ひんと</button>
-                <div id="g1-options-container" class="w-full flex flex-col gap-3"></div>
+                <button onclick="g1_showHint()" id="g1-hint-btn" class="kirie-btn btn-green text-xl font-bold py-3 px-10 mb-5">ひんと</button>
+                <div id="g1-options-container" class="w-full flex flex-col gap-5"></div>
             </div>
         </div>
 
@@ -575,7 +623,7 @@
                 </div>
                 <p id="g1-popup-text" class="text-xl mb-6 font-bold"></p>
                 <p id="g1-popup-trivia" class="text-base mb-6 font-bold text-gray-700 bg-yellow-100 p-3 rounded-lg kirie-box w-full"></p>
-                <button id="g1-next-btn" onclick="g1_nextQuestion()" class="kirie-btn btn-blue text-xl font-bold py-3 px-8 w-full">つぎの もんだい へ</button>
+                <button id="g1-next-btn" onclick="g1_nextQuestion()" class="kirie-btn btn-blue text-2xl font-bold py-4 px-8 w-full">つぎの もんだい へ</button>
             </div>
         </div>
 
@@ -586,18 +634,19 @@
                 <p class="text-xl font-bold mb-4">きみの せいかい かず は...</p>
                 <p id="g1-final-score" class="text-4xl font-bold btn-yellow inline-block px-8 py-4 kirie-badge">5 もん</p>
             </div>
-            <button onclick="g1_showAquarium()" class="kirie-btn btn-blue text-xl font-bold py-4 px-10 mb-4 w-full">すいそう を みる！</button>
-            <button onclick="g1_resetGame()" class="kirie-btn btn-green text-xl font-bold py-4 px-10 mb-4 w-full">もういちど あそぶ</button>
+            <button onclick="g1_showAquarium()" class="kirie-btn btn-blue text-xl font-bold py-5 px-10 mb-5 w-full">すいそう を みる！</button>
+            <button onclick="g1_resetGame()" class="kirie-btn btn-green text-xl font-bold py-5 px-10 mb-5 w-full">もういちど あそぶ</button>
             <button onclick="showMenu()" class="kirie-btn btn-gray text-lg font-bold py-2 px-6 w-full">ゲーム を えらぶ</button>
         </div>
 
         <!-- すいそう画面 -->
         <div id="screen-aquarium" class="hidden kirie-box p-6 flex flex-col items-center justify-center min-h-[500px] w-full">
             <h2 class="text-2xl font-bold mb-4 kirie-badge btn-blue px-6 py-2">きみの すいそう</h2>
-            <div class="w-full h-[300px] relative overflow-hidden bg-cyan-100/60 mb-6 kirie-img-box">
+            <div id="g1-aqua-box" class="w-full h-[300px] relative overflow-hidden mb-6 kirie-img-box">
+                <div class="aqua-rays"></div><svg class="aqua-weed" style="left:6%;animation-delay:0s" width="34" height="90" viewBox="0 0 34 90"><path d="M17 90 C5 67 29 45 17 27 S5 13 17 0" fill="none" stroke="#2f9e5c" stroke-width="7" stroke-linecap="round"/></svg><svg class="aqua-weed" style="left:14%;animation-delay:1.2s" width="34" height="64" viewBox="0 0 34 64"><path d="M17 64 C5 48 29 32 17 19 S5 9 17 0" fill="none" stroke="#49b872" stroke-width="7" stroke-linecap="round"/></svg><svg class="aqua-weed" style="left:80%;animation-delay:0.6s" width="34" height="80" viewBox="0 0 34 80"><path d="M17 80 C5 60 29 40 17 24 S5 12 17 0" fill="none" stroke="#2f9e5c" stroke-width="7" stroke-linecap="round"/></svg><svg class="aqua-weed" style="left:90%;animation-delay:1.8s" width="34" height="58" viewBox="0 0 34 58"><path d="M17 58 C5 43 29 29 17 17 S5 8 17 0" fill="none" stroke="#49b872" stroke-width="7" stroke-linecap="round"/></svg><div class="aqua-sand"></div><span class="aqua-bub" style="left:12%;width:10px;height:10px;animation-delay:0.0s;animation-duration:6.0s"></span><span class="aqua-bub" style="left:30%;width:14px;height:14px;animation-delay:2.1s;animation-duration:7.0s"></span><span class="aqua-bub" style="left:52%;width:8px;height:8px;animation-delay:1.2s;animation-duration:5.5s"></span><span class="aqua-bub" style="left:70%;width:12px;height:12px;animation-delay:3.4s;animation-duration:6.5s"></span><span class="aqua-bub" style="left:88%;width:9px;height:9px;animation-delay:0.7s;animation-duration:5.8s"></span>
                 <div id="g1-aquarium-fish-area" class="w-full h-full relative"></div>
             </div>
-            <button onclick="g1_resetGame()" class="kirie-btn btn-green text-xl font-bold py-4 px-10 mb-4 w-full">もういちど あそぶ</button>
+            <button onclick="g1_resetGame()" class="kirie-btn btn-green text-xl font-bold py-5 px-10 mb-5 w-full">もういちど あそぶ</button>
             <button onclick="showMenu()" class="kirie-btn btn-gray text-lg font-bold py-2 px-6 w-full">ゲーム を えらぶ</button>
         </div>
     </div>
@@ -767,6 +816,49 @@
             </main>
         </div>
     </div>
+
+
+    <div id="fx-layer" aria-hidden="true"></div>
+    <script>
+        // ===== ごほうび／はげまし演出 =====
+        const FX_LAYER = () => document.getElementById('fx-layer');
+        function fxClear(ms) { setTimeout(() => { const l = FX_LAYER(); if (l) l.innerHTML = ''; }, ms); }
+        function fxReward(big) {
+            const l = FX_LAYER(); if (!l) return;
+            const icons = ['⭐', '✨', '🐟', '🫧', '🌟', '🐠'];
+            const n = big ? 26 : 16;
+            for (let i = 0; i < n; i++) {
+                const p = document.createElement('span'); p.className = 'fx-piece';
+                p.textContent = icons[Math.floor(Math.random() * icons.length)];
+                const ang = Math.random() * Math.PI * 2, dist = 90 + Math.random() * (big ? 230 : 170);
+                p.style.setProperty('--dx', Math.cos(ang) * dist + 'px');
+                p.style.setProperty('--dy', Math.sin(ang) * dist + 'px');
+                p.style.setProperty('--rot', (Math.random() * 360 - 180) + 'deg');
+                p.style.animationDelay = (Math.random() * 0.15) + 's';
+                l.appendChild(p);
+            }
+            const f = document.createElement('span'); f.className = 'fx-swim';
+            f.textContent = ['🐟', '🐠', '🐡'][Math.floor(Math.random() * 3)];
+            f.style.top = (18 + Math.random() * 55) + '%';
+            l.appendChild(f);
+            fxClear(2600);
+        }
+        // まちがえたとき：やさしく あわが のぼる
+        function fxCheer() {
+            const l = FX_LAYER(); if (!l) return;
+            for (let i = 0; i < 9; i++) {
+                const b = document.createElement('span'); b.className = 'fx-bubble';
+                b.textContent = '🫧';
+                b.style.left = (8 + Math.random() * 84) + '%';
+                b.style.setProperty('--sx', (Math.random() * 60 - 30) + 'px');
+                b.style.animationDelay = (Math.random() * 0.6) + 's';
+                l.appendChild(b);
+            }
+            fxClear(3000);
+        }
+        const FX_CHEER_WORDS = ['だいじょうぶ！', 'つぎは できるよ！', 'いいちょうせん！', 'もうすこし！'];
+        const fxCheerWord = () => FX_CHEER_WORDS[Math.floor(Math.random() * FX_CHEER_WORDS.length)];
+    </script>
 
     <script>
         // ------------------------------------------------
@@ -1129,7 +1221,7 @@
                 const btn = document.createElement("button");
                 btn.textContent = optionText;
                 const colorClass = g1_btnColors[index % g1_btnColors.length];
-                btn.className = `kirie-btn ${colorClass} text-xl font-bold py-4 px-6 w-full`;
+                btn.className = `kirie-btn ${colorClass} text-2xl font-bold py-5 px-6 w-full`;
                 btn.onclick = () => g1_checkAnswer(optionText, q.name);
                 optionsContainer.appendChild(btn);
             });
@@ -1159,9 +1251,13 @@
                 const msgs = ["すごいね！", "やったね！"];
                 popupTitle.textContent = msgs[Math.floor(Math.random() * msgs.length)];
                 popupTitle.className = "text-4xl font-bold mb-4 text-red-500 kirie-title";
+                resultImage.classList.add("fx-hop");
+                fxReward(g1_score === g1_currentQuestions.length);
             } else {
-                popupTitle.textContent = "おしい！";
-                popupTitle.className = "text-4xl font-bold mb-4 text-blue-500 kirie-title";
+                popupTitle.textContent = fxCheerWord();
+                popupTitle.className = "text-3xl font-bold mb-4 text-blue-500 kirie-title";
+                resultImage.classList.add("fx-wobble");
+                fxCheer();
             }
             popupText.innerHTML = `せいかい は<br>「${correct}」でした！`;
             document.getElementById("g1-popup-trivia").innerHTML = `💡 まめちしき<br><span class="text-sm">${q.trivia}</span>`;
@@ -1197,6 +1293,7 @@
             document.getElementById("screen-quiz").classList.add("hidden");
             document.getElementById("screen-end").classList.remove("hidden");
             document.getElementById("g1-final-score").textContent = `${g1_score} もん`;
+            if (g1_score === g1_currentQuestions.length) fxReward(true);
             logEvent('finish', 'game1', g1_score + '/' + g1_currentQuestions.length);
             // 【修正2】終了画面でも直後の誤タップを防ぐ
             lockTap(document.querySelectorAll('#screen-end button'));
@@ -1211,7 +1308,7 @@
             area.innerHTML = "";
 
             if (g1_correctFishes.length === 0) {
-                area.innerHTML = '<p class="text-gray-500 text-center mt-20 font-bold">おさかな が いないみたい...</p>';
+                area.innerHTML = '<p class="text-white text-center mt-20 font-bold">おさかな が いないみたい...</p>';
                 return;
             }
 
@@ -1434,11 +1531,13 @@
                 word.textContent = okWords[Math.floor(Math.random() * okWords.length)];
                 word.className = "feedback-word ok";
                 text.textContent = q.okText;
+                fxReward(g2_correctCount === g2_questions.length);
             } else {
                 icon.innerHTML = '<path d="M25 25l50 50M75 25L25 75" stroke="#E8563E" stroke-width="9" stroke-linecap="round"/>';
-                word.textContent = "おしい!";
+                word.textContent = fxCheerWord();
                 word.className = "feedback-word ng";
-                text.textContent = q.ngText;
+                text.textContent = q.ngText.replace(/^おしい[!！]\s*/, '');
+                fxCheer();
             }
 
             if (q.showFeedbackImage) {
@@ -1484,6 +1583,7 @@
             }
             document.getElementById('g2-finalMsg').innerHTML = msg;
             g2_goScreen('final');
+            if (g2_correctCount === g2_questions.length) fxReward(true);
             // 【修正2】結果画面でも直後の誤タップを防ぐ
             lockTap(document.querySelectorAll('#game2-container .final-wrap .big-btn'));
         }
@@ -1678,6 +1778,11 @@
             document.getElementById('g3-sentenceSub').textContent = subSentence;
             document.getElementById('g3-sentenceInfo').innerHTML = r.info;
 
+            // おおきい さかなが でたら ごほうび／いつも さかなが ぽよんと でる
+            const fishEl = inner.querySelector('.bar-col:last-child img');
+            if (fishEl) { fishEl.classList.remove('fx-hop'); void fishEl.offsetWidth; fishEl.classList.add('fx-hop'); }
+            if (r.cm / g3_CHILD_CM >= 5.0) fxReward(false);
+
             document.getElementById('g3-prevBtn').disabled = false;
             document.getElementById('g3-prevBtn').textContent = (g3_currentIndex === 0) ? 'もどる' : 'まえへ';
             document.getElementById('g3-nextBtn').textContent = (g3_currentIndex === g3_rounds.length - 1) ? 'おわる' : 'つぎへ';
@@ -1711,6 +1816,7 @@
 
                 logEvent('finish', 'game3', g3_theme);
                 g3_goScreen('end');
+                fxReward(true);
             }
         }
 
