@@ -41,7 +41,7 @@
 
   <style>
     :root {
-      --accent: 31 107 79;
+      --accent: 166 61 42;      /* 差し色：えんじ */
       --cat: 43 76 126;          /* 種類ごとの色（日本酒＝藍、ワイン＝ボルドー。JSで切り替え） */
       --gold: 201 162 83;
     }
@@ -410,51 +410,173 @@
       .mcard-shelf .sway, .mcard-shelf .bottle-frame::after, .fx-fall { animation: none !important; }
       .mcard-shelf .bottle-frame::after { display: none; }
     }
+
+    /* ===== オープニング：暖簾 ===== */
+    .opening { position: fixed; inset: 0; z-index: 100; overflow: hidden; background: #f1eadc; cursor: pointer; }
+    .opening.is-done { pointer-events: none; }
+    .noren-rod { position: absolute; top: 0; left: -5%; right: -5%; height: 14px; background: linear-gradient(#6b4a2b, #3e2a17); box-shadow: 0 3px 6px rgba(0,0,0,.3); }
+    .noren {
+      position: absolute; top: 10px; bottom: 18%; width: 50.4%; display: flex; justify-content: center; padding-top: 18vh;
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='20' viewBox='0 0 40 20'%3E%3Cg fill='none' stroke='%23f2d9a8' stroke-opacity='.12' stroke-width='1'%3E%3Ccircle cx='20' cy='20' r='18'/%3E%3Ccircle cx='20' cy='20' r='13'/%3E%3Ccircle cx='20' cy='20' r='8'/%3E%3Ccircle cx='0' cy='10' r='18'/%3E%3Ccircle cx='0' cy='10' r='13'/%3E%3Ccircle cx='0' cy='10' r='8'/%3E%3Ccircle cx='40' cy='10' r='18'/%3E%3Ccircle cx='40' cy='10' r='13'/%3E%3Ccircle cx='40' cy='10' r='8'/%3E%3C/g%3E%3C/svg%3E"),
+        linear-gradient(to bottom, #b4452f, #a63d2a 50%, #8f3020);
+      box-shadow: inset 0 -10px 18px rgba(0,0,0,.18);
+      transform-origin: 50% 0;
+    }
+    .noren-l { left: 0; border-right: 1px solid rgba(0,0,0,.25); }
+    .noren-r { right: 0; border-left: 1px solid rgba(255,255,255,.08); }
+    .noren-text {
+      writing-mode: vertical-rl; font-family: "Shippori Mincho", serif; font-weight: 800; color: #fbf4ea;
+      font-size: clamp(40px, 12vw, 64px); letter-spacing: .18em; text-shadow: 0 2px 6px rgba(0,0,0,.25);
+    }
+    .noren-l .noren-text { margin-left: 26%; }
+    .noren-r .noren-text { margin-right: 26%; }
+    .noren-crest {
+      position: absolute; left: 50%; bottom: calc(18% + 7vh); width: 76px; height: 76px; margin-left: -38px; border-radius: 9999px;
+      border: 2.5px solid #f2d9a8; display: flex; align-items: center; justify-content: center; z-index: 2;
+      font-family: "Shippori Mincho", serif; font-weight: 800; font-size: 34px; color: #f2d9a8; background: rgba(143,48,32,.6);
+    }
+
+    /* ===== スマホの画面サイズで見せる（パソコンでは、まん中にスマホの幅で表示） ===== */
+    :root { --app-w: 430px; }
+    .app-frame, .app-width { width: 100%; max-width: var(--app-w); }
+    @media (min-width: 520px) {
+      html, body { background: #1c1917 !important; }
+      body { background-image: none !important; }
+      .app-frame {
+        background-color: #f1eadc;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .38 0 0 0 0 .28 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        box-shadow: 0 0 60px rgba(0,0,0,.5);
+      }
+      /* 全画面で出すもの（オープニング・商品ページ）も、スマホの幅に */
+      .opening, #product-view { left: calc(50% - var(--app-w) / 2); right: auto; width: var(--app-w); }
+      #product-view { background: transparent; }
+    }
+
+    /* =============================================================
+       お品書き（案1：和・えんじ）
+       ============================================================= */
+    #app-head { position: sticky; top: 0; z-index: 30; overflow: hidden; padding-bottom: 0; box-shadow: 0 6px 16px rgba(120,30,15,.25); }
+    .cat-seg { display: flex; padding: 4px; margin-top: 10px; border-radius: 999px; background: rgba(0,0,0,.18); }
+    .cat-seg button {
+      flex: 1; height: 42px; border-radius: 999px; display: flex; align-items: center; justify-content: center; gap: 6px;
+      font-family: "Shippori Mincho", serif; font-size: 18px; font-weight: 800; color: rgba(251,244,234,.82); transition: all .2s;
+    }
+    .cat-seg button .cnt { font-family: "Noto Sans JP", sans-serif; font-size: 12px; font-weight: 700; opacity: .75; }
+    .cat-seg button[aria-selected="true"] { background: #fff; color: #1c1917; box-shadow: 0 3px 10px rgba(0,0,0,.2); }
+    .chips { display: flex; gap: 8px; overflow-x: auto; margin: 0 -16px; padding: 10px 16px 12px; }
+    .chip {
+      flex-shrink: 0; height: 36px; padding: 0 16px; border-radius: 999px; font-size: 15px; font-weight: 700;
+      color: #fbf4ea; background: rgba(0,0,0,.14); border: 1px solid rgba(255,255,255,.3); transition: all .15s;
+    }
+    .chip[aria-pressed="true"] { background: #2b2622; border-color: #2b2622; color: #fff; }
+    .back-chip { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 16px; border-radius: 999px; background: #fff; color: #1c1917; font-weight: 700; font-size: 14px; }
+
+    .sec { display: flex; align-items: baseline; justify-content: space-between; padding: 18px 16px 10px; }
+    .sec h2 { font-family: "Shippori Mincho", serif; font-size: 19px; font-weight: 800; color: var(--sumi); }
+    .sec span { font-size: 13px; font-weight: 700; color: #5b5047; }
+
+    /* カード */
+    .m2 {
+      position: relative; height: 100%; display: flex; flex-direction: column; overflow: hidden;
+      background: #fffcf6; border: 1px solid #e3d8c3; border-radius: 8px; box-shadow: 0 4px 12px rgba(60,40,20,.08);
+    }
+    .m2-shelf { height: 168px; padding: 14px 0 10px; }
+    .m2-tag { position: absolute; top: 10px; left: 10px; z-index: 3; font-size: 12.5px; font-weight: 800; color: #fff; background: var(--c); padding: 3px 10px; border-radius: 99px; }
+    .m2-hex {
+      position: absolute; top: 8px; right: 8px; z-index: 3; width: 56px; height: 56px; border-radius: 99px;
+      background: rgba(255,252,246,.94); box-shadow: 0 2px 8px rgba(60,40,20,.15); display: flex; align-items: center; justify-content: center;
+    }
+    .m2-hex-sm { top: auto; right: auto; left: 8px; bottom: 8px; width: 48px; height: 48px; }
+    .m2-body { flex: 1; display: flex; flex-direction: column; padding: 10px 12px 12px; }
+    .m2-kana { font-size: 11.5px; font-weight: 700; letter-spacing: .08em; color: #6b6056; }
+    .m2-name { font-family: "Shippori Mincho", serif; font-size: 20px; font-weight: 800; line-height: 1.3; color: var(--sumi); }
+    .m2-name.is-long { font-size: 17px; }
+    .m2-catch { font-size: 13.5px; line-height: 1.55; color: #3d362f; margin-top: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .m2-match { font-size: 12px; font-weight: 700; color: #6b6056; margin-top: 6px; }
+    .m2-match b { font-family: "Shippori Mincho", serif; font-size: 20px; color: var(--shu); }
+    .m2-meter { display: flex; align-items: center; gap: 6px; margin-top: auto; padding: 10px 32px 0 0; font-size: 12px; font-weight: 700; color: #5b5047; }
+    .m2-bar { position: relative; flex: 1; height: 4px; border-radius: 4px; background: #e3d8c3; }
+    .m2-dot { position: absolute; top: 50%; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 99px; box-shadow: 0 0 0 3px #fffcf6; }
+    .m2-go {
+      position: absolute; right: 10px; bottom: 10px; width: 26px; height: 26px; border-radius: 99px; background: var(--shu); color: #fff;
+      display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 900; line-height: 1; padding-bottom: 2px;
+    }
+    /* 限定（横長） */
+    .m2-wide { flex-direction: row; border: 1.5px solid #c9a253; }
+    .m2-wshelf { width: 38%; flex-shrink: 0; align-items: center; padding: 30px 0 14px; border-bottom: none; border-right: 1px solid #ece2cf; }
+    .m2-wshelf::before { bottom: 12px; }
+    .m2-wide .m2-body { padding: 14px 14px 12px; }
+    .m2-wide .m2-name { font-size: 21px; }
+    .m2-limited { position: absolute; top: 10px; left: 10px; z-index: 3; font-size: 12px; font-weight: 800; letter-spacing: .1em; color: #fff; background: #c9a253; padding: 3px 10px; border-radius: 99px; }
+
+    /* 限定：自動で流れる */
+    .special-viewport { overflow: hidden; padding: 0 16px; touch-action: pan-y; }
+    .special-track { display: flex; gap: 12px; will-change: transform; }
+    .special-slide { flex: 0 0 86%; }
+    .special-dots { display: flex; justify-content: center; gap: 6px; padding-top: 10px; }
+    .special-dots i { display: block; width: 6px; height: 6px; border-radius: 99px; background: #d9ccb3; transition: all .3s; }
+    .special-dots i.on { width: 18px; background: var(--shu); }
+
+    /* 好み診断のボタン（右下） */
+    .fab {
+      position: fixed; z-index: 40; bottom: max(20px, env(safe-area-inset-bottom)); right: 16px;
+      height: 58px; padding: 0 20px 0 8px; border-radius: 999px; display: flex; align-items: center; gap: 10px;
+      background: linear-gradient(to bottom, #b4452f, #a63d2a 55%, #8f3020); color: #fff8f0; box-shadow: 0 10px 24px rgba(166,61,42,.45);
+      font-family: "Shippori Mincho", serif; font-size: 16px; font-weight: 800; letter-spacing: .05em; transition: transform .3s, opacity .3s;
+    }
+    .fab:active { transform: scale(.95); }
+    .fab.is-hidden { transform: translateY(120px); opacity: 0; pointer-events: none; }
+    .fab-ic { width: 42px; height: 42px; border-radius: 99px; background: #fff8f0; color: #a63d2a; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    @media (min-width: 520px) { .fab { right: calc(50% - var(--app-w) / 2 + 16px); } }
   </style>
 </head>
 <body class="font-sans text-ink antialiased">
-  <div class="max-w-md mx-auto min-h-screen relative pb-28">
+  <!-- オープニング（約2秒）：えんじの暖簾が下りてきて、真ん中から左右に開く。タップで飛ばせる -->
+  <div id="opening" class="opening" onclick="endOpening()" aria-hidden="true">
+    <div class="noren noren-l"><span class="noren-text">今日の</span></div>
+    <div class="noren noren-r"><span class="noren-text">お品書き</span></div>
+    <div class="noren-crest"><span>酒</span></div>
+    <div class="noren-rod"></div>
+  </div>
+  <div class="app-frame mx-auto min-h-screen relative pb-28">
 
-    <!-- ヘッダー -->
-    <header class="hero relative overflow-hidden px-4 pt-6 pb-4">
+    <!-- ヘッダー（上に貼り付く）：タイトル・日本酒／ワイン・絞り込み -->
+    <header id="app-head" class="hero px-4 pt-3">
       <div id="season-fx" class="absolute inset-0 pointer-events-none" aria-hidden="true"></div>
       <div class="relative flex items-center justify-between">
-        <span class="eyebrow">TODAY'S MENU</span>
+        <h1 id="menu-title" class="font-mincho font-extrabold text-[23px] tracking-wider leading-tight"></h1>
         <span id="season-label" class="season-label"></span>
       </div>
-      <h1 id="menu-title" class="relative font-mincho font-extrabold text-[28px] leading-tight mt-1"></h1>
-      <p id="menu-count" class="relative text-xs text-white/70 mt-1"></p>
-
-      <div role="tablist" class="relative mt-4 flex gap-1 p-1 rounded-full bg-white/10 border border-white/15">
-        <button role="tab" class="tab" data-tab="menu" onclick="setTab('menu')"><i class="fa-solid fa-book-open mr-1.5 text-xs"></i>お品書き</button>
-        <button role="tab" class="tab" data-tab="shindan" onclick="setTab('shindan')"><i class="fa-solid fa-wand-magic-sparkles mr-1.5 text-xs"></i>好み診断</button>
+      <div id="head-menu" class="relative">
+        <nav id="category-tabs" class="cat-seg" role="tablist"></nav>
+        <div id="taste-filters" class="chips no-scrollbar"></div>
+      </div>
+      <div id="head-shindan" class="relative hidden pt-2 pb-3">
+        <button onclick="setTab('menu')" class="back-chip"><i class="fa-solid fa-arrow-left text-xs"></i>お品書きへ戻る</button>
       </div>
     </header>
 
     <!-- ================= お品書き ================= -->
     <main id="view-menu">
-      <!-- 種類（日本酒・ワイン） -->
-      <nav id="category-tabs" role="tablist" class="px-4 pt-4 flex gap-3"></nav>
+      <!-- 診断したあとだけ：タイプ・相性順・リセット -->
+      <section id="diagnosis-banner" class="px-4"></section>
 
-      <!-- 味で選ぶ（種類ごとに項目が変わる。日本酒＝甘口・辛口、ワイン＝赤・白／軽め・重め） -->
-      <section id="taste-filters" class="px-4 pt-4 space-y-2"></section>
-
-      <!-- 診断へのお誘い／診断済みなら相性順の切り替え -->
-      <section id="diagnosis-banner" class="px-4 pt-4"></section>
-
-      <section id="special-section" class="mt-5">
-        <h2 class="sec-rule px-4"><span>限定・店主のおすすめ</span></h2>
-        <p class="text-center text-[11px] text-[color:var(--usuzumi)] mt-1">横にスクロールできます</p>
-        <div id="special-list" class="mt-3 flex items-start gap-3 overflow-x-auto no-scrollbar px-4 pb-4 snap-x snap-mandatory"></div>
+      <!-- 限定・店主のおすすめ（右から左へ、自動で流れる） -->
+      <section id="special-section">
+        <div class="sec"><h2>限定・店主のおすすめ</h2><span id="special-count"></span></div>
+        <div id="special-viewport" class="special-viewport">
+          <div id="special-list" class="special-track"></div>
+        </div>
+        <div id="special-dots" class="special-dots"></div>
       </section>
 
-      <section class="px-4 mt-4">
-        <h2 class="sec-rule"><span id="lineup-title">ラインナップ</span></h2>
-        <p id="lineup-count" class="text-center text-[11px] text-[color:var(--usuzumi)] mt-1"></p>
-        <div id="board-grid" class="mt-3 grid grid-cols-2 gap-3"></div>
+      <section>
+        <div class="sec"><h2 id="lineup-title">今日の日本酒</h2><span id="lineup-count"></span></div>
+        <div id="board-grid" class="grid grid-cols-2 gap-3 px-4"></div>
         <div id="board-empty" class="hidden text-center py-12">
-          <p class="text-sm text-muted">この味のお酒は、いまお休み中です</p>
-          <button onclick="resetFilters()" class="mt-3 text-sm font-bold text-accent">絞り込みをやめる</button>
+          <p class="text-sm font-bold text-[color:var(--usuzumi)]">この味のお酒は、いまお休み中です</p>
+          <button onclick="resetFilters()" class="mt-3 text-sm font-bold text-[color:var(--shu)]">絞り込みをやめる</button>
         </div>
       </section>
     </main>
@@ -527,9 +649,12 @@
 
   </div>
 
+  <!-- 好み診断のボタン（右下に浮かぶ） -->
+  <button id="fab-shindan" class="fab" onclick="setTab('shindan')"><span class="fab-ic">診</span><span id="fab-label">好み診断</span></button>
+
   <!-- 商品ページ（お品書きのカードを押すと、カードが回ってこのページに入る） -->
   <div id="product-view" class="fixed inset-0 z-50 hidden overflow-y-auto overscroll-contain">
-    <div id="product-body" class="wa-paper max-w-md mx-auto min-h-full relative shadow-2xl"></div>
+    <div id="product-body" class="wa-paper app-width mx-auto min-h-full relative shadow-2xl"></div>
   </div>
 
   <!-- お知らせ（相性をリセットしたときなど） -->
@@ -578,7 +703,7 @@
       { key: "light", label: "軽め", test: d => d.taste.body <= 45 },
       { key: "heavy", label: "重め", test: d => d.taste.body >= 55 }] };
     const FILTERS_BY_CATEGORY = {
-      "日本酒": [SWEET_FILTER],
+      "日本酒": [SWEET_FILTER],   // 甘口・辛口
       "ワイン": [
         { group: "color", label: "色", options: [ALL,
           { key: "red",   label: "赤", test: d => d.color === "red" },
@@ -706,6 +831,11 @@
       state.tab = tab;
       document.querySelectorAll("[data-tab]").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === tab));
       ["menu", "shindan"].forEach(v => document.getElementById("view-" + v).classList.toggle("hidden", v !== tab));
+      document.getElementById("head-menu").classList.toggle("hidden", tab !== "menu");
+      document.getElementById("head-shindan").classList.toggle("hidden", tab !== "shindan");
+      document.getElementById("fab-shindan").classList.toggle("is-hidden", tab !== "menu");
+      document.getElementById("fab-label").textContent = state.diagnosed ? "診断結果" : "好み診断";
+      if (tab === "menu") carousel.start(); else carousel.stop();
       if (tab === "shindan") showShindanStep(state.diagnosed ? "result" : "intro");
       else renderMenu();
       window.scrollTo({ top: 0 });
@@ -722,13 +852,10 @@
     const themeOf = c => CATEGORY_THEME[c] || { rgb: "31 107 79", bg: "linear-gradient(135deg, #2E7D5B, #1F6B4F)", icon: "fa-glass-water" };
     function renderCategoryTabs() {
       document.documentElement.style.setProperty("--cat", themeOf(state.category).rgb);
-      document.getElementById("category-tabs").innerHTML = CATEGORIES.map(c => {
-        const t = themeOf(c);
-        return `
-        <button role="tab" class="cat-tab" aria-selected="${c === state.category}" onclick="setCategory('${esc(c)}')"
-                style="--tab-bg:${t.bg}; --tab-shadow:rgb(${t.rgb} / .35)">
-          <i class="fa-solid ${t.icon} text-base"></i>${esc(c)}<span class="cat-count">${available().filter(d => d.category === c).length}</span>
-        </button>`; }).join("");
+      document.getElementById("category-tabs").innerHTML = CATEGORIES.map(c => `
+        <button role="tab" aria-selected="${c === state.category}" onclick="setCategory('${esc(c)}')">
+          ${esc(c)}<span class="cnt">${available().filter(d => d.category === c).length}</span>
+        </button>`).join("");
     }
     let flipping = false;
     function setCategory(c) {
@@ -755,16 +882,19 @@
       ], { duration: 340, delay: i * 55, easing: "ease-out", fill: "backwards" }));
     }
 
+    // 絞り込みはチップで。「すべて」で解除、同じチップをもう一度押しても解除
     function renderTasteFilters() {
-      document.getElementById("taste-filters").innerHTML = filtersFor(state.category).map(f => `
-        <div class="flex items-center gap-2">
-          <span class="w-12 flex-shrink-0 text-xs font-bold text-muted">${f.label}</span>
-          <div class="flex-1 flex gap-1 p-1 rounded-full bg-surface border border-line">
-            ${f.options.map(o => `<button class="seg" aria-pressed="${(state.filters[f.group] || "all") === o.key}" onclick="setTasteFilter('${f.group}', '${o.key}')">${o.label}</button>`).join("")}
-          </div>
-        </div>`).join("");
+      const none = !Object.values(state.filters).some(v => v && v !== "all");
+      const chips = [`<button class="chip" aria-pressed="${none}" onclick="resetFilters()">すべて</button>`];
+      filtersFor(state.category).forEach(f => f.options.filter(o => o.test).forEach(o => {
+        chips.push(`<button class="chip" aria-pressed="${state.filters[f.group] === o.key}" onclick="setTasteFilter('${f.group}', '${o.key}')">${o.label}</button>`);
+      }));
+      document.getElementById("taste-filters").innerHTML = chips.join("");
     }
-    function setTasteFilter(group, key) { state.filters[group] = key; renderMenu(); }
+    function setTasteFilter(group, key) {
+      state.filters[group] = state.filters[group] === key ? "all" : key;
+      renderMenu();
+    }
     function resetFilters() { state.filters = {}; renderMenu(); }
     function matchesFilters(d) {
       return filtersFor(state.category).every(f => {
@@ -776,19 +906,11 @@
     function renderDiagnosisBanner() {
       const box = document.getElementById("diagnosis-banner");
       if (!state.diagnosed) {
-        box.innerHTML = `
-          <button onclick="setTab('shindan')" class="noren-banner w-full p-4 flex items-center gap-3 text-left active:translate-y-[2px] transition-transform">
-            <span class="w-11 h-11 rounded-full border border-[#f2d9a8]/50 flex items-center justify-center flex-shrink-0 font-mincho font-extrabold text-[#f2d9a8]">診</span>
-            <span class="flex-1 min-w-0">
-              <span class="block font-mincho font-extrabold text-[17px] tracking-wider">迷ったら、好み診断</span>
-              <span class="block text-xs text-[#fbf4ea]/80 mt-0.5">${QUESTIONS.length}つの質問で、あなたに合う1杯がわかります</span>
-            </span>
-            <i class="fa-solid fa-chevron-right text-[#fbf4ea]/70 text-sm"></i>
-          </button>`;
+        box.innerHTML = "";
         return;
       }
       box.innerHTML = `
-        <div class="paper-card p-3 pl-4 flex items-center gap-3">
+        <div class="paper-card p-3 pl-4 mt-4 flex items-center gap-3">
           <div class="flex-1 min-w-0">
             <p class="text-[11px] text-muted">あなたは</p>
             <p class="font-mincho font-extrabold text-[16px] leading-snug">${esc(TASTE_TYPES[getTasteTypeKey(userProfile)].name)}<br class="sm:hidden"> タイプ</p>
@@ -821,6 +943,80 @@
     // カードの右上のはんこ（日本酒は甘口・旨口・辛口、ワインは赤・白・ロゼ）
     const cardTypeWord = d => d.category === "ワイン" ? (WINE_WORD[d.color] || "ワイン") : TYPE_INFO[d.type].word;
 
+    // 甘辛の目盛り（1本）
+    function sweetMeter(d) {
+      const c = themeColor(d);
+      return `<div class="m2-meter"><span>辛</span><div class="m2-bar"><span class="m2-dot" style="left:${Math.max(6, Math.min(94, d.taste.sweetness))}%;background:${c}"></span></div><span>甘</span></div>`;
+    }
+    // 診断したあとだけ、相性％
+    function matchLine(d) {
+      return state.diagnosed ? `<p class="m2-match">相性 <b>${getMatchPercent(d)}</b>%</p>` : "";
+    }
+
+    // ---- 限定・店主のおすすめ：右から左へ自動で流れる（指で左右に送ることもできる） ----
+    const carousel = (() => {
+      const INTERVAL = 3200;
+      let n = 0, index = 0, timer = null, pausedUntil = 0, dragged = false;
+      const track = () => document.getElementById("special-list");
+      const viewport = () => document.getElementById("special-viewport");
+      const step = () => { const first = track().querySelector(".special-slide"); return first ? first.getBoundingClientRect().width + 12 : 0; };
+      function paint(animate) {
+        const t = track(); if (!t) return;
+        t.style.transition = animate && !reduceMotion() ? "transform .75s cubic-bezier(.45,.05,.25,1)" : "none";
+        t.style.transform = `translateX(${-index * step()}px)`;
+        document.querySelectorAll("#special-dots i").forEach((d, k) => d.classList.toggle("on", k === index % n));
+      }
+      function next() {
+        if (n < 2) return;
+        index++;
+        paint(true);
+        // 最後（先頭の写し）まで来たら、気づかれないように先頭へ戻す
+        if (index === n) setTimeout(() => { index = 0; paint(false); }, reduceMotion() ? 0 : 780);
+      }
+      function prev() {
+        if (n < 2) return;
+        if (index === 0) { index = n; paint(false); void track().offsetWidth; }
+        index--; paint(true);
+      }
+      function tick() {
+        if (Date.now() < pausedUntil || document.hidden || productOpen || state.tab !== "menu") return;
+        next();
+      }
+      function start() { stop(); if (n >= 2) timer = setInterval(tick, INTERVAL); }
+      function stop() { clearInterval(timer); timer = null; }
+      function reset(count) {
+        n = count; index = 0;
+        const t = track();
+        // 先頭のカードの写しを最後に足して、ぐるっと回るように
+        if (n >= 2) {
+          const clone = t.firstElementChild.cloneNode(true);
+          clone.removeAttribute("data-card"); clone.setAttribute("aria-hidden", "true"); clone.tabIndex = -1;
+          t.appendChild(clone);
+        }
+        document.getElementById("special-dots").innerHTML = n >= 2 ? Array.from({ length: n }, () => "<i></i>").join("") : "";
+        requestAnimationFrame(() => paint(false));
+        if (state.tab === "menu") start();
+      }
+      // 指で左右に送る
+      let x0 = null, y0 = null;
+      document.addEventListener("pointerdown", e => {
+        if (!viewport() || !viewport().contains(e.target)) return;
+        x0 = e.clientX; y0 = e.clientY; dragged = false; pausedUntil = Date.now() + 6000;
+      });
+      document.addEventListener("pointerup", e => {
+        if (x0 === null) return;
+        const dx = e.clientX - x0, dy = e.clientY - y0;
+        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) { dragged = true; dx < 0 ? next() : prev(); }
+        x0 = null;
+      });
+      // 指で送ったときは、カードを開かない
+      document.addEventListener("click", e => {
+        if (dragged && viewport() && viewport().contains(e.target)) { e.stopPropagation(); e.preventDefault(); dragged = false; }
+      }, true);
+      window.addEventListener("resize", () => paint(false));
+      return { reset, start, stop, next };
+    })();
+
     function renderMenu() {
       renderCategoryTabs();
       renderTasteFilters();
@@ -833,50 +1029,44 @@
       const regulars = state.sortByMatch ? list : list.filter(d => !d.special);
 
       document.getElementById("special-section").classList.toggle("hidden", specials.length === 0);
-      document.getElementById("special-list").innerHTML = specials.map(d => cardButton(d, "snap-start flex-shrink-0 w-[84%]", `
-          <div class="mcard mcard-wide ${d.soldOut ? "sold-out" : ""}" style="--c:${themeColor(d)}">
+      document.getElementById("special-count").textContent = `${specials.length}本`;
+      document.getElementById("special-list").innerHTML = specials.map(d => cardButton(d, "special-slide", `
+          <div class="m2 m2-wide ${d.soldOut ? "sold-out" : ""}" style="--c:${themeColor(d)}">
             ${statusBadge(d)}
-            <span class="mcard-limited">限定</span>
-            <div class="mcard-shelf">
-              <span class="mcard-type">${esc(cardTypeWord(d))}</span>
-              <div data-hero-src class="sway" style="--i:${(d.id.length * 7) % 10}">${bottleSvg(d, "w-[54px] h-[180px] relative")}</div>
+            <span class="m2-limited">限定</span>
+            <div class="mcard-shelf m2-wshelf">
+              <div data-hero-src class="sway" style="--i:${(d.id.length * 7) % 10}">${bottleSvg(d, "w-[45px] h-[150px] relative")}</div>
+              <span class="m2-hex m2-hex-sm">${radar(d, 40)}</span>
             </div>
-            <div class="mcard-body dim">
-              <p class="mcard-kana">${esc([d.prefecture, d.grade].filter(Boolean).join("・"))}</p>
-              <p class="mcard-name">${esc(d.name)}</p>
-              ${sameAsName(d) ? "" : `<p class="mcard-kana mt-0.5">${esc(displayKana(d))}</p>`}
-              <p class="mcard-catch">${esc(productInfo(d).catch)}</p>
-              <div class="kw-row">${productInfo(d).keywords.slice(0, 3).map(k => `<span>${esc(k)}</span>`).join("")}</div>
-              ${d.comment ? `<p class="mcard-note">${esc(d.comment)}</p>` : ""}
-              <div class="mcard-foot">
-                ${radar(d, 46)}
-                ${state.diagnosed ? `<span class="mcard-match"><span class="text-[11px] font-sans text-[color:var(--usuzumi)] mr-1">相性</span><span class="text-2xl">${getMatchPercent(d)}</span><span class="text-xs">%</span></span>` : ""}
-              </div>
+            <div class="m2-body dim">
+              <p class="m2-kana">${esc([d.prefecture, d.grade].filter(Boolean).join("・"))}</p>
+              <p class="m2-name">${esc(d.name)}</p>
+              <p class="m2-catch" style="-webkit-line-clamp:3">${esc(productInfo(d).catch)}</p>
+              ${matchLine(d)}
+              ${sweetMeter(d)}
             </div>
+            <span class="m2-go">›</span>
           </div>`)).join("");
+      carousel.reset(specials.length);
 
-      document.getElementById("lineup-title").textContent = state.sortByMatch ? "あなたとの相性順" : (specials.length ? "今日のラインナップ" : `今日の${state.category}`);
-      document.getElementById("lineup-count").textContent = `${list.length} 銘柄・押すとくわしく見られます`;
+      document.getElementById("lineup-title").textContent = state.sortByMatch ? "あなたとの相性順" : `今日の${state.category}`;
+      document.getElementById("lineup-count").textContent = `${regulars.length}銘柄`;
       document.getElementById("board-grid").innerHTML = regulars.map((d, i) => cardButton(d, "", `
-          <div class="mcard ${d.soldOut ? "sold-out" : ""}" style="--c:${themeColor(d)}">
+          <div class="m2 ${d.soldOut ? "sold-out" : ""}" style="--c:${themeColor(d)}">
             ${statusBadge(d)}
-            <div class="mcard-shelf">
-              ${d.prefecture ? `<span class="mcard-pref">${esc(d.prefecture)}</span>` : ""}
-              <span class="mcard-type">${esc(cardTypeWord(d))}</span>
-              ${state.sortByMatch ? `<span class="mcard-rank">${i + 1}位</span>` : ""}
-              <div data-hero-src class="sway" style="--i:${i % 10}">${bottleSvg(d, "w-[52px] h-[172px] relative")}</div>
+            <span class="m2-tag">${state.sortByMatch ? `${i + 1}位` : esc(cardTypeWord(d))}</span>
+            <span class="m2-hex">${radar(d, 46)}</span>
+            <div class="mcard-shelf m2-shelf">
+              <div data-hero-src class="sway" style="--i:${i % 10}">${bottleSvg(d, "w-[42px] h-[140px] relative")}</div>
             </div>
-            <div class="mcard-body dim">
-              ${sameAsName(d) ? "" : `<p class="mcard-kana">${esc(displayKana(d))}</p>`}
-              <p class="mcard-name ${d.name.length > 7 ? "is-long" : ""}">${esc(d.name)}</p>
-              <p class="mcard-catch">${esc(productInfo(d).catch)}</p>
-              <div class="mcard-foot mcard-foot-line">
-                ${radar(d, 38)}
-                ${state.diagnosed
-                  ? `<span class="mcard-match"><span class="text-[10px] font-sans text-[color:var(--usuzumi)] mr-0.5">相性</span><span class="text-xl">${getMatchPercent(d)}</span><span class="text-[11px]">%</span></span>`
-                  : `<span class="mcard-kw">${productInfo(d).keywords.slice(0, 2).map(esc).join("<br>")}</span>`}
-              </div>
+            <div class="m2-body dim">
+              ${sameAsName(d) ? "" : `<p class="m2-kana">${esc(displayKana(d))}</p>`}
+              <p class="m2-name ${d.name.length > 7 ? "is-long" : ""}">${esc(d.name)}</p>
+              <p class="m2-catch">${esc(productInfo(d).catch)}</p>
+              ${matchLine(d)}
+              ${sweetMeter(d)}
             </div>
+            <span class="m2-go">›</span>
           </div>`)).join("");
 
       document.getElementById("board-empty").classList.toggle("hidden", list.length > 0);
@@ -1557,12 +1747,57 @@
     // =============================================================
     //  はじめに
     // =============================================================
+    // ---- オープニング ----
+    let openingAnims = [];
+    function playOpening() {
+      const op = document.getElementById("opening");
+      if (!op) return;
+      if (reduceMotion()) { op.remove(); return; }
+      const L = op.querySelector(".noren-l"), R = op.querySelector(".noren-r"), crest = op.querySelector(".noren-crest"), rod = op.querySelector(".noren-rod");
+      const texts = op.querySelectorAll(".noren-text");
+      // 0〜0.55秒：暖簾が上から下りて、ふわっと揺れる
+      openingAnims.push(rod.animate([{ transform: "translateY(-20px)" }, { transform: "none" }], { duration: 300, easing: "ease-out" }));
+      [L, R].forEach((el, i) => openingAnims.push(el.animate([
+        { transform: "translateY(-105%)" },
+        { transform: `translateY(2%) rotate(${i ? -1.2 : 1.2}deg)`, offset: .7 },
+        { transform: `rotate(${i ? .5 : -.5}deg)`, offset: .88 },
+        { transform: "none" }
+      ], { duration: 650, easing: "cubic-bezier(.3,.8,.3,1)", fill: "backwards" })));
+      texts.forEach((t, i) => openingAnims.push(t.animate([{ opacity: 0, transform: "translateY(10px)" }, { opacity: 1, transform: "none" }],
+        { duration: 400, delay: 420 + i * 120, easing: "ease-out", fill: "backwards" })));
+      // 0.75秒：真ん中に「酒」の紋が、はんこのように押される
+      openingAnims.push(crest.animate([
+        { opacity: 0, transform: "scale(2.2) rotate(-18deg)" },
+        { opacity: 1, transform: "scale(.9) rotate(-4deg)", offset: .6 },
+        { opacity: 1, transform: "scale(1) rotate(0)" }
+      ], { duration: 380, delay: 750, easing: "cubic-bezier(.3,1.4,.5,1)", fill: "backwards" }));
+      // 1.35〜2.05秒：紋が消えて、暖簾が左右に分かれて開く
+      openingAnims.push(crest.animate([{ opacity: 1 }, { opacity: 0, transform: "scale(.8)" }], { duration: 200, delay: 1350, fill: "forwards" }));
+      [L, R].forEach((el, i) => openingAnims.push(el.animate([
+        { transform: "none" },
+        { transform: `translateX(${i ? 108 : -108}%) skewX(${i ? -6 : 6}deg) rotate(${i ? 4 : -4}deg)` }
+      ], { duration: 650, delay: 1400, easing: "cubic-bezier(.6,0,.3,1)", fill: "forwards" })));
+      const bg = op.animate([{ backgroundColor: "rgba(241,234,220,1)" }, { backgroundColor: "rgba(241,234,220,0)" }], { duration: 500, delay: 1450, fill: "forwards" });
+      openingAnims.push(bg);
+      openingAnims.push(rod.animate([{ opacity: 1 }, { opacity: 0, transform: "translateY(-16px)" }], { duration: 300, delay: 1800, fill: "forwards" }));
+      bg.finished.then(() => setTimeout(endOpening, 120)).catch(() => {});
+    }
+    // タップで飛ばす／終わったら外す
+    function endOpening() {
+      const op = document.getElementById("opening");
+      if (!op || op.classList.contains("is-done")) return;
+      op.classList.add("is-done");
+      openingAnims.forEach(a => { try { a.cancel(); } catch (e) {} });
+      if (reduceMotion()) { op.remove(); return; }
+      op.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200 }).onfinish = () => op.remove();
+    }
+
     (function init() {
       document.title = MENU_CONFIG.title;
       applySeason();
+      playOpening();
       document.getElementById("menu-title").textContent = MENU_CONFIG.title;
-      document.getElementById("menu-count").textContent =
-        `本日 ${available().length} 銘柄`;
+
 
       // 前に診断していれば、その結果を使う
       const saved = store.get("menu-diagnosis", null);
