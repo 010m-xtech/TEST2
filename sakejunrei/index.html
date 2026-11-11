@@ -511,10 +511,22 @@
     .m2-limited { position: absolute; top: 10px; left: 10px; z-index: 3; font-size: 12px; font-weight: 800; letter-spacing: .1em; color: #fff; background: #c9a253; padding: 3px 10px; border-radius: 99px; }
 
     /* 限定：自動で流れる */
-    .special-viewport { overflow: hidden; padding: 0 16px; touch-action: pan-y; }
+    .special-viewport { overflow: hidden; padding: 0 22px; touch-action: pan-y; }
     .special-track { display: flex; gap: 12px; will-change: transform; }
-    .special-slide { flex: 0 0 86%; }
+    .special-slide { flex: 0 0 100%; }
     .special-dots { display: flex; justify-content: center; gap: 6px; padding-top: 10px; }
+    .special-wrap { position: relative; }
+    .special-arrow {
+      position: absolute; top: 50%; z-index: 5; width: 34px; height: 34px; margin-top: -17px; border-radius: 99px;
+      display: flex; align-items: center; justify-content: center; padding-bottom: 3px;
+      font-size: 24px; font-weight: 700; line-height: 1; color: #fff8f0;
+      background: rgba(166,61,42,.92); box-shadow: 0 4px 12px rgba(120,30,15,.35); transition: transform .15s;
+    }
+    .special-arrow:active { transform: scale(.9); }
+    .special-arrow.is-prev { left: 2px; }
+    .special-arrow.is-next { right: 2px; }
+    .special-dots { padding-bottom: 2px; }
+    .special-dots i { cursor: pointer; }
     .special-dots i { display: block; width: 6px; height: 6px; border-radius: 99px; background: #d9ccb3; transition: all .3s; }
     .special-dots i.on { width: 18px; background: var(--shu); }
 
@@ -565,8 +577,12 @@
       <!-- 限定・店主のおすすめ（右から左へ、自動で流れる） -->
       <section id="special-section">
         <div class="sec"><h2>限定・店主のおすすめ</h2><span id="special-count"></span></div>
-        <div id="special-viewport" class="special-viewport">
-          <div id="special-list" class="special-track"></div>
+        <div class="special-wrap">
+          <div id="special-viewport" class="special-viewport">
+            <div id="special-list" class="special-track"></div>
+          </div>
+          <button id="special-prev" class="special-arrow is-prev" onclick="carousel.prev(true)" aria-label="前のおすすめ">‹</button>
+          <button id="special-next" class="special-arrow is-next" onclick="carousel.next(true)" aria-label="次のおすすめ">›</button>
         </div>
         <div id="special-dots" class="special-dots"></div>
       </section>
@@ -967,14 +983,18 @@
         t.style.transform = `translateX(${-index * step()}px)`;
         document.querySelectorAll("#special-dots i").forEach((d, k) => d.classList.toggle("on", k === index % n));
       }
-      function next() {
+      function hold() { pausedUntil = Date.now() + 6000; }
+      function goTo(k) { if (n < 2) return; hold(); index = k; paint(true); }
+      function next(byUser) {
+        if (byUser) hold();
         if (n < 2) return;
         index++;
         paint(true);
         // 最後（先頭の写し）まで来たら、気づかれないように先頭へ戻す
         if (index === n) setTimeout(() => { index = 0; paint(false); }, reduceMotion() ? 0 : 780);
       }
-      function prev() {
+      function prev(byUser) {
+        if (byUser) hold();
         if (n < 2) return;
         if (index === 0) { index = n; paint(false); void track().offsetWidth; }
         index--; paint(true);
@@ -994,7 +1014,8 @@
           clone.removeAttribute("data-card"); clone.setAttribute("aria-hidden", "true"); clone.tabIndex = -1;
           t.appendChild(clone);
         }
-        document.getElementById("special-dots").innerHTML = n >= 2 ? Array.from({ length: n }, () => "<i></i>").join("") : "";
+        document.getElementById("special-dots").innerHTML = n >= 2 ? Array.from({ length: n }, (_, k) => `<i role="button" aria-label="${k + 1}本目" onclick="carousel.goTo(${k})"></i>`).join("") : "";
+        document.querySelectorAll(".special-arrow").forEach(b => b.classList.toggle("hidden", n < 2));
         requestAnimationFrame(() => paint(false));
         if (state.tab === "menu") start();
       }
@@ -1015,7 +1036,7 @@
         if (dragged && viewport() && viewport().contains(e.target)) { e.stopPropagation(); e.preventDefault(); dragged = false; }
       }, true);
       window.addEventListener("resize", () => paint(false));
-      return { reset, start, stop, next };
+      return { reset, start, stop, next, prev, goTo };
     })();
 
     function renderMenu() {
