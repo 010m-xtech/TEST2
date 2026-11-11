@@ -41,7 +41,7 @@
 
   <style>
     :root {
-      --accent: 31 107 79;
+      --accent: 166 61 42;      /* 差し色：えんじ */
       --cat: 43 76 126;          /* 種類ごとの色（日本酒＝藍、ワイン＝ボルドー。JSで切り替え） */
       --gold: 201 162 83;
     }
@@ -139,7 +139,7 @@
     /* 瓶（ベース写真＋ラベル）。写真と同じ 3:10 の枠に、ラベルを％で重ねる */
     .bottle { position: relative; display: flex; justify-content: center; }
     .bottle-frame { position: relative; height: 100%; aspect-ratio: 3 / 10; container-type: size; }
-    .bottle-base { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+    .bottle-base { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; filter: url(#knockout-white); }   /* 白い背景を透明に（揺れても白い四角が出ない） */
     .sake-label, .wine-label {
       position: absolute; overflow: hidden; border-radius: 1px;
       box-shadow: inset 0 0 0 1px rgba(0,0,0,.18), 0 0 0 0.6px rgba(0,0,0,.25);
@@ -165,7 +165,7 @@
     .wine-label-origin { font-size: 6.5cqw; font-weight: 600; letter-spacing: .1em; opacity: .7; }
 
     /* 写真は白い背景を紙になじませ、瓶だけが浮かぶように */
-    .bottle-photo { mix-blend-mode: multiply; object-fit: cover; }
+    .bottle-photo { object-fit: cover; filter: url(#knockout-white); }   /* 白い背景を透明に */
     .sold-out .bottle-photo { filter: grayscale(1); opacity: .45 !important; }
     .sold-out .bottle, .sold-out .dim { filter: grayscale(1); opacity: .45; }
     .stamp {
@@ -247,14 +247,6 @@
     .rd-body { font-size: 15px; font-weight: 500; line-height: 1.9; letter-spacing: .03em; color: #3d362f; }
     .rd-chip { font-size: 14px; font-weight: 600; padding: 4px 12px; border: 1px solid #cdbd9f; border-radius: 9999px; background: rgba(255,255,255,.5); }
     .trivia-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border: 1px dashed var(--shu); border-radius: 2px; color: var(--shu); font-size: 13.5px; font-weight: 700; letter-spacing: .1em; }
-    .btn-enji {
-      width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px; border-radius: 3px;
-      font-size: 15px; font-weight: 700; letter-spacing: .1em; color: #fff6ee;
-      background: linear-gradient(to bottom, color-mix(in srgb, var(--shu) 82%, #fff), var(--shu) 55%, color-mix(in srgb, var(--shu) 80%, #000));
-      border-bottom: 4px solid color-mix(in srgb, var(--shu) 65%, #000); box-shadow: 0 6px 20px color-mix(in srgb, var(--shu) 40%, transparent);
-      transition: transform .1s, border-bottom-width .1s;
-    }
-    .btn-enji:active { transform: translateY(3px); border-bottom-width: 1px; }
     .btn-line { flex: 1; padding: 12px; border-radius: 3px; border: 1px solid var(--shu); color: var(--shu); font-size: 14px; font-weight: 700; letter-spacing: .1em; }
     .match-box { border: 1.5px solid var(--shu); border-radius: 4px; background: rgba(255,255,255,.45); }
     /* 商品ページの中身は、上から順にふわっと出る */
@@ -270,51 +262,337 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
     }
+
+    /* =============================================================
+       和のトーンにそろえる（和紙・墨・朱・金）。商品ページと同じ色づかい
+       ============================================================= */
+    :root { --shu: #a63d2a; --kin: #a8864f; --sumi: #2b2622; --kinari: #f4eee2; --usuzumi: #8a7d70; }
+    html, body { background-color: #f1eadc; }
+    body {
+      color: var(--sumi);
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .38 0 0 0 0 .28 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: auto;
+    }
+    /* ヘッダー：えんじの暖簾 */
+    .hero {
+      background-color: #8f3020;
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='20' viewBox='0 0 40 20'%3E%3Cg fill='none' stroke='%23f2d9a8' stroke-opacity='.14' stroke-width='1'%3E%3Ccircle cx='20' cy='20' r='18'/%3E%3Ccircle cx='20' cy='20' r='13'/%3E%3Ccircle cx='20' cy='20' r='8'/%3E%3Ccircle cx='0' cy='10' r='18'/%3E%3Ccircle cx='0' cy='10' r='13'/%3E%3Ccircle cx='0' cy='10' r='8'/%3E%3Ccircle cx='40' cy='10' r='18'/%3E%3Ccircle cx='40' cy='10' r='13'/%3E%3Ccircle cx='40' cy='10' r='8'/%3E%3C/g%3E%3C/svg%3E"),
+        linear-gradient(to bottom, #b4452f, #a63d2a 45%, #8f3020);
+      border-bottom: 3px solid var(--kin);
+      color: #fbf4ea;
+    }
+    .hero .eyebrow { color: #f2d9a8; }
+    .hero .tab { color: rgba(251,244,234,.75); }
+    .hero .tab[aria-selected="true"] { background: #fbf4ea; color: var(--shu); box-shadow: 0 2px 8px rgba(0,0,0,.18); }
+
+    /* 種類のタブ：下線で選ぶ */
+    .cat-tab, .cat-tab[aria-selected="true"] {
+      height: 50px; border-radius: 0; background: transparent !important; box-shadow: none !important;
+      border: none; border-bottom: 1px solid #d9ccb3; color: var(--usuzumi); font-size: 20px;
+    }
+    .cat-tab[aria-selected="true"] { color: var(--sumi); border-bottom: 3px solid var(--shu); }
+    .cat-tab .cat-count, .cat-tab[aria-selected="true"] .cat-count { background: rgba(43,38,34,.07); color: var(--usuzumi); }
+
+    /* 絞り込み：選んだものは朱 */
+    .seg[aria-pressed="true"] { background: var(--shu); color: #fbf4ea; box-shadow: 0 2px 8px rgba(166,61,42,.3); }
+    #taste-filters .rounded-full.border, #diagnosis-banner .rounded-full.border { background: #fffcf6; border-color: #e3d8c3; }
+
+    /* 見出し：両脇に金の細い線 */
+    .sec-rule { display: flex; align-items: center; gap: .75rem; font-family: "Shippori Mincho", serif; font-weight: 800; font-size: 16px; letter-spacing: .25em; color: var(--sumi); }
+    .sec-rule::before, .sec-rule::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to right, transparent, var(--kin), transparent); }
+    .sec-rule > span { padding-left: .25em; white-space: nowrap; }
+
+    /* 診断へのお誘い：えんじの札 */
+    .noren-banner {
+      background: linear-gradient(to bottom, #b4452f, #a63d2a 45%, #8f3020); color: #fbf4ea;
+      border-radius: 6px; border-bottom: 3px solid #6e2416; box-shadow: 0 8px 20px rgba(166,61,42,.28);
+    }
+    .paper-card { background: #fffcf6; border: 1px solid #e3d8c3; border-radius: 6px; box-shadow: 0 6px 16px rgba(60,40,20,.08); }
+
+    /* ===== お品書きのカード（上に瓶、下に名前とキャッチコピー） ===== */
+    .mcard {
+      position: relative; height: 100%; display: flex; flex-direction: column; overflow: hidden;
+      background: #fffcf6; border: 1px solid #e3d8c3; border-radius: 6px;
+      box-shadow: 0 1px 0 rgba(255,255,255,.9) inset, 0 6px 16px rgba(60,40,20,.10);
+    }
+    .mcard-shelf {
+      position: relative; display: flex; justify-content: center; align-items: flex-end; padding: 18px 0 12px;
+      background:
+        radial-gradient(55% 65% at 50% 72%, color-mix(in srgb, var(--c) 24%, transparent), transparent 72%),
+        linear-gradient(#f6efe2, #fbf7ef);
+      border-bottom: 1px solid #ece2cf;
+    }
+    .mcard-shelf::before {
+      content: ''; position: absolute; bottom: 9px; left: 50%; width: 60px; height: 9px; transform: translateX(-50%);
+      background: radial-gradient(closest-side, rgba(60,40,20,.28), transparent);
+    }
+    .mcard-pref {
+      position: absolute; top: 9px; left: 9px; writing-mode: vertical-rl; font-family: "Shippori Mincho", serif;
+      font-size: 12px; font-weight: 800; letter-spacing: .18em; color: var(--usuzumi);
+    }
+    .mcard-type {
+      position: absolute; top: 9px; right: 9px; writing-mode: vertical-rl; font-family: "Shippori Mincho", serif;
+      font-size: 12px; font-weight: 800; letter-spacing: .12em; color: #fff8f0; background: var(--c); border-radius: 3px; padding: 6px 3px;
+      box-shadow: inset 0 0 0 1.5px var(--c), inset 0 0 0 2.5px rgba(255,248,240,.85); transform: rotate(-3deg); opacity: .94;
+    }
+    .mcard-rank { position: absolute; left: 9px; bottom: 9px; font-family: "Shippori Mincho", serif; font-weight: 800; font-size: 15px; color: var(--shu); z-index: 2; }
+    .mcard-body { flex: 1; display: flex; flex-direction: column; padding: 10px 12px 12px; text-align: center; }
+    .mcard-kana { font-size: 11px; letter-spacing: .12em; color: var(--usuzumi); line-height: 1.3; }
+    .mcard-name { font-family: "Shippori Mincho", serif; font-weight: 800; font-size: 20px; line-height: 1.3; color: var(--sumi); margin-top: 2px; }
+    .mcard-catch {
+      font-family: "Shippori Mincho", serif; font-size: 13.5px; font-weight: 600; line-height: 1.6; color: #4a423b; margin-top: 6px;
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .mcard-name.is-long { font-size: 16.5px; }
+    .mcard-foot { margin-top: auto; padding-top: 9px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .mcard-foot-line { border-top: 1px dashed #e3d8c3; margin-top: 9px; }
+    .mcard-kw { font-size: 12px; font-weight: 700; color: var(--c); line-height: 1.4; text-align: left; }
+    .mcard-match { font-family: "Shippori Mincho", serif; font-weight: 800; color: var(--shu); line-height: 1; }
+    /* 限定の横長カード */
+    .mcard-wide { flex-direction: row; border-color: color-mix(in srgb, var(--kin) 60%, #e3d8c3); }
+    .mcard-wide .mcard-shelf { width: 40%; flex-shrink: 0; border-bottom: none; border-right: 1px solid #ece2cf; padding: 26px 0 14px; }
+    .mcard-wide .mcard-body { text-align: left; padding: 14px 14px 12px; }
+    .mcard-wide .mcard-name { font-size: 21px; word-break: keep-all; overflow-wrap: anywhere; }
+    .mcard-wide .mcard-foot { justify-content: space-between; }
+    .mcard-wide .mcard-shelf { align-items: center; }
+    .mcard-wide .mcard-shelf::before { bottom: auto; top: calc(50% + 86px); }
+    .mcard-wide .mcard-foot { margin-top: 10px; padding-top: 0; }
+    .mcard-limited { position: absolute; top: 0; right: 12px; z-index: 3; font-size: 11px; font-weight: 800; letter-spacing: .2em; color: #fff8f0; background: var(--kin); padding: 3px 7px 5px 9px; border-radius: 0 0 4px 4px; }
+    .mcard-note { font-size: 12.5px; line-height: 1.6; color: var(--usuzumi); margin-top: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .mcard .kw-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+    .mcard .kw-row span { font-size: 11.5px; font-weight: 700; color: var(--c); background: color-mix(in srgb, var(--c) 10%, transparent); padding: 1px 7px; border-radius: 2px; }
+
+    /* 商品ページ（瓶がカードから飛んでくる） */
+    #product-view { background: rgba(241,234,220,1); }
+
+
+    /* ===== 1. 注ぐ演出 ===== */
+    .pour-stage { position: relative; width: 230px; height: 270px; flex-shrink: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .pour-bottle { position: absolute; left: 53px; top: 19px; transform-origin: 50% 50%; z-index: 2; }
+    .pour-cup { position: absolute; left: 154px; top: 214px; width: 64px; height: 44px; z-index: 1; filter: drop-shadow(0 4px 4px rgba(60,40,20,.18)); }
+    .pour-cup.is-glass { left: 160px; top: 168px; width: 54px; height: 81px; }
+    .pour-liquid { transform-box: fill-box; transform-origin: 50% 100%; transform: scaleY(0); }
+    .pour-stream {
+      position: absolute; left: 184px; top: 168px; width: 3px; height: 54px; border-radius: 3px; z-index: 1;
+      background: linear-gradient(to bottom, transparent, var(--liquid) 20%, var(--liquid)); transform-origin: 50% 0; transform: scaleY(0); opacity: 0;
+    }
+    .pour-cup.is-glass ~ .pour-stream, .pour-stage:has(.is-glass) .pour-stream { top: 150px; height: 44px; left: 186px; }
+
+    /* ===== 5. 瓶がゆらゆら・光が走る ===== */
+    @keyframes sway { 0%, 100% { transform: rotate(-1.1deg); } 50% { transform: rotate(1.1deg); } }
+    .mcard-shelf .sway { transform-origin: 50% 100%; animation: sway 4.6s ease-in-out infinite; animation-delay: calc(var(--i, 0) * -0.47s); }
+    @keyframes shine { 0%, 82% { transform: translateX(-160%) skewX(-18deg); } 100% { transform: translateX(260%) skewX(-18deg); } }
+    .mcard-shelf .bottle-frame { overflow: hidden; }
+    .mcard-shelf .bottle-frame::after {
+      content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 45%; pointer-events: none;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent); mix-blend-mode: soft-light;
+      animation: shine 7s ease-in-out infinite; animation-delay: calc(var(--i, 0) * -0.7s);
+    }
+
+    /* ===== 6. 季節のヘッダー ===== */
+    .season-label {
+      font-family: "Shippori Mincho", serif; font-size: 12px; font-weight: 800; letter-spacing: .2em; color: #fbf4ea;
+      border: 1px solid rgba(242,217,168,.6); border-radius: 3px; padding: 2px 8px 2px 10px; background: rgba(0,0,0,.08);
+    }
+    @keyframes fall {
+      0% { transform: translate(0, -30px) rotate(0); opacity: 0; }
+      10% { opacity: 1; }
+      50% { transform: translate(var(--sx), 120px) rotate(160deg); }
+      90% { opacity: 1; }
+      100% { transform: translate(calc(var(--sx) * -0.5), 260px) rotate(320deg); opacity: 0; }
+    }
+    .fx-fall { position: absolute; top: 0; display: block; animation: fall linear infinite; }
+    .fx-fall svg { display: block; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .mcard-shelf .sway, .mcard-shelf .bottle-frame::after, .fx-fall { animation: none !important; }
+      .mcard-shelf .bottle-frame::after { display: none; }
+    }
+
+    /* ===== オープニング：暖簾 ===== */
+    .opening { position: fixed; inset: 0; z-index: 100; overflow: hidden; background: #f1eadc; cursor: pointer; }
+    .opening.is-done { pointer-events: none; }
+    .noren-rod { position: absolute; top: 0; left: -5%; right: -5%; height: 14px; background: linear-gradient(#6b4a2b, #3e2a17); box-shadow: 0 3px 6px rgba(0,0,0,.3); }
+    .noren {
+      position: absolute; top: 10px; bottom: 0; width: 50.4%; display: flex; justify-content: center; padding-top: 20vh;
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='20' viewBox='0 0 40 20'%3E%3Cg fill='none' stroke='%23f2d9a8' stroke-opacity='.12' stroke-width='1'%3E%3Ccircle cx='20' cy='20' r='18'/%3E%3Ccircle cx='20' cy='20' r='13'/%3E%3Ccircle cx='20' cy='20' r='8'/%3E%3Ccircle cx='0' cy='10' r='18'/%3E%3Ccircle cx='0' cy='10' r='13'/%3E%3Ccircle cx='0' cy='10' r='8'/%3E%3Ccircle cx='40' cy='10' r='18'/%3E%3Ccircle cx='40' cy='10' r='13'/%3E%3Ccircle cx='40' cy='10' r='8'/%3E%3C/g%3E%3C/svg%3E"),
+        linear-gradient(to bottom, #b4452f, #a63d2a 50%, #8f3020);
+      box-shadow: inset 0 -10px 18px rgba(0,0,0,.18);
+      transform-origin: 50% 0;
+    }
+    .noren-l { left: 0; border-right: 1px solid rgba(0,0,0,.25); }
+    .noren-r { right: 0; border-left: 1px solid rgba(255,255,255,.08); }
+    .noren-text {
+      writing-mode: vertical-rl; font-family: "Shippori Mincho", serif; font-weight: 800; color: #fbf4ea;
+      font-size: clamp(40px, 12vw, 64px); letter-spacing: .18em; text-shadow: 0 2px 6px rgba(0,0,0,.25);
+    }
+    .noren-l .noren-text { margin-left: 26%; }
+    .noren-r .noren-text { margin-right: 26%; }
+    .noren-crest {
+      position: absolute; left: 50%; bottom: 24vh; width: 76px; height: 76px; margin-left: -38px; border-radius: 9999px;
+      border: 2.5px solid #f2d9a8; display: flex; align-items: center; justify-content: center; z-index: 2;
+      font-family: "Shippori Mincho", serif; font-weight: 800; font-size: 34px; color: #f2d9a8; background: rgba(143,48,32,.6);
+    }
+
+    /* ===== スマホの画面サイズで見せる（パソコンでは、まん中にスマホの幅で表示） ===== */
+    :root { --app-w: 430px; }
+    .app-frame, .app-width { width: 100%; max-width: var(--app-w); }
+    @media (min-width: 520px) {
+      html, body { background: #1c1917 !important; }
+      body { background-image: none !important; }
+      .app-frame {
+        background-color: #f1eadc;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .38 0 0 0 0 .28 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        box-shadow: 0 0 60px rgba(0,0,0,.5);
+      }
+      /* 全画面で出すもの（オープニング・商品ページ）も、スマホの幅に */
+      .opening, #product-view { left: calc(50% - var(--app-w) / 2); right: auto; width: var(--app-w); }
+      #product-view { background: transparent; }
+    }
+
+    /* =============================================================
+       お品書き（案1：和・えんじ）
+       ============================================================= */
+    #app-head { position: sticky; top: 0; z-index: 30; overflow: hidden; padding-bottom: 0; box-shadow: 0 6px 16px rgba(120,30,15,.25); }
+    .cat-seg { display: flex; padding: 4px; margin-top: 10px; border-radius: 999px; background: rgba(0,0,0,.18); }
+    .cat-seg button {
+      flex: 1; height: 42px; border-radius: 999px; display: flex; align-items: center; justify-content: center; gap: 6px;
+      font-family: "Shippori Mincho", serif; font-size: 18px; font-weight: 800; color: rgba(251,244,234,.82); transition: all .2s;
+    }
+    .cat-seg button .cnt { font-family: "Noto Sans JP", sans-serif; font-size: 12px; font-weight: 700; opacity: .75; }
+    .cat-seg button[aria-selected="true"] { background: #fff; color: #1c1917; box-shadow: 0 3px 10px rgba(0,0,0,.2); }
+    .chips { display: flex; gap: 8px; overflow-x: auto; margin: 0 -16px; padding: 10px 16px 12px; }
+    .chip {
+      flex-shrink: 0; height: 36px; padding: 0 16px; border-radius: 999px; font-size: 15px; font-weight: 700;
+      color: #fbf4ea; background: rgba(0,0,0,.14); border: 1px solid rgba(255,255,255,.3); transition: all .15s;
+    }
+    .chip[aria-pressed="true"] { background: #2b2622; border-color: #2b2622; color: #fff; }
+    .back-chip { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 16px; border-radius: 999px; background: #fff; color: #1c1917; font-weight: 700; font-size: 14px; }
+
+    .sec { display: flex; align-items: baseline; justify-content: space-between; padding: 18px 16px 10px; }
+    .sec h2 { font-family: "Shippori Mincho", serif; font-size: 19px; font-weight: 800; color: var(--sumi); }
+    .sec span { font-size: 13px; font-weight: 700; color: #5b5047; }
+
+    /* カード */
+    .m2 {
+      position: relative; height: 100%; display: flex; flex-direction: column; overflow: hidden;
+      background: #fffcf6; border: 1px solid #e3d8c3; border-radius: 8px; box-shadow: 0 4px 12px rgba(60,40,20,.08);
+    }
+    .m2-shelf { height: 168px; padding: 14px 0 10px; }
+    .m2-tag { position: absolute; top: 10px; left: 10px; z-index: 3; font-size: 12.5px; font-weight: 800; color: #fff; background: var(--c); padding: 3px 10px; border-radius: 99px; }
+    .m2-hex {
+      position: absolute; top: 8px; right: 8px; z-index: 3; width: 56px; height: 56px; border-radius: 99px;
+      background: rgba(255,252,246,.94); box-shadow: 0 2px 8px rgba(60,40,20,.15); display: flex; align-items: center; justify-content: center;
+    }
+    .m2-hex-sm { top: auto; right: auto; left: 8px; bottom: 8px; width: 48px; height: 48px; }
+    .m2-body { flex: 1; display: flex; flex-direction: column; padding: 10px 12px 12px; }
+    .m2-kana { font-size: 11.5px; font-weight: 700; letter-spacing: .08em; color: #6b6056; }
+    .m2-name { font-family: "Shippori Mincho", serif; font-size: 20px; font-weight: 800; line-height: 1.3; color: var(--sumi); }
+    .m2-name.is-long { font-size: 17px; }
+    .m2-catch { font-size: 13.5px; line-height: 1.55; color: #3d362f; margin-top: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .m2-match { font-size: 12px; font-weight: 700; color: #6b6056; margin-top: 6px; }
+    .m2-match b { font-family: "Shippori Mincho", serif; font-size: 20px; color: var(--shu); }
+    .m2-meter { display: flex; align-items: center; gap: 6px; margin-top: auto; padding: 10px 32px 0 0; font-size: 12px; font-weight: 700; color: #5b5047; }
+    .m2-bar { position: relative; flex: 1; height: 4px; border-radius: 4px; background: #e3d8c3; }
+    .m2-dot { position: absolute; top: 50%; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 99px; box-shadow: 0 0 0 3px #fffcf6; }
+    .m2-go {
+      position: absolute; right: 10px; bottom: 10px; width: 26px; height: 26px; border-radius: 99px; background: var(--shu); color: #fff;
+      display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 900; line-height: 1; padding-bottom: 2px;
+    }
+    /* 限定（横長） */
+    .m2-wide { flex-direction: row; border: 1.5px solid #c9a253; }
+    .m2-wshelf { width: 38%; flex-shrink: 0; align-items: center; padding: 30px 0 14px; border-bottom: none; border-right: 1px solid #ece2cf; }
+    .m2-wshelf::before { bottom: 12px; }
+    .m2-wide .m2-body { padding: 14px 14px 12px; }
+    .m2-wide .m2-name { font-size: 21px; }
+    .m2-limited { position: absolute; top: 10px; left: 10px; z-index: 3; font-size: 12px; font-weight: 800; letter-spacing: .1em; color: #fff; background: #c9a253; padding: 3px 10px; border-radius: 99px; }
+
+    /* 限定：自動で流れる */
+    .special-viewport { overflow: hidden; padding: 0 22px; touch-action: pan-y; }
+    .special-track { display: flex; gap: 12px; will-change: transform; }
+    .special-slide { flex: 0 0 100%; }
+    .special-dots { display: flex; justify-content: center; gap: 6px; padding-top: 10px; }
+    .special-wrap { position: relative; }
+    .special-arrow {
+      position: absolute; top: 50%; z-index: 5; width: 34px; height: 34px; margin-top: -17px; border-radius: 99px;
+      display: flex; align-items: center; justify-content: center; padding-bottom: 3px;
+      font-size: 24px; font-weight: 700; line-height: 1; color: #fff8f0;
+      background: rgba(166,61,42,.92); box-shadow: 0 4px 12px rgba(120,30,15,.35); transition: transform .15s;
+    }
+    .special-arrow:active { transform: scale(.9); }
+    .special-arrow.is-prev { left: 2px; }
+    .special-arrow.is-next { right: 2px; }
+    .special-dots { padding-bottom: 2px; }
+    .special-dots i { cursor: pointer; }
+    .special-dots i { display: block; width: 6px; height: 6px; border-radius: 99px; background: #d9ccb3; transition: all .3s; }
+    .special-dots i.on { width: 18px; background: var(--shu); }
+
+    /* 好み診断のボタン（右下） */
+    .fab {
+      position: fixed; z-index: 40; bottom: max(20px, env(safe-area-inset-bottom)); right: 16px;
+      height: 58px; padding: 0 20px 0 8px; border-radius: 999px; display: flex; align-items: center; gap: 10px;
+      background: linear-gradient(to bottom, #b4452f, #a63d2a 55%, #8f3020); color: #fff8f0; box-shadow: 0 10px 24px rgba(166,61,42,.45);
+      font-family: "Shippori Mincho", serif; font-size: 16px; font-weight: 800; letter-spacing: .05em; transition: transform .3s, opacity .3s;
+    }
+    .fab:active { transform: scale(.95); }
+    .fab.is-hidden { transform: translateY(120px); opacity: 0; pointer-events: none; }
+    .fab-ic { width: 42px; height: 42px; border-radius: 99px; background: #fff8f0; color: #a63d2a; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    @media (min-width: 520px) { .fab { right: calc(50% - var(--app-w) / 2 + 16px); } }
   </style>
 </head>
 <body class="font-sans text-ink antialiased">
-  <div class="max-w-md mx-auto min-h-screen relative pb-28">
+  <!-- オープニング（約2秒）：えんじの暖簾が下りてきて、真ん中から左右に開く。タップで飛ばせる -->
+  <div id="opening" class="opening" onclick="endOpening()" aria-hidden="true">
+    <div class="noren noren-l"><span class="noren-text">今日の</span></div>
+    <div class="noren noren-r"><span class="noren-text">お品書き</span></div>
+    <div class="noren-crest"><span>酒</span></div>
+    <div class="noren-rod"></div>
+  </div>
+  <div class="app-frame mx-auto min-h-screen relative pb-28">
 
-    <!-- ヘッダー -->
-    <header class="hero px-4 pt-6 pb-4">
-      <span class="eyebrow">TODAY'S MENU</span>
-      <h1 id="menu-title" class="font-mincho font-extrabold text-[28px] leading-tight mt-1"></h1>
-      <p id="menu-count" class="text-xs text-white/70 mt-1"></p>
-
-      <div role="tablist" class="mt-4 flex gap-1 p-1 rounded-full bg-white/10 border border-white/15">
-        <button role="tab" class="tab" data-tab="menu" onclick="setTab('menu')"><i class="fa-solid fa-book-open mr-1.5 text-xs"></i>お品書き</button>
-        <button role="tab" class="tab" data-tab="shindan" onclick="setTab('shindan')"><i class="fa-solid fa-wand-magic-sparkles mr-1.5 text-xs"></i>好み診断</button>
+    <!-- ヘッダー（上に貼り付く）：タイトル・日本酒／ワイン・絞り込み -->
+    <header id="app-head" class="hero px-4 pt-3">
+      <div id="season-fx" class="absolute inset-0 pointer-events-none" aria-hidden="true"></div>
+      <div class="relative flex items-center justify-between">
+        <h1 id="menu-title" class="font-mincho font-extrabold text-[23px] tracking-wider leading-tight"></h1>
+        <span id="season-label" class="season-label"></span>
+      </div>
+      <div id="head-menu" class="relative">
+        <nav id="category-tabs" class="cat-seg" role="tablist"></nav>
+        <div id="taste-filters" class="chips no-scrollbar"></div>
+      </div>
+      <div id="head-shindan" class="relative hidden pt-2 pb-3">
+        <button onclick="setTab('menu')" class="back-chip"><i class="fa-solid fa-arrow-left text-xs"></i>お品書きへ戻る</button>
       </div>
     </header>
 
     <!-- ================= お品書き ================= -->
     <main id="view-menu">
-      <!-- 種類（日本酒・ワイン） -->
-      <nav id="category-tabs" role="tablist" class="px-4 pt-4 flex gap-3"></nav>
+      <!-- 診断したあとだけ：タイプ・相性順・リセット -->
+      <section id="diagnosis-banner" class="px-4"></section>
 
-      <!-- 味で選ぶ（種類ごとに項目が変わる。日本酒＝甘口・辛口、ワイン＝赤・白／軽め・重め） -->
-      <section id="taste-filters" class="px-4 pt-4 space-y-2"></section>
-
-      <!-- 診断へのお誘い／診断済みなら相性順の切り替え -->
-      <section id="diagnosis-banner" class="px-4 pt-4"></section>
-
-      <section id="special-section" class="mt-5">
-        <div class="px-4 flex items-baseline justify-between">
-          <h2 class="font-mincho font-extrabold text-lg">限定・店主のおすすめ</h2>
-          <span class="text-[11px] text-muted">横にスクロール <i class="fa-solid fa-arrow-right"></i></span>
+      <!-- 限定・店主のおすすめ（右から左へ、自動で流れる） -->
+      <section id="special-section">
+        <div class="sec"><h2>限定・店主のおすすめ</h2><span id="special-count"></span></div>
+        <div class="special-wrap">
+          <div id="special-viewport" class="special-viewport">
+            <div id="special-list" class="special-track"></div>
+          </div>
+          <button id="special-prev" class="special-arrow is-prev" onclick="carousel.prev(true)" aria-label="前のおすすめ">‹</button>
+          <button id="special-next" class="special-arrow is-next" onclick="carousel.next(true)" aria-label="次のおすすめ">›</button>
         </div>
-        <div id="special-list" class="mt-2 flex gap-3 overflow-x-auto no-scrollbar px-4 pb-3 snap-x snap-mandatory"></div>
+        <div id="special-dots" class="special-dots"></div>
       </section>
 
-      <section class="px-4 mt-4">
-        <div class="flex items-baseline justify-between">
-          <h2 id="lineup-title" class="font-mincho font-extrabold text-lg" style="color: rgb(var(--cat))">ラインナップ</h2>
-          <span id="lineup-count" class="text-xs text-muted"></span>
-        </div>
-        <div id="board-grid" class="mt-3 grid grid-cols-2 gap-3"></div>
+      <section>
+        <div class="sec"><h2 id="lineup-title">今日の日本酒</h2><span id="lineup-count"></span></div>
+        <div id="board-grid" class="grid grid-cols-2 gap-3 px-4"></div>
         <div id="board-empty" class="hidden text-center py-12">
-          <p class="text-sm text-muted">この味のお酒は、いまお休み中です</p>
-          <button onclick="resetFilters()" class="mt-3 text-sm font-bold text-accent">絞り込みをやめる</button>
+          <p class="text-sm font-bold text-[color:var(--usuzumi)]">この味のお酒は、いまお休み中です</p>
+          <button onclick="resetFilters()" class="mt-3 text-sm font-bold text-[color:var(--shu)]">絞り込みをやめる</button>
         </div>
       </section>
     </main>
@@ -387,28 +665,30 @@
 
   </div>
 
+  <!-- 好み診断のボタン（右下に浮かぶ） -->
+  <button id="fab-shindan" class="fab" onclick="setTab('shindan')"><span class="fab-ic">診</span><span id="fab-label">好み診断</span></button>
+
   <!-- 商品ページ（お品書きのカードを押すと、カードが回ってこのページに入る） -->
   <div id="product-view" class="fixed inset-0 z-50 hidden overflow-y-auto overscroll-contain">
-    <div id="product-body" class="wa-paper max-w-md mx-auto min-h-full relative shadow-2xl"></div>
+    <div id="product-body" class="wa-paper app-width mx-auto min-h-full relative shadow-2xl"></div>
   </div>
 
   <!-- お知らせ（相性をリセットしたときなど） -->
   <div id="toast" class="fixed left-1/2 bottom-8 -translate-x-1/2 translate-y-4 z-[80] px-5 py-3 rounded-full bg-ink text-white text-sm font-bold shadow-xl opacity-0 pointer-events-none whitespace-nowrap"></div>
 
-  <!-- 店員さんに見せる画面 -->
-  <div id="order-screen" class="fixed inset-0 z-[70] hidden bg-[#FFFEFB] overflow-y-auto">
-    <div class="max-w-md mx-auto px-6 py-8">
-      <div class="flex items-center justify-between">
-        <span class="eyebrow">FOR STAFF</span>
-        <button onclick="closeOrderScreen()" class="h-9 px-4 rounded-full bg-ink text-white text-xs font-bold">閉じる</button>
-      </div>
-      <p class="font-hand text-lg mt-4">こちらをお願いします</p>
-      <ol id="order-list" class="mt-4 space-y-4"></ol>
-    </div>
-  </div>
+  <!-- 飛んでいる瓶の写真の白い背景を透明にするフィルター（白に近いほど透ける） -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <filter id="knockout-white" color-interpolation-filters="sRGB">
+      <!-- 明るさから「白さ」を出し、白いところほど透明に（色はそのまま） -->
+      <feColorMatrix in="SourceGraphic" type="matrix" result="alpha"
+        values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -4 -4 -4 0 11.6" />
+      <feComposite in="SourceGraphic" in2="alpha" operator="in" />
+    </filter>
+  </svg>
 
   <script src="taste-chart.js"></script>
   <script src="taste-diagnosis.js"></script>
+  <script>RADAR_CONTRAST = 2;   // 六角形の強弱を2倍にして見せる（50 を中心に広げる）</script>
   <script src="menu-data.js"></script>
   <script>
     // =============================================================
@@ -416,11 +696,11 @@
     // =============================================================
     const TYPE_INFO = {
       "甘": { word: "甘口", cls: "text-ama",  color: "#D9822B" },
-      "旨": { word: "旨口", cls: "text-uma",  color: "#1F6B4F" },
       "辛": { word: "辛口", cls: "text-kara", color: "#2F5D8A" }
     };
     // 六角形の「甘み」から、甘・旨・辛の丸印を決める（type を書いたお酒はそちらを優先）
-    const typeFromTaste = t => t.sweetness >= 60 ? "甘" : t.sweetness <= 40 ? "辛" : "旨";
+    // 甘み 51以上 → 甘口、50以下 → 辛口
+    const typeFromTaste = t => t.sweetness > 50 ? "甘" : "辛";
 
     const drinks = TODAY_MENU.map(d => {
       const taste = { ...NEUTRAL_PROFILE, ...(d.taste || {}) };
@@ -434,13 +714,13 @@
     // ---- 味で選ぶ（種類ごとに、出す項目を変える） ----
     const ALL = { key: "all", label: "指定なし" };
     const SWEET_FILTER = { group: "sweet", label: "甘さ", options: [ALL,
-      { key: "amai",  label: "甘口", test: d => d.taste.sweetness >= 55 },
-      { key: "karai", label: "辛口", test: d => d.taste.sweetness <= 45 }] };
+      { key: "amai",  label: "甘口", test: d => d.type === "甘" },
+      { key: "karai", label: "辛口", test: d => d.type === "辛" }] };
     const BODY_FILTER = { group: "body", label: "重さ", options: [ALL,
       { key: "light", label: "軽め", test: d => d.taste.body <= 45 },
       { key: "heavy", label: "重め", test: d => d.taste.body >= 55 }] };
     const FILTERS_BY_CATEGORY = {
-      "日本酒": [SWEET_FILTER],
+      "日本酒": [SWEET_FILTER],   // 甘口・辛口
       "ワイン": [
         { group: "color", label: "色", options: [ALL,
           { key: "red",   label: "赤", test: d => d.color === "red" },
@@ -502,7 +782,7 @@
         <div class="relative ${sizeClass}">
           <div class="absolute inset-0">${bottleIllustration(d, "w-full h-full")}</div>
           <img src="${esc(d.image)}" alt="${esc(d.name)}" loading="lazy" class="bottle-photo absolute inset-0 w-full h-full opacity-0 transition-opacity duration-300" style="object-position:${esc(d.imagePosition || "center")}"
-               onload="this.style.opacity=1; this.previousElementSibling.remove()" onerror="this.remove()">
+               onload="this.style.opacity=1; if (this.previousElementSibling) this.previousElementSibling.remove()" onerror="this.remove()">
         </div>`;
     }
 
@@ -555,7 +835,7 @@
 
     // 六角形チャート（お酒のタイプの色で塗る）
     function radar(d, size, labels = false) {
-      const c = TYPE_INFO[d.type].color;
+      const c = themeColor(d);   // カードや商品ページと同じ色
       return radarChartHtml([{ values: d.taste, fill: c + "33", stroke: c }], size, { labels, accent: c });
     }
 
@@ -568,6 +848,11 @@
       state.tab = tab;
       document.querySelectorAll("[data-tab]").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === tab));
       ["menu", "shindan"].forEach(v => document.getElementById("view-" + v).classList.toggle("hidden", v !== tab));
+      document.getElementById("head-menu").classList.toggle("hidden", tab !== "menu");
+      document.getElementById("head-shindan").classList.toggle("hidden", tab !== "shindan");
+      document.getElementById("fab-shindan").classList.toggle("is-hidden", tab !== "menu");
+      document.getElementById("fab-label").textContent = state.diagnosed ? "診断結果" : "好み診断";
+      if (tab === "menu") carousel.start(); else carousel.stop();
       if (tab === "shindan") showShindanStep(state.diagnosed ? "result" : "intro");
       else renderMenu();
       window.scrollTo({ top: 0 });
@@ -578,32 +863,55 @@
     // =============================================================
     // 種類ごとのテーマ色（タブ・絞り込み・見出しに使う）
     const CATEGORY_THEME = {
-      "日本酒": { rgb: "43 76 126", bg: "linear-gradient(135deg, #2B4C7E, #1E2B4A)", icon: "fa-bottle-droplet" },
-      "ワイン": { rgb: "140 47 75", bg: "linear-gradient(135deg, #9B3556, #5E1A33)", icon: "fa-wine-glass" }
+      "日本酒": { rgb: "166 61 42", bg: "none", icon: "fa-bottle-droplet" },
+      "ワイン": { rgb: "166 61 42", bg: "none", icon: "fa-wine-glass" }
     };
     const themeOf = c => CATEGORY_THEME[c] || { rgb: "31 107 79", bg: "linear-gradient(135deg, #2E7D5B, #1F6B4F)", icon: "fa-glass-water" };
     function renderCategoryTabs() {
       document.documentElement.style.setProperty("--cat", themeOf(state.category).rgb);
-      document.getElementById("category-tabs").innerHTML = CATEGORIES.map(c => {
-        const t = themeOf(c);
-        return `
-        <button role="tab" class="cat-tab" aria-selected="${c === state.category}" onclick="setCategory('${esc(c)}')"
-                style="--tab-bg:${t.bg}; --tab-shadow:rgb(${t.rgb} / .35)">
-          <i class="fa-solid ${t.icon} text-base"></i>${esc(c)}<span class="cat-count">${available().filter(d => d.category === c).length}</span>
-        </button>`; }).join("");
+      document.getElementById("category-tabs").innerHTML = CATEGORIES.map(c => `
+        <button role="tab" aria-selected="${c === state.category}" onclick="setCategory('${esc(c)}')">
+          ${esc(c)}<span class="cnt">${available().filter(d => d.category === c).length}</span>
+        </button>`).join("");
     }
-    function setCategory(c) { state.category = c; state.filters = {}; renderMenu(); }
+    let flipping = false;
+    function setCategory(c) {
+      if (c === state.category || flipping) return;
+      const apply = () => { state.category = c; state.filters = {}; renderMenu(); };
+      const inView = el => { const r = el.getBoundingClientRect(); return r.bottom > 0 && r.top < window.innerHeight; };
+      const oldCards = [...document.querySelectorAll("#special-list .menu-card, #board-grid .menu-card")].filter(inView);
+      if (reduceMotion() || !oldCards.length) { apply(); flipIn(); return; }
+      flipping = true;
+      // いまのカードが順番に裏返って消える
+      const outs = oldCards.slice(0, 10).map((el, i) => el.animate([
+        { transform: "perspective(800px) rotateY(0)", opacity: 1 },
+        { transform: "perspective(800px) rotateY(90deg)", opacity: .6 }
+      ], { duration: 200, delay: i * 45, easing: "ease-in", fill: "forwards" }));
+      Promise.all(outs.map(a => a.finished)).then(() => { apply(); flipIn(); flipping = false; });
+    }
+    // 新しいカードが順番にめくれて出てくる
+    function flipIn() {
+      if (reduceMotion()) return;
+      [...document.querySelectorAll("#special-list .menu-card, #board-grid .menu-card")].slice(0, 12).forEach((el, i) => el.animate([
+        { transform: "perspective(800px) rotateY(-90deg)", opacity: .6 },
+        { transform: "perspective(800px) rotateY(8deg)", opacity: 1, offset: .75 },
+        { transform: "perspective(800px) rotateY(0)", opacity: 1 }
+      ], { duration: 340, delay: i * 55, easing: "ease-out", fill: "backwards" }));
+    }
 
+    // 絞り込みはチップで。「すべて」で解除、同じチップをもう一度押しても解除
     function renderTasteFilters() {
-      document.getElementById("taste-filters").innerHTML = filtersFor(state.category).map(f => `
-        <div class="flex items-center gap-2">
-          <span class="w-12 flex-shrink-0 text-xs font-bold text-muted">${f.label}</span>
-          <div class="flex-1 flex gap-1 p-1 rounded-full bg-surface border border-line">
-            ${f.options.map(o => `<button class="seg" aria-pressed="${(state.filters[f.group] || "all") === o.key}" onclick="setTasteFilter('${f.group}', '${o.key}')">${o.label}</button>`).join("")}
-          </div>
-        </div>`).join("");
+      const none = !Object.values(state.filters).some(v => v && v !== "all");
+      const chips = [`<button class="chip" aria-pressed="${none}" onclick="resetFilters()">すべて</button>`];
+      filtersFor(state.category).forEach(f => f.options.filter(o => o.test).forEach(o => {
+        chips.push(`<button class="chip" aria-pressed="${state.filters[f.group] === o.key}" onclick="setTasteFilter('${f.group}', '${o.key}')">${o.label}</button>`);
+      }));
+      document.getElementById("taste-filters").innerHTML = chips.join("");
     }
-    function setTasteFilter(group, key) { state.filters[group] = key; renderMenu(); }
+    function setTasteFilter(group, key) {
+      state.filters[group] = state.filters[group] === key ? "all" : key;
+      renderMenu();
+    }
     function resetFilters() { state.filters = {}; renderMenu(); }
     function matchesFilters(d) {
       return filtersFor(state.category).every(f => {
@@ -615,23 +923,14 @@
     function renderDiagnosisBanner() {
       const box = document.getElementById("diagnosis-banner");
       if (!state.diagnosed) {
-        box.innerHTML = `
-          <button onclick="setTab('shindan')" class="w-full rounded-2xl p-4 flex items-center gap-3 text-left text-white active:scale-[.99] transition-transform shadow-lg"
-                  style="background: linear-gradient(120deg, #1F6B4F 0%, #2B4C7E 100%)">
-            <span class="w-11 h-11 rounded-full bg-white/15 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-wand-magic-sparkles text-[#F2D27A]"></i></span>
-            <span class="flex-1 min-w-0">
-              <span class="block font-mincho font-extrabold">迷ったら、好み診断</span>
-              <span class="block text-xs text-white/75 mt-0.5">${QUESTIONS.length}つの質問で、あなたに合う1杯がわかります</span>
-            </span>
-            <i class="fa-solid fa-chevron-right text-white/70 text-sm"></i>
-          </button>`;
+        box.innerHTML = "";
         return;
       }
       box.innerHTML = `
-        <div class="card p-3 pl-4 flex items-center gap-3">
+        <div class="paper-card p-3 pl-4 mt-4 flex items-center gap-3">
           <div class="flex-1 min-w-0">
             <p class="text-[11px] text-muted">あなたは</p>
-            <p class="font-mincho font-extrabold leading-tight truncate">${esc(TASTE_TYPES[getTasteTypeKey(userProfile)].name)} タイプ</p>
+            <p class="font-mincho font-extrabold text-[16px] leading-snug">${esc(TASTE_TYPES[getTasteTypeKey(userProfile)].name)}<br class="sm:hidden"> タイプ</p>
           </div>
           <div class="flex gap-1 p-1 rounded-full bg-paper border border-line flex-shrink-0">
             <button class="seg px-3" aria-pressed="${!state.sortByMatch}" onclick="setSort(false)">いつもの順</button>
@@ -656,8 +955,89 @@
 
     // お品書きのカード（押すと、カードが回って商品ページに入る）
     function cardButton(d, cls, inner) {
-      return `<button class="menu-card ${cls}" onclick="openProduct('${d.id}', this)" aria-label="${esc(d.name)}のページを見る">${inner}</button>`;
+      return `<button class="menu-card ${cls}" data-card="${d.id}" onclick="openProduct('${d.id}', this)" aria-label="${esc(d.name)}のページを見る">${inner}</button>`;
     }
+    // カードの左上の札（日本酒は甘口・辛口、ワインは赤・白・ロゼ）
+    const cardTypeWord = d => d.category === "ワイン" ? (WINE_WORD[d.color] || "ワイン") : TYPE_INFO[d.type].word;
+
+    // 甘辛の目盛り（1本）
+    function sweetMeter(d) {
+      const c = themeColor(d);
+      return `<div class="m2-meter"><span>辛</span><div class="m2-bar"><span class="m2-dot" style="left:${Math.max(6, Math.min(94, d.taste.sweetness))}%;background:${c}"></span></div><span>甘</span></div>`;
+    }
+    // 診断したあとだけ、相性％
+    function matchLine(d) {
+      return state.diagnosed ? `<p class="m2-match">相性 <b>${getMatchPercent(d)}</b>%</p>` : "";
+    }
+
+    // ---- 限定・店主のおすすめ：右から左へ自動で流れる（指で左右に送ることもできる） ----
+    const carousel = (() => {
+      const INTERVAL = 3200;
+      let n = 0, index = 0, timer = null, pausedUntil = 0, dragged = false;
+      const track = () => document.getElementById("special-list");
+      const viewport = () => document.getElementById("special-viewport");
+      const step = () => { const first = track().querySelector(".special-slide"); return first ? first.getBoundingClientRect().width + 12 : 0; };
+      function paint(animate) {
+        const t = track(); if (!t) return;
+        t.style.transition = animate && !reduceMotion() ? "transform .75s cubic-bezier(.45,.05,.25,1)" : "none";
+        t.style.transform = `translateX(${-index * step()}px)`;
+        document.querySelectorAll("#special-dots i").forEach((d, k) => d.classList.toggle("on", k === index % n));
+      }
+      function hold() { pausedUntil = Date.now() + 6000; }
+      function goTo(k) { if (n < 2) return; hold(); index = k; paint(true); }
+      function next(byUser) {
+        if (byUser) hold();
+        if (n < 2) return;
+        index++;
+        paint(true);
+        // 最後（先頭の写し）まで来たら、気づかれないように先頭へ戻す
+        if (index === n) setTimeout(() => { index = 0; paint(false); }, reduceMotion() ? 0 : 780);
+      }
+      function prev(byUser) {
+        if (byUser) hold();
+        if (n < 2) return;
+        if (index === 0) { index = n; paint(false); void track().offsetWidth; }
+        index--; paint(true);
+      }
+      function tick() {
+        if (Date.now() < pausedUntil || document.hidden || productOpen || state.tab !== "menu") return;
+        next();
+      }
+      function start() { stop(); if (n >= 2) timer = setInterval(tick, INTERVAL); }
+      function stop() { clearInterval(timer); timer = null; }
+      function reset(count) {
+        n = count; index = 0;
+        const t = track();
+        // 先頭のカードの写しを最後に足して、ぐるっと回るように
+        if (n >= 2) {
+          const clone = t.firstElementChild.cloneNode(true);
+          clone.removeAttribute("data-card"); clone.setAttribute("aria-hidden", "true"); clone.tabIndex = -1;
+          t.appendChild(clone);
+        }
+        document.getElementById("special-dots").innerHTML = n >= 2 ? Array.from({ length: n }, (_, k) => `<i role="button" aria-label="${k + 1}本目" onclick="carousel.goTo(${k})"></i>`).join("") : "";
+        document.querySelectorAll(".special-arrow").forEach(b => b.classList.toggle("hidden", n < 2));
+        requestAnimationFrame(() => paint(false));
+        if (state.tab === "menu") start();
+      }
+      // 指で左右に送る
+      let x0 = null, y0 = null;
+      document.addEventListener("pointerdown", e => {
+        if (!viewport() || !viewport().contains(e.target)) return;
+        x0 = e.clientX; y0 = e.clientY; dragged = false; pausedUntil = Date.now() + 6000;
+      });
+      document.addEventListener("pointerup", e => {
+        if (x0 === null) return;
+        const dx = e.clientX - x0, dy = e.clientY - y0;
+        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) { dragged = true; dx < 0 ? next() : prev(); }
+        x0 = null;
+      });
+      // 指で送ったときは、カードを開かない
+      document.addEventListener("click", e => {
+        if (dragged && viewport() && viewport().contains(e.target)) { e.stopPropagation(); e.preventDefault(); dragged = false; }
+      }, true);
+      window.addEventListener("resize", () => paint(false));
+      return { reset, start, stop, next, prev, goTo };
+    })();
 
     function renderMenu() {
       renderCategoryTabs();
@@ -671,51 +1051,44 @@
       const regulars = state.sortByMatch ? list : list.filter(d => !d.special);
 
       document.getElementById("special-section").classList.toggle("hidden", specials.length === 0);
-      document.getElementById("special-list").innerHTML = specials.map(d => cardButton(d, "snap-start flex-shrink-0 w-[78%]", `
-          <div class="special-card ${d.soldOut ? "sold-out" : ""} relative h-full text-left p-4 flex gap-3 overflow-hidden">
+      document.getElementById("special-count").textContent = `${specials.length}本`;
+      document.getElementById("special-list").innerHTML = specials.map(d => cardButton(d, "special-slide", `
+          <div class="m2 m2-wide ${d.soldOut ? "sold-out" : ""}" style="--c:${themeColor(d)}">
             ${statusBadge(d)}
-            <span class="absolute top-0 right-4 text-[10px] font-bold text-white px-2 pt-1 pb-1.5 rounded-b-md" style="background:rgb(var(--gold))">限定</span>
-            <div class="glow w-16 h-36 left-3 top-10" style="background:${TYPE_INFO[d.type].color}"></div>
-            ${bottleSvg(d, "w-14 h-44 flex-shrink-0 relative")}
-            <div class="min-w-0 flex-1 flex flex-col dim">
-              <div class="flex items-center gap-1.5 flex-wrap">
-                ${d.prefecture ? `<span class="pref-box text-[11px] px-1.5 rounded">${esc(d.prefecture)}</span>` : ""}
-                ${d.tags.map(t => `<span class="text-[10px] font-bold text-accent bg-accent/10 rounded-full px-2 py-0.5">${esc(t)}</span>`).join("")}
-              </div>
-              <p class="text-[11px] text-muted mt-2 min-h-[16px]">${sameAsName(d) ? "" : esc(displayKana(d))}</p>
-              <p class="font-mincho font-extrabold text-xl leading-tight">${esc(d.name)}</p>
-              <p class="text-xs text-muted mt-0.5">${esc(d.grade)}</p>
-              <p class="font-hand text-[13px] leading-relaxed mt-2 line-clamp-3">${esc(d.comment)}</p>
-              <div class="mt-auto pt-2 flex items-center justify-between gap-2">
-                ${matchBadge(d) || "<span></span>"}
-                <div class="flex items-center gap-1 flex-shrink-0">${radar(d, 44)}${typeMark(d)}</div>
-              </div>
+            <span class="m2-limited">限定</span>
+            <div class="mcard-shelf m2-wshelf">
+              <div data-hero-src class="sway" style="--i:${(d.id.length * 7) % 10}">${bottleSvg(d, "w-[45px] h-[150px] relative")}</div>
+              <span class="m2-hex m2-hex-sm">${radar(d, 40)}</span>
             </div>
+            <div class="m2-body dim">
+              <p class="m2-kana">${esc([d.prefecture, d.grade].filter(Boolean).join("・"))}</p>
+              <p class="m2-name">${esc(d.name)}</p>
+              <p class="m2-catch" style="-webkit-line-clamp:3">${esc(productInfo(d).catch)}</p>
+              ${matchLine(d)}
+              ${sweetMeter(d)}
+            </div>
+            <span class="m2-go">›</span>
           </div>`)).join("");
+      carousel.reset(specials.length);
 
-      document.getElementById("lineup-title").textContent = state.sortByMatch ? "あなたとの相性順" : (specials.length ? "今日のラインナップ" : `今日の${state.category}`);
-      document.getElementById("lineup-count").textContent = `${list.length} 銘柄`;
+      document.getElementById("lineup-title").textContent = state.sortByMatch ? "あなたとの相性順" : `今日の${state.category}`;
+      document.getElementById("lineup-count").textContent = `${regulars.length}銘柄`;
       document.getElementById("board-grid").innerHTML = regulars.map((d, i) => cardButton(d, "", `
-          <div class="board-cell ${d.soldOut ? "sold-out" : ""} h-full text-left p-2.5 pb-3 flex flex-col">
+          <div class="m2 ${d.soldOut ? "sold-out" : ""}" style="--c:${themeColor(d)}">
             ${statusBadge(d)}
-            <div class="flex justify-between items-start gap-1 dim min-h-[24px]">
-              ${state.sortByMatch ? `<span class="font-mincho font-extrabold text-sm ${i < 3 ? "text-accent" : "text-muted"}">${i + 1}位</span>` : "<span></span>"}
-              ${d.prefecture ? `<span class="pref-box text-xs px-1.5 py-0.5 rounded-sm flex-shrink-0">${esc(d.prefecture)}</span>` : ""}
+            <span class="m2-tag">${state.sortByMatch ? `${i + 1}位` : esc(cardTypeWord(d))}</span>
+            <span class="m2-hex">${radar(d, 46)}</span>
+            <div class="mcard-shelf m2-shelf">
+              <div data-hero-src class="sway" style="--i:${i % 10}">${bottleSvg(d, "w-[42px] h-[140px] relative")}</div>
             </div>
-            <span class="absolute inset-x-0 top-0 h-1" style="background:${TYPE_INFO[d.type].color}"></span>
-            <div class="flex items-end gap-1 mt-1 relative">
-              <div class="glow w-10 h-28 left-1 top-4" style="background:${TYPE_INFO[d.type].color}"></div>
-              ${bottleSvg(d, "w-11 h-36 flex-shrink-0 relative")}
-              <div class="flex-1 min-w-0 pb-1 dim">
-                ${sameAsName(d) ? "" : `<p class="text-[10px] text-muted leading-tight">${esc(displayKana(d))}</p>`}
-                <p class="font-mincho font-extrabold text-[17px] leading-tight break-words mt-0.5">${esc(d.name)}</p>
-                <p class="font-hand text-[12px] leading-snug mt-1.5 text-ink/80 line-clamp-4">${esc(d.comment)}</p>
-              </div>
+            <div class="m2-body dim">
+              ${sameAsName(d) ? "" : `<p class="m2-kana">${esc(displayKana(d))}</p>`}
+              <p class="m2-name ${d.name.length > 7 ? "is-long" : ""}">${esc(d.name)}</p>
+              <p class="m2-catch">${esc(productInfo(d).catch)}</p>
+              ${matchLine(d)}
+              ${sweetMeter(d)}
             </div>
-            <div class="flex items-center justify-between mt-auto pt-2 dim">
-              <span class="flex items-center gap-1">${typeMark(d)}${radar(d, 36)}</span>
-              ${matchBadge(d)}
-            </div>
+            <span class="m2-go">›</span>
           </div>`)).join("");
 
       document.getElementById("board-empty").classList.toggle("hidden", list.length > 0);
@@ -1013,9 +1386,13 @@
 
           <!-- 瓶（手で切り抜いたような形）＋ はんこ -->
           <div class="flex items-center justify-center gap-5 mt-5 pv-in" style="--d:${n++}">
-            <div class="photo-frame w-[176px] h-[250px]">
-              <div class="glow w-24 h-48 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" style="background:${c}; opacity:.35"></div>
-              ${bottleSvg(d, "w-[70px] h-[232px] relative")}
+            <div class="pour-stage" onclick="pour()" role="button" aria-label="もう一杯注ぐ" style="--liquid:${liquidColor(d)}">
+              <div class="photo-frame absolute left-0 top-[10px] w-[176px] h-[250px]">
+                <div class="glow w-24 h-48 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" style="background:${c}; opacity:.35"></div>
+              </div>
+              <div data-hero-dst class="pour-bottle">${bottleSvg(d, "w-[70px] h-[232px] relative")}</div>
+              <span class="pour-stream"></span>
+              ${cupSvg(d)}
             </div>
             <div class="stamp-col">
               <span class="hanko hanko-stamp">${esc(hanko)}</span>
@@ -1095,13 +1472,6 @@
             </div>
           </section>` : ""}
 
-          <!-- スタッフに見せる -->
-          ${d.soldOut ? "" : `
-          <div class="mt-8 pv-in" style="--d:${n++}">
-            <button class="btn-enji" onclick="openStaffView('${d.id}')"><i class="fa-solid fa-bell-concierge"></i>スタッフに見せる</button>
-            <p class="text-center text-xs text-[#6b6056] mt-2">タップすると、この1杯が大きく表示されます</p>
-          </div>`}
-
           <!-- これが好きなら -->
           ${sims.length ? `
           <section class="mt-8 pv-in" style="--d:${n++}">
@@ -1110,7 +1480,7 @@
             <div class="grid grid-cols-3 gap-2">
               ${sims.map(o => `
                 <button class="menu-card board-cell p-2 flex flex-col items-center text-center" onclick="openProduct('${o.id}', this)">
-                  <div class="flex items-end justify-center gap-1">${bottleSvg(o, "w-7 h-20")}${radar(o, 40)}</div>
+                  <div class="flex items-end justify-center gap-1"><div data-hero-src>${bottleSvg(o, "w-7 h-20")}</div>${radar(o, 40)}</div>
                   <span class="block font-mincho font-extrabold text-[13px] mt-1 leading-tight">${esc(o.name)}</span>
                   <span class="block text-[10px] text-muted">${esc([o.category, o.prefecture].filter(Boolean).join("・"))}</span>
                 </button>`).join("")}
@@ -1132,6 +1502,77 @@
       setTimeout(() => body.querySelectorAll(".meter-dot").forEach(el => el.style.left = el.dataset.left), 750);
     }
 
+    // ---- 注ぐ演出 ----
+    // お酒の色（日本酒は山吹がかった透明、にごりは白、ワインは赤・白・ロゼ）
+    function liquidColor(d) {
+      if (d.category === "ワイン") return { red: "rgba(122,23,48,.92)", white: "rgba(232,212,130,.85)", rose: "rgba(229,143,160,.88)" }[d.color] || "rgba(122,23,48,.92)";
+      if ((d.tags || []).includes("にごり")) return "rgba(250,248,240,.95)";
+      return d.color === "brown" ? "rgba(228,190,110,.85)" : "rgba(236,214,140,.75)";
+    }
+    // 蛇の目のお猪口（日本酒）／ワイングラス（ワイン）。中のお酒は .pour-liquid
+    function cupSvg(d) {
+      if (d.category === "ワイン") return `
+        <svg class="pour-cup is-glass" viewBox="0 0 60 90" aria-hidden="true">
+          <defs><clipPath id="glass-bowl"><path d="M8 4 h44 c2 24 -6 40 -22 42 c-16 -2 -24 -18 -22 -42 z"/></clipPath></defs>
+          <g clip-path="url(#glass-bowl)"><rect class="pour-liquid" x="0" y="4" width="60" height="44" style="fill:var(--liquid)"/></g>
+          <path d="M8 4 h44 c2 24 -6 40 -22 42 c-16 -2 -24 -18 -22 -42 z" fill="rgba(255,255,255,.18)" stroke="#b9ad98" stroke-width="1.4"/>
+          <path d="M30 46 v32" stroke="#b9ad98" stroke-width="2"/>
+          <ellipse cx="30" cy="82" rx="16" ry="4" fill="rgba(255,255,255,.5)" stroke="#b9ad98" stroke-width="1.4"/>
+          <path d="M14 10 c0 14 3 24 8 30" stroke="#fff" stroke-opacity=".7" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </svg>`;
+      return `
+        <svg class="pour-cup" viewBox="0 0 64 44" aria-hidden="true">
+          <defs><clipPath id="choko-in"><ellipse cx="32" cy="12" rx="26" ry="8"/><path d="M6 12 q2 22 26 24 q24 -2 26 -24 z"/></clipPath></defs>
+          <path d="M4 12 q2 26 28 28 q26 -2 28 -28 z" fill="#f6f1e6" stroke="#cfc3ad" stroke-width="1.2"/>
+          <g clip-path="url(#choko-in)">
+            <rect x="0" y="0" width="64" height="44" fill="#fffdf8"/>
+            <ellipse cx="32" cy="22" rx="11" ry="4.5" fill="none" stroke="#2f4f8f" stroke-width="3"/>
+            <rect class="pour-liquid" x="0" y="4" width="64" height="40" style="fill:var(--liquid)"/>
+          </g>
+          <ellipse cx="32" cy="12" rx="28" ry="9" fill="none" stroke="#cfc3ad" stroke-width="1.4"/>
+        </svg>`;
+    }
+    // 瓶が持ち上がって傾き、お猪口に注いで、もとに戻る
+    function pour() {
+      const stage = document.querySelector("#product-body .pour-stage");
+      if (!stage || stage.classList.contains("is-pouring")) return;
+      const bottle = stage.querySelector(".pour-bottle");
+      const stream = stage.querySelector(".pour-stream");
+      const liquid = stage.querySelector(".pour-liquid");
+      const glass = stage.querySelector(".pour-cup").classList.contains("is-glass");
+      if (reduceMotion()) { liquid.style.transform = "scaleY(1)"; return; }
+      stage.classList.add("is-pouring");
+      const T = 2100;
+      bottle.animate([
+        { transform: "none", easing: "cubic-bezier(.45,.05,.3,1)" },
+        { transform: "translate(6px,-34px) rotate(-6deg)", offset: .14, easing: "cubic-bezier(.45,.05,.3,1)" },
+        { transform: "translate(13px,-4px) rotate(124deg) scale(.82)", offset: .34, easing: "ease-in-out" },
+        { transform: "translate(14px,-2px) rotate(128deg) scale(.82)", offset: .7, easing: "cubic-bezier(.45,.05,.3,1)" },
+        { transform: "translate(6px,-30px) rotate(-4deg)", offset: .86, easing: "cubic-bezier(.45,.05,.3,1)" },
+        { transform: "none" }
+      ], { duration: T });
+      stream.animate([
+        { transform: "scaleY(0)", opacity: 0 },
+        { transform: "scaleY(0)", opacity: 1, offset: .33 },
+        { transform: "scaleY(1)", opacity: 1, offset: .4 },
+        { transform: "scaleY(1)", opacity: 1, offset: .68 },
+        { transform: "scaleY(1) translateY(100%)", opacity: 0, offset: .76 },
+        { transform: "scaleY(0)", opacity: 0 }
+      ], { duration: T });
+      const from = getComputedStyle(liquid).transform === "none" ? 0 : 1;
+      liquid.animate([
+        { transform: `scaleY(${from ? 0.15 : 0})` },
+        { transform: `scaleY(${from ? 0.15 : 0})`, offset: .38 },
+        { transform: "scaleY(1)", offset: .72 },
+        { transform: "scaleY(1)" }
+      ], { duration: T, fill: "forwards" }).onfinish = function () {
+        liquid.style.transform = "scaleY(1)"; this.cancel();
+        stage.classList.remove("is-pouring");
+        // 注ぎ終わりに、表面がきらっと
+        stage.querySelector(".pour-cup").animate([{ filter: "brightness(1)" }, { filter: "brightness(1.15)" }, { filter: "brightness(1)" }], { duration: 500 });
+      };
+    }
+
     function toggleTrivia(btn) {
       const open = btn.getAttribute("aria-expanded") !== "true";
       btn.setAttribute("aria-expanded", open);
@@ -1141,97 +1582,115 @@
       box.classList.toggle("opacity-0", !open); box.classList.toggle("opacity-100", open);
     }
 
-    // ---- カードの演出：押したカードが持ち上がり、くるっと回りながら大きくなって、商品ページに切り替わる ----
+    // ---- カードの演出：瓶が主役 ----
+    //   押すと、カードの瓶だけが浮き上がり、弧を描いて商品ページの瓶の位置へ。まわりの中身はあとから出てくる
+    //   閉じると、瓶が一覧のカードへ戻る
     const reduceMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let productOpen = false;
     let cardAnimating = false;
+    let openedCardId = null;
+
+    // 瓶の分身を作って、from の位置から to の位置へ飛ばす
+    function flyBottle(fromEl, toRect, opts = {}, fromRect = null) {
+      const r = fromRect || fromEl.getBoundingClientRect();
+      const ghost = fromEl.cloneNode(true);
+      ghost.removeAttribute("data-hero-src"); ghost.removeAttribute("data-hero-dst");
+      Object.assign(ghost.style, { position: "fixed", left: r.left + "px", top: r.top + "px", width: r.width + "px", height: r.height + "px",
+        margin: "0", zIndex: "75", pointerEvents: "none", transformOrigin: "0 0", visibility: "visible",
+        mixBlendMode: "multiply" });   // 瓶の写真の白い背景を、下の紙になじませる
+      ghost.querySelectorAll("img").forEach(img => { img.style.mixBlendMode = "normal"; img.style.filter = "url(#knockout-white)"; });
+      document.body.appendChild(ghost);
+      const sx = toRect.width / r.width, sy = toRect.height / r.height;
+      const dx = toRect.left - r.left, dy = toRect.top - r.top;
+      const lift = opts.lift ?? -60;   // 弧のふくらみ（上へ）
+      const anim = ghost.animate([
+        { transform: "translate(0,0) scale(1,1) rotate(0)" },
+        { transform: `translate(${dx * 0.45}px, ${dy * 0.45 + lift}px) scale(${1 + (sx - 1) * 0.5}, ${1 + (sy - 1) * 0.5}) rotate(${opts.tilt ?? -6}deg)`, offset: .45 },
+        { transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy}) rotate(0)` }
+      ], { duration: opts.duration || 680, easing: "cubic-bezier(.45,.05,.25,1)", fill: "forwards" });
+      return { ghost, anim };
+    }
 
     function openProduct(id, src) {
       const d = byId[id];
       if (!d || cardAnimating) return;
       const view = document.getElementById("product-view");
       const paper = document.getElementById("product-body");
+      const srcBottle = src && src.querySelector("[data-hero-src]");
+      // 商品ページの中から次のお酒を開くときは、ページを描き直す前に瓶の位置と姿を控えておく
+      const fromInside = productOpen;
+      const fromRect = srcBottle ? srcBottle.getBoundingClientRect() : null;
+      const fromClone = srcBottle ? srcBottle.cloneNode(true) : null;
 
-      const show = () => {
-        renderProduct(d);
-        view.classList.remove("hidden");
-        view.scrollTop = 0;
-        document.body.style.overflow = "hidden";
-        productOpen = true;
-        if (!reduceMotion()) {
-          paper.animate([
-            { transform: "perspective(1400px) rotateY(-90deg) scale(.88)", opacity: .4 },
-            { transform: "perspective(1400px) rotateY(8deg) scale(1.01)", opacity: 1, offset: .7 },
-            { transform: "perspective(1400px) rotateY(0) scale(1)", opacity: 1 }
-          ], { duration: 520, easing: "cubic-bezier(.2,.8,.3,1)" });
-          view.animate([{ backgroundColor: "rgba(28,25,23,0)" }, { backgroundColor: "rgba(28,25,23,.55)" }], { duration: 400 });
-        }
-      };
+      renderProduct(d);
+      view.classList.remove("hidden");
+      view.scrollTop = 0;
+      document.body.style.overflow = "hidden";
+      productOpen = true;
+      openedCardId = !fromInside && src && src.dataset.card ? id : openedCardId;
 
-      if (!src || reduceMotion()) { show(); return; }
-
-      // 押したカードの分身を作って、その場から動かす
-      const r = src.getBoundingClientRect();
-      const ghost = src.cloneNode(true);
-      ghost.removeAttribute("onclick");
-      ghost.classList.add("card-ghost");
-      Object.assign(ghost.style, { position: "fixed", left: r.left + "px", top: r.top + "px", width: r.width + "px", height: r.height + "px", margin: "0", zIndex: "65" });
-      document.body.appendChild(ghost);
-      src.style.visibility = "hidden";
+      if (reduceMotion() || !srcBottle) {
+        paper.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300 });
+        setTimeout(pour, reduceMotion() ? 0 : 700);
+        return;
+      }
+      const dst = paper.querySelector("[data-hero-dst]");
+      dst.style.visibility = "hidden";
       cardAnimating = true;
-
-      const dx = window.innerWidth / 2 - (r.left + r.width / 2);
-      const dy = window.innerHeight / 2 - (r.top + r.height / 2);
-      const grow = Math.min(1.7, (window.innerWidth * 0.8) / r.width);
-      const anim = ghost.animate([
-        { transform: "perspective(1000px) translate(0, 0) rotateY(0) scale(1)", filter: "drop-shadow(0 2px 4px rgba(0,0,0,.1))" },
-        { transform: "perspective(1000px) translate(0, -12px) rotateY(0) rotateZ(-2deg) scale(1.06)", filter: "drop-shadow(0 18px 24px rgba(0,0,0,.28))", offset: .28 },
-        { transform: `perspective(1000px) translate(${dx}px, ${dy}px) rotateY(90deg) scale(${grow})`, filter: "drop-shadow(0 30px 40px rgba(0,0,0,.3))" }
-      ], { duration: 560, easing: "cubic-bezier(.55,0,.35,1)", fill: "forwards" });
+      // 紙（ページ）はふわっと出る。瓶はカードから飛んでくる
+      view.animate([{ backgroundColor: "rgba(241,234,220,0)" }, { backgroundColor: "rgba(241,234,220,1)" }], { duration: 420, easing: "ease-out" });
+      paper.animate([{ opacity: 0, transform: "translateY(18px)" }, { opacity: 1, transform: "none" }], { duration: 480, easing: "ease-out" });
+      srcBottle.style.visibility = "hidden";
+      const { ghost, anim } = flyBottle(fromInside ? fromClone : srcBottle, dst.getBoundingClientRect(), {}, fromRect);
       anim.onfinish = () => {
+        dst.style.visibility = "";
+        // 着地したときに、瓶が少し弾む
+        dst.animate([{ transform: "scale(1.05)" }, { transform: "scale(.98)" }, { transform: "scale(1)" }], { duration: 260, easing: "ease-out" });
+        setTimeout(pour, 380);
         ghost.remove();
-        src.style.visibility = "";
+        srcBottle.style.visibility = "";
         cardAnimating = false;
-        show();
       };
     }
 
     function closeProduct() {
-      if (!productOpen) return;
+      if (!productOpen || cardAnimating) return;
       const view = document.getElementById("product-view");
       const paper = document.getElementById("product-body");
       const done = () => {
         view.classList.add("hidden");
         document.body.style.overflow = "";
         productOpen = false;
+        view.getAnimations().forEach(a => a.cancel());
+        paper.getAnimations().forEach(a => a.cancel());
+        cardAnimating = false;
       };
       if (reduceMotion()) { done(); return; }
-      paper.animate([
-        { transform: "perspective(1400px) rotateY(0) scale(1)", opacity: 1 },
-        { transform: "perspective(1400px) rotateY(90deg) scale(.88)", opacity: .3 }
-      ], { duration: 340, easing: "cubic-bezier(.5,0,.75,0)", fill: "forwards" }).onfinish = () => {
-        done();
-        paper.getAnimations().forEach(a => a.cancel());
-      };
-      view.animate([{ backgroundColor: "rgba(28,25,23,.55)" }, { backgroundColor: "rgba(28,25,23,0)" }], { duration: 340, fill: "forwards" })
-        .onfinish = function () { this.cancel(); };
-    }
-
-    // ---- スタッフに見せる（この1杯を大きく表示） ----
-    function openStaffView(id) {
-      const d = byId[id];
-      const kana = sameAsName(d) ? "" : displayKana(d);
-      document.getElementById("order-list").innerHTML = `
-        <li class="border-b-2 border-dashed border-line pb-5">
-          <p class="text-sm text-muted">${esc([d.category, d.prefecture, d.grade].filter(Boolean).join("・"))}</p>
-          ${kana ? `<p class="text-base text-muted mt-3 tracking-widest">${esc(kana)}</p>` : ""}
-          <p class="font-mincho font-extrabold text-5xl leading-tight mt-1">${esc(d.name)}</p>
-          ${d.maker ? `<p class="text-sm text-muted mt-3">${esc(d.maker)}</p>` : ""}
-        </li>`;
-      document.getElementById("order-screen").classList.remove("hidden");
-    }
-    function closeOrderScreen() {
-      document.getElementById("order-screen").classList.add("hidden");
+      const dst = paper.querySelector("[data-hero-dst]");
+      if (dst) dst.getAnimations().forEach(a => a.cancel());
+      const card = openedCardId && document.querySelector(`[data-card="${openedCardId}"]`);
+      const cardBottle = card && card.querySelector("[data-hero-src]");
+      const cr = cardBottle && cardBottle.getBoundingClientRect();
+      const dr = dst && dst.getBoundingClientRect();
+      const inView = rect => rect && rect.width && rect.bottom > 0 && rect.top < window.innerHeight;
+      cardAnimating = true;
+      // 紙はふわっと消える
+      paper.animate([{ opacity: 1 }, { opacity: 0, transform: "translateY(18px)" }], { duration: 300, easing: "ease-in", fill: "forwards" });
+      view.animate([{ backgroundColor: "rgba(241,234,220,1)" }, { backgroundColor: "rgba(241,234,220,0)" }], { duration: 420, fill: "forwards" });
+      if (inView(cr) && inView(dr)) {
+        // 瓶は一覧のカードへ戻る
+        cardBottle.style.visibility = "hidden";
+        const { ghost, anim } = flyBottle(dst, cr, { lift: -40, tilt: 5, duration: 560 });
+        dst.style.visibility = "hidden";
+        anim.onfinish = () => {
+          done();
+          cardBottle.style.visibility = "";
+          ghost.remove();
+          cardBottle.animate([{ transform: "translateY(-4px)" }, { transform: "none" }], { duration: 200, easing: "ease-out" });
+        };
+      } else {
+        setTimeout(done, 420);
+      }
     }
 
     // ---- 相性をリセット（診断の答えを消して、相性％と相性順を出さない状態に戻す） ----
@@ -1255,13 +1714,112 @@
     }
 
     // =============================================================
+    //  季節のヘッダー：月ごとに 桜（春）・青楓（夏）・紅葉（秋）・雪（冬）
+    //  試すときは URL の最後に ?season=spring / summer / autumn / winter を付ける
+    // =============================================================
+    // 葉のかたち（とがった先を n 個もつ星形。紅葉・青楓）
+    function leafPath(n, rOut, rIn) {
+      let d = "";
+      for (let k = 0; k < n; k++) {
+        const a = (k / n) * Math.PI * 2 - Math.PI / 2, b = ((k + .5) / n) * Math.PI * 2 - Math.PI / 2;
+        d += `${k ? "L" : "M"}${(Math.cos(a) * rOut).toFixed(1)},${(Math.sin(a) * rOut).toFixed(1)} L${(Math.cos(b) * rIn).toFixed(1)},${(Math.sin(b) * rIn).toFixed(1)} `;
+      }
+      return d + "Z";
+    }
+    // 桜の花びら1枚（上向き。先に切れ込み）
+    const SAKURA_PETAL = "M0 0 C-5 -2 -6.5 -8 -3 -10.5 L0 -8.6 L3 -10.5 C6.5 -8 5 -2 0 0 Z";
+    const SEASON_SHAPES = {
+      spring: { label: "春の品書き", color: "#f6c1cf", sakura: true },
+      summer: { label: "夏の品書き", color: "#9fd3a8", path: leafPath(7, 10, 4.2) },
+      autumn: { label: "秋の品書き", color: "#f0a04b", path: leafPath(7, 10, 4.2) },
+      winter: { label: "冬の品書き", color: "#ffffff", snow: true }
+    };
+    function shapeSvg(sh, size, opacity) {
+      const inner = sh.sakura
+        ? [0, 72, 144, 216, 288].map(r => `<path transform="rotate(${r})" d="${SAKURA_PETAL}" fill="${sh.color}"/>`).join("") + `<circle r="1.6" fill="#fff" opacity=".8"/>`
+        : sh.snow
+        ? `<g stroke="${sh.color}" stroke-width="1.6" stroke-linecap="round" fill="none">${[0, 60, 120].map(r => `<path transform="rotate(${r})" d="M0 -9 V9 M0 -6 l-3 -3 M0 -6 l3 -3 M0 6 l-3 3 M0 6 l3 3"/>`).join("")}</g>`
+        : `<path d="${sh.path}" fill="${sh.color}"/><path d="M0 3 V12" stroke="${sh.color}" stroke-width="1.4"/>`;
+      return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="-12 -12 24 24" opacity="${opacity}">${inner}</svg>`;
+    }
+    function currentSeason() {
+      const q = new URLSearchParams(location.search).get("season") || MENU_CONFIG.season;
+      if (SEASON_SHAPES[q]) return q;
+      const m = new Date().getMonth() + 1;
+      return m >= 3 && m <= 5 ? "spring" : m >= 6 && m <= 8 ? "summer" : m >= 9 && m <= 11 ? "autumn" : "winter";
+    }
+    function applySeason() {
+      const key = currentSeason(), sh = SEASON_SHAPES[key];
+      const hero = document.querySelector(".hero");
+      // 柄：大小の形を散らしたタイル
+      const tile = `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="90">` +
+        [[18, 20, 22, .22, 10], [78, 14, 14, .16, 40], [56, 62, 26, .18, -20], [104, 70, 12, .14, 70], [10, 74, 10, .12, 0]]
+          .map(([x, y, sz, op, rot]) => `<g transform="translate(${x} ${y}) rotate(${rot}) translate(${-sz / 2} ${-sz / 2})">${shapeSvg(sh, sz, op)}</g>`).join("") + `</svg>`;
+      hero.style.backgroundImage = `url("data:image/svg+xml,${encodeURIComponent(tile)}"), linear-gradient(to bottom, #b4452f, #a63d2a 45%, #8f3020)`;
+      document.getElementById("season-label").textContent = sh.label;
+      // 舞い散るもの
+      const fx = document.getElementById("season-fx");
+      if (reduceMotion()) { fx.innerHTML = ""; return; }
+      fx.innerHTML = Array.from({ length: 11 }, (_, k) => {
+        const size = 10 + (k * 7) % 9, left = (k * 37) % 100, dur = 7 + (k * 13) % 6, delay = -((k * 17) % 11);
+        return `<span class="fx-fall" style="left:${left}%; --sx:${(k % 2 ? 1 : -1) * (14 + k % 4 * 6)}px; animation-duration:${dur}s; animation-delay:${delay}s">${shapeSvg(sh, size, .85)}</span>`;
+      }).join("");
+    }
+
+    // =============================================================
     //  はじめに
     // =============================================================
+    // ---- オープニング ----
+    let openingAnims = [];
+    function playOpening() {
+      const op = document.getElementById("opening");
+      if (!op) return;
+      if (reduceMotion()) { op.remove(); return; }
+      const L = op.querySelector(".noren-l"), R = op.querySelector(".noren-r"), crest = op.querySelector(".noren-crest"), rod = op.querySelector(".noren-rod");
+      const texts = op.querySelectorAll(".noren-text");
+      // 0〜0.55秒：暖簾が上から下りて、ふわっと揺れる
+      openingAnims.push(rod.animate([{ transform: "translateY(-20px)" }, { transform: "none" }], { duration: 300, easing: "ease-out" }));
+      [L, R].forEach((el, i) => openingAnims.push(el.animate([
+        { transform: "translateY(-105%)" },
+        { transform: `translateY(2%) rotate(${i ? -1.2 : 1.2}deg)`, offset: .7 },
+        { transform: `rotate(${i ? .5 : -.5}deg)`, offset: .88 },
+        { transform: "none" }
+      ], { duration: 650, easing: "cubic-bezier(.3,.8,.3,1)", fill: "backwards" })));
+      texts.forEach((t, i) => openingAnims.push(t.animate([{ opacity: 0, transform: "translateY(10px)" }, { opacity: 1, transform: "none" }],
+        { duration: 400, delay: 420 + i * 120, easing: "ease-out", fill: "backwards" })));
+      // 0.75秒：真ん中に「酒」の紋が、はんこのように押される
+      openingAnims.push(crest.animate([
+        { opacity: 0, transform: "scale(2.2) rotate(-18deg)" },
+        { opacity: 1, transform: "scale(.9) rotate(-4deg)", offset: .6 },
+        { opacity: 1, transform: "scale(1) rotate(0)" }
+      ], { duration: 380, delay: 750, easing: "cubic-bezier(.3,1.4,.5,1)", fill: "backwards" }));
+      // 1.35〜2.05秒：紋が消えて、暖簾が左右に分かれて開く
+      openingAnims.push(crest.animate([{ opacity: 1 }, { opacity: 0, transform: "scale(.8)" }], { duration: 200, delay: 1350, fill: "forwards" }));
+      [L, R].forEach((el, i) => openingAnims.push(el.animate([
+        { transform: "none" },
+        { transform: `translateX(${i ? 108 : -108}%) skewX(${i ? -6 : 6}deg) rotate(${i ? 4 : -4}deg)` }
+      ], { duration: 650, delay: 1400, easing: "cubic-bezier(.6,0,.3,1)", fill: "forwards" })));
+      const bg = op.animate([{ backgroundColor: "rgba(241,234,220,1)" }, { backgroundColor: "rgba(241,234,220,0)" }], { duration: 500, delay: 1450, fill: "forwards" });
+      openingAnims.push(bg);
+      openingAnims.push(rod.animate([{ opacity: 1 }, { opacity: 0, transform: "translateY(-16px)" }], { duration: 300, delay: 1800, fill: "forwards" }));
+      bg.finished.then(() => setTimeout(endOpening, 120)).catch(() => {});
+    }
+    // タップで飛ばす／終わったら外す
+    function endOpening() {
+      const op = document.getElementById("opening");
+      if (!op || op.classList.contains("is-done")) return;
+      op.classList.add("is-done");
+      // 動きは取り消さずに（取り消すと暖簾が元の位置に戻って一瞬映る）、そのまま全体を薄くして外す
+      if (reduceMotion()) { op.remove(); return; }
+      op.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, fill: "forwards" }).onfinish = () => op.remove();
+    }
+
     (function init() {
       document.title = MENU_CONFIG.title;
+      applySeason();
+      playOpening();
       document.getElementById("menu-title").textContent = MENU_CONFIG.title;
-      document.getElementById("menu-count").textContent =
-        `本日 ${available().length} 銘柄`;
+
 
       // 前に診断していれば、その結果を使う
       const saved = store.get("menu-diagnosis", null);
