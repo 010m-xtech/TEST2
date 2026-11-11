@@ -82,15 +82,20 @@
             transition: opacity 1s ease; cursor: pointer;
         }
         /* オープニング動画：画面の短い辺と同じ大きさの正方形の枠を中央に置き、その中に動画の中央部分を表示する。
-           動画を画面より大きく広げないので、端末やアプリ内ブラウザによる見切れ・横ずれが起きない */
+           動画を画面より大きく広げないので、端末やアプリ内ブラウザによる見切れ・横ずれが起きない。
+           枠の外側は、動画の背景色（上が明るい紺・下が暗い紺）を延長して画面全体を同じ背景にする */
         #intro-stage {
-            flex: none; position: relative; overflow: hidden;
+            flex: none; position: relative; z-index: 0;
             width: min(100vw, 100vh); height: min(100vw, 100vh);
-            box-shadow: inset 0 0 28px 22px #0B1B40;
         }
         @supports (width: 1dvh) {
             #intro-stage { width: min(100vw, 100dvh); height: min(100vw, 100dvh); }
         }
+        #intro-stage::before, #intro-stage::after {
+            content: ""; position: absolute; left: -100vmax; right: -100vmax; z-index: -1; pointer-events: none;
+        }
+        #intro-stage::before { top: -100vmax; height: calc(100vmax + 37.5%); background: linear-gradient(#0D214B 0, #0D214B calc(100% - 14px), #0A1B41 100%); }
+        #intro-stage::after { top: 37.5%; height: calc(100vmax + 100%); background: linear-gradient(#0A1B41 0, #081737 14px, #081737 100%); }
         #intro-video {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; max-width: none;
             object-fit: cover; object-position: center center; transition: opacity 1s ease;
