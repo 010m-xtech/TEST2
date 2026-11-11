@@ -77,13 +77,17 @@
         /* オープニング用のCSS */
         #intro-container {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background-color: #000; z-index: 9999;
+            background: linear-gradient(#0D214B, #081737); z-index: 9999;
             display: flex; align-items: center; justify-content: center;
             transition: opacity 1s ease; cursor: pointer;
         }
         #intro-video {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             object-fit: cover; transition: opacity 1s ease;
+        }
+        /* 横長のオープニング動画：縦画面ではロゴが小さくなりすぎないよう拡大して中央に置く */
+        @media (orientation: portrait) {
+            #intro-video { top: 50%; left: -40%; width: 180%; height: auto; transform: translateY(-50%); object-fit: fill; }
         }
         #intro-logo {
             position: relative; z-index: 10; max-width: 80%; max-height: 80%;
@@ -225,7 +229,7 @@
 
         #game2-container .start-wrap {
             width: 100%; margin: auto; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center; gap: 22px; padding: 60px 20px; min-height: 360px;
+            text-align: center; gap: 22px; padding: 30px 20px; min-height: 360px;
             background: transparent; filter: drop-shadow(3px 5px 0 rgba(0,0,0,0.15)); position: relative;
         }
         #game2-container .start-wrap::before {
@@ -237,10 +241,9 @@
         #game2-container .start-title, #game2-container .start-lead, #game2-container .start-wrap .big-btn {
             position: relative; z-index: 1;
         }
-        #game2-container .start-fish-img {
-            position: absolute; z-index: 0; opacity: 0.75;
-            pointer-events: auto; cursor: pointer;
-        }
+        /* 飾りの魚：白枠の上下に1列ずつ並べる（文字と重ならない・枠からはみ出さない） */
+        #game2-container .deco-row { position: relative; z-index: 1; width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+        #game2-container .deco-fish { width: 29%; height: 64px; object-fit: contain; opacity: 0.9; cursor: pointer; }
 
         #game2-container .start-title { font-size: 26px; font-weight: 900; color: var(--ai); line-height: 1.5; margin: 0; }
         #game2-container .start-lead { font-size: 15px; color: #000; line-height: 1.9; margin: 0; max-width: 260px; }
@@ -333,11 +336,11 @@
 
         #game2-container .final-wrap {
             width: 100%; margin: auto; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center; gap: 18px; padding: 60px 20px; min-height: 360px; background: rgba(255, 255, 255, 0.85);
+            text-align: center; gap: 18px; padding: 30px 20px; min-height: 360px; background: rgba(255, 255, 255, 0.85);
             border-radius: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); position: relative; overflow: hidden;
         }
         #game2-container .final-score, #game2-container .final-msg, #game2-container .final-wrap .big-btn { position: relative; z-index: 1; }
-        #game2-container .final-fish-img { position: absolute; z-index: 0; opacity: 0.75; pointer-events: auto; cursor: pointer; }
+
         #game2-container .final-score { font-size: 46px; font-weight: 900; color: var(--ai); margin: 0; }
         #game2-container .final-score span { font-size: 22px; color: #7a6f5c; }
         #game2-container .final-msg { font-size: 16px; color: var(--sumi); font-weight: 700; line-height: 1.8; max-width: 260px; margin: 0; }
@@ -379,11 +382,11 @@
             75% { transform: rotate(1deg); }
         }
         @keyframes g3-fish-jump {
-            0% { transform: rotate(-90deg) scale(1); }
-            25% { transform: rotate(-100deg) scale(1.1); }
-            50% { transform: rotate(-80deg) scale(1.1); }
-            75% { transform: rotate(-100deg) scale(1.1); }
-            100% { transform: rotate(-90deg) scale(1); }
+            0% { transform: rotate(var(--g3-rot, -90deg)) scale(1); }
+            25% { transform: rotate(calc(var(--g3-rot, -90deg) - 10deg)) scale(1.1); }
+            50% { transform: rotate(calc(var(--g3-rot, -90deg) + 10deg)) scale(1.1); }
+            75% { transform: rotate(calc(var(--g3-rot, -90deg) - 10deg)) scale(1.1); }
+            100% { transform: rotate(var(--g3-rot, -90deg)) scale(1); }
         }
         #game3-container .animate-fish { animation: g3-fish-jump 0.4s ease; }
         #game3-container .screen { display: none; flex: 1; flex-direction: column; animation: g3-pop .35s ease both; }
@@ -463,7 +466,18 @@
             align-items: flex-end; height: 270px; gap: 16px; border-bottom: 4px solid var(--g3-sumi);
         }
         #game3-container .bar-col { display: flex; align-items: flex-end; justify-content: center; height: 100%; width: 45%; }
-        #game3-container .compare-labels { display: flex; flex-direction: row; justify-content: space-evenly; padding-top: 12px; gap: 16px; }
+        #game3-container .compare-labels { display: flex; flex-direction: row; justify-content: space-evenly; padding-top: 12px; gap: 16px; padding-left: 36px; }
+        /* 目盛り（左の定規）：魚と身長を同じ縮尺で測るための基準 */
+        #game3-container .compare-inner { padding-left: 36px; }
+        #game3-container .ruler { position: absolute; left: 0; right: 0; bottom: 0; height: 250px; pointer-events: none; z-index: 0; }
+        #game3-container .ruler-spine { position: absolute; left: 33px; top: 0; bottom: 0; border-left: 2px solid var(--g3-sumi); }
+        #game3-container .ruler-tick { position: absolute; left: 0; right: 0; height: 0; border-top: 1px dashed rgba(58, 50, 40, 0.22); }
+        #game3-container .ruler-tick::after { content: ""; position: absolute; left: 29px; top: -1px; width: 9px; border-top: 2px solid var(--g3-sumi); }
+        #game3-container .ruler-tick span {
+            position: absolute; left: 0; top: -9px; width: 29px; text-align: right;
+            font-size: 11px; line-height: 18px; color: var(--g3-sumi); font-weight: 900;
+            background: #fff; letter-spacing: -0.02em;
+        }
         #game3-container .bar-label { font-size: 15px; font-weight: 900; color: var(--g3-sumi); line-height: 1.3; text-align: center; width: 45%; }
 
         #game3-container .sentence-card { text-align: center; margin-top: 4px; }
@@ -743,7 +757,7 @@
                 <!-- おわり画面 -->
                 <section class="screen" data-screen="end">
                     <div class="center-wrap">
-                        <img id="g3-endMascot" class="mascot" src="" alt="おさかな" style="transform: rotate(-90deg); object-fit: contain; cursor: pointer;" onclick="g3_animateEndMascot()">
+                        <img id="g3-endMascot" class="mascot" src="" alt="おさかな" style="transform: rotate(var(--g3-rot, -90deg)); object-fit: contain; cursor: pointer;" onclick="g3_animateEndMascot()">
                         <p class="center-title">たのしんで もらえたかな?</p>
                         <p class="center-lead">おおきい いきものも、<br>ちいさい いきものも、みんな すごいね。</p>
                         <button class="big-btn" onclick="g3_goScreen('theme-select')">もういちど みる</button>
@@ -1475,42 +1489,33 @@
         }
 
         function g2_initDecorativeFishes() {
-            const fishDataStart = [
-                { src: 'aji.webp', top: -2, left: 6, size: 100, rotate: -15 },
-                { src: 'amaebi.webp', top: 8, right: 6, size: 95, rotate: 10 },
-                { src: 'hirame.webp', top: 42.0, left: 2, size: 105, rotate: 5 },
-                { src: 'iwashi.webp', top: 41, right: 2, size: 110, rotate: -10 },
-                { src: 'katsuo2.webp', top: 81, left: 8, size: 100, rotate: 15 },
-                { src: 'tako.webp', top: 89, right: 8, size: 95, rotate: -10 }
+            // 魚は文字と別の「列」に並べる（白枠の上と下）。位置を%で指定しないので、文字と重ならず枠からもはみ出さない。
+            const layouts = [
+                { selector: '#game2-container .start-wrap',
+                  top: [['aji.webp', -8], ['amaebi.webp', 6], ['hirame.webp', 4]],
+                  bottom: [['katsuo2.webp', 8], ['iwashi.webp', -6], ['tako.webp', -5]] },
+                { selector: '#game2-container .final-wrap',
+                  top: [['aji.webp', -8], ['hirame.webp', 4], ['amaebi.webp', 6]],
+                  bottom: [['iwashi.webp', -6], ['katsuo2.webp', 8], ['tako.webp', -5]] }
             ];
-            const fishDataFinal = [
-                { src: 'aji.webp', top: 5, left: 6, size: 100, rotate: -15 },
-                { src: 'hirame.webp', top: 8, right: 6, size: 105, rotate: 5 },
-                { src: 'amaebi.webp', top: 42, left: -7, size: 85, rotate: 10 },
-                { src: 'iwashi.webp', top: 32, right: 4, size: 80, rotate: -10 },
-                { src: 'katsuo2.webp', top: 79, left: 8, size: 100, rotate: 15 },
-                { src: 'tako.webp', top: 86, right: 8, size: 95, rotate: -10 }
-            ];
-            const targets = [
-                { selector: '#game2-container .start-wrap', className: 'start-fish-img', data: fishDataStart },
-                { selector: '#game2-container .final-wrap', className: 'final-fish-img', data: fishDataFinal }
-            ];
-
-            targets.forEach(target => {
-                const wrap = document.querySelector(target.selector);
-                if (wrap) {
-                    target.data.forEach(fish => {
-                        const img = document.createElement('img');
-                        img.src = fish.src; img.className = target.className;
-                        img.style.width = fish.size + 'px'; img.style.top = fish.top + '%';
-                        if (fish.left !== undefined) img.style.left = fish.left + '%';
-                        else img.style.right = fish.right + '%';
-                        img.style.setProperty('--rot', fish.rotate + 'deg');
-                        img.style.transform = `rotate(var(--rot))`;
-                        g2_addTapAnimation(img);
-                        wrap.appendChild(img);
-                    });
-                }
+            const makeRow = (items) => {
+                const row = document.createElement('div');
+                row.className = 'deco-row';
+                items.forEach(([src, rot]) => {
+                    const img = document.createElement('img');
+                    img.src = src; img.className = 'deco-fish'; img.alt = '';
+                    img.style.setProperty('--rot', rot + 'deg');
+                    img.style.transform = 'rotate(var(--rot))';
+                    g2_addTapAnimation(img);
+                    row.appendChild(img);
+                });
+                return row;
+            };
+            layouts.forEach(l => {
+                const wrap = document.querySelector(l.selector);
+                if (!wrap) return;
+                wrap.insertBefore(makeRow(l.top), wrap.firstChild);
+                wrap.appendChild(makeRow(l.bottom));
             });
         }
 
@@ -1592,14 +1597,31 @@
             const childPercent = Math.max(0.5, (g3_CHILD_CM / maxCm) * 100);
             const baseFishPercent = Math.max(0.5, (r.cm / maxCm) * 100);
 
+            // 目盛り：いちばん大きい方を上端にして、切りのいい長さごとに線を引く
+            // 横幅の広い魚（マンボウなど）が枠からはみ出さないよう、必要なときだけ全体の縮尺を小さくする
+            const G3_ASPECT = { sake: 0.35, tara: 0.43, buri: 0.43, manbo: 0.81, maguro: 0.45, ryugu: 0.51, zinbee: 0.40, kakure: 0.65, sanma: 0.22 };
+            const innerBox = document.getElementById('g3-compareInner');
+            const colW = Math.max(80, (innerBox.clientWidth - 36 - 16) * 0.45);
+            const fishAr = G3_ASPECT[r.id] || 0.5;
+            const fishWidthAtMax = fishAr * (r.cm / maxCm);   // 縮尺1あたりの魚の横幅（高さ比）
+            const PLOT_PX = Math.round(Math.max(120, Math.min(250, (colW * 1.25) / Math.max(fishWidthAtMax, 0.0001))));
+            const niceSteps = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000];
+            const rawStep = maxCm / 5;
+            const step = niceSteps.find(v => v >= rawStep) || niceSteps[niceSteps.length - 1];
+            let rulerHtml = `<div class="ruler" style="height:${PLOT_PX}px"><div class="ruler-spine"></div>`;
+            for (let v = step; v <= maxCm * 1.0001; v += step) {
+                rulerHtml += `<div class="ruler-tick" style="bottom:${(v / maxCm) * PLOT_PX}px"><span>${g3_formatCm(v)}</span></div>`;
+            }
+            rulerHtml += '</div>';
+
             // 画像を魚の外周でトリミング済みなので、全ての魚を「長さ＝高さ」で同じルールで描く
             const extraFishStyle = `height: ${baseFishPercent}% !important; width: auto !important; max-width: none;`;
             const fishDisplayPercent = 100;
 
             const inner = document.getElementById('g3-compareInner');
-            inner.innerHTML = `
+            inner.innerHTML = rulerHtml + `
                 <div class="bar-col" style="z-index: 1;">
-                    <div style="width: 100%; aspect-ratio: 1 / 1; position: relative; display: flex; align-items: flex-end; justify-content: center;">
+                    <div style="width: 100%; height: ${PLOT_PX}px; position: relative; display: flex; align-items: flex-end; justify-content: center;">
                         <div style="position: absolute; bottom: ${childPercent}%; left: 0%; width: 220%; border-bottom: 3px dashed var(--g3-ai-light); opacity: 0.6; z-index: 0; pointer-events: none;"></div>
 
                         <svg style="height:${childPercent}%; width:auto; display: block; position: relative; z-index: 1;" viewBox="0 5 100 193" preserveAspectRatio="xMidYMax meet">
@@ -1616,7 +1638,7 @@
                     </div>
                 </div>
                 <div class="bar-col" style="z-index: 1;">
-                    <div style="width: 100%; aspect-ratio: 1 / 1; position: relative; display: flex; align-items: flex-end; justify-content: center;">
+                    <div style="width: 100%; height: ${PLOT_PX}px; position: relative; display: flex; align-items: flex-end; justify-content: center;">
                         <img src="${r.img}" alt="${r.name}" style="width:${fishDisplayPercent}%; height:auto; object-fit: contain; object-position: bottom center; filter: drop-shadow(5px -4px 0 rgba(0,0,0,0.15)); display: block; ${extraFishStyle}" />
                     </div>
                 </div>
@@ -1681,7 +1703,11 @@
                 const allFishes = Object.values(g3_fishData).flat();
                 const randomFish = allFishes[Math.floor(Math.random() * allFishes.length)];
                 const endMascot = document.getElementById('g3-endMascot');
-                if(endMascot) endMascot.src = randomFish.img;
+                if(endMascot) {
+                    // 頭が上向きの絵は90度回して左向きにする。マンボウは最初から左向きなので回さない
+                    endMascot.style.setProperty('--g3-rot', randomFish.id === 'manbo' ? '0deg' : '-90deg');
+                    endMascot.src = randomFish.img;
+                }
 
                 logEvent('finish', 'game3', g3_theme);
                 g3_goScreen('end');
