@@ -81,23 +81,19 @@
             display: flex; align-items: center; justify-content: center;
             transition: opacity 1s ease; cursor: pointer;
         }
-        /* オープニング動画：ロゴの円が画面の短い辺の約9割に収まる大きさで、画面の中央に置く（見切れ防止） */
+        /* オープニング動画：ロゴの円が画面の短い辺の約9割に収まる大きさにして、画面の中央に置く。
+           position や transform を使わず、親の flex の中央寄せだけで中央にする（端末による見切れ・ずれ防止） */
         #intro-video {
-            position: absolute; top: 50%; left: 50%;
-            width: calc(min(100vw, 100vh) * 1.8); height: auto; max-width: none;
-            transform: translate(-50%, -50%);
+            flex: none; display: block; max-width: none; height: auto;
+            width: calc(min(100vw, 100vh) * 1.8);
             transition: opacity 1s ease;
-            /* 動画の端を背景になじませる（帯状の境目を目立たせない） */
-            -webkit-mask-image: linear-gradient(to right, transparent 0, #000 8%, #000 92%, transparent 100%), linear-gradient(to bottom, transparent 0, #000 4%, #000 96%, transparent 100%);
-            -webkit-mask-composite: source-in;
-            mask-image: linear-gradient(to right, transparent 0, #000 8%, #000 92%, transparent 100%), linear-gradient(to bottom, transparent 0, #000 4%, #000 96%, transparent 100%);
-            mask-composite: intersect;
         }
         @supports (width: 1dvh) {
             #intro-video { width: calc(min(100vw, 100dvh) * 1.8); }
         }
         #intro-logo {
-            position: relative; z-index: 10; max-width: 80%; max-height: 80%;
+            position: absolute; top: 0; right: 0; bottom: 0; left: 0; margin: auto; z-index: 10;
+            max-width: 80%; max-height: 80%;
             opacity: 0; transition: opacity 1s ease; object-fit: contain;
         }
         #intro-skip-text {
@@ -844,10 +840,6 @@
                 p.style.animationDelay = (Math.random() * 0.15) + 's';
                 l.appendChild(p);
             }
-            const f = document.createElement('span'); f.className = 'fx-swim';
-            f.textContent = ['🐟', '🐠', '🐡'][Math.floor(Math.random() * 3)];
-            f.style.top = (18 + Math.random() * 55) + '%';
-            l.appendChild(f);
             fxClear(2600);
         }
         // まちがえたとき：やさしく あわが のぼる
