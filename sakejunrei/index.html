@@ -416,7 +416,7 @@
     .opening.is-done { pointer-events: none; }
     .noren-rod { position: absolute; top: 0; left: -5%; right: -5%; height: 14px; background: linear-gradient(#6b4a2b, #3e2a17); box-shadow: 0 3px 6px rgba(0,0,0,.3); }
     .noren {
-      position: absolute; top: 10px; bottom: 18%; width: 50.4%; display: flex; justify-content: center; padding-top: 18vh;
+      position: absolute; top: 10px; bottom: 0; width: 50.4%; display: flex; justify-content: center; padding-top: 20vh;
       background-image:
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='20' viewBox='0 0 40 20'%3E%3Cg fill='none' stroke='%23f2d9a8' stroke-opacity='.12' stroke-width='1'%3E%3Ccircle cx='20' cy='20' r='18'/%3E%3Ccircle cx='20' cy='20' r='13'/%3E%3Ccircle cx='20' cy='20' r='8'/%3E%3Ccircle cx='0' cy='10' r='18'/%3E%3Ccircle cx='0' cy='10' r='13'/%3E%3Ccircle cx='0' cy='10' r='8'/%3E%3Ccircle cx='40' cy='10' r='18'/%3E%3Ccircle cx='40' cy='10' r='13'/%3E%3Ccircle cx='40' cy='10' r='8'/%3E%3C/g%3E%3C/svg%3E"),
         linear-gradient(to bottom, #b4452f, #a63d2a 50%, #8f3020);
@@ -432,7 +432,7 @@
     .noren-l .noren-text { margin-left: 26%; }
     .noren-r .noren-text { margin-right: 26%; }
     .noren-crest {
-      position: absolute; left: 50%; bottom: calc(18% + 7vh); width: 76px; height: 76px; margin-left: -38px; border-radius: 9999px;
+      position: absolute; left: 50%; bottom: 24vh; width: 76px; height: 76px; margin-left: -38px; border-radius: 9999px;
       border: 2.5px solid #f2d9a8; display: flex; align-items: center; justify-content: center; z-index: 2;
       font-family: "Shippori Mincho", serif; font-weight: 800; font-size: 34px; color: #f2d9a8; background: rgba(143,48,32,.6);
     }
@@ -672,6 +672,7 @@
 
   <script src="taste-chart.js"></script>
   <script src="taste-diagnosis.js"></script>
+  <script>RADAR_CONTRAST = 2;   // 六角形の強弱を2倍にして見せる（50 を中心に広げる）</script>
   <script src="menu-data.js"></script>
   <script>
     // =============================================================
@@ -679,11 +680,11 @@
     // =============================================================
     const TYPE_INFO = {
       "甘": { word: "甘口", cls: "text-ama",  color: "#D9822B" },
-      "旨": { word: "旨口", cls: "text-uma",  color: "#1F6B4F" },
       "辛": { word: "辛口", cls: "text-kara", color: "#2F5D8A" }
     };
     // 六角形の「甘み」から、甘・旨・辛の丸印を決める（type を書いたお酒はそちらを優先）
-    const typeFromTaste = t => t.sweetness >= 60 ? "甘" : t.sweetness <= 40 ? "辛" : "旨";
+    // 甘み 51以上 → 甘口、50以下 → 辛口
+    const typeFromTaste = t => t.sweetness > 50 ? "甘" : "辛";
 
     const drinks = TODAY_MENU.map(d => {
       const taste = { ...NEUTRAL_PROFILE, ...(d.taste || {}) };
@@ -697,8 +698,8 @@
     // ---- 味で選ぶ（種類ごとに、出す項目を変える） ----
     const ALL = { key: "all", label: "指定なし" };
     const SWEET_FILTER = { group: "sweet", label: "甘さ", options: [ALL,
-      { key: "amai",  label: "甘口", test: d => d.taste.sweetness >= 55 },
-      { key: "karai", label: "辛口", test: d => d.taste.sweetness <= 45 }] };
+      { key: "amai",  label: "甘口", test: d => d.type === "甘" },
+      { key: "karai", label: "辛口", test: d => d.type === "辛" }] };
     const BODY_FILTER = { group: "body", label: "重さ", options: [ALL,
       { key: "light", label: "軽め", test: d => d.taste.body <= 45 },
       { key: "heavy", label: "重め", test: d => d.taste.body >= 55 }] };
@@ -940,7 +941,7 @@
     function cardButton(d, cls, inner) {
       return `<button class="menu-card ${cls}" data-card="${d.id}" onclick="openProduct('${d.id}', this)" aria-label="${esc(d.name)}のページを見る">${inner}</button>`;
     }
-    // カードの右上のはんこ（日本酒は甘口・旨口・辛口、ワインは赤・白・ロゼ）
+    // カードの左上の札（日本酒は甘口・辛口、ワインは赤・白・ロゼ）
     const cardTypeWord = d => d.category === "ワイン" ? (WINE_WORD[d.color] || "ワイン") : TYPE_INFO[d.type].word;
 
     // 甘辛の目盛り（1本）
@@ -1787,9 +1788,9 @@
       const op = document.getElementById("opening");
       if (!op || op.classList.contains("is-done")) return;
       op.classList.add("is-done");
-      openingAnims.forEach(a => { try { a.cancel(); } catch (e) {} });
+      // 動きは取り消さずに（取り消すと暖簾が元の位置に戻って一瞬映る）、そのまま全体を薄くして外す
       if (reduceMotion()) { op.remove(); return; }
-      op.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200 }).onfinish = () => op.remove();
+      op.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, fill: "forwards" }).onfinish = () => op.remove();
     }
 
     (function init() {
