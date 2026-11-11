@@ -14,6 +14,11 @@ const TASTE_AXES = [
 
 const NEUTRAL_PROFILE = Object.fromEntries(TASTE_AXES.map(a => [a.key, 50]));
 
+// 六角形の強弱の見せ方。1 = そのまま。2 にすると 50 を中心に差を2倍にして、
+// 秀でている項目とそうでない項目の違いがはっきり見える（相性の計算には影響しない）
+var RADAR_CONTRAST = 1;
+const radarValue = v => Math.max(6, Math.min(100, 50 + ((v ?? 50) - 50) * RADAR_CONTRAST));
+
 // 六角形のレーダーチャート
 //   series: [{ values, fill, stroke, dashed }]
 //   options.labels = false で、ラベルなしの小さなチャート（一覧のアイコン用）
@@ -41,7 +46,7 @@ function renderRadarChart(container, series, size = 250, options = {}) {
     svg += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-size="${on ? 14 : 12}" font-weight="700" style="fill: ${on ? accent : '#6B6560'}">${a.label}</text>`;
   });
   series.forEach(s => {
-    svg += `<polygon points="${polygon(a => s.values[a.key] ?? 50)}" style="fill: ${s.fill}; stroke: ${s.stroke}" stroke-width="${labels ? 2 : 1.2}" ${s.dashed ? 'stroke-dasharray="4 4"' : ''} stroke-linejoin="round"></polygon>`;
+    svg += `<polygon points="${polygon(a => radarValue(s.values[a.key]))}" style="fill: ${s.fill}; stroke: ${s.stroke}" stroke-width="${labels ? 2 : 1.2}" ${s.dashed ? 'stroke-dasharray="4 4"' : ''} stroke-linejoin="round"></polygon>`;
   });
   container.innerHTML = svg + '</svg>';
 }
