@@ -1,1 +1,1363 @@
 
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>速達生 四季のドライブ</title>
+<!-- Google Fonts（sakesindan_375060 と同じ：Playfair Display ／ Zen Old Mincho） -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,500;1,700&family=Zen+Old+Mincho:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ▼ カラー（sakesindan_375060 と共通：ワインの赤・金・クリーム） ▼ */
+:root {
+    --vino: #9e2b25; --vino-dark: #5e1814; --vino-light: #e8917c;
+    --verde: #1f3a2c; --crema: #f6efe2; --oro: #c8a45c; --inchiostro: #2b211c;
+    --gold: #f0c35a;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; }
+body { background: #140d0b; color: #f5f0ea; font-family: 'Zen Old Mincho', 'Hiragino Mincho ProN', 'Yu Mincho', serif; overflow: hidden; height: 100dvh; }
+button { font-family: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
+.it { font-family: 'Playfair Display', 'Times New Roman', serif; font-style: italic; }
+.jp-phrase { word-break: keep-all; overflow-wrap: anywhere; }
+
+/* ▼ 背景：夜のトラットリア ▼ */
+.ambience { position: fixed; inset: 0; pointer-events: none; overflow: hidden;
+    background:
+        radial-gradient(70% 45% at 50% 105%, rgba(214,132,62,.30), transparent 70%),
+        radial-gradient(60% 40% at 15% -5%, rgba(140,34,30,.35), transparent 70%),
+        radial-gradient(50% 35% at 90% 10%, rgba(200,164,92,.14), transparent 70%),
+        linear-gradient(#1b120f, #110a08); }
+.bokeh { position: absolute; border-radius: 50%; background: radial-gradient(circle, rgba(255,200,130,.55), rgba(255,200,130,0) 68%); animation: drift 16s ease-in-out infinite alternate; }
+@keyframes drift { 0% { transform: translate(0,0) scale(1); opacity: .55; } 50% { opacity: .9; } 100% { transform: translate(18px,-26px) scale(1.12); opacity: .45; } }
+.vignette { position: absolute; inset: 0; background: radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(0,0,0,.65)); }
+
+/* ▼ 画面の切り替え ▼ */
+#app { position: relative; z-index: 1; width: 100%; max-width: 440px; height: 100%; margin: 0 auto; }
+.screen { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 16px; overflow-y: auto; }
+.screen.active { display: flex; animation: fadeIn .55s ease both; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.card-notte { width: 100%; border-radius: 18px; padding: 24px 18px;
+    background: linear-gradient(180deg, rgba(36,24,20,.86), rgba(22,15,12,.9));
+    border: 1px solid rgba(200,164,92,.35);
+    box-shadow: 0 0 0 1px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.04), 0 25px 60px -15px rgba(0,0,0,.8);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); text-align: center; }
+.tricolore { height: 3px; border-radius: 9px; background: linear-gradient(to right, #2f6b3f 0 33.33%, #f6efe2 33.33% 66.66%, #b3332b 66.66%); }
+.rule-oro { display: flex; align-items: center; gap: .75rem; font-size: 11px; letter-spacing: .35em; color: var(--oro); margin: 0; }
+.rule-oro::before, .rule-oro::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to right, transparent, var(--oro), transparent); }
+.btn-vino { display: block; width: 100%; padding: 15px 10px; border-radius: 12px; font-size: 17px; font-weight: 700; letter-spacing: .15em;
+    background: linear-gradient(to bottom, #b83a31, var(--vino) 55%, #7e211c); color: #fff6ee;
+    border-bottom: 4px solid var(--vino-dark); box-shadow: 0 6px 20px rgba(158,43,37,.45); transition: filter .15s, transform .1s; }
+.btn-vino:active { transform: translateY(3px); border-bottom-width: 1px; }
+.btn-vino:disabled { filter: grayscale(.6) brightness(.7); }
+.btn-ghost { padding: 10px 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,.25); font-size: 13px; letter-spacing: .15em; color: #e9e1d6; }
+.logo-row { display: flex; align-items: center; justify-content: center; gap: 10px; }
+
+/* ▼ 0. オープニング ▼ */
+#s-opening .title { font-size: 30px; font-weight: 700; letter-spacing: .14em; line-height: 1.5; margin: 18px 0 6px; }
+#s-opening .title b { color: var(--gold); }
+#s-opening .sub { font-size: 15px; letter-spacing: .12em; color: #e6dccd; line-height: 2; margin: 0; }
+.flow { display: flex; justify-content: center; gap: 6px; margin: 22px 0 26px; flex-wrap: wrap; }
+.flow span { font-size: 12px; letter-spacing: .1em; padding: 5px 10px; border-radius: 999px; border: 1px solid rgba(200,164,92,.45); color: #f1e3c4; }
+.flow i { color: var(--oro); font-style: normal; align-self: center; font-size: 11px; }
+
+/* ▼ 1. 季節えらび ▼ */
+.seasons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0 20px; }
+.season-card { position: relative; border-radius: 14px; overflow: hidden; border: 1.5px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04); padding: 0 0 9px; transition: transform .25s, border-color .25s, box-shadow .25s; }
+.season-card svg { display: block; width: 100%; height: auto; }
+.season-card .jp { font-size: 18px; font-weight: 700; letter-spacing: .2em; margin-top: 6px; }
+.season-card .itn { font-size: 12.5px; color: var(--oro); }
+.season-card.wide { grid-column: 1 / -1; }
+.season-card.wide .jp { font-size: 19px; }
+.season-card[aria-pressed="true"] { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold), 0 10px 26px rgba(240,195,90,.25); transform: translateY(-3px); }
+.season-card .now { position: absolute; top: 6px; left: 6px; font-size: 10px; font-weight: 700; padding: 3px 7px; border-radius: 999px; background: var(--gold); color: var(--inchiostro); letter-spacing: .1em; }
+.season-card .now.rec { background: var(--vino); color: #fff6ee; }
+
+/* ▼ 2. 出荷 ▼ */
+.polaroid { position: relative; background: #fbf6ec; padding: 8px 8px 30px; border-radius: 3px; box-shadow: 0 14px 30px rgba(0,0,0,.55); transform: rotate(-2.5deg); margin: 6px auto 0; width: 88%; }
+.polaroid img { display: block; width: 100%; height: auto; }
+.polaroid p { position: absolute; left: 0; right: 0; bottom: 6px; margin: 0; color: var(--inchiostro); font-size: 13px; letter-spacing: .15em; }
+.stamp { position: absolute; right: -10px; top: -16px; width: 92px; height: 92px; border-radius: 50%; border: 3px solid #c8352c; color: #c8352c; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 700; line-height: 1.2; background: rgba(251,246,236,.8); transform: rotate(12deg) scale(2.2); opacity: 0; }
+.stamp small { font-size: 10px; letter-spacing: .1em; }
+.stamp strong { font-size: 22px; }
+.stamp.press { animation: stamp .45s cubic-bezier(.3,1.6,.5,1) .5s forwards; }
+@keyframes stamp { to { transform: rotate(12deg) scale(1); opacity: 1; } }
+.ship-road { position: relative; height: 70px; overflow: hidden; margin: 14px 0 4px; }
+.ship-road::after { content: ''; position: absolute; left: 0; right: 0; bottom: 10px; height: 2px; background: repeating-linear-gradient(90deg, rgba(246,239,226,.5) 0 18px, transparent 18px 34px); }
+.ship-road img { position: absolute; bottom: 12px; width: 140px; left: 100%; animation: shipGo 3.6s cubic-bezier(.4,.1,.4,1) .9s forwards; filter: drop-shadow(0 6px 6px rgba(0,0,0,.5)); }
+@keyframes shipGo { to { left: 30%; } }
+
+/* ▼ 0. オープニング（コンセプトの説明） ▼ */
+#s-opening { justify-content: flex-start; padding-top: max(22px, env(safe-area-inset-top)); }
+.op-wrap { width: 100%; text-align: center; padding-bottom: 18px; }
+.op-in { opacity: 0; animation: opIn .8s cubic-bezier(.2,.7,.3,1) var(--d, 0s) forwards; }
+@keyframes opIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.op-kicker { margin: 16px 0 2px; font-size: 13px; letter-spacing: .45em; color: var(--oro); padding-left: .45em; }
+.op-title { margin: 0; font-size: 29px; font-weight: 700; letter-spacing: .14em; line-height: 1.5; }
+.op-title b { color: var(--gold); }
+.op-lead { margin: 14px 0 0; font-size: 15px; line-height: 1.9; letter-spacing: .08em; color: #ece2d2; }
+.op-days { display: inline-block; margin: 2px 0; font-size: 34px; font-weight: 700; letter-spacing: .06em; color: #fff; background: linear-gradient(transparent 62%, rgba(240,195,90,.45) 62%); padding: 0 .2em; }
+.op-fresh { margin: 16px auto 4px; max-width: 320px; text-align: left; }
+.op-bar { width: 0; animation: opBar 2.4s cubic-bezier(.5,0,.3,1) 1.6s forwards; }
+.op-dot { left: 0; animation: opDot 2.4s cubic-bezier(.5,0,.3,1) 1.6s forwards; }
+@keyframes opBar { to { width: 100%; } }
+@keyframes opDot { to { left: 100%; } }
+.op-steps { list-style: none; margin: 16px 0 18px; padding: 0; display: grid; gap: 8px; text-align: left; }
+.op-steps li { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 12px; background: linear-gradient(180deg, rgba(36,24,20,.86), rgba(22,15,12,.9)); border: 1px solid rgba(200,164,92,.3); }
+.op-steps .n { font-family: 'Playfair Display', serif; font-style: italic; font-size: 22px; color: var(--gold); width: 30px; text-align: center; flex: none; }
+.op-steps b { display: block; font-size: 15px; letter-spacing: .06em; }
+.op-steps small { display: block; font-size: 12px; color: #c9bba6; margin-top: 2px; }
+.season-chips { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 12px 0 16px; }
+.chip-s { position: relative; padding: 10px 0; border-radius: 10px; font-size: 14px; font-weight: 700; letter-spacing: .08em; border: 1.5px solid rgba(255,255,255,.18); background: rgba(255,255,255,.05); transition: .2s; }
+.chip-s.wide { grid-column: 1 / -1; font-size: 15px; }
+.chip-s small { position: absolute; top: -7px; right: 6px; font-size: 9px; padding: 1px 6px; border-radius: 999px; background: var(--gold); color: var(--inchiostro); letter-spacing: .05em; }
+.chip-s.wide small { background: var(--vino); color: #fff6ee; }
+.chip-s[aria-pressed="true"] { border-color: var(--gold); background: rgba(240,195,90,.16); box-shadow: 0 0 0 1px var(--gold); }
+.op-start { position: sticky; bottom: 0; z-index: 2; margin: 0 -16px; padding: 14px 16px max(12px, env(safe-area-inset-bottom)); background: linear-gradient(to top, rgba(17,10,8,.97) 60%, rgba(17,10,8,0)); }
+.op-note { margin: 8px 0 0; font-size: 11px; color: #a89a86; letter-spacing: .1em; }
+
+/* ▼ 1. 動画 ▼ */
+#s-movie { padding: 0; background: #000; }
+#movie { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #000; }
+.movie-cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 80px 20px max(84px, calc(env(safe-area-inset-bottom) + 70px)); text-align: center; background: linear-gradient(to top, rgba(0,0,0,.7), transparent); opacity: 0; transform: translateY(12px); transition: opacity .8s, transform .8s; pointer-events: none; }
+.movie-cap.show { opacity: 1; transform: none; }
+.movie-cap p { margin: 0 0 6px; font-size: 13px; letter-spacing: .3em; color: #f6e3b0; }
+.movie-cap p b { font-size: 17px; color: #fff; }
+.movie-cap h2 { margin: 0; font-size: 26px; line-height: 1.5; letter-spacing: .12em; text-shadow: 0 2px 12px rgba(0,0,0,.7); }
+.movie-btn { position: absolute; z-index: 2; padding: 8px 16px; border-radius: 999px; font-size: 13px; letter-spacing: .15em; border: 1px solid rgba(255,255,255,.4); background: rgba(0,0,0,.35); }
+.movie-btn.skip { right: 14px; bottom: max(20px, env(safe-area-inset-bottom)); }
+.movie-btn.sound { left: 14px; bottom: max(20px, env(safe-area-inset-bottom)); }
+.flash { position: absolute; inset: 0; z-index: 50; pointer-events: none; opacity: 0; transition: opacity .8s ease-out;
+    background: radial-gradient(circle at 50% 50%, #fffdf4 0%, #ffe9b0 40%, #f0c35a 75%, #c98a2a 100%); }
+.flash.on { opacity: 1; transition: opacity .4s ease-in; }
+
+/* ▼ 3. ② 旅：トラックが走る風景（横から見る） ▼ */
+#s-drive { padding: 0; justify-content: flex-start; overflow: hidden; }
+#sceneCanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.hud { position: absolute; left: 0; right: 0; top: 0; z-index: 3; padding: max(10px, env(safe-area-inset-top)) 14px 26px; background: linear-gradient(rgba(0,0,0,.5), transparent); pointer-events: none; }
+.segs { display: flex; gap: 4px; }
+.segs div { flex: 1; height: 3px; border-radius: 3px; background: rgba(255,255,255,.3); overflow: hidden; }
+.segs div i { display: block; height: 100%; width: 0; background: #fff; }
+.hud-title { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+.hud-title p { margin: 0; font-size: 17px; font-weight: 700; letter-spacing: .12em; text-shadow: 0 2px 6px rgba(0,0,0,.5); }
+.hud-title p span { font-size: 13px; color: #ffe08a; margin-left: 3px; }
+.chip { font-size: 11px; font-weight: 700; letter-spacing: .12em; padding: 4px 10px; border-radius: 999px; background: rgba(20,13,11,.55); border: 1px solid rgba(240,195,90,.6); color: var(--gold); }
+.fresh-lab { display: flex; justify-content: space-between; font-size: 10px; letter-spacing: .12em; color: rgba(255,255,255,.85); margin: 7px 0 4px; text-shadow: 0 1px 4px rgba(0,0,0,.6); }
+.fresh-lab b { color: #dff3ff; }
+.fresh { position: relative; height: 5px; border-radius: 5px; background: rgba(255,255,255,.3); }
+.fresh i { position: absolute; inset: 0 auto 0 0; border-radius: 5px; background: linear-gradient(90deg, #9fd3f0, #e8f7ff); box-shadow: 0 0 8px rgba(159,211,240,.8); }
+.fresh em { position: absolute; top: 50%; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: #fff; box-shadow: 0 0 8px rgba(159,211,240,.9); }
+.cap { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; padding: 70px 16px max(14px, env(safe-area-inset-bottom)); background: linear-gradient(to top, rgba(0,0,0,.88), rgba(0,0,0,.55) 60%, transparent); }
+.cap .lab { display: flex; align-items: center; gap: 8px; margin: 0 0 4px; }
+.cap .num { font-family: 'Playfair Display', serif; font-style: italic; color: var(--gold); font-size: 26px; line-height: 1; }
+.cap .place { font-size: 14px; letter-spacing: .25em; color: #f2ece4; }
+.cap h2 { margin: 0; font-size: 25px; line-height: 1.4; letter-spacing: .06em; text-shadow: 0 2px 8px rgba(0,0,0,.6); }
+.cap p.txt { margin: 5px 0 0; font-size: 15.5px; line-height: 1.75; color: #ece4d8; }
+#capBody { min-height: 150px; }
+.memo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; margin: 8px 0 0; padding: 6px 10px; font-size: 13px; line-height: 1.6; color: #f3e6c8; border-left: 2px solid var(--gold); background: rgba(240,195,90,.12); border-radius: 0 8px 8px 0; }
+.memo span:first-child { font-size: 10px; letter-spacing: .2em; color: var(--gold); }
+.memo b { font-family: 'Playfair Display', serif; color: var(--gold); font-size: 15px; }
+.cap-in { animation: capIn .55s ease both; }
+@keyframes capIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.controls { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.story-btn { padding: 10px 18px; border-radius: 999px; font-size: 14px; letter-spacing: .15em; border: 1px solid rgba(255,255,255,.28); background: rgba(255,255,255,.08); }
+.story-btn:disabled { opacity: .3; }
+.story-btn.primary { background: linear-gradient(to bottom, #b83a31, var(--vino) 55%, #7e211c); border-color: transparent; font-weight: 700; }
+.controls .hint { margin-left: auto; font-size: 11px; letter-spacing: .12em; color: rgba(255,255,255,.6); }
+.honk { position: absolute; z-index: 4; padding: 6px 12px; border-radius: 14px; background: #fffaf0; color: var(--inchiostro); font-weight: 700; font-size: 15px; letter-spacing: .08em; pointer-events: none; opacity: 0; transform: translate(-50%, 6px) scale(.8); transition: opacity .2s, transform .25s cubic-bezier(.3,1.6,.5,1); box-shadow: 0 6px 14px rgba(0,0,0,.35); white-space: nowrap; }
+.honk::after { content: ''; position: absolute; left: 30%; bottom: -7px; border: 7px solid transparent; border-top-color: #fffaf0; border-bottom: 0; }
+.honk.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
+.intro { position: absolute; inset: 0; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; background: rgba(10,7,5,.45); transition: opacity .7s; pointer-events: none; }
+.intro.hide { opacity: 0; }
+.intro .t { font-size: 26px; font-weight: 700; letter-spacing: .15em; text-shadow: 0 2px 10px rgba(0,0,0,.6); margin: 0; }
+.intro .s { font-size: 15px; letter-spacing: .12em; color: #f6e3b0; margin-top: 10px; line-height: 1.9; }
+
+/* ▼ 4. ③ 注ぐ ▼ */
+#s-pour { justify-content: flex-start; padding-top: max(14px, env(safe-area-inset-top)); }
+.steps { display: flex; justify-content: center; gap: 6px; margin: 8px 0 8px; }
+.steps span { font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(255,255,255,.2); color: #b8ab98; letter-spacing: .1em; transition: .3s; }
+.steps span.on { border-color: var(--gold); color: var(--inchiostro); background: var(--gold); font-weight: 700; }
+.steps span.done { border-color: var(--oro); color: var(--gold); }
+.pour-stage { position: relative; width: 100%; max-width: 380px; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 50px -12px rgba(0,0,0,.85), 0 0 0 1px rgba(200,164,92,.25); flex: none; }
+#pourCanvas { display: block; width: 100%; touch-action: none; }
+.gauge { position: absolute; right: 10px; top: 12px; font-size: 11px; letter-spacing: .1em; padding: 4px 9px; border-radius: 999px; background: rgba(0,0,0,.45); color: #f2e6cc; border: 1px solid rgba(200,164,92,.4); }
+.pour-msg { min-height: 54px; font-size: 17px; font-weight: 700; letter-spacing: .06em; line-height: 1.7; margin: 12px 0 10px; text-align: center; }
+#pourActions { width: 100%; max-width: 360px; }
+.hold-btn { user-select: none; -webkit-user-select: none; touch-action: none; }
+.hold-btn.holding { filter: brightness(1.15); transform: translateY(3px); border-bottom-width: 1px; }
+.sub-row { display: flex; gap: 8px; margin-top: 10px; justify-content: center; }
+
+/* ▼ 5. ④ 乾杯 ▼ */
+.menu-paper { position: relative; width: 100%; border-radius: 6px; padding: 26px 20px 20px; color: var(--inchiostro); text-align: center; background-color: var(--crema);
+    background-image: radial-gradient(120% 80% at 50% 0%, rgba(255,255,255,.6), rgba(255,255,255,0) 60%), radial-gradient(120% 90% at 50% 120%, rgba(120,80,40,.14), rgba(120,80,40,0) 60%);
+    box-shadow: 0 25px 60px -15px rgba(0,0,0,.8); }
+.menu-paper::before { content: ''; position: absolute; inset: 10px; border: 1px solid rgba(200,164,92,.55); pointer-events: none; }
+.menu-paper .season-it { font-size: 36px; color: var(--vino); line-height: 1.1; margin: 4px 0 2px; }
+.menu-paper h2 { margin: 0; font-size: 19px; letter-spacing: .16em; }
+.postcard { position: relative; margin: 14px 0 4px; }
+.postcard canvas { width: 100%; border-radius: 6px; display: block; box-shadow: 0 6px 16px rgba(60,30,10,.25); }
+.postcard img { position: absolute; right: -8px; bottom: -18px; width: 36%; filter: drop-shadow(0 8px 10px rgba(0,0,0,.45)); }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 22px 0 8px; }
+.stats div { border: 1px solid rgba(158,43,37,.3); border-radius: 6px; padding: 6px 2px; }
+.stats small { display: block; font-size: 10px; letter-spacing: .1em; color: #7a6a58; }
+.stats b { font-family: 'Playfair Display', serif; font-size: 19px; color: var(--vino); }
+.rule-vino { display: flex; align-items: center; gap: .75rem; font-size: 11px; letter-spacing: .3em; color: var(--vino); margin: 0; }
+.rule-vino::before, .rule-vino::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to right, transparent, rgba(158,43,37,.55), transparent); }
+.msg-paper { font-size: 14px; line-height: 1.9; margin: 8px 0 16px; }
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01s !important; animation-delay: 0s !important; transition-duration: .01s !important; }
+}
+</style>
+</head>
+<body>
+<div class="ambience" aria-hidden="true">
+    <span class="bokeh" style="width:140px;height:140px;left:8%;top:14%;animation-delay:-2s"></span>
+    <span class="bokeh" style="width:70px;height:70px;left:72%;top:8%;animation-delay:-6s;animation-duration:12s"></span>
+    <span class="bokeh" style="width:200px;height:200px;left:78%;top:38%;animation-delay:-9s;opacity:.4"></span>
+    <span class="bokeh" style="width:90px;height:90px;left:30%;top:52%;animation-delay:-4s;animation-duration:19s"></span>
+    <span class="bokeh" style="width:120px;height:120px;left:-4%;top:64%;animation-delay:-7s;animation-duration:22s"></span>
+    <div class="vignette"></div>
+</div>
+
+<div id="app">
+
+    <!-- ▼ 0. オープニング（コンセプトの説明） ▼ -->
+    <section class="screen active" id="s-opening">
+        <div class="op-wrap">
+            <div class="logo-row op-in" style="--d:.1s">
+                <img src="../sakesindan_375060/tg_logo_pig.webp" alt="" style="width:58px">
+                <img src="../sakesindan_375060/tg_logo_text_light.webp" alt="Ton Galliano トン・ガリアーノ" style="width:100px">
+            </div>
+            <div class="tricolore op-in" style="--d:.3s;width:64px;margin:14px auto 0"></div>
+            <p class="op-kicker op-in" style="--d:.5s">速達生ビール</p>
+            <h1 class="op-title op-in" style="--d:.7s">鮮度をはこぶ<br><b>お店までの旅</b></h1>
+            <p class="op-lead jp-phrase op-in" style="--d:1.0s">工場を出てから<br><span class="op-days">2〜3日以内</span><br>できたての生ビールを、<wbr>まっすぐお店へ。</p>
+            <div class="op-fresh op-in" style="--d:1.3s" aria-hidden="true">
+                <div class="fresh-lab"><span>工場出荷</span><b>2〜3日以内</b><span>お店</span></div>
+                <div class="fresh"><i class="op-bar"></i><em class="op-dot"></em></div>
+            </div>
+            <ol class="op-steps">
+                <li class="op-in" style="--d:1.6s"><span class="n">01</span><div><b>工場から出荷</b><small>できたての生ビールが工場を出発</small></div></li>
+                <li class="op-in" style="--d:1.8s"><span class="n">02</span><div><b>マルト水谷から速達便</b><small>寄り道せずに、新鮮なままお店へ</small></div></li>
+                <li class="op-in" style="--d:2.0s"><span class="n">03</span><div><b>季節の日本を走る旅</b><small>名所や街並みを、トラックといっしょに</small></div></li>
+                <li class="op-in" style="--d:2.2s"><span class="n">04</span><div><b>お店でおいしく注いで乾杯</b><small>最後の一杯は、あなたの手で</small></div></li>
+            </ol>
+            <div class="op-in" style="--d:2.5s">
+                <p class="rule-oro"><span style="padding-left:.35em">どの景色を走る？</span></p>
+                <div class="season-chips" id="seasonList"></div>
+            </div>
+            <div class="op-start op-in" style="--d:1.2s">
+                <button class="btn-vino" id="btnStart">▶ 出発する</button>
+                <p class="op-note">※ 動画が流れます（音が出ます）</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ▼ 1. 動画（工場出荷 → 速達便が出発） ▼ -->
+    <section class="screen" id="s-movie" aria-label="出発の動画">
+        <video id="movie" playsinline preload="auto" src="sokunamatabi.mp4"></video>
+        <div class="movie-cap" id="movieCap">
+            <p>工場出荷 <b>2〜3日以内</b></p>
+            <h2>できたての生ビール、<br>お店へ出発！</h2>
+        </div>
+        <button class="movie-btn sound" id="btnSound" hidden>🔈 音を出す</button>
+        <button class="movie-btn skip" id="btnSkip">スキップ ›</button>
+    </section>
+
+    <img src="../sakesindan_375060/truck.webp" alt="" id="shipTruck" hidden>
+    <!-- ▼ 3. ② 旅：トラックが走る風景 ▼ -->
+    <section class="screen" id="s-drive" aria-label="トラックが走る風景">
+        <canvas id="sceneCanvas" aria-hidden="true"></canvas>
+        <div class="hud">
+            <div class="segs" id="segs"></div>
+            <div class="hud-title"><p>速達生ビール<span>が届くまで</span></p><span class="chip" id="chip">秋</span></div>
+            <div class="fresh-lab"><span>工場出荷</span><b>2〜3日以内にお届け</b><span>お店</span></div>
+            <div class="fresh" aria-hidden="true"><i id="freshBar" style="width:0"></i><em id="freshDot" style="left:0"></em></div>
+        </div>
+        <div class="honk" id="honk">プップー！</div>
+        <div class="cap">
+            <div id="capBody" aria-live="polite"></div>
+            <div class="controls">
+                <button class="story-btn" id="btnPrev">‹ 戻る</button>
+                <button class="story-btn" id="btnNext">次へ ›</button>
+                <span class="hint">トラックをタップ！</span>
+            </div>
+        </div>
+        <div class="intro" id="intro">
+            <p class="t">出発進行！</p>
+            <p class="s jp-phrase">移りかわる景色を、<br>のんびり楽しんでね。</p>
+        </div>
+    </section>
+
+    <!-- ▼ 4. ③ 注ぐ ▼ -->
+    <section class="screen" id="s-pour">
+        <div class="logo-row" style="margin-bottom:2px">
+            <img src="../sakesindan_375060/tg_logo_pig.webp" alt="" style="width:38px">
+            <img src="../sakesindan_375060/tg_logo_text_light.webp" alt="Ton Galliano" style="width:70px">
+        </div>
+        <h2 style="margin:0;font-size:21px;letter-spacing:.14em">③ おいしく<span style="color:var(--gold)">注ごう</span></h2>
+        <div class="steps" id="pourSteps"><span>洗う</span><span>注ぐ</span><span>泡をのせる</span></div>
+        <div class="pour-stage">
+            <canvas id="pourCanvas" aria-label="ジョッキにビールを注ぐ様子"></canvas>
+            <span class="gauge" id="gauge">からっぽ</span>
+        </div>
+        <p class="pour-msg jp-phrase" id="pourMsg"></p>
+        <div id="pourActions"></div>
+    </section>
+
+    <!-- ▼ 5. ④ 乾杯 ▼ -->
+    <section class="screen" id="s-cheers">
+        <div class="menu-paper">
+            <p class="rule-vino"><span style="padding-left:.3em">④ 乾杯</span></p>
+            <p class="season-it it" id="chIt">Autunno</p>
+            <h2 id="chTitle">秋のドライブの一杯</h2>
+            <div class="postcard">
+                <canvas id="chScene" aria-hidden="true"></canvas>
+                <img id="chGlass" alt="あなたが注いだ一杯">
+            </div>
+            <div class="stats">
+                <div><small>走った景色</small><b id="chSeason">秋</b></div>
+                <div><small>クラクション</small><b id="chHonk">0</b><small style="display:inline">回</small></div>
+                <div><small>ビール：泡</small><b id="chRatio">7:3</b></div>
+            </div>
+            <p class="msg-paper jp-phrase" id="chMsg"></p>
+            <button class="btn-vino" data-go="opening">ほかの景色も走る</button>
+            <div class="sub-row"><button class="btn-ghost" style="color:var(--vino);border-color:rgba(158,43,37,.4)" data-go="opening">最初から</button></div>
+        </div>
+    </section>
+    <div class="flash" id="flash" aria-hidden="true"></div>
+</div>
+
+<script>
+(() => {
+'use strict';
+const SHOP_NAME = 'トン・ガリアーノ';
+
+// ==================================================================
+// ▼ 季節ごとの景色（名所は入れず、仮の景色です。あとで差し替えOK） ▼
+//   sky … 空の色［上, 下］ / mtn … 山［遠く, 近く］ / ground … 地面［手前, 奥］
+//   night … 暗さ 0〜1 / side … 道の奥に並ぶもの / front … 手前に並ぶもの（数字は出やすさ）
+//   weather … 舞うものの量（1秒あたり）/ road … 道路の色
+// ==================================================================
+const SEASONS = {
+  haru: { jp: '春', it: 'Primavera', weatherType: 'petal', msg: '桜の花びらといっしょに、春の一杯をどうぞ。',
+    front: { nanohana: 3, grass: 3, none: 3 },
+    stops: [
+      { place: '桜並木の道', title: '桜並木を走る', text: '花びらがひらひら。春の風といっしょに出発！',
+        sky: ['#8fc7ee', '#f8e4ec'], mtn: ['#b7c4dc', '#93b48a'], ground: ['#9cc77e', '#c6dca2'], night: 0, sun: [0.78, 0.13, '#fff6d8'], clouds: 'soft',
+        side: { sakura: 7, pole: 1, none: 1 }, weather: 9 },
+      { place: '菜の花の土手', title: '一面の菜の花', text: '黄色いじゅうたんの中を、まっすぐお店へ。',
+        sky: ['#6fb8ec', '#e6f3fb'], mtn: ['#aebfd8', '#86ad7d'], ground: ['#b2d06a', '#d8e48a'], night: 0, sun: [0.3, 0.1, '#fffbe8'], clouds: 'soft',
+        side: { nanohana: 6, sakura: 2, pole: 1 }, weather: 3 },
+      { place: '春の夕暮れ', title: 'ほんのり春の夕暮れ', text: 'お店はもうすぐ。鮮度はそのまま。',
+        sky: ['#6c78b8', '#f6b49a'], mtn: ['#8e86b0', '#6f7f78'], ground: ['#7f9f6e', '#a6a98a'], night: 0.32, sun: [0.7, 0.3, '#ffd2a8'], clouds: 'soft',
+        side: { sakura: 5, pole: 2, house: 2 }, weather: 5 }
+    ] },
+  natsu: { jp: '夏', it: 'Estate', weatherType: 'rain', msg: '夏の夜空の下で、冷たい一杯をぐいっと。',
+    front: { himawari: 2, grass: 4, none: 3 },
+    stops: [
+      { place: '入道雲の田んぼ道', title: '夏の青空と入道雲', text: '青々とした田んぼの中を、冷たいまま運ぶよ。',
+        sky: ['#2f8fe0', '#c4e8ff'], mtn: ['#7fa7cf', '#3f7f4a'], ground: ['#4f9a3c', '#7dbb55'], night: 0, sun: [0.82, 0.1, '#fffef0'], clouds: 'cumulus',
+        side: { green: 4, himawari: 4, pole: 2 }, weather: 0 },
+      { place: '夕立', title: '夕立だ！', text: '急などしゃぶり。でもビールは冷えたまま。',
+        sky: ['#55606d', '#9aa5ad'], mtn: ['#6c7884', '#3f5a48'], ground: ['#3d7a34', '#5d8b4c'], night: 0.18, sun: null, clouds: 'dark',
+        side: { green: 5, pole: 2, none: 1 }, weather: 80 },
+      { place: '夏の夜', title: '花火があがる夏の夜', text: '雨あがり。遠くで花火の音がするよ。',
+        sky: ['#0f1838', '#3c3160'], mtn: ['#20264a', '#18233a'], ground: ['#1f3a2c', '#28403a'], night: 0.72, sun: null, moon: true, stars: true, fireworks: true, clouds: null,
+        side: { green: 3, house: 3, pole: 2 }, weather: 0 }
+    ] },
+  aki: { jp: '秋', it: 'Autunno', weatherType: 'leaf', msg: '紅葉を思い出しながら、実りの秋の一杯を。',
+    front: { susuki: 4, grass: 1, none: 3 },
+    stops: [
+      { place: '紅葉の峠道', title: '真っ赤な紅葉の峠道', text: '赤や黄色の葉っぱが、くるくる舞っているよ。',
+        sky: ['#78b4e6', '#f3e6cf'], mtn: ['#c48a5c', '#a8492c'], ground: ['#a28838', '#c2a256'], night: 0, sun: [0.22, 0.12, '#fff4d8'], clouds: 'soft',
+        side: { momiji: 7, pole: 1, none: 1 }, weather: 5 },
+      { place: 'すすき野原', title: '金色のすすき野原', text: '風にゆれる穂のあいだを、ゆっくり安全運転。',
+        sky: ['#8cc2ea', '#f6ecd4'], mtn: ['#b99a78', '#8f7a4a'], ground: ['#c4a356', '#dcc283'], night: 0, sun: [0.75, 0.12, '#fff4d8'], clouds: 'soft',
+        side: { susuki: 6, momiji: 2, none: 1 }, weather: 2 },
+      { place: '秋の夕焼け', title: '夕焼け空の帰り道', text: 'お店の灯りが見えてきたよ。',
+        sky: ['#7b4a8f', '#f8b46a'], mtn: ['#8a4a5a', '#5a3a3a'], ground: ['#8a6a3a', '#b0864a'], night: 0.3, sun: [0.5, 0.28, '#ffcf80'], clouds: 'soft',
+        side: { momiji: 5, house: 2, pole: 2 }, weather: 3 }
+    ] },
+  fuyu: { jp: '冬', it: 'Inverno', weatherType: 'snow', msg: '雪の道をこえてきた、キリッと冷たい一杯を。',
+    front: { mound: 3, none: 3 },
+    stops: [
+      { place: '雪の山道', title: 'しんしんと雪の山道', text: '雪がどんどん降ってくる。安全運転でね。',
+        sky: ['#b5c3d4', '#e9eef3'], mtn: ['#e8eef4', '#c7d3de'], ground: ['#eef3f7', '#dfe7ee'], night: 0.05, sun: null, clouds: 'snowy', road: '#7c8189',
+        side: { sugi: 7, pole: 1, none: 1 }, weather: 34 },
+      { place: '雪の田園', title: '一面の雪景色', text: '雪がやんで青空に。きらきらまぶしいね。',
+        sky: ['#8fbde8', '#eaf3fa'], mtn: ['#f2f6fa', '#d6e2ec'], ground: ['#f4f8fb', '#e4edf4'], night: 0, sun: [0.8, 0.12, '#ffffff'], clouds: 'soft', road: '#80858d',
+        side: { sugi: 4, house: 2, pole: 2, none: 1 }, weather: 4 },
+      { place: '灯りの町', title: '雪の町に灯りがともる', text: 'あたたかい灯りの中へ。お店はもうすぐ。',
+        sky: ['#1c2448', '#5c5a8c'], mtn: ['#3a4068', '#2c3354'], ground: ['#cfd8e6', '#aab6cc'], night: 0.6, sun: null, moon: true, stars: true, clouds: null, road: '#6a6f78',
+        side: { house: 6, sugi: 2, pole: 2 }, weather: 14 }
+    ] }
+};
+const SEASON_ORDER = ['haru', 'natsu', 'aki', 'fuyu'];
+// 四季めぐり：春 → 夏 → 秋 → 冬 と、景色がつながって移りかわります
+//   ['季節', '名所のキー']  … 名所の画像を背景に走る
+//   ['季節', 番号, '見出し', '文']  … イラストの景色を走る
+const MEGURI = [
+    ['haru', 'kyoto'], ['haru', 'tokyo'], ['natsu', 'fuji'], ['natsu', 'yokohama'],
+    ['aki', 'tsumago'], ['aki', 'nagoya'], ['fuyu', 'shirakawa'], ['fuyu', 'okazaki']
+];
+// 季節を1つ選んだときに、順番にめぐる名所（伝統の風景と、現代の街並みをかわりばんこに）
+const ROUTE = ['kyoto', 'tokyo', 'fuji', 'yokohama', 'tsumago', 'nagoya', 'shirakawa', 'okazaki'];
+// 最後に着くお店（現代の街並みにある居酒屋）の画像。focus … お店の入口が画像の左から何割の位置にあるか
+const GOAL = { name: '街の居酒屋', road: 0.88, focus: 0.51,
+    img: { haru: 'izakaya_haru.webp', natsu: 'izakaya_natsu.webp', aki: 'izakaya_aki.webp', fuyu: 'izakaya_fuyu.webp' } };
+
+// ==================================================================
+// ▼ 名所の背景画像（ジオラマ風の画像を、同じ構図で季節ごとに4枚） ▼
+//   img  … 季節ごとの画像ファイル（このフォルダに置く）。無い画像はイラストの景色で表示します
+//   road … 画像の中の道路の高さ（上から 0〜1）。トラックがここを走ります
+//   title / text … 季節ごとの見出しと文
+//   memo … 季節ごとの「歴史メモ」［年や数字, 説明］
+// ==================================================================
+const SPOTS = {
+  fuji: { name: '富士山', road: 0.92,
+    img:   { haru: 'fuji_haru.webp', natsu: 'fuji_natsu.webp', aki: 'fuji_aki.webp', fuyu: 'fuji_fuyu.webp' },
+    title: { haru: '桜と富士山', natsu: '青空の富士山', aki: '紅葉と富士山', fuyu: '雪化粧の富士山' },
+    text:  { haru: '桜の向こうに、雪をかぶった富士山。', natsu: '湖の向こうに、夏の富士山がくっきり。', aki: '色づいた木々と、富士山の共演。', fuyu: '空気がすんで、いちばんくっきり見える季節。' },
+    memo:  { haru:  ['2013年', '世界文化遺産に登録。正式名は「富士山－信仰の対象と芸術の源泉」。'],
+             natsu: ['3,776m', '日本でいちばん高い山。昔から信仰の山として登られてきた。'],
+             aki:   ['1830年代', '葛飾北斎が『冨嶽三十六景』に、いろいろな場所から見た富士山を描いた。'],
+             fuyu:  ['1707年', '宝永の大噴火。いまのところ、これが最後の噴火。'] } },
+  kyoto: { name: '京都・東山', road: 0.9,
+    img:   { haru: 'kyoto_haru.webp', natsu: 'kyoto_natsu.webp', aki: 'kyoto_aki.webp', fuyu: 'kyoto_fuyu.webp' },
+    title: { haru: '桜の八坂の塔', natsu: '青もみじの東山', aki: '紅葉の京都・東山', fuyu: '雪化粧の八坂の塔' },
+    text:  { haru: '石畳の坂道に、桜がはらはら。古都の春を走るよ。', natsu: '緑の山と、町家の格子がすずしげ。', aki: '五重塔のまわりが、赤や黄色に色づいた。', fuyu: 'うっすら雪化粧。しんとした古都の朝。' },
+    memo:  { haru:  ['1440年', 'いまの八坂の塔（法観寺の五重塔）は、室町幕府の将軍・足利義教が建て直したもの。'],
+             natsu: ['7月', '1か月つづく八坂神社の祇園祭。はじまりは869年の御霊会とされる。'],
+             aki:   ['約46m', '八坂の塔の高さ。東山の町並みのシンボル。'],
+             fuyu:  ['1976年', '産寧坂のあたりが、古い町並みを守る「重要伝統的建造物群保存地区」に選ばれた。'] } },
+  tsumago: { name: '妻籠宿', road: 0.77,
+    img:   { haru: 'tsumago_haru.webp', natsu: 'tsumago_natsu.webp', aki: 'tsumago_aki.webp', fuyu: 'tsumago_fuyu.webp' },
+    title: { haru: '宿場町・妻籠宿の春', natsu: '緑の木曽路', aki: '紅葉の中山道', fuyu: '雪の宿場町' },
+    text:  { haru: '江戸時代の家並みが、今もそのまま残る町。', natsu: '山の緑がまぶしい、木曽の谷をぬけていくよ。', aki: '山が赤や黄色に色づいて、宿場町を包む。', fuyu: '木の家々に雪がつもって、まるで昔話の世界。' },
+    memo:  { haru:  ['江戸時代', '江戸と京都を結ぶ中山道の宿場町として、旅人でにぎわった。'],
+             natsu: ['1976年', '全国で最初に選ばれた「重要伝統的建造物群保存地区」のひとつ。'],
+             aki:   ['三原則', '「売らない・貸さない・こわさない」。住民が力を合わせて町並みを守ってきた。'],
+             fuyu:  ['格子と出梁', '木の格子戸や、2階がせり出した昔ながらの家が並ぶ。'] } },
+  shirakawa: { name: '白川郷', road: 0.87,
+    img:   { haru: 'shirakawa_haru.webp', natsu: 'shirakawa_natsu.webp', aki: 'shirakawa_aki.webp', fuyu: 'shirakawa_fuyu.webp' },
+    title: { haru: '春の白川郷', natsu: '田んぼが青い白川郷', aki: '実りの秋の白川郷', fuyu: '雪の合掌造り' },
+    text:  { haru: '山あいの村に、遅い春がやってきた。', natsu: '青い田んぼと、大きなかやぶき屋根。', aki: '稲刈りが終わって、山は紅葉。', fuyu: '屋根にどっさり雪。白川郷がいちばん白川郷らしい季節。' },
+    memo:  { haru:  ['1995年', '「白川郷・五箇山の合掌造り集落」として世界遺産に登録。'],
+             natsu: ['合掌造り', '手を合わせたような急な屋根は、たくさんの雪を落とすための工夫。'],
+             aki:   ['結（ゆい）', 'かやぶき屋根のふき替えは、村の人たちが力を合わせて行ってきた。'],
+             fuyu:  ['豪雪地帯', '冬は雪が深く積もる。急な屋根が、家を雪の重さから守る。'] } },
+  okazaki: { name: '岡崎城', road: 0.88,
+    img:   { haru: 'okazaki_haru.webp', natsu: 'okazaki_natsu.webp', aki: 'okazaki_aki.webp', fuyu: 'okazaki_fuyu.webp' },
+    title: { haru: '桜の岡崎城', natsu: '夏の岡崎城', aki: '秋の岡崎城', fuyu: '冬の岡崎城' },
+    text:  { haru: '地元・岡崎に帰ってきた！ お店はもうすぐ。', natsu: '地元・岡崎に帰ってきた！ お店はもうすぐ。', aki: '地元・岡崎に帰ってきた！ お店はもうすぐ。', fuyu: '地元・岡崎に帰ってきた！ お店はもうすぐ。' },
+    memo:  { haru:  ['さくら名所', '城のまわりの岡崎公園は「日本さくら名所100選」のひとつ。'],
+             natsu: ['1542年', '徳川家康が、この岡崎城で生まれた。'],
+             aki:   ['八丁味噌', '岡崎城から西へ八丁（約870m）の村で作られたことが名前の由来。'],
+             fuyu:  ['1959年', 'いまの天守が、昔の姿をもとに復元された。'] } },
+  // ---- 現代の街並み ----
+  tokyo: { name: '東京スカイツリー', road: 0.86,
+    img:   { haru: 'tokyo_haru.webp', natsu: 'tokyo_natsu.webp', aki: 'tokyo_aki.webp', fuyu: 'tokyo_fuyu.webp' },
+    title: { haru: '桜と東京スカイツリー', natsu: '夏空の東京スカイツリー', aki: '秋の隅田川', fuyu: '冬の東京スカイツリー' },
+    text:  { haru: '隅田川の桜の向こうに、634mのタワー。', natsu: '川風が気持ちいい、夏の東京。', aki: '川ぞいの木々が色づいて、街もおしゃれに。', fuyu: '澄んだ冬の空に、タワーがくっきり。' },
+    memo:  { haru:  ['2012年', '東京スカイツリーが開業。自立式の電波塔として世界一の高さ。'],
+             natsu: ['1733年', '隅田川花火大会のはじまりとされる「両国の川開き」が行われた。'],
+             aki:   ['634m', '高さは「むさし」。このあたりが昔、武蔵の国だったことから。'],
+             fuyu:  ['1958年', '東京タワー（333m）が完成。スカイツリーができるまで東京の電波を送っていた。'] } },
+  yokohama: { name: '横浜みなとみらい', road: 0.84,
+    img:   { haru: 'yokohama_haru.webp', natsu: 'yokohama_natsu.webp', aki: 'yokohama_aki.webp', fuyu: 'yokohama_fuyu.webp' },
+    title: { haru: '春の港町・横浜', natsu: '夏の横浜港', aki: '秋のみなとみらい', fuyu: '冬のみなとみらい' },
+    text:  { haru: '観覧車と高いビル、桜の港町。', natsu: '青い海と空。港の風が気持ちいい。', aki: '街路樹が色づいて、港町がしっとり。', fuyu: '冷たい空気に、港の景色がきらり。' },
+    memo:  { haru:  ['1859年', '横浜港が開港。ここから外国との貿易がさかんになった。'],
+             natsu: ['1872年', '日本で最初の鉄道が、新橋と横浜のあいだで開業。'],
+             aki:   ['赤レンガ倉庫', '明治の終わりから大正のはじめ（1911年・1913年）に建てられた港の倉庫。'],
+             fuyu:  ['1993年', '横浜ランドマークタワーが開業。高さ296m。'] } },
+  nagoya: { name: '名古屋・久屋大通', road: 0.85,
+    img:   { haru: 'nagoya_haru.webp', natsu: 'nagoya_natsu.webp', aki: 'nagoya_aki.webp', fuyu: 'nagoya_fuyu.webp' },
+    title: { haru: '桜の久屋大通', natsu: '夏の名古屋', aki: '秋の久屋大通', fuyu: '冬の名古屋' },
+    text:  { haru: '愛知に入ったよ。テレビ塔の足もとに桜並木。', natsu: '緑がまぶしい、名古屋のまん中の公園。', aki: 'いちょうや紅葉で、大通りが色とりどり。', fuyu: '冬の名古屋。お店まであと少し！' },
+    memo:  { haru:  ['1954年', '名古屋テレビ塔が完成。日本で最初の集約電波塔。'],
+             natsu: ['1610年', '徳川家康の命令で、名古屋城づくりが始まった。'],
+             aki:   ['名古屋めし', '味噌かつ・ひつまぶし・手羽先。八丁味噌などの豆みそが、名古屋の味を支える。'],
+             fuyu:  ['2022年', 'テレビ塔が、電波塔として初めて国の重要文化財になった。'] } }
+};
+const PHOTO_H = 0.68;   // 名所の画像を、画面の高さの何割で表示するか
+const SPOT_IMG = {};
+Object.entries({ ...SPOTS, goal: GOAL }).forEach(([key, sp]) => {
+    SPOT_IMG[key] = {};
+    Object.entries(sp.img).forEach(([k, file]) => {
+        const im = new Image(); im.ok = false;
+        im.onload = () => { im.ok = true; im.bottomColor = sampleBottom(im); };
+        im.src = file; SPOT_IMG[key][k] = im;
+    });
+});
+function sampleBottom(im) {   // 画像のいちばん下の色（画像の下のすき間をこの色でうめる）
+    try {
+        const c = document.createElement('canvas'); c.width = 16; c.height = 4;
+        const x = c.getContext('2d'); x.drawImage(im, 0, im.naturalHeight * .95, im.naturalWidth, im.naturalHeight * .05, 0, 0, 16, 4);
+        const d = x.getImageData(0, 0, 16, 4).data; let r = 0, g = 0, b = 0;
+        for (let i = 0; i < d.length; i += 4) { r += d[i]; g += d[i + 1]; b += d[i + 2]; }
+        const n = d.length / 4; return `rgb(${r / n | 0},${g / n | 0},${b / n | 0})`;
+    } catch (e) { return '#3b3d3f'; }
+}
+function spotStop(k, spot) {
+    const sp = SPOTS[spot], base = SEASONS[k].stops[k === 'fuyu' ? 1 : 0];
+    return { ...base, s: k, bg: spot, place: SEASONS[k].jp + '｜' + sp.name, title: sp.title[k], text: sp.text[k], memo: sp.memo[k] };
+}
+const ARRIVE = { place: 'ゴール', title: 'お店に到着！', text: '赤ちょうちんの灯る、街のお店に着きました。鮮度そのまま。ここからは、おいしく注ぐ番です。' };
+const STOP_MS = 8000;      // 1つの景色を走る時間（すぎると自動で次へ）
+
+const $ = (id) => document.getElementById(id);
+const rand = (a, b) => a + Math.random() * (b - a);
+const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const LEAF_COLORS = ['#d9452b', '#e8742a', '#f0b42a', '#b8321f'];
+
+let mode = 'meguri';     // 'meguri'（四季めぐり）または 季節のキー
+let honks = 0;
+let pourResult = { text: '7:3' };
+
+function currentSeason() {
+    const m = new Date().getMonth() + 1;
+    return m >= 3 && m <= 5 ? 'haru' : m >= 6 && m <= 8 ? 'natsu' : m >= 9 && m <= 11 ? 'aki' : 'fuyu';
+}
+function buildStops() {
+    let list;
+    if (mode === 'meguri') list = MEGURI.map(([k, i, label, text]) => typeof i === 'string' ? spotStop(k, i)
+        : ({ ...SEASONS[k].stops[i], s: k, place: label + '｜' + SEASONS[k].stops[i].place, text }));
+    else list = ROUTE.map(spot => spotStop(mode, spot));
+    const lastStop = list[list.length - 1], dusk = SEASONS[lastStop.s].stops[2];
+    list.push({ ...dusk, s: lastStop.s, ...ARRIVE, arrive: true, bg: 'goal', memo: null, weather: Math.min(dusk.weather, 6) });
+    return list;
+}
+
+// ---------------- 画面の切り替え ----------------
+function show(name) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === 's-' + name));
+    if (name !== 'drive') Drive.stop();
+    if (name !== 'pour') Pour.stop();
+    if (name !== 'movie' && typeof Movie !== 'undefined') Movie.stop();
+    if (name === 'opening') renderSeasons();
+    if (name === 'drive') Drive.start();
+    if (name === 'pour') Pour.start();
+    if (name === 'cheers') renderCheers();
+}
+document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-go]');
+    if (b) show(b.dataset.go);
+});
+
+// ---------------- 季節えらび ----------------
+function renderSeasons() {   // 景色えらび（オープニングの中の小さなボタン）
+    const now = currentSeason(), icon = { haru: '🌸', natsu: '🎆', aki: '🍁', fuyu: '❄️' };
+    $('seasonList').innerHTML = `<button class="chip-s wide" data-mode="meguri" aria-pressed="${mode === 'meguri'}">🗾 四季めぐり<small>おすすめ</small></button>`
+        + SEASON_ORDER.map(k => `<button class="chip-s" data-mode="${k}" aria-pressed="${k === mode}">${icon[k]} ${SEASONS[k].jp}${k === now ? '<small>いま</small>' : ''}</button>`).join('');
+}
+$('seasonList').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-mode]');
+    if (!b) return;
+    mode = b.dataset.mode;
+    document.querySelectorAll('.chip-s').forEach(c => c.setAttribute('aria-pressed', c.dataset.mode === mode));
+});
+renderSeasons();
+
+// ---------------- 動画 → お店へ向かう旅 ----------------
+const Movie = (() => {
+    const v = $('movie');
+    let going = false, guard = 0;
+    function start() {
+        going = false;
+        show('movie');
+        $('movieCap').classList.remove('show'); $('btnSound').hidden = true;
+        try { v.currentTime = 0; } catch (e) {}
+        v.muted = false;
+        const p = v.play();
+        if (p && p.catch) p.catch(() => {   // 音つきで再生できないときは、音なしで再生
+            v.muted = true; $('btnSound').hidden = false;
+            v.play().catch(() => goJourney());
+        });
+        setTimeout(() => $('movieCap').classList.add('show'), 700);
+        clearTimeout(guard);
+        guard = setTimeout(() => { if (v.paused && !going) goJourney(); }, 4000);   // 動画が読めないときは旅へ
+    }
+    function goJourney() {
+        if (going) return; going = true;
+        clearTimeout(guard);
+        const f = $('flash');
+        f.classList.add('on');   // 動画の最後の光にあわせて、まぶしく光ってから旅へ
+        setTimeout(() => { v.pause(); show('drive'); setTimeout(() => f.classList.remove('on'), 80); }, 420);
+    }
+    v.addEventListener('ended', goJourney);
+    v.addEventListener('error', () => { if ($('s-movie').classList.contains('active')) goJourney(); });
+    v.addEventListener('timeupdate', () => { if (v.duration && v.duration - v.currentTime < 1.6) $('movieCap').classList.remove('show'); });
+    $('btnSkip').addEventListener('click', goJourney);
+    $('btnSound').addEventListener('click', () => { v.muted = false; $('btnSound').hidden = true; });
+    return { start, stop() { v.pause(); } };
+})();
+$('btnStart').addEventListener('click', () => Movie.start());
+
+// ==================================================================
+// ▼ 風景（横から見た道を、トラックが左へ走る） ▼
+//   奥の山・丘・木・道・手前の草花が、ちがう速さで流れて奥行きが出ます。
+//   景色が変わると、新しい季節の木や花が左から入ってきて、色もゆっくり移りかわります。
+// ==================================================================
+const hex = (h) => h[0] === '#' ? [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)] : h.match(/\d+/g).map(Number);
+const mix = (a, b, t) => { const x = hex(a), y = hex(b); return `rgb(${x.map((v, i) => Math.round(v + (y[i] - v) * t)).join(',')})`; };
+function weightedPick(w) {
+    const e = Object.entries(w); let r = Math.random() * e.reduce((a, [, v]) => a + v, 0);
+    for (const [k, v] of e) { if ((r -= v) < 0) return k; }
+    return 'none';
+}
+
+class Scene {
+    constructor(cv) {
+        this.cv = cv; this.ctx = cv.getContext('2d');
+        this.truck = $('shipTruck');
+        this.layers = [
+            { key: 'far', f: 0.32, s: 0.5, objs: [] },
+            { key: 'back', f: 0.62, s: 0.9, objs: [] },
+            { key: 'front', f: 1.45, s: 1.35, objs: [] }
+        ];
+        this.parts = []; this.bursts = []; this.puffs = []; this.clouds = [];
+        this.speed = 0; this.target = 0; this.scroll = 0; this.shopX = null; this.jump = 0; this.t = 0; this.fw = 0; this.puffT = 0;
+        this.cur = null; this.blend = 1;
+        this.photo = null; this.photoOld = null; this.pan = 0; this.spot = null;
+    }
+    resize(w, h) {
+        const d = Math.min(2, window.devicePixelRatio || 1);
+        this.cv.width = Math.round(w * d); this.cv.height = Math.round(h * d);
+        this.ctx.setTransform(d, 0, 0, d, 0, 0);
+        this.W = w; this.H = h;
+        // 縦のレイアウト（画面の高さに対する割合）
+        this.Y = { hz: h * .40, hill: h * .465, far: h * .49, back: h * .535, roadT: h * .545, roadB: h * .645, front: h * .71 };
+        this.U = Math.min(h * 0.078, w * 0.18);
+        this.TW = Math.min(w * 0.5, 240); this.TH = this.TW * 178 / 436;
+        this.stars = Array.from({ length: 60 }, () => [Math.random() * w, Math.random() * this.Y.hz * .85, Math.random() * 1.3 + .3]);
+    }
+    colorsOf(s) { return { sky: s.sky, mtn: s.mtn, ground: s.ground, road: s.road || '#5b5f66', night: s.night }; }
+    setStop(stop, instant) {
+        const to = this.colorsOf(stop);
+        this.from = this.cur ? { ...this.cur } : to;
+        this.to = to; this.blend = instant ? 1 : 0;
+        this.cur = instant ? { ...to } : { ...this.from };
+        this.stop = stop;
+        const n = stop.clouds === 'cumulus' ? 4 : stop.clouds ? 5 : 0;
+        if (instant || !this.clouds.length || n === 0) this.clouds = Array.from({ length: n }, () => this.newCloud(rand(0, this.W)));
+        // 名所の画像（季節が変わると、同じ構図の画像がふわっと切りかわる）
+        const im = stop.bg && SPOT_IMG[stop.bg] ? SPOT_IMG[stop.bg][stop.s] : null;
+        const nextImg = im && im.ok ? im : null;
+        if (nextImg !== (this.photo && this.photo.img)) {
+            if (this.photo) this.photoOld = { ...this.photo };
+            const info = stop.bg === 'goal' ? GOAL : SPOTS[stop.bg];
+            this.photo = nextImg ? { img: nextImg, a: instant ? 1 : 0, road: info.road, focus: info.focus } : null;
+            if (instant) this.photoOld = null;
+        }
+        if ((stop.bg || null) !== this.spot) this.pan = 0;   // 名所が変わったら、画像の右はしから
+        this.spot = stop.bg || null;
+        // お店に着くとき：画像があれば画像のお店の前で、なければイラストのお店の前で止まる
+        this.goalPan = null; this.shopX = null;
+        if (stop.arrive && this.photo) { this.goalPan = this.panFor(this.photo); this.pan = Math.max(0, this.goalPan - 170); }
+        else if (stop.arrive) this.shopX = -this.U * 2.4;
+    }
+    panFor(p) {   // お店の入口が画面のまん中に来る位置
+        const { iw } = this.photoSize(p), range = Math.max(0, iw - this.W);
+        return clamp(range + this.W / 2 - iw * (p.focus || 0.5), 0, range);
+    }
+    photoMix() { return this.photo ? (this.photoOld ? 1 : this.photo.a) : (this.photoOld ? this.photoOld.a : 0); }
+    photoSize(p) {   // 画面の横はばより小さくならないように
+        const r = p.img.naturalWidth / p.img.naturalHeight, ih = Math.max(this.H * (this.photoH || PHOTO_H), this.W / r);
+        return { ih, iw: ih * r };
+    }
+    drawPhoto(p, alpha) {
+        const c = this.ctx, { ih, iw } = this.photoSize(p);
+        const range = Math.max(0, iw - this.W), x = -range + Math.min(range, this.pan);
+        c.globalAlpha = alpha;
+        c.drawImage(p.img, x, 0, iw, ih);
+        c.fillStyle = p.img.bottomColor || '#3b3d3f'; c.fillRect(0, ih - 1, this.W, this.H - ih + 1);
+        c.globalAlpha = 1;
+    }
+    newCloud(x) { return { x, y: rand(this.Y.hz * .1, this.Y.hz * .55), w: rand(50, 110) * (this.stop && this.stop.clouds === 'cumulus' ? 1.5 : 1), v: rand(6, 14), type: this.stop ? this.stop.clouds : 'soft' }; }
+    lerpColors(t) {
+        const a = this.from, b = this.to;
+        this.cur = { sky: [mix(a.sky[0], b.sky[0], t), mix(a.sky[1], b.sky[1], t)], mtn: [mix(a.mtn[0], b.mtn[0], t), mix(a.mtn[1], b.mtn[1], t)],
+            ground: [mix(a.ground[0], b.ground[0], t), mix(a.ground[1], b.ground[1], t)], road: mix(a.road, b.road, t), night: a.night + (b.night - a.night) * t };
+    }
+    spawn(layer, x) {
+        const st = this.stop;
+        let type = layer.key === 'front' ? weightedPick(SEASONS[st.s].front) : weightedPick(st.side);
+        if (layer.key === 'far' && type === 'pole') type = 'none';
+        const gap = layer.key === 'front' ? rand(1.4, 3.2) : layer.key === 'far' ? rand(1.1, 2.6) : rand(0.9, 2.0);
+        return { x, type, v: Math.random(), s: st.s, gap: gap * this.U * layer.s };
+    }
+    prewarm() {
+        this.layers.forEach(L => {
+            L.objs = [];
+            let x = this.W + this.U * 2;
+            while (x > -this.U * 3) { const o = this.spawn(L, x); L.objs.push(o); x -= o.gap; }
+        });
+    }
+    update(dt) {
+        this.t += dt;
+        if (this.blend < 1) { this.blend = Math.min(1, this.blend + dt / 3.2); this.lerpColors(this.blend); }
+        if (this.photo) { this.photo.a = Math.min(1, this.photo.a + dt / 2.4); if (this.photo.a >= 1) this.photoOld = null; }
+        else if (this.photoOld) { this.photoOld.a -= dt / 2.4; if (this.photoOld.a <= 0) this.photoOld = null; }
+        this.pan += this.speed * 0.13 * dt;   // 画像はゆっくり流れる
+        if (this.goalPan != null) this.pan = Math.min(this.pan, this.goalPan);
+        // スピード（お店に着くときは、だんだんゆっくり）
+        if (this.goalPan != null) {
+            const dist = this.goalPan - this.pan;
+            this.target = dist <= 0.3 ? 0 : clamp(dist / 0.13 * 0.9, 0, 150);
+        } else if (this.shopX != null) {
+            const dist = this.W * 0.3 - this.shopX;
+            this.target = dist <= 0.5 ? 0 : clamp(dist / 0.62 * 1.25, 0, 150);
+        } else this.target = this.stop.weather > 40 ? 110 : 150;
+        this.speed += (this.target - this.speed) * Math.min(1, dt * 1.6);
+        if (this.shopX != null) this.shopX = Math.min(this.W * 0.3, this.shopX + this.speed * 0.62 * dt);
+        this.scroll += this.speed * dt;
+        // 流れる木や花（右へ流れて、左から新しいものが入ってくる）
+        this.layers.forEach(L => {
+            L.objs.forEach(o => o.x += this.speed * L.f * dt);
+            L.objs = L.objs.filter(o => o.x < this.W + this.U * 3);
+            let left = L.objs[L.objs.length - 1];
+            while (!left || left.x > -this.U * 3) { const o = this.spawn(L, left ? left.x - left.gap : this.W); L.objs.push(o); left = o; }
+        });
+        this.clouds.forEach(c => { c.x += (this.speed * 0.04 + c.v) * dt; if (c.x > this.W + c.w * 1.2) Object.assign(c, this.newCloud(-c.w * 1.2)); });
+        // 舞うもの
+        const st = this.stop, wt = SEASONS[st.s].weatherType;
+        let n = (st.weather || 0) * dt;
+        while (n > 0) { if (Math.random() < n) this.spawnPart(st.weather > 40 ? 'rain' : (wt === 'rain' ? 'none' : wt)); n -= 1; }
+        this.parts.forEach(p => { p.x += (p.vx + this.speed * 0.5) * dt; p.y += p.vy * dt; p.r += p.vr * dt; p.vx += Math.sin(this.t * 2 + p.ph) * 8 * dt; });
+        this.parts = this.parts.filter(p => p.y < this.H + 20 && p.x < this.W + 30);
+        // 花火
+        if (st.fireworks) { this.fw -= dt; if (this.fw <= 0) { this.fw = rand(0.7, 1.4); this.bursts.push({ x: rand(this.W * .1, this.W * .9), y: rand(this.Y.hz * .25, this.Y.hz * .7), t: 0, c: pick(['#ffd36b', '#ff7a7a', '#8fd3ff', '#c99bff', '#9ff0a8']), n: 34, R: rand(40, 72) }); } }
+        this.bursts.forEach(b => b.t += dt); this.bursts = this.bursts.filter(b => b.t < 1.9);
+        // 排気のけむり
+        this.puffT -= dt;
+        if (this.speed > 20 && this.puffT <= 0) { this.puffT = 0.14; const tr = this.truckRect(); this.puffs.push({ x: tr.x + tr.w * 0.98, y: tr.y + tr.h * 0.86, r: 3, a: .45 }); }
+        this.puffs.forEach(p => { p.x += (40 + this.speed * 0.35) * dt; p.y -= 12 * dt; p.r += 14 * dt; p.a -= 0.5 * dt; });
+        this.puffs = this.puffs.filter(p => p.a > 0);
+        this.jump = Math.max(0, this.jump - dt * 2.4);
+    }
+    spawnPart(type) {
+        if (type === 'none') return;
+        const p = { type, x: rand(-40, this.W), y: rand(-30, this.H * .2), r: rand(0, 6.28), vr: rand(-3, 3), ph: rand(0, 6) };
+        if (type === 'rain') { p.y = rand(-40, this.H * .7); p.vy = rand(700, 950); p.vx = 60; p.len = rand(10, 18); }
+        else if (type === 'snow') { p.vy = rand(35, 80); p.vx = rand(-10, 20); p.s = rand(1.2, 3.4); }
+        else { p.vy = rand(25, 60); p.vx = rand(-10, 30); p.s = type === 'leaf' ? rand(4, 7) : rand(3, 5); p.c = type === 'leaf' ? pick(LEAF_COLORS) : pick(['#f7bfd0', '#fbd6e0', '#f3a6bb']); }
+        this.parts.push(p);
+    }
+    truckRect() {
+        const bob = this.speed > 5 ? Math.sin(this.t * 22) * 0.8 : 0;
+        const jump = this.jump > 0 ? Math.sin(this.jump * Math.PI) * 10 : 0;
+        const pm = this.photoMix(), p = this.photo || this.photoOld;
+        const illus = this.Y.roadB - (this.Y.roadB - this.Y.roadT) * 0.18;
+        const base = pm > 0 && p ? illus + (this.photoSize(p).ih * p.road - illus) * pm : illus;
+        return { x: this.W * 0.52 - this.TW / 2, y: base - this.TH + bob - jump, w: this.TW, h: this.TH, base };
+    }
+    glow(x, y, r, col) { const c = this.ctx, g = c.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, col); g.addColorStop(1, 'rgba(255,190,110,0)'); c.fillStyle = g; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill(); }
+    ridge(x, amp, base, seed, k) { return base - amp * (0.5 + 0.28 * Math.sin(x * 0.011 * k + seed) + 0.16 * Math.sin(x * 0.027 * k + seed * 2) + 0.06 * Math.sin(x * 0.07 * k)); }
+    drawObj(o, x, y, u, lights) {
+        const c = this.ctx, night = this.cur.night;
+        switch (o.type) {
+            case 'sakura': case 'green': case 'momiji': {
+                u *= 0.75 + o.v * 0.55;   // 木ごとに大きさを変える
+                const th = 1.0 * u, tw = 0.1 * u, cr = 0.5 * u;
+                c.fillStyle = '#6b4a32'; c.fillRect(x - tw / 2, y - th, tw, th);
+                const cc = o.type === 'sakura' ? ['#f3a6bb', '#fbd0dc', '#f7bccb'] : o.type === 'green' ? ['#3d8a3a', '#5aa748', '#2f7432']
+                    : [['#c8382a', '#e0602c', '#f0a02a'], ['#e8742a', '#f0b42a', '#d9452b'], ['#b8321f', '#d9452b', '#e8742a']][Math.floor(o.v * 3)];
+                [[0, -th - cr * .3, 1], [-cr * .65, -th + cr * .15, .72], [cr * .65, -th + cr * .1, .76], [0, -th - cr * 1.0, .62]].forEach(([dx, dy, s], k) => {
+                    c.fillStyle = cc[k % 3]; c.beginPath(); c.arc(x + dx, y + dy, cr * s, 0, 7); c.fill();
+                });
+                break;
+            }
+            case 'sugi': {
+                const h = 1.6 * u, w = 0.42 * u;
+                c.fillStyle = '#5a3e2a'; c.fillRect(x - u * .04, y - h * .2, u * .08, h * .2);
+                for (let k = 0; k < 3; k++) {
+                    const y0 = y - h * (0.15 + k * 0.28), ww = w * (1 - k * 0.25);
+                    c.fillStyle = '#2f5a48'; c.beginPath(); c.moveTo(x - ww, y0); c.lineTo(x, y0 - h * .38); c.lineTo(x + ww, y0); c.fill();
+                    c.fillStyle = '#f6f9fc'; c.beginPath(); c.moveTo(x - ww * .55, y0 - h * .17); c.lineTo(x, y0 - h * .38); c.lineTo(x + ww * .55, y0 - h * .17); c.quadraticCurveTo(x, y0 - h * .12, x - ww * .55, y0 - h * .17); c.fill();
+                }
+                break;
+            }
+            case 'nanohana': case 'himawari': {
+                const n = o.type === 'himawari' ? 3 : 7;
+                for (let k = 0; k < n; k++) {
+                    const dx = (k / n - .5) * u * .9, h = u * (o.type === 'himawari' ? .75 : .25) * (0.8 + ((k * 37 + o.v * 10) % 1) * 0.4);
+                    c.strokeStyle = '#4f8a32'; c.lineWidth = Math.max(1, u * .03);
+                    c.beginPath(); c.moveTo(x + dx, y); c.lineTo(x + dx, y - h); c.stroke();
+                    c.fillStyle = o.type === 'himawari' ? '#f7c21c' : '#f4dc2a';
+                    c.beginPath(); c.arc(x + dx, y - h, u * (o.type === 'himawari' ? .12 : .07), 0, 7); c.fill();
+                    if (o.type === 'himawari') { c.fillStyle = '#6b4220'; c.beginPath(); c.arc(x + dx, y - h, u * .05, 0, 7); c.fill(); }
+                }
+                break;
+            }
+            case 'susuki': {
+                for (let k = 0; k < 6; k++) {
+                    const dx = (k / 6 - .5) * u * .7, h = u * (.55 + (k % 3) * .12), bend = u * .18 * (1 + Math.sin(this.t * 2 + k + o.v * 5) * .25);
+                    c.lineWidth = Math.max(1, u * .025);
+                    c.strokeStyle = '#a58a4a'; c.beginPath(); c.moveTo(x + dx, y); c.quadraticCurveTo(x + dx, y - h * .7, x + dx + bend, y - h); c.stroke();
+                    c.strokeStyle = '#efe0b8'; c.lineWidth = Math.max(1.5, u * .06); c.beginPath(); c.moveTo(x + dx + bend * .55, y - h * .9); c.lineTo(x + dx + bend * 1.1, y - h * 1.05); c.stroke();
+                }
+                break;
+            }
+            case 'grass': {
+                c.strokeStyle = o.s === 'aki' ? '#9a8a3e' : '#4e8a36'; c.lineWidth = Math.max(1, u * .035);
+                for (let k = 0; k < 7; k++) { const dx = (k / 7 - .5) * u * .8; c.beginPath(); c.moveTo(x + dx, y); c.quadraticCurveTo(x + dx + u * .05, y - u * .2, x + dx + u * (.1 - k * .02), y - u * (.28 + (k % 3) * .06)); c.stroke(); }
+                break;
+            }
+            case 'mound': {
+                c.fillStyle = '#f7fafd'; c.beginPath(); c.ellipse(x, y, u * .8, u * .22, 0, Math.PI, 0); c.fill();
+                c.fillStyle = 'rgba(180,195,215,.5)'; c.beginPath(); c.ellipse(x + u * .2, y, u * .45, u * .08, 0, Math.PI, 0); c.fill();
+                break;
+            }
+            case 'pole': {
+                c.strokeStyle = '#6a5a4a'; c.lineWidth = Math.max(1, u * .05);
+                c.beginPath(); c.moveTo(x, y); c.lineTo(x, y - u * 1.9); c.moveTo(x - u * .25, y - u * 1.75); c.lineTo(x + u * .25, y - u * 1.75); c.stroke();
+                break;
+            }
+            case 'house': {
+                const w = u * 1.1, h = u * .65, snow = o.s === 'fuyu';
+                c.fillStyle = snow ? '#c9b8a2' : '#d9c7a8'; c.fillRect(x - w / 2, y - h, w, h);
+                c.fillStyle = snow ? '#f7fafc' : '#5a4a42'; c.beginPath(); c.moveTo(x - w * .62, y - h); c.lineTo(x, y - h - u * .42); c.lineTo(x + w * .62, y - h); c.fill();
+                [-.32, .1].forEach(dx => {
+                    const r = { x: x + dx * w, y: y - h * .7, w: w * .18, h: h * .32 };
+                    c.fillStyle = '#4a3a30'; c.fillRect(r.x, r.y, r.w, r.h);
+                    if (night > 0.25) lights.push(() => { c.fillStyle = 'rgba(255,214,140,.95)'; c.fillRect(r.x, r.y, r.w, r.h); this.glow(r.x + r.w / 2, r.y + r.h / 2, r.w * 2.2, 'rgba(255,190,110,.35)'); });
+                });
+                break;
+            }
+        }
+    }
+    drawShop(x, y, u, lights) {
+        const c = this.ctx, w = u * 2.0, h = u * 1.45, x0 = x - w / 2;
+        c.fillStyle = '#f2e6d0'; c.fillRect(x0, y - h, w, h);
+        c.fillStyle = '#3a2a22'; c.fillRect(x0 - u * .06, y - h - u * .12, w + u * .12, u * .14);
+        c.fillStyle = '#1f3a2c'; c.fillRect(x0 + w * .1, y - h + u * .08, w * .8, u * .28);
+        c.fillStyle = '#e6c983'; c.font = `italic 700 ${Math.max(6, u * .17)}px "Playfair Display", serif`; c.textAlign = 'center'; c.textBaseline = 'middle';
+        c.fillText('Ton Galliano', x, y - h + u * .225);
+        const aw = y - h + u * .45, stripes = 9;
+        for (let k = 0; k < stripes; k++) { c.fillStyle = ['#2f6b3f', '#f6efe2', '#b3332b'][k % 3]; c.fillRect(x0 + (w / stripes) * k, aw, w / stripes + .5, u * .18); }
+        const win = { x: x0 + w * .08, y: aw + u * .28, w: w * .5, h: u * .5 };
+        c.fillStyle = '#4a3328'; c.fillRect(win.x, win.y, win.w, win.h);
+        c.fillStyle = '#1f3a2c'; c.fillRect(x0 + w * .66, aw + u * .26, w * .24, y - (aw + u * .26));
+        lights.push(() => {
+            c.fillStyle = 'rgba(255,206,130,.95)'; c.fillRect(win.x + 2, win.y + 2, win.w - 4, win.h - 4);
+            this.glow(win.x + win.w / 2, win.y + win.h / 2, win.w, 'rgba(255,190,110,.4)');
+            this.glow(x, y - h * .5, w * .8, `rgba(255,200,120,${0.12 + this.cur.night * 0.3})`);
+        });
+    }
+    draw() {
+        const c = this.ctx, W = this.W, H = this.H, Y = this.Y, cur = this.cur, st = this.stop;
+        // 空
+        const sky = c.createLinearGradient(0, 0, 0, Y.hz);
+        sky.addColorStop(0, cur.sky[0]); sky.addColorStop(1, cur.sky[1]);
+        c.fillStyle = sky; c.fillRect(0, 0, W, Y.hz + 2);
+        if (st.sun) { const sy = Y.hz * (st.sun[1] + 0.12); this.glow(st.sun[0] * W, sy, 50, 'rgba(255,240,200,.55)'); c.fillStyle = st.sun[2]; c.beginPath(); c.arc(st.sun[0] * W, sy, 16, 0, 7); c.fill(); }
+        this.clouds.forEach(cl => this.drawCloud(cl));
+        // 山（遠いほどゆっくり流れる）
+        [[0, Y.hz + 2, H * .16, 1.3, 0.05, 0.6], [1, Y.hill + 2, H * .07, 3.1, 0.14, 1.6]].forEach(([k, base, amp, seed, f, kk]) => {
+            c.fillStyle = cur.mtn[k]; c.beginPath(); c.moveTo(0, base + 2);
+            for (let x = 0; x <= W + 6; x += 6) c.lineTo(x, this.ridge(x - this.scroll * f, amp, base, seed, kk));
+            c.lineTo(W, base + 2); c.fill();
+        });
+        // 地面
+        const gr = c.createLinearGradient(0, Y.hill, 0, H);
+        gr.addColorStop(0, cur.ground[1]); gr.addColorStop(1, cur.ground[0]);
+        c.fillStyle = gr; c.fillRect(0, Y.hill, W, H - Y.hill);
+        const lights = [];
+        // 道の向こう側（奥の列・手前の列）
+        const [L0, L1, L2] = this.layers;
+        c.globalAlpha = 0.72;   // 遠くの列は少しかすませる
+        L0.objs.forEach(o => this.drawObj(o, o.x, Y.far, this.U * L0.s, lights));
+        c.globalAlpha = 1;
+        L1.objs.forEach(o => this.drawObj(o, o.x, Y.back, this.U * L1.s, lights));
+        if (this.shopX != null) this.drawShop(this.shopX, Y.back, this.U * 1.05, lights);
+        // 道路
+        c.fillStyle = cur.road; c.fillRect(0, Y.roadT, W, Y.roadB - Y.roadT);
+        c.fillStyle = 'rgba(255,255,255,.08)'; c.fillRect(0, Y.roadT, W, (Y.roadB - Y.roadT) * .35);
+        c.fillStyle = 'rgba(244,241,232,.9)'; c.fillRect(0, Y.roadT + 2, W, 2); c.fillRect(0, Y.roadB - 4, W, 2);
+        const mid = (Y.roadT + Y.roadB) / 2, off = this.scroll % 64;
+        for (let x = -64 + off; x < W; x += 64) c.fillRect(x, mid - 1.5, 34, 3);
+        if (st.s === 'fuyu') {
+            c.fillStyle = '#f7fafd';
+            for (let x = -40 + this.scroll % 40; x < W + 40; x += 40) { c.beginPath(); c.ellipse(x, Y.roadT, 26, 5, 0, Math.PI, 0); c.fill(); c.beginPath(); c.ellipse(x + 18, Y.roadB, 26, 4, 0, Math.PI, 0); c.fill(); }
+        }
+        // 名所の画像
+        const pm = this.photoMix();
+        if (this.photoOld) this.drawPhoto(this.photoOld, this.photo ? 1 : this.photoOld.a);
+        if (this.photo) this.drawPhoto(this.photo, this.photo.a);
+        // トラック
+        const tr = this.truckRect();
+        c.fillStyle = 'rgba(0,0,0,.32)'; c.beginPath(); c.ellipse(tr.x + tr.w / 2, tr.base + 1, tr.w * .48, 5, 0, 0, 7); c.fill();
+        this.puffs.forEach(p => { c.fillStyle = `rgba(230,230,230,${p.a})`; c.beginPath(); c.arc(p.x, p.y, p.r, 0, 7); c.fill(); });
+        if (this.truck.complete && this.truck.naturalWidth) c.drawImage(this.truck, tr.x, tr.y, tr.w, tr.h);
+        // 手前の草花
+        if (pm < 1) { c.globalAlpha = 1 - pm; L2.objs.forEach(o => this.drawObj(o, o.x, Y.front, this.U * L2.s, lights)); c.globalAlpha = 1; }
+        // 夜
+        if (cur.night > 0) { c.fillStyle = `rgba(12,14,40,${cur.night * 0.5})`; c.fillRect(0, 0, W, H); }
+        if (st.stars) { c.fillStyle = '#fff'; this.stars.forEach(([x, y, r]) => { c.globalAlpha = cur.night * (0.5 + 0.5 * Math.sin(this.t * 1.7 + x)); c.beginPath(); c.arc(x, y, r, 0, 7); c.fill(); }); c.globalAlpha = 1; }
+        if (st.moon) { this.glow(W * .8, Y.hz * .25, 36, 'rgba(255,250,220,.35)'); c.fillStyle = '#fff6d6'; c.beginPath(); c.arc(W * .8, Y.hz * .25, 12, 0, 7); c.fill(); }
+        lights.forEach(fn => fn());
+        if (cur.night > 0.3) {   // ヘッドライト
+            const hx = tr.x + tr.w * 0.03, hy = tr.y + tr.h * 0.78;
+            const g = c.createLinearGradient(hx, 0, hx - W * .4, 0); g.addColorStop(0, `rgba(255,240,190,${0.45 * cur.night})`); g.addColorStop(1, 'rgba(255,240,190,0)');
+            c.fillStyle = g; c.beginPath(); c.moveTo(hx, hy - 3); c.lineTo(hx - W * .4, hy - 18); c.lineTo(hx - W * .4, hy + 14); c.lineTo(hx, hy + 3); c.fill();
+            this.glow(hx, hy, 10, 'rgba(255,245,210,.9)');
+        }
+        this.bursts.forEach(b => {
+            const a = Math.max(0, 1 - b.t / 1.9), r = b.R * (1 - Math.pow(1 - Math.min(1, b.t / .9), 3));
+            c.fillStyle = b.c; c.globalAlpha = a;
+            for (let k = 0; k < b.n; k++) { const an = k / b.n * 6.283; c.beginPath(); c.arc(b.x + Math.cos(an) * r, b.y + Math.sin(an) * r + b.t * b.t * 12, 2.6, 0, 7); c.fill(); }
+            c.globalAlpha = 1;
+        });
+        // 舞うもの
+        this.parts.forEach(p => {
+            if (p.type === 'rain') { c.strokeStyle = 'rgba(220,232,245,.6)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(p.x, p.y); c.lineTo(p.x - 3, p.y - p.len); c.stroke(); }
+            else if (p.type === 'snow') { c.fillStyle = 'rgba(255,255,255,.95)'; c.beginPath(); c.arc(p.x, p.y, p.s, 0, 7); c.fill(); }
+            else { c.save(); c.translate(p.x, p.y); c.rotate(p.r); c.fillStyle = p.c; c.beginPath(); c.ellipse(0, 0, p.s, p.s * .6, 0, 0, 7); c.fill(); c.restore(); }
+        });
+    }
+    drawCloud(cl) {
+        const c = this.ctx, w = cl.w;
+        c.fillStyle = cl.type === 'dark' ? 'rgba(90,98,108,.95)' : cl.type === 'snowy' ? 'rgba(225,230,238,.95)' : 'rgba(255,255,255,.92)';
+        if (cl.type === 'cumulus') {
+            [[0, 0, .5], [-.35, .15, .35], [.35, .12, .38], [-.1, -.35, .38], [.2, -.55, .3], [-.05, -.75, .22]].forEach(([dx, dy, r]) => { c.beginPath(); c.arc(cl.x + dx * w, cl.y + dy * w * .6, r * w * .6, 0, 7); c.fill(); });
+        } else {
+            [[0, 0, .3], [-.32, .06, .22], [.3, .05, .24], [.08, -.12, .22]].forEach(([dx, dy, r]) => { c.beginPath(); c.ellipse(cl.x + dx * w, cl.y + dy * w, r * w, r * w * .62, 0, 0, 7); c.fill(); });
+        }
+    }
+}
+
+// ---------------- ② 旅：画面の動き ----------------
+const Drive = (() => {
+    const cv = $('sceneCanvas');
+    const scene = new Scene(cv);
+    let running = false, raf = 0, last = 0, stops = [], idx = 0, stopT = 0, introUntil = 0, honkTimer = 0;
+
+    function size() { const r = $('s-drive').getBoundingClientRect(); scene.resize(r.width, r.height); }
+    function setStop(i, instant) {
+        idx = i; stopT = 0;
+        const s = stops[i];
+        scene.setStop(s, instant);
+        $('capBody').innerHTML = `<div class="cap-in">
+            <p class="lab"><span class="num">0${i + 1}</span><span class="place">${s.place}</span></p>
+            <h2 class="jp-phrase">${s.title}</h2>
+            <p class="txt jp-phrase">${s.text}</p>
+            ${s.memo ? `<p class="memo"><span>歴史メモ</span><b>${s.memo[0]}</b><span class="jp-phrase">${s.memo[1]}</span></p>` : ''}</div>`;
+        $('segs').innerHTML = stops.map((_, k) => `<div><i style="width:${k < i ? 100 : 0}%" ${k === i ? 'id="segNow"' : ''}></i></div>`).join('');
+        $('chip').textContent = mode === 'meguri' ? '四季めぐり・' + SEASONS[s.s].jp : SEASONS[s.s].jp + 'の景色';
+        $('btnPrev').disabled = i === 0;
+        const nb = $('btnNext');
+        nb.textContent = s.arrive ? 'お店に入る ›' : '次へ ›';
+        nb.classList.toggle('primary', !!s.arrive);
+    }
+    function frame(t) {
+        if (!running) return;
+        const dt = Math.min(0.05, (t - last) / 1000 || 0); last = t;
+        const s = stops[idx];
+        if (performance.now() > introUntil && !s.arrive) {
+            stopT += dt * 1000;
+            const seg = $('segNow'); if (seg) seg.style.width = Math.min(100, stopT / STOP_MS * 100) + '%';
+            if (stopT >= STOP_MS) next();
+        }
+        const frac = s.arrive ? 1 : (idx + Math.min(1, stopT / STOP_MS)) / (stops.length - 1);
+        $('freshBar').style.width = (frac * 100) + '%'; $('freshDot').style.left = (frac * 100) + '%';
+        scene.update(dt);
+        scene.draw();
+        raf = requestAnimationFrame(frame);
+    }
+    function next() { if (idx < stops.length - 1) setStop(idx + 1); else show('pour'); }
+    function prev() { if (idx > 0) setStop(idx - 1); }
+    $('btnNext').addEventListener('click', next);
+    $('btnPrev').addEventListener('click', prev);
+    // 画面をタップでクラクション
+    cv.addEventListener('pointerdown', (e) => {
+        const r = cv.getBoundingClientRect(), y = e.clientY - r.top, tr = scene.truckRect();
+        if (y > scene.Y.hz * 0.6 && y < scene.H * 0.78) {
+            scene.jump = 1; honks++;
+            const h = $('honk'); h.style.left = (tr.x + tr.w * 0.25) + 'px'; h.style.top = (tr.y - 44) + 'px';
+            h.classList.add('show'); clearTimeout(honkTimer); honkTimer = setTimeout(() => h.classList.remove('show'), 900);
+        }
+    });
+    window.addEventListener('resize', () => { if (running) size(); });
+
+    return {
+        start() {
+            stops = buildStops(); honks = 0;
+            requestAnimationFrame(() => {
+                size();
+                scene.cur = null; scene.clouds = []; scene.parts = []; scene.bursts = []; scene.puffs = []; scene.speed = 90;
+                setStop(0, true);
+                scene.prewarm();
+                const intro = $('intro'); intro.classList.remove('hide');
+                introUntil = performance.now() + 2200;
+                setTimeout(() => intro.classList.add('hide'), 2200);
+                running = true; last = performance.now(); raf = requestAnimationFrame(frame);
+            });
+        },
+        stop() { running = false; cancelAnimationFrame(raf); },
+        lastStop() { return stops[stops.length - 1]; }   // 最後に着いたお店
+    };
+})();
+
+// ==================================================================
+// ▼ ③ 注ぐ：リアル寄りのジョッキ（洗う → 長押しで注ぐ → 長押しで泡をのせる） ▼
+//   ガラスの映りこみ・冷えた水滴・立ちのぼる気泡・きめ細かな泡を描きます。
+// ==================================================================
+class PourView {
+    constructor(cv) {
+        this.cv = cv; this.ctx = cv.getContext('2d');
+        this.b = 0; this.f = 0; this.chill = 0; this.mode = null; this.t = 0; this.shine = 0; this.guide = false;
+        this.bubbles = Array.from({ length: 70 }, () => this.newBubble(true));
+        this.foamDots = Array.from({ length: 170 }, () => ({ u: rand(-1, 1), v: Math.random(), r: rand(.6, 2.4) }));
+        this.drops = Array.from({ length: 75 }, () => ({ u: rand(-.92, .92), v: rand(.05, .97), r: rand(.6, 2.6), slide: Math.random() < .12 ? rand(4, 12) : 0 }));
+        this.water = [];
+        this.bokeh = Array.from({ length: 9 }, () => ({ x: Math.random(), y: rand(.05, .5), r: rand(14, 40), a: rand(.12, .35) }));
+        this.grain = Array.from({ length: 14 }, () => ({ y: Math.random(), a: rand(.03, .09), k: rand(.01, .04), p: rand(0, 6) }));
+    }
+    newBubble(init) { return { u: rand(-.85, .85), y: init ? Math.random() : 0, v: rand(.18, .42), r: rand(.6, 1.6), w: rand(0, 6) }; }
+    resize() {
+        const w = this.cv.clientWidth, h = Math.round(w * 1.0), d = Math.min(2, window.devicePixelRatio || 1);
+        this.cv.style.height = h + 'px';
+        this.cv.width = Math.round(w * d); this.cv.height = Math.round(h * d);
+        this.ctx.setTransform(d, 0, 0, d, 0, 0);
+        this.W = w; this.H = h;
+        const R = w * 0.18;
+        const g = { cx: w * 0.45, R, ry: R * 0.2, gB: h * 0.88 };
+        g.gT = g.gB - R * 2.7; g.bt = R * 0.3; g.inBot = g.gB - g.bt; g.Ri = R - 3.5; g.Hi = g.inBot - g.gT; g.ny = g.gT - R * 0.95;
+        this.g = g;
+    }
+    level(fr) { return this.g.inBot - fr * this.g.Hi; }
+    // 円柱の中身の形（上は奥側の半円、下は手前のカーブ）
+    bodyPath(yTop, yBot, Rr, ry) {
+        const c = this.ctx, cx = this.g.cx;
+        c.beginPath();
+        c.moveTo(cx - Rr, yTop); c.lineTo(cx - Rr, yBot);
+        c.ellipse(cx, yBot, Rr, ry, 0, Math.PI, 0, true);
+        c.lineTo(cx + Rr, yTop);
+        c.ellipse(cx, yTop, Rr, ry, 0, 0, Math.PI, true);
+        c.closePath();
+    }
+    chrome(x0, y0, x1, y1) {
+        const g = this.ctx.createLinearGradient(x0, y0, x1, y1);
+        g.addColorStop(0, '#4b5258'); g.addColorStop(.22, '#c9d0d6'); g.addColorStop(.38, '#ffffff'); g.addColorStop(.55, '#8d959c'); g.addColorStop(.78, '#dfe5ea'); g.addColorStop(1, '#3f454b');
+        return g;
+    }
+    update(dt) {
+        this.t += dt;
+        if (this.mode === 'beer') { this.b = Math.min(1.08, this.b + dt * 0.26); this.f = Math.min(0.5, this.f + dt * 0.045); }
+        if (this.mode === 'foam') { this.f = Math.min(0.7, this.f + dt * 0.19); }
+        if (this.b + this.f > 1.14) this.f = Math.max(0, 1.14 - this.b);
+        this.bubbles.forEach(b => { b.y += b.v * dt * (this.mode === 'beer' ? 1.8 : 1); if (b.y > 1) Object.assign(b, this.newBubble(false)); });
+        this.water.forEach(p => { p.vy += 900 * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.a -= dt * 1.2; });
+        this.water = this.water.filter(p => p.a > 0);
+        this.shine = Math.max(0, this.shine - dt * 0.5);
+    }
+    startWash() {
+        const g = this.g;
+        for (let k = 0; k < 70; k++) this.water.push({ x: g.cx + rand(-g.R, g.R), y: g.gT + rand(-30, g.Hi * .6), vx: rand(-60, 60), vy: rand(-220, 40), r: rand(1, 2.6), a: rand(.6, 1) });
+        this.shine = 1;
+    }
+    draw() {
+        const c = this.ctx, W = this.W, H = this.H, g = this.g, cx = g.cx, R = g.R, ry = g.ry;
+        // 背景：お店のカウンター（暗い店内・ぼけた灯り）
+        const bg = c.createLinearGradient(0, 0, 0, H);
+        bg.addColorStop(0, '#2b1b13'); bg.addColorStop(.6, '#1a100b'); bg.addColorStop(1, '#120a07');
+        c.fillStyle = bg; c.fillRect(0, 0, W, H);
+        this.bokeh.forEach(b => { const gg = c.createRadialGradient(b.x * W, b.y * H, 0, b.x * W, b.y * H, b.r); gg.addColorStop(0, `rgba(255,190,110,${b.a})`); gg.addColorStop(1, 'rgba(255,190,110,0)'); c.fillStyle = gg; c.beginPath(); c.arc(b.x * W, b.y * H, b.r, 0, 7); c.fill(); });
+        // カウンター（木目）
+        const cTop = g.gB - ry * 2.2;
+        const wood = c.createLinearGradient(0, cTop, 0, H);
+        wood.addColorStop(0, '#7a4e2c'); wood.addColorStop(.08, '#5e3a20'); wood.addColorStop(1, '#2e1c10');
+        c.fillStyle = wood; c.fillRect(0, cTop, W, H - cTop);
+        this.grain.forEach(gl => { c.strokeStyle = `rgba(20,10,4,${gl.a})`; c.lineWidth = 1; c.beginPath(); const y0 = cTop + gl.y * (H - cTop); for (let x = 0; x <= W; x += 8) c.lineTo(x, y0 + Math.sin(x * gl.k + gl.p) * 2); c.stroke(); });
+        c.fillStyle = 'rgba(255,220,170,.18)'; c.fillRect(0, cTop, W, 1.5);
+        // ジョッキの影と、カウンターへの映りこみ
+        c.fillStyle = 'rgba(0,0,0,.45)'; c.beginPath(); c.ellipse(cx + 6, g.gB - ry * .4, R * 1.15, ry * 1.1, 0, 0, 7); c.fill();
+        if (this.b > 0.02) { const rg = c.createRadialGradient(cx, g.gB + 6, 2, cx, g.gB + 6, R * 1.4); rg.addColorStop(0, 'rgba(240,170,50,.28)'); rg.addColorStop(1, 'rgba(240,170,50,0)'); c.fillStyle = rg; c.fillRect(cx - R * 1.5, g.gB - 4, R * 3, R); }
+
+        // ビールサーバー（タワー＋コック）
+        const tx = cx + R * 1.55, fy = g.ny - R * 0.42;
+        c.fillStyle = this.chrome(tx - R * .28, 0, tx + R * .28, 0); c.fillRect(tx - R * .28, 0, R * .56, fy + R * .1);
+        c.fillStyle = this.chrome(0, fy - R * .2, 0, fy + R * .2); c.beginPath(); c.roundRect(cx - R * .28, fy - R * .19, tx - cx + R * .28, R * .38, R * .12); c.fill();
+        c.fillStyle = this.chrome(cx - R * .14, 0, cx + R * .14, 0); c.beginPath(); c.moveTo(cx - R * .16, fy + R * .15); c.lineTo(cx + R * .16, fy + R * .15); c.lineTo(cx + R * .09, g.ny); c.lineTo(cx - R * .09, g.ny); c.fill();
+        // レバー（注ぐ：手前へ、泡：奥へ）
+        const ang = this.mode === 'beer' ? -0.42 : this.mode === 'foam' ? 0.42 : 0;
+        c.save(); c.translate(cx + R * .05, fy - R * .18); c.rotate(ang);
+        const lg = c.createLinearGradient(-R * .1, 0, R * .1, 0); lg.addColorStop(0, '#0d0907'); lg.addColorStop(.45, '#4a3a30'); lg.addColorStop(1, '#0d0907');
+        c.fillStyle = lg; c.beginPath(); c.roundRect(-R * .1, -R * 1.05, R * .2, R * 1.0, R * .08); c.fill();
+        c.fillStyle = '#c8a45c'; c.fillRect(-R * .12, -R * .12, R * .24, R * .1);
+        c.restore();
+
+        // ---- 中身 ----
+        const yb = this.level(Math.min(1, this.b)), fTotal = Math.min(1.12, this.b + this.f);
+        const yf = this.level(fTotal), Ri = g.Ri, ryi = ry * (Ri / R);
+        const capY = Math.max(yf, g.gT);   // ふちより上は「泡のドーム」
+        if (this.b > 0.005) {
+            // ビール本体
+            this.bodyPath(yb, g.inBot, Ri, ryi);
+            const bgd = c.createLinearGradient(0, yb, 0, g.inBot);
+            bgd.addColorStop(0, '#f2b631'); bgd.addColorStop(.5, '#e39a16'); bgd.addColorStop(1, '#b8680a');
+            c.fillStyle = bgd; c.fill();
+            // 円柱の陰影（ふちは濃く、中央はすきとおる）
+            const sh = c.createLinearGradient(cx - Ri, 0, cx + Ri, 0);
+            sh.addColorStop(0, 'rgba(90,35,0,.55)'); sh.addColorStop(.18, 'rgba(90,35,0,.1)'); sh.addColorStop(.32, 'rgba(255,236,170,.28)'); sh.addColorStop(.5, 'rgba(255,236,170,0)'); sh.addColorStop(.85, 'rgba(90,35,0,.18)'); sh.addColorStop(1, 'rgba(90,35,0,.6)');
+            c.fillStyle = sh; c.fill();
+            // 立ちのぼる気泡
+            c.save(); c.clip();
+            this.bubbles.forEach(bb => {
+                const y = g.inBot - bb.y * (g.inBot - yb); if (y < yb + 2) return;
+                const x = cx + bb.u * Ri + Math.sin(this.t * 3 + bb.w) * 1.2;
+                c.fillStyle = 'rgba(255,248,220,.75)'; c.beginPath(); c.arc(x, y, bb.r, 0, 7); c.fill();
+            });
+            if (this.mode === 'beer') { // 注いでいるときの、うずまく細かい泡
+                for (let k = 0; k < 40; k++) { const x = cx + rand(-.5, .5) * Ri, y = yb + rand(0, (g.inBot - yb) * .6); c.fillStyle = 'rgba(255,240,200,.25)'; c.beginPath(); c.arc(x, y, rand(.5, 1.6), 0, 7); c.fill(); }
+            }
+            c.restore();
+            if (this.f < 0.01) { c.fillStyle = 'rgba(250,205,100,.95)'; c.beginPath(); c.ellipse(cx, yb, Ri, ryi, 0, 0, 7); c.fill(); }
+        }
+        if (this.f > 0.005 && this.b > 0.005) {
+            // 泡（クリーム色・きめ細かい）
+            const fy0 = Math.min(yb, g.inBot);
+            this.bodyPath(capY, fy0, Ri, ryi);
+            const fg = c.createLinearGradient(cx - Ri, 0, cx + Ri, 0);
+            fg.addColorStop(0, '#d6c7a6'); fg.addColorStop(.25, '#f7efdc'); fg.addColorStop(.45, '#fffaf0'); fg.addColorStop(.8, '#eee3c9'); fg.addColorStop(1, '#cdbd9a');
+            c.fillStyle = fg; c.fill();
+            c.save(); c.clip();
+            const fh = fy0 - capY;
+            this.foamDots.forEach(d => { const x = cx + d.u * Ri, y = capY + d.v * (fh + ryi); c.strokeStyle = 'rgba(170,150,115,.35)'; c.lineWidth = .7; c.beginPath(); c.arc(x, y, d.r, 0, 7); c.stroke(); });
+            const bd = c.createLinearGradient(0, fy0 - 8, 0, fy0 + ryi); bd.addColorStop(0, 'rgba(240,190,90,0)'); bd.addColorStop(1, 'rgba(240,190,90,.75)');
+            c.fillStyle = bd; c.fillRect(cx - Ri, fy0 - 8, Ri * 2, 8 + ryi);
+            c.restore();
+            // 泡の上の面（ふちを越えたらドーム）
+            const dome = Math.max(0, g.gT - yf);
+            const tg = c.createRadialGradient(cx - Ri * .3, capY - dome * .6 - ryi * .4, 2, cx, capY, Ri * 1.1);
+            tg.addColorStop(0, '#ffffff'); tg.addColorStop(.6, '#fbf4e4'); tg.addColorStop(1, '#e3d5b6');
+            c.fillStyle = tg; c.beginPath();
+            if (dome > 0.5) { c.moveTo(cx - R * 1.02, g.gT); c.bezierCurveTo(cx - R * 1.04, g.gT - dome * 1.1 - ryi, cx + R * 1.04, g.gT - dome * 1.1 - ryi, cx + R * 1.02, g.gT); c.ellipse(cx, g.gT, R * 1.02, ryi, 0, 0, Math.PI, false); }
+            else c.ellipse(cx, capY, Ri, ryi, 0, 0, 7);
+            c.fill();
+            // あふれた泡のしずく
+            if (this.b + this.f > 1.07) {
+                const len = clamp((this.b + this.f - 1.07) * 900, 0, R * 1.6);
+                c.fillStyle = '#f7efdc';
+                [[-1, 0.0], [1, 0.3], [-1, 0.55]].forEach(([side, k]) => {
+                    const x = cx + side * (R + 1), L = len * (1 - k * .5);
+                    c.beginPath(); c.moveTo(x - 4, g.gT); c.quadraticCurveTo(x - 3 * side, g.gT + L * .7, x, g.gT + L); c.quadraticCurveTo(x + 4 * side, g.gT + L * .6, x + 4, g.gT); c.fill();
+                });
+            }
+        }
+
+        // ---- ガラス ----
+        this.bodyPath(g.gT, g.gB - ry, R, ry);
+        c.fillStyle = 'rgba(210,230,245,.07)'; c.fill();
+        if (this.chill > 0) { c.fillStyle = `rgba(235,245,252,${0.13 * this.chill})`; c.fill(); }  // 冷えた曇り
+        // 厚い底
+        c.beginPath(); c.ellipse(cx, g.gB - ry, R, ry, 0, 0, 7); c.fillStyle = this.b > 0.01 ? 'rgba(220,150,40,.35)' : 'rgba(255,255,255,.12)'; c.fill();
+        c.fillStyle = 'rgba(255,255,255,.1)'; c.fillRect(cx - R, g.inBot, R * 2, g.gB - ry - g.inBot);
+        // 縦の映りこみ
+        const hl = c.createLinearGradient(cx - R, 0, cx + R, 0);
+        hl.addColorStop(0, 'rgba(255,255,255,.35)'); hl.addColorStop(.06, 'rgba(255,255,255,.05)'); hl.addColorStop(.16, 'rgba(255,255,255,.0)');
+        hl.addColorStop(.2, 'rgba(255,255,255,.55)'); hl.addColorStop(.26, 'rgba(255,255,255,.08)'); hl.addColorStop(.8, 'rgba(255,255,255,0)'); hl.addColorStop(.86, 'rgba(255,255,255,.22)'); hl.addColorStop(.9, 'rgba(255,255,255,0)'); hl.addColorStop(1, 'rgba(255,255,255,.3)');
+        c.fillStyle = hl; c.fillRect(cx - R, g.gT, R * 2, g.gB - ry - g.gT);
+        // 水滴（冷えると出てくる）
+        if (this.chill > 0) {
+            c.globalAlpha = this.chill;
+            this.drops.forEach(d => {
+                const x = cx + d.u * R, y0 = g.gT + d.v * (g.gB - ry - g.gT) + (d.slide ? (this.t * d.slide) % 30 : 0);
+                if (y0 > g.gB - ry) return;
+                const dg = c.createRadialGradient(x - d.r * .3, y0 - d.r * .3, 0, x, y0, d.r);
+                dg.addColorStop(0, 'rgba(255,255,255,.95)'); dg.addColorStop(.35, 'rgba(255,255,255,.25)'); dg.addColorStop(1, 'rgba(255,255,255,.55)');
+                c.fillStyle = dg; c.beginPath(); c.arc(x, y0, d.r, 0, 7); c.fill();
+            });
+            c.globalAlpha = 1;
+        }
+        // 輪郭
+        c.strokeStyle = 'rgba(255,255,255,.4)'; c.lineWidth = 1.3;
+        c.beginPath(); c.moveTo(cx - R, g.gT); c.lineTo(cx - R, g.gB - ry); c.ellipse(cx, g.gB - ry, R, ry, 0, Math.PI, 0, true); c.lineTo(cx + R, g.gT); c.stroke();
+        c.strokeStyle = 'rgba(255,255,255,.6)'; c.lineWidth = 1.6; c.beginPath();
+        if (this.b + this.f > 1.0 && this.f > 0.02) c.ellipse(cx, g.gT, R, ry, 0, 0, Math.PI, false); else c.ellipse(cx, g.gT, R, ry, 0, 0, 7);
+        c.stroke();
+        // 取っ手（厚いガラス）
+        const hx = cx + R, hy1 = g.gT + R * .45, hy2 = g.gB - ry - R * .55;
+        c.lineCap = 'round';
+        c.strokeStyle = 'rgba(200,220,235,.22)'; c.lineWidth = R * .26;
+        c.beginPath(); c.moveTo(hx - 2, hy1); c.bezierCurveTo(hx + R * .85, hy1 - R * .05, hx + R * .85, hy2 + R * .05, hx - 2, hy2); c.stroke();
+        c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = 1.6;
+        c.beginPath(); c.moveTo(hx, hy1 - R * .1); c.bezierCurveTo(hx + R * .95, hy1 - R * .15, hx + R * .95, hy2 + R * .15, hx, hy2 + R * .1); c.stroke();
+        c.strokeStyle = 'rgba(255,255,255,.25)'; c.lineWidth = 1;
+        c.beginPath(); c.moveTo(hx, hy1 + R * .12); c.bezierCurveTo(hx + R * .6, hy1 + R * .1, hx + R * .6, hy2 - R * .1, hx, hy2 - R * .12); c.stroke();
+        c.lineCap = 'butt';
+
+        // ---- 注ぐ流れ ----
+        if (this.mode) {
+            const top = g.ny, bot = Math.max(top + 4, this.b > 0.005 ? capY : g.inBot) + 2;
+            const wob = Math.sin(this.t * 40) * .6;
+            const sw = this.mode === 'beer' ? R * .085 : R * .13;
+            const sg = c.createLinearGradient(cx - sw, 0, cx + sw, 0);
+            if (this.mode === 'beer') { sg.addColorStop(0, 'rgba(190,110,10,.9)'); sg.addColorStop(.4, 'rgba(255,215,120,.95)'); sg.addColorStop(1, 'rgba(200,120,15,.9)'); }
+            else { sg.addColorStop(0, 'rgba(225,215,195,.85)'); sg.addColorStop(.45, 'rgba(255,253,245,.95)'); sg.addColorStop(1, 'rgba(225,215,195,.85)'); }
+            c.fillStyle = sg; c.beginPath(); c.moveTo(cx - sw * .8, top); c.lineTo(cx + sw * .8, top); c.lineTo(cx + sw * .5 + wob, bot); c.lineTo(cx - sw * .5 + wob, bot); c.fill();
+            for (let k = 0; k < 8; k++) { c.fillStyle = 'rgba(255,248,230,.8)'; c.beginPath(); c.arc(cx + rand(-R * .3, R * .3), bot + rand(-3, 2), rand(1, 2.6), 0, 7); c.fill(); }
+        }
+        // 洗う：水しぶき と きらめき
+        this.water.forEach(p => { c.fillStyle = `rgba(190,225,250,${p.a})`; c.beginPath(); c.arc(p.x, p.y, p.r, 0, 7); c.fill(); });
+        if (this.shine > 0) {
+            c.save(); c.globalAlpha = Math.sin(this.shine * Math.PI);
+            [[cx - R * .75, g.gT + R * .4, 9], [cx + R * .6, g.gT + R * 1.4, 7], [cx - R * .2, g.gT + R * 2.1, 6]].forEach(([x, y, s]) => {
+                c.fillStyle = '#fffbe8'; c.beginPath(); c.moveTo(x, y - s); c.lineTo(x + s * .25, y - s * .25); c.lineTo(x + s, y); c.lineTo(x + s * .25, y + s * .25); c.lineTo(x, y + s); c.lineTo(x - s * .25, y + s * .25); c.lineTo(x - s, y); c.lineTo(x - s * .25, y - s * .25); c.fill();
+            });
+            c.restore();
+        }
+        // 目安（ビール7・泡3）
+        if (this.guide) {
+            const y7 = this.level(0.7), y10 = this.level(1.0), gx = cx - R - 8;
+            c.strokeStyle = 'rgba(240,195,90,.6)'; c.lineWidth = 1;
+            c.beginPath(); c.moveTo(gx, y10); c.lineTo(gx, g.inBot); c.moveTo(gx - 5, y7); c.lineTo(gx + 3, y7); c.moveTo(gx - 5, y10); c.lineTo(gx + 3, y10); c.moveTo(gx - 5, g.inBot); c.lineTo(gx + 3, g.inBot); c.stroke();
+            c.fillStyle = 'rgba(240,195,90,.95)'; c.font = '11px "Zen Old Mincho", serif'; c.textAlign = 'right'; c.textBaseline = 'middle';
+            c.fillText('ビール 7', gx - 7, (y7 + g.inBot) / 2);
+            c.fillText('泡 3', gx - 7, (y7 + y10) / 2);
+        }
+    }
+}
+
+const Pour = (() => {
+    const cv = $('pourCanvas');
+    const view = new PourView(cv);
+    let running = false, raf = 0, last = 0;
+
+    function loop(t) {
+        if (!running) return;
+        const dt = Math.min(0.05, (t - last) / 1000 || 0); last = t;
+        view.update(dt); view.draw();
+        const b = Math.min(1, view.b), f = Math.max(0, Math.min(1.12 - b, view.f));
+        const tot = b + f, r = tot ? Math.round(b / tot * 10) : 0;
+        $('gauge').textContent = tot > 0.02 ? `ビール ${r} ： 泡 ${10 - r}` : 'からっぽ';
+        raf = requestAnimationFrame(loop);
+    }
+    function setStep(n) {
+        [...$('pourSteps').children].forEach((el, i) => { el.className = i + 1 < n ? 'done' : i + 1 === n ? 'on' : ''; });
+        const A = $('pourActions'), M = $('pourMsg');
+        if (n === 1) {
+            M.textContent = 'まずは、ジョッキをきれいに洗って冷やそう。';
+            A.innerHTML = '<button class="btn-vino" id="pWash">ジョッキを洗って冷やす</button>';
+            $('pWash').onclick = wash;
+        } else if (n === 2) {
+            M.innerHTML = '長押しでビールを注ごう。<br><span style="color:var(--gold)">「ビール 7」</span>のあたりが目安。';
+            A.innerHTML = '<button class="btn-vino hold-btn" id="pHold">長押しで注ぐ</button><div class="sub-row" id="pSub"></div>';
+            bindHold($('pHold'), 'beer');
+        } else if (n === 3) {
+            M.innerHTML = 'レバーを奥に倒して、<br>きめ細かな泡をふちまでのせよう！';
+            A.innerHTML = '<button class="btn-vino hold-btn" id="pHold">長押しで泡をのせる</button><div class="sub-row" id="pSub"></div>';
+            bindHold($('pHold'), 'foam');
+        }
+    }
+    function wash() {
+        $('pWash').disabled = true;
+        view.startWash();
+        $('pourMsg').textContent = 'しゃーっ… ピカピカに洗って、キンキンに冷やすよ。';
+        const t0 = performance.now() + 500;
+        const chillUp = () => { view.chill = clamp((performance.now() - t0) / 1600, 0, 1); if (view.chill < 1 && running) requestAnimationFrame(chillUp); };
+        requestAnimationFrame(chillUp);
+        setTimeout(() => { if (!running) return; view.guide = true; setStep(2); }, 2300);
+    }
+    function bindHold(btn, kind) {
+        const startH = (e) => { e.preventDefault(); try { btn.setPointerCapture(e.pointerId); } catch (_) {} view.mode = kind; btn.classList.add('holding'); };
+        const endH = () => { if (view.mode !== kind) return; view.mode = null; btn.classList.remove('holding'); afterRelease(kind); };
+        btn.addEventListener('pointerdown', startH);
+        ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => btn.addEventListener(ev, endH));
+        btn.addEventListener('contextmenu', e => e.preventDefault());
+    }
+    function afterRelease(kind) {
+        const sub = $('pSub'), b = view.b;
+        if (kind === 'beer' && b > 0.2) {
+            $('pourMsg').innerHTML = b > 0.85 ? 'たっぷり注いだね！<br>泡をのせる場所、のこってるかな？' : b < 0.55 ? 'もう少し注いでもいいかも。<br>（もう一度長押しで追加）' : 'いい感じ！ 次は泡の番。';
+            sub.innerHTML = '<button class="btn-ghost" id="pToFoam">泡をのせる ›</button>';
+            $('pToFoam').onclick = () => setStep(3);
+        }
+        if (kind === 'foam' && view.f > 0.05) {
+            sub.innerHTML = '<button class="btn-ghost" id="pDone">できあがり ›</button>';
+            $('pDone').onclick = judge;
+        }
+    }
+    function judge() {
+        const b = Math.min(1, view.b), f = Math.max(0, Math.min(1.12 - b, view.f)), total = b + f, ratio = total ? b / total : 0;
+        const r7 = Math.round(ratio * 10);
+        pourResult = { text: `${r7}:${10 - r7}` };
+        let msg;
+        if (view.b + view.f > 1.1) msg = 'あふれちゃった！<br>でも、勢いのある元気な一杯。';
+        else if (total < 0.88) msg = 'ちょっと少なめ。<br>ふちまで注ぐと、もっとおいしそう！';
+        else if (ratio > 0.8) msg = '泡が少なめ。<br>泡はビールのフタ。香りをとじこめます。';
+        else if (ratio < 0.6) msg = '泡が多め！<br>ふわふわのやさしい口当たりに。';
+        else msg = 'お見事！<br><span style="color:var(--gold)">ビール7：泡3</span>の黄金比です。';
+        [...$('pourSteps').children].forEach(el => el.className = 'done');
+        view.guide = false; view.shine = 1;
+        $('pourMsg').innerHTML = msg;
+        $('pourActions').innerHTML = '<button class="btn-vino" id="pCheers">乾杯する ›</button><div class="sub-row"><button class="btn-ghost" id="pRetry">注ぎなおす</button></div>';
+        $('pRetry').onclick = retry;
+        $('pCheers').onclick = () => { snapGlass(); show('cheers'); };
+    }
+    function snapGlass() {   // 乾杯カード用に、ジョッキのまわりを切り取る
+        const g = view.g, d = cv.width / view.W;
+        view.guide = false; view.shine = 0; view.mode = null; view.draw();
+        const x = (g.cx - g.R * 1.45) * d, y = (g.gT - g.R * 1.0) * d, w = g.R * 3.1 * d, h = (g.gB - g.gT + g.R * 1.15) * d;
+        const o = document.createElement('canvas'); o.width = Math.round(w); o.height = Math.round(h);
+        const oc = o.getContext('2d');
+        oc.drawImage(cv, x, y, w, h, 0, 0, o.width, o.height);
+        oc.globalCompositeOperation = 'destination-in';   // まわりの背景をふんわり消す
+        const m = oc.createRadialGradient(o.width / 2, o.height * .55, o.width * .28, o.width / 2, o.height * .55, o.width * .62);
+        m.addColorStop(0, '#000'); m.addColorStop(1, 'rgba(0,0,0,0)');
+        oc.fillStyle = m; oc.fillRect(0, 0, o.width, o.height);
+        $('chGlass').src = o.toDataURL('image/png');
+    }
+    function retry() { view.b = 0; view.f = 0; view.mode = null; view.guide = true; view.shine = 0; setStep(2); }
+    window.addEventListener('resize', () => { if (running) view.resize(); });
+    return {
+        start() {
+            view.b = 0; view.f = 0; view.mode = null; view.chill = 0; view.guide = false; view.water = []; view.shine = 0;
+            running = true;
+            requestAnimationFrame(() => { view.resize(); setStep(1); last = performance.now(); raf = requestAnimationFrame(loop); });
+        },
+        stop() { running = false; cancelAnimationFrame(raf); }
+    };
+})();
+
+// ---------------- ④ 乾杯 ----------------
+function renderCheers() {
+    const last = Drive.lastStop() || buildStops().pop();
+    const key = mode === 'meguri' ? null : mode;
+    $('chIt').textContent = key ? SEASONS[key].it : 'Quattro Stagioni';
+    $('chTitle').textContent = key ? SEASONS[key].jp + 'のドライブの一杯' : '四季めぐりの一杯';
+    $('chSeason').textContent = key ? SEASONS[key].jp : '四季';
+    $('chHonk').textContent = honks;
+    $('chRatio').textContent = pourResult.text;
+    $('chMsg').innerHTML = `マルト水谷から、工場出荷2〜3日以内の<br>新鮮な速達生ビールが、あなたのジョッキへ。<br>${key ? SEASONS[key].msg : '春夏秋冬を走りぬけた一杯で、乾杯！'}`;
+    // 走ってきた景色を、1枚の絵はがきに
+    requestAnimationFrame(() => {
+        const cv = $('chScene'), w = cv.clientWidth, h = Math.round(w * 0.56);
+        cv.style.height = h + 'px';
+        const sc = new Scene(cv);
+        sc.resize(w, h); sc.photoH = 1;
+        sc.Y = { hz: h * .4, hill: h * .48, far: h * .55, back: h * .66, roadT: h * .67, roadB: h * .82, front: h * .97 };
+        sc.U = h * 0.15; sc.TW = w * 0.4; sc.TH = sc.TW * 178 / 436;
+        const stop = { ...last, arrive: false };
+        sc.setStop(stop, true); sc.prewarm(); sc.speed = 0;
+        if (sc.photo) sc.pan = sc.panFor(sc.photo);   // お店が絵はがきのまん中に来るように
+        const wt = SEASONS[stop.s].weatherType;
+        for (let k = 0; k < 40; k++) sc.spawnPart(stop.weather > 40 ? 'rain' : wt === 'rain' ? 'none' : wt);
+        sc.parts.forEach(p => p.y = rand(0, h));
+        if (stop.fireworks) for (let k = 0; k < 3; k++) sc.bursts.push({ x: rand(w * .15, w * .85), y: rand(h * .1, h * .3), t: .8, c: pick(['#ffd36b', '#ff7a7a', '#8fd3ff']), n: 30, R: rand(28, 40) });
+        const tr = sc.truckRect.bind(sc);
+        sc.truckRect = () => ({ ...tr(), x: w * 0.12 });
+        sc.draw();
+    });
+}
+})();
+</script>
+</body>
+</html>
