@@ -20,7 +20,10 @@
     --vino: #e5322d; --oro: #ffc53d; --inchiostro: #1d1b22;   /* 旧デザインの名前（JSの文字色で使用） */
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body { margin: 0; height: 100%; }
+html, body { margin: 0; height: 100%; overscroll-behavior: none; touch-action: manipulation; -webkit-text-size-adjust: 100%; }
+body { position: fixed; inset: 0; }
+#s-drive, #s-movie { touch-action: none; }
+img, canvas { -webkit-user-drag: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 body { background: var(--night); color: #fff; font-family: 'Zen Kaku Gothic New', 'Hiragino Sans', 'Yu Gothic', sans-serif; font-weight: 500; overflow: hidden; height: 100dvh; }
 button { font-family: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
 .num { font-family: 'Oswald', sans-serif; }
@@ -52,23 +55,23 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
    ================================================================== */
 #s-opening { padding: 0; justify-content: flex-start; }
 .hero { position: relative; width: 100%; min-height: 100dvh; flex: none; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; padding: 0 20px 92px; }
-.hero > .hero-bg { position: absolute; z-index: 0; left: 0; right: 0; top: 0; height: 66%; overflow: hidden; background: 62% 100%/cover no-repeat;
+.hero > .hero-bg { position: absolute; z-index: 0; left: 0; right: 0; top: 0; height: 58%; overflow: hidden; background: 62% 100%/cover no-repeat;
     -webkit-mask-image: linear-gradient(#000 62%, rgba(0,0,0,.6) 80%, transparent); mask-image: linear-gradient(#000 62%, rgba(0,0,0,.6) 80%, transparent); }   /* 景色と文字の境目を、ふわっと */
-.hero-bg canvas { position: absolute; bottom: 14.5%; width: 46%; left: -50%; animation: heroDrive 6s linear infinite; filter: drop-shadow(0 8px 6px rgba(0,0,0,.45)); }
+.hero-bg canvas { position: absolute; bottom: 21%; width: 40%; left: -50%; animation: heroDrive 6s linear infinite; filter: drop-shadow(0 8px 6px rgba(0,0,0,.45)); }
 @keyframes heroDrive { from { left: -50%; } to { left: 105%; } }
 .hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(7,8,15,.5) 0%, rgba(7,8,15,0) 14%, rgba(7,8,15,0) 50%, rgba(7,8,15,.85) 64%, rgba(7,8,15,.95) 85%, var(--night)); }
 .hero > * { position: relative; z-index: 1; }
 .hero-badge { position: absolute; top: max(16px, env(safe-area-inset-top)); left: 16px; display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 900; letter-spacing: .2em; }
 .hero-badge .stamp-red { width: 46px; height: 46px; font-family: 'Zen Kaku Gothic New', sans-serif; font-weight: 900; font-size: 15px; letter-spacing: -.02em; background: rgba(255,255,255,.95); transform: rotate(-12deg); }
-.hero-kicker { margin: 0; font-size: 14px; font-weight: 900; letter-spacing: .3em; color: var(--fresh); text-shadow: 0 2px 10px rgba(0,0,0,.6); }
-.hero-title { margin: 6px 0 0; font-family: 'Dela Gothic One', sans-serif; font-weight: 400; font-size: 54px; line-height: 1.12; letter-spacing: .02em; text-shadow: 0 2px 0 rgba(0,0,0,.5), 0 4px 24px rgba(0,0,0,.8); }
+.hero-kicker { margin: 0; font-size: 12px; font-weight: 900; letter-spacing: .3em; color: var(--fresh); text-shadow: 0 2px 10px rgba(0,0,0,.6); }
+.hero-title { margin: 6px 0 0; font-family: 'Dela Gothic One', sans-serif; font-weight: 400; font-size: 42px; line-height: 1.1; letter-spacing: .02em; text-shadow: 0 2px 0 rgba(0,0,0,.5), 0 4px 24px rgba(0,0,0,.8); }
 .hero-title .g { color: var(--gold); -webkit-text-stroke: 1px #7a3a00; text-shadow: 0 3px 0 #7a3a00, 0 0 28px rgba(0,0,0,.9); }
-.hero-days { display: flex; align-items: flex-end; gap: 10px; margin: 16px 0 4px; }
-.hero-days .big { font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 76px; line-height: .85; color: #fff; text-shadow: 0 0 30px rgba(255,197,61,.6); }
-.hero-days .big small { font-size: 40px; }
-.hero-days .lab { font-size: 15px; font-weight: 900; line-height: 1.45; padding-bottom: 4px; }
-.hero-days .lab b { display: block; font-size: 22px; color: var(--gold); }
-.hero-lead { margin: 6px 0 0; font-size: 15px; line-height: 1.8; color: #eef0ff; }
+.hero-days { display: flex; align-items: flex-end; gap: 8px; margin: 8px 0 2px; }
+.hero-days .big { font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 56px; line-height: .85; color: #fff; text-shadow: 0 0 30px rgba(255,197,61,.6); }
+.hero-days .big small { font-size: 30px; }
+.hero-days .lab { font-size: 13px; font-weight: 900; line-height: 1.4; padding-bottom: 2px; }
+.hero-days .lab b { display: block; font-size: 18px; color: var(--gold); }
+.hero-lead { margin: 6px 0 0; font-size: 13.5px; line-height: 1.7; color: #eef0ff; }
 .scroll-hint { margin-top: 18px; font-size: 12px; letter-spacing: .25em; color: rgba(255,255,255,.75); text-align: center; animation: bob 1.6s ease-in-out infinite; }
 @keyframes bob { 50% { transform: translateY(5px); } }
 .h-in { opacity: 0; animation: hIn .9s cubic-bezier(.2,.8,.3,1) var(--d, 0s) forwards; }
@@ -105,7 +108,7 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
 @keyframes stampIn2 { from { transform: rotate(-6deg) scale(1.6); } to { transform: rotate(-6deg) scale(1); opacity: .9; } }
 .op-start { position: absolute; left: 0; right: 0; bottom: 0; z-index: 5; padding: 14px 16px max(14px, env(safe-area-inset-bottom)); }
 #s-opening { overflow: hidden; }
-.hero { height: 100%; min-height: 0; padding-bottom: 120px; }
+.hero { height: 100%; min-height: 0; padding-bottom: 104px; }
 /* アンケート・季節えらび */
 .qa { width: 100%; padding: 8px 4px 20px; }
 .qa-kicker { margin: 0; font-size: 12px; font-weight: 900; letter-spacing: .3em; color: var(--fresh); text-align: center; }
@@ -208,12 +211,16 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
 .intro .s { font-size: 15px; font-weight: 700; letter-spacing: .1em; color: var(--gold2); margin-top: 10px; line-height: 1.9; }
 
 /* ▼ 3. 注ぐ ▼ */
-#s-pour { padding-top: max(12px, env(safe-area-inset-top)); }
+#s-pour { padding: max(8px, env(safe-area-inset-top)) 14px max(8px, env(safe-area-inset-bottom)); overflow: hidden; }
+#s-pour .qa-kicker { display: none; }
+#s-pour .btn-vino { padding: 13px 10px; font-size: 16px; }
+#s-pour .sub-row { margin-top: 6px; }
+#s-pour .btn-ghost { padding: 8px 14px; }
 .pour-wrap { width: 100%; max-width: 420px; margin: auto 0; text-align: center; }
-.pour-title { margin: 2px 0 0; font-family: 'Dela Gothic One', sans-serif; font-weight: 400; font-size: 25px; letter-spacing: .04em; }
+.pour-title { margin: 0; font-family: 'Dela Gothic One', sans-serif; font-weight: 400; font-size: 21px; letter-spacing: .04em; }
 .pour-title span { color: var(--gold); }
-.pour-sub { margin: 4px 0 0; font-size: 13px; font-weight: 700; color: #c9cde0; }
-.steps { list-style: none; display: flex; justify-content: center; align-items: center; margin: 12px 0 10px; padding: 0; }
+.pour-sub { margin: 2px 0 0; font-size: 12px; font-weight: 700; color: #c9cde0; }
+.steps { list-style: none; display: flex; justify-content: center; align-items: center; margin: 8px 0 8px; padding: 0; }
 .steps li { display: flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 700; color: #8f94a8; }
 .steps li + li::before { content: ''; width: 18px; height: 2px; margin: 0 6px; background: rgba(255,255,255,.2); border-radius: 2px; }
 .steps li b { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-family: 'Oswald', sans-serif; font-size: 12px; border: 1.5px solid rgba(255,255,255,.3); }
@@ -221,11 +228,20 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
 .steps li.done { color: var(--gold); } .steps li.done b { border-color: var(--gold); color: var(--gold); } .steps li.done + li::before, .steps li.on::before { background: var(--gold); }
 .pour-stage { position: relative; width: 100%; border-radius: 18px; overflow: hidden; box-shadow: 0 20px 50px -12px rgba(0,0,0,.85), 0 0 0 1px rgba(255,197,61,.25); }
 #pourCanvas { display: block; width: 100%; touch-action: none; }
-.pour-card { margin-top: 12px; padding: 14px 14px 12px; border-radius: 16px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); }
-.pour-msg { min-height: 48px; margin: 0 0 12px; font-size: 15px; font-weight: 700; line-height: 1.65; text-align: center; color: #eef0f8; }
-.pour-msg b { display: block; font-size: 17px; font-weight: 900; color: #fff; }
+.pour-card { margin-top: 8px; padding: 10px 12px; border-radius: 16px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); }
+.pour-msg { min-height: 44px; margin: 0 0 8px; font-size: 13.5px; font-weight: 700; line-height: 1.65; text-align: center; color: #eef0f8; }
+.pour-msg b { display: block; font-size: 16px; font-weight: 900; color: #fff; }
 .pour-msg em { font-style: normal; color: var(--gold); font-weight: 900; }
 #pourActions { width: 100%; }
+.judge { display: flex; align-items: center; gap: 12px; text-align: left; }
+.rank-badge { flex: none; width: 58px; height: 58px; border-radius: 50%; display: grid; place-items: center; font-family: 'Oswald', sans-serif; font-size: 34px; font-weight: 700; color: #2a1600; animation: rankIn .7s cubic-bezier(.3,1.6,.5,1) both; box-shadow: 0 0 18px rgba(255,255,255,.35); }
+.rb-S { background: conic-gradient(#ff6ec4, #ffd36b, #7dff9b, #5ed6ff, #b68cff, #ff6ec4); color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,.4); }
+.rb-A { background: radial-gradient(circle at 35% 30%, #fff3b0, #f0c35a 50%, #a87a1c); }
+.rb-B { background: radial-gradient(circle at 35% 30%, #ffffff, #cfd6de 50%, #8a929b); }
+.rb-C { background: #f4f4f8; }
+@keyframes rankIn { from { transform: scale(0) rotate(-180deg); } to { transform: none; } }
+.judge-txt small { display: block; font-size: 11px; color: #c9cde0; font-weight: 700; }
+.judge-txt em { display: block; font-size: 16px; }
 #pourActions .btn-ghost { width: 100%; }
 .hold-btn { user-select: none; -webkit-user-select: none; touch-action: none; }
 .hold-btn.holding { filter: brightness(1.12); transform: translateY(2px) scale(.98); }
@@ -329,7 +345,7 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
     <section class="screen active" id="s-opening">
         <div class="hero">
             <div class="hero-bg" id="heroBg" aria-hidden="true"><canvas id="heroTruck"></canvas></div>
-            <div class="hero-badge h-in" style="--d:.2s"><span class="stamp-red">速達</span>マルト水谷の速達生ビール</div>
+            <div class="hero-badge h-in" style="--d:.2s"><span class="stamp-red">速達</span>速達生ビール</div>
             <p class="hero-kicker h-in" style="--d:.4s">FRESH BEER EXPRESS</p>
             <h1 class="hero-title h-in" style="--d:.6s"><span class="g">速達生便。</span></h1>
             <div class="hero-days h-in" style="--d:.9s">
@@ -341,7 +357,6 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
 
         <div class="op-start">
             <button class="btn-vino" id="btnStart">▶ 出発進行！</button>
-            <p class="op-note">※ かんたんなアンケートのあと、出発します</p>
         </div>
     </section>
 
@@ -470,8 +485,8 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
             <p class="op-note" id="kaoNote">「写真を撮る」で、顔の部分に自分が入ります</p>
             <div class="card-actions">
                 <label class="btn-vino photo-btn">📸 写真を撮る<input type="file" accept="image/*" capture="user" id="kaoCam" hidden></label>
-                <button class="btn-vino" id="kaoDone" hidden>この写真でマイカードへ ›</button>
-                <button class="btn-ghost" data-go="card" id="kaoSkip">写真なしでマイカードへ ›</button>
+                <button class="btn-vino" id="kaoDone" hidden>この写真でカードにする ›</button>
+                <button class="btn-ghost" data-go="card" id="kaoSkip">写真なしでカードにする ›</button>
                 <p class="op-note">※ 写真はこの端末の中だけで使い、どこにも送信しません</p>
             </div>
         </div>
@@ -576,7 +591,7 @@ const SHOP_DIR = 'shops/' + SHOP_ID + '/';
 const FALLBACK_SHOP = {
     name: 'トン・ガリアーノ',
     stops: [
-        { bg: 'nagoya', name: '出発', title: '速達生ビール、配達中！', text: 'マルト水谷から、できたての生ビールを積んで出発！ 工場出荷から2〜3日以内にお届けします。' },
+        { bg: 'nagoya', name: '出発', title: '速達生ビール、配達中！', text: 'できたての生ビールを積んで出発！ 工場出荷から2〜3日以内にお届けします。' },
         { bg: 'tokyo' }, { bg: 'yokohama' }, { bg: 'fuji' }, { bg: 'kyoto' }, { bg: 'shirakawa' },
         { spot: 'okazaki', photos: [{ photo: 'okazakijo.webp', caption: '岡崎城', credit: 'Evelyn-rose / Wikimedia Commons（CC0）' }] },
         { bg: 'tsumago', name: '乙川の桜', title: '乙川の桜', text: '岡崎の春をいろどる、川ぞいの桜並木。',
@@ -714,6 +729,12 @@ const STOP_MS = 8000;        // 1つの景色を走る時間（すぎると自�
 const GAS_URL = '';
 
 const $ = (id) => document.getElementById(id);
+// 画面が拡大・ドラッグで動かないように固定（ピンチ・ダブルタップの拡大を止める）
+['gesturestart', 'gesturechange', 'gestureend'].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), { passive: false }));
+document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+let lastTouch = 0;
+document.addEventListener('touchend', e => { const now = Date.now(); if (now - lastTouch < 320 && !e.target.closest('input, textarea')) e.preventDefault(); lastTouch = now; }, { passive: false });
+document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
 const rand = (a, b) => a + Math.random() * (b - a);
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -1193,12 +1214,12 @@ class PourView {
     }
     newBubble(init) { return { u: rand(-.85, .85), y: init ? Math.random() : 0, v: rand(.18, .42), r: rand(.6, 1.6), w: rand(0, 6) }; }
     resize() {
-        const w = this.cv.clientWidth || this.fixedW || 300, h = Math.round(w * (this.hero ? 1.25 : 1.12)), d = Math.min(this.hero ? 3 : 2, window.devicePixelRatio || 1);
+        const w = this.cv.clientWidth || this.fixedW || 300, fit = this.hero ? Infinity : Math.max(220, window.innerHeight - 390), h = Math.round(Math.min(w * (this.hero ? 1.25 : 1.12), fit)) /* 注ぐ画面は、スクロールなしで1画面に */, d = Math.min(this.hero ? 3 : 2, window.devicePixelRatio || 1);
         if (this.cv.clientWidth) this.cv.style.height = h + 'px';
         this.cv.width = Math.round(w * d); this.cv.height = Math.round(h * d);
         this.ctx.setTransform(d, 0, 0, d, 0, 0);
         this.W = w; this.H = h;
-        const R = w * (this.hero ? 0.3 : 0.21);
+        const R = Math.min(w, h / (this.hero ? 1.25 : 1.12)) * (this.hero ? 0.3 : 0.21);
         const g = { cx: w * (this.hero ? 0.42 : 0.45), R, ry: R * 0.2, gB: h * (this.hero ? 0.95 : 0.9) };
         g.gT = g.gB - R * 2.7; g.bt = R * 0.3; g.inBot = g.gB - g.bt; g.Ri = R - 3.5; g.Hi = g.inBot - g.gT; g.ny = g.gT - R * 0.95;
         this.g = g;
@@ -1515,19 +1536,24 @@ const Pour = (() => {
         }
     }
     // できた一杯を判定（数字ではなく「どんなビールか」で伝える）
+    // できた一杯を判定：ビールと泡の比率（いちばんおいしいのは ビール7：泡3）にどれだけ近いかで S〜C
     function judge() {
-        const b = Math.min(1, view.b), f = Math.max(0, view.f), t = b + f, fr = t ? f / t : 0;
-        let r;
-        if (t < 0.8) r = { name: 'まだ注げる！ ちょっぴりビール', rank: 'C', msg: 'もう少したっぷり注ぐと、もっとおいしく飲めるよ！' };
-        else if (fr < 0.15) r = { name: 'キレ重視！ 泡ひかえめビール', rank: 'B', msg: 'すっきりキレのある一杯。泡をもう少しのせると、香りが長持ちするよ。' };
-        else if (fr > 0.45) r = { name: 'ふわっふわ！ 泡たっぷりビール', rank: 'B', msg: 'クリーミーな口当たり。ビールを少し多めにすると、ごくごく飲めるよ。' };
-        else if (fr >= 0.22 && fr <= 0.36 && t >= 0.95) r = { name: '黄金バランス！ ごくごくビール', rank: 'S', msg: 'ビールと泡のバランスが最高！ 泡がふたになって、できたての香りをとじこめています。' };
-        else r = { name: 'まろやか！ バランスビール', rank: 'A', msg: 'おいしく飲める一杯！ あと少しで、いちばんおいしいバランスに。' };
-        pourResult = { ...r, b: view.b, f: view.f };
+        const b = Math.min(1, view.b), f = Math.max(0, view.f), t = b + f, fr = t ? f / t : 0, d = Math.abs(fr - 0.3);
+        let rank = t < 0.7 ? 'C' : d <= 0.05 ? 'S' : d <= 0.1 ? 'A' : d <= 0.18 ? 'B' : 'C';
+        if (t < 0.88 && rank !== 'C') rank = { S: 'A', A: 'B', B: 'C' }[rank];   // 量が少ないと1つ下
+        const kind = t < 0.7 ? 'little' : fr < 0.22 ? 'kire' : fr > 0.38 ? 'awa' : 'gold';
+        const NAME = { gold: '黄金バランス！ ごくごくビール', kire: 'キレ重視！ 泡ひかえめビール', awa: 'ふわっふわ！ 泡たっぷりビール', little: 'まだ注げる！ ちょっぴりビール' };
+        const MSG = { S: 'ビールと泡のバランスが最高！ 泡がふたになって、できたての香りをとじこめています。', A: 'おいしく飲める一杯！ あと少しで、いちばんおいしいバランスに。',
+                      B: kind === 'awa' ? 'クリーミーな一杯。ビールを少し多めにすると、もっとごくごく飲めるよ。' : 'すっきりした一杯。泡をもう少しのせると、香りが長持ちするよ。',
+                      C: 'まだまだ伸びしろあり！ ビール7：泡3 をめざして、もう一度チャレンジ！' };
+        const r = { name: NAME[kind], rank, msg: MSG[rank] };
+        const beer10 = Math.round((1 - fr) * 10);
+        pourResult = { ...r, b: view.b, f: view.f, ratio: `${beer10}：${10 - beer10}` };
         [...$('pourSteps').children].forEach(el => el.className = 'done');
         view.scrapeP = null;
-        $('pourMsg').innerHTML = `<b>できあがり！</b>あなたの一杯は… <em>${r.name}</em>`;
-        $('pourActions').innerHTML = '<button class="btn-vino" id="pCheers">📸 記念撮影へ ›</button><div class="sub-row"><button class="btn-ghost" id="pRetry">もう一度注ぐ</button></div>';
+        const RL = { S: 'RAINBOW', A: 'GOLD', B: 'SILVER', C: 'WHITE' }[rank];
+        $('pourMsg').innerHTML = `<span class="judge"><span class="rank-badge rb-${rank}">${rank}</span><span class="judge-txt"><small>判定 ${RL}｜ビール${beer10}：泡${10 - beer10}</small><em>${r.name}</em></span></span>`;
+        $('pourActions').innerHTML = '<button class="btn-vino" id="pCheers">🃏 カードにする ›</button><div class="sub-row"><button class="btn-ghost" id="pRetry">もう一度注ぐ</button></div>';
         $('pRetry').onclick = retry;
         $('pCheers').onclick = () => { Cheers.prep(); show('kao'); };
     }
