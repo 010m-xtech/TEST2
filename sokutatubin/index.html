@@ -130,6 +130,7 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
     opacity: 0; transform: translate(-50%, 24px) rotate(-4deg) scale(.85); transition: opacity .8s ease, transform .9s cubic-bezier(.2,.8,.3,1.2); }
 .pop.show { opacity: 1; transform: translate(-50%, 0) rotate(-3deg) scale(1); animation: popFloat 4s ease-in-out .9s infinite; }
 @keyframes popFloat { 50% { transform: translate(-50%, -8px) rotate(-1.5deg) scale(1); } }
+.pop-tag { position: absolute; top: -12px; left: 50%; transform: translateX(-50%) rotate(2deg); white-space: nowrap; padding: 3px 10px; border-radius: 999px; background: var(--red); color: #fff; font-size: 11px; font-weight: 900; box-shadow: 0 3px 8px rgba(0,0,0,.3); }
 .pop img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
 .pop p { margin: 6px 0 0; font-weight: 900; font-size: 14px; letter-spacing: .08em; }
 .pop small { display: block; font-size: 8px; color: #8a8f99; margin-top: 2px; }
@@ -216,10 +217,11 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
 
 /* ▼ 4. 乾杯（お届け完了） ▼ */
 #s-cheers { padding: 0; justify-content: flex-start; }
-.ch-bg { position: absolute; inset: 0; background: center/cover no-repeat; filter: blur(3px) brightness(.45) saturate(1.2); transform: scale(1.06); }
+.ch-bg { position: absolute; inset: 0; background: center/cover no-repeat; }
 .ch-inner { position: relative; z-index: 1; width: 100%; padding: max(18px, env(safe-area-inset-top)) 16px 24px; text-align: center; }
 .ch-kicker { margin: 0; font-size: 13px; font-weight: 900; letter-spacing: .3em; color: var(--fresh); }
-.ch-title { margin: 4px 0 0; font-family: 'Dela Gothic One', sans-serif; font-weight: 400; font-size: 34px; letter-spacing: .04em; text-shadow: 0 4px 18px rgba(0,0,0,.6); }
+.ch-title { margin: 4px 0 0; font-family: 'Dela Gothic One', sans-serif; font-weight: 400; font-size: 34px; letter-spacing: .04em; text-shadow: 0 2px 0 rgba(0,0,0,.6), 0 0 18px rgba(0,0,0,.9); }
+.ch-kicker { text-shadow: 0 1px 6px rgba(0,0,0,.9); }
 .ch-stage { position: relative; height: min(64vh, 520px); margin: 6px -16px 0; cursor: pointer; user-select: none; }
 .ch-stage canvas { position: absolute; bottom: 0; width: 74%; left: 13%; transform-origin: 50% 90%; transition: transform .5s cubic-bezier(.3,1.4,.5,1); filter: drop-shadow(0 20px 30px rgba(0,0,0,.6)); }
 #chMate { left: auto; right: -80%; width: 60%; transform: scaleX(-1); opacity: .95; transition: right .5s cubic-bezier(.3,1.2,.5,1), transform .5s; }
@@ -250,7 +252,13 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
 .mycard { position: relative; width: min(78vw, 320px); aspect-ratio: 630 / 880; margin: 0 auto; border-radius: 4.4%/3.2%; touch-action: none;
     transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); box-shadow: 0 30px 60px -15px rgba(0,0,0,.85), 0 0 46px var(--glow, rgba(255,197,61,.3)); }
 .mycard canvas { width: 100%; height: 100%; display: block; border-radius: inherit; }
-.foil, .glare { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; }
+.foil, .glare { position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    /* 写真の部分（カードの左右 7%・上 14.5%・高さ 41.8%）には、光をかけない */
+    -webkit-mask-image: linear-gradient(#000, #000), linear-gradient(#000, #000); mask-image: linear-gradient(#000, #000), linear-gradient(#000, #000);
+    -webkit-mask-size: 100% 100%, 86.1% 41.9%; mask-size: 100% 100%, 86.1% 41.9%;
+    -webkit-mask-position: 0 0, 50% 25%; mask-position: 0 0, 50% 25%;
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-composite: xor; mask-composite: exclude; }
 .foil { mix-blend-mode: color-dodge; opacity: .5; background-size: 300% 300%; background-position: var(--px, 50%) var(--py, 50%); }
 .r-S .foil { background-image: repeating-linear-gradient(115deg, #ff6ec4 0%, #ffd36b 6%, #7dff9b 12%, #5ed6ff 18%, #b68cff 24%, #ff6ec4 30%); opacity: .5; }
 .r-S .foil::after { content: ''; position: absolute; inset: 0; border-radius: inherit; background-image: radial-gradient(circle, rgba(255,255,255,.95) 0 1px, transparent 1.6px); background-size: 16px 16px; background-position: var(--px, 50%) var(--py, 50%); opacity: .6; }
@@ -345,7 +353,7 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
             <div class="hud-title"><p>速達生ビール<span>配達中</span></p><span class="chip" id="chip">四季めぐり</span></div>
         </div>
         <div class="honk" id="honk">プップー！</div>
-        <div class="pop" id="pop" aria-hidden="true"><img id="popImg" alt=""><p id="popCap"></p><small id="popCredit"></small></div>
+        <div class="pop" id="pop" aria-hidden="true"><span class="pop-tag" id="popTag" hidden></span><img id="popImg" alt=""><p id="popCap"></p><small id="popCredit"></small></div>
         <div class="nav-edge l" aria-hidden="true">‹</div><div class="nav-edge r" aria-hidden="true">›</div>
         <div class="cap">
             <div id="capBody" aria-live="polite"></div>
@@ -489,19 +497,27 @@ const SEASONS = {
     ] }
 };
 const SEASON_ORDER = ['haru', 'natsu', 'aki', 'fuyu'];
-// 四季めぐり：春 → 夏 → 秋 → 冬 と、景色がつながって移りかわります
-//   ['季節', '名所のキー']  … 名所の画像を背景に走る
-//   ['季節', 番号, '見出し', '文']  … イラストの景色を走る
-// ▼ 走る順番（下の SPOTS のキーを並べる）。いまは仮の名所3か所＋途中でトン・ガリアーノ ▼
-//   この順に画像が横につながり、最後に GOAL（居酒屋）に着きます
-const ROUTE = ['kyoto', 'fuji', 'okazaki'];
-// ▼ 名所の写真を「ふわっと」出す方法（名所ごとに景色の画像を作らなくてOK） ▼
-//   SPOTS の名所に pop: { src: '写真のファイル', credit: '写真のクレジット' } を書くと、
-//   その名所を走っているあいだ、写真が空にふわっと浮かびます。
-//   景色の画像が無い名所は panorama: 'tsumago' のように、手もちの景色を背景に使えます。
-// 最後に着くお店：トン・ガリアーノ（看板に本物のロゴを重ねます）。focus … お店の入口が画像の左から何割の位置にあるか
-const GOAL = { name: 'トン・ガリアーノ', road: 0.88, focus: 0.5, sign: true,
-    img: { haru: 'tg_haru.webp', natsu: 'tg_natsu.webp', aki: 'tg_aki.webp', fuyu: 'tg_fuyu.webp' } };
+// ==================================================================
+// ▼ お店ごとの設定（shops/お店のID/shop.js）を読みこみます ▼
+//   URL の最後に ?shop=お店のID をつけると、そのお店の設定で動きます。
+//   （つけないときは DEFAULT_SHOP_ID のお店）くわしくは 使い方.txt
+// ==================================================================
+const DEFAULT_SHOP_ID = 'tongalliano';
+const SHOP_ID = (new URLSearchParams(location.search).get('shop') || DEFAULT_SHOP_ID).replace(/[^a-zA-Z0-9_-]/g, '') || DEFAULT_SHOP_ID;
+const SHOP_DIR = 'shops/' + SHOP_ID + '/';
+// shop.js が読めないときに使う、かわりの設定（トン・ガリアーノ）
+const FALLBACK_SHOP = {
+    name: 'トン・ガリアーノ',
+    stops: [{ spot: 'kyoto' }, { spot: 'fuji' }, { spot: 'okazaki' }],
+    goal: { bg: 'tg', logo: true, title: 'トン・ガリアーノに到着！', text: 'ナポリピッツァとワインのお店に、鮮度そのままでお届け。ここからは、おいしく注ぐ番です。' }
+};
+let SHOP = FALLBACK_SHOP;
+// 背景に使える景色（image フォルダの「キー_季節.webp」）。road … 道路の高さ（上から0〜1）／focus … ゴールで止まる位置（お店の入口）
+const BG = {
+    kyoto: { road: 0.9 }, fuji: { road: 0.92 }, okazaki: { road: 0.88 }, tsumago: { road: 0.77 }, shirakawa: { road: 0.87 },
+    tokyo: { road: 0.86 }, yokohama: { road: 0.84 }, nagoya: { road: 0.85 },
+    tg: { road: 0.88, focus: 0.5 }, izakaya: { road: 0.88, focus: 0.51 }
+};
 
 // ==================================================================
 // ▼ 名所の背景画像（ジオラマ風の画像を、同じ構図で季節ごとに4枚） ▼
@@ -544,7 +560,6 @@ const SPOTS = {
              aki:   ['結（ゆい）', 'かやぶき屋根のふき替えは、村の人たちが力を合わせて行ってきた。'],
              fuyu:  ['豪雪地帯', '冬は雪が深く積もる。急な屋根が、家を雪の重さから守る。'] } },
   okazaki: { name: '岡崎城', road: 0.88,
-    pop: { src: '../sakesindan_375060/okazakijo.webp', credit: 'Evelyn-rose / Wikimedia Commons（CC0）' },
     img:   { haru: 'okazaki_haru.webp', natsu: 'okazaki_natsu.webp', aki: 'okazaki_aki.webp', fuyu: 'okazaki_fuyu.webp' },
     title: { haru: '桜の岡崎城', natsu: '夏の岡崎城', aki: '秋の岡崎城', fuyu: '冬の岡崎城' },
     text:  { haru: '地元・岡崎に帰ってきた！ お店はもうすぐ。', natsu: '地元・岡崎に帰ってきた！ お店はもうすぐ。', aki: '地元・岡崎に帰ってきた！ お店はもうすぐ。', fuyu: '地元・岡崎に帰ってきた！ お店はもうすぐ。' },
@@ -580,14 +595,18 @@ const SPOTS = {
 };
 const PHOTO_H = 0.68;   // 名所の画像を、画面の高さの何割で表示するか
 const SPOT_IMG = {};
-Object.entries({ ...SPOTS, goal: GOAL }).forEach(([key, sp]) => {
+function loadBg(key) {   // 景色の画像（4季節）を、使うときだけ読みこむ
+    if (!BG[key]) return null;
+    if (SPOT_IMG[key]) return SPOT_IMG[key];
     SPOT_IMG[key] = {};
-    Object.entries(sp.img || {}).forEach(([k, file]) => {
+    SEASON_ORDER.forEach(k => {
         const im = new Image(); im.ok = false;
         im.onload = () => { im.ok = true; im.bottomColor = sampleBottom(im); };
-        im.src = IMG_DIR + file; SPOT_IMG[key][k] = im;
+        im.src = IMG_DIR + key + '_' + k + '.webp'; SPOT_IMG[key][k] = im;
     });
-});
+    return SPOT_IMG[key];
+}
+loadBg('fuji');   // 季節えらびのボタンで使う
 function sampleBottom(im) {   // 画像のいちばん下の色（画像の下のすき間をこの色でうめる）
     try {
         const c = document.createElement('canvas'); c.width = 16; c.height = 4;
@@ -597,13 +616,24 @@ function sampleBottom(im) {   // 画像のいちばん下の色（画像の下�
         const n = d.length / 4; return `rgb(${r / n | 0},${g / n | 0},${b / n | 0})`;
     } catch (e) { return '#3b3d3f'; }
 }
-function spotStop(k, spot) {
-    const sp = SPOTS[spot], base = SEASONS[k].stops[k === 'fuyu' ? 1 : 0];
-    const pano = sp.panorama || spot;
-    return { ...base, s: k, bg: spot, im: SPOT_IMG[pano] && SPOT_IMG[pano][k], road: (SPOTS[pano] || sp).road, focus: sp.focus, sign: sp.sign, pop: sp.pop,
-        place: sp.name, title: sp.title[k], text: sp.text[k], memo: sp.memo ? sp.memo[k] : null };
+const bySeason = (v, k) => v && typeof v === 'object' && !Array.isArray(v) ? v[k] : v;   // 季節ごとに書いてあれば、その季節の分
+const photoUrl = (p) => /^(https?:|\/|\.\.\/)/.test(p) ? p : SHOP_DIR + p;            // 写真はお店のフォルダから
+function shopStop(k, d) {   // shop.js の1か所ぶんを、走るための形に
+    const sp = (d.spot && SPOTS[d.spot]) || {}, bg = d.bg || (BG[d.spot] ? d.spot : 'tsumago'), imgs = loadBg(bg) || {};
+    return { ...SEASONS[k].stops[k === 'fuyu' ? 1 : 0], s: k, bg, im: imgs[k], road: (BG[bg] || {}).road || 0.88, focus: (BG[bg] || {}).focus,
+        place: d.name || sp.name || '',
+        title: bySeason(d.title, k) || (sp.title && sp.title[k]) || d.name || '',
+        text: bySeason(d.text, k) || (sp.text && sp.text[k]) || '',
+        memo: bySeason(d.memo, k) || (sp.memo && sp.memo[k]) || null,
+        pop: d.photo ? { src: photoUrl(d.photo), credit: d.credit || '', tag: d.tencho ? '👨‍🍳 店長のおすすめ' : '' } : null };
 }
-const ARRIVE = { place: 'ゴール', title: 'トン・ガリアーノに到着！', text: 'ナポリピッツァとワインのお店に、鮮度そのままでお届け。ここからは、おいしく注ぐ番です。' };
+function goalStop(k) {   // 最後に着くお店
+    const g = SHOP.goal || {}, bg = g.bg || 'tg', imgs = loadBg(bg) || {};
+    return { ...SEASONS[k].stops[2], s: k, arrive: true, bg, im: imgs[k], road: (BG[bg] || {}).road || 0.88, focus: (BG[bg] || {}).focus || 0.5,
+        sign: !!g.logo, memo: null, place: 'ゴール',
+        title: bySeason(g.title, k) || SHOP.name + 'に到着！', text: bySeason(g.text, k) || '鮮度そのままでお届け。ここからは、おいしく注ぐ番です。',
+        pop: g.photo ? { src: photoUrl(g.photo), credit: g.credit || '', tag: SHOP.name } : null };
+}
 const STOP_MS = 8000;        // 1つの景色を走る時間（すぎると自動で次へ）
 // ▼ アンケートの送り先（Google Apps Script のURL）。空のままだと送信しません ▼
 const GAS_URL = '';
@@ -623,11 +653,18 @@ function currentSeason() {
     const m = new Date().getMonth() + 1;
     return m >= 3 && m <= 5 ? 'haru' : m >= 6 && m <= 8 ? 'natsu' : m >= 9 && m <= 11 ? 'aki' : 'fuyu';
 }
-function buildStops() {
-    const list = ROUTE.map(spot => spotStop(mode, spot));
-    list.push({ ...SEASONS[mode].stops[2], s: mode, ...ARRIVE, arrive: true, bg: 'goal', im: SPOT_IMG.goal[mode], road: GOAL.road, focus: GOAL.focus, sign: GOAL.sign, memo: null });
-    return list;
+function buildStops() { return [...(SHOP.stops || []).map(d => shopStop(mode, d)), goalStop(mode)]; }
+// shop.js を読みこむ（読めなければ FALLBACK_SHOP のまま）
+function applyShop() {
+    (SHOP.stops || []).forEach(d => loadBg(d.bg || d.spot)); loadBg((SHOP.goal || {}).bg || 'tg');
+    document.title = '速達生便。｜' + SHOP.name;
 }
+(function loadShop() {
+    const sc = document.createElement('script'); sc.src = SHOP_DIR + 'shop.js';
+    sc.onload = () => { if (window.SHOP_DATA && window.SHOP_DATA.stops) SHOP = window.SHOP_DATA; applyShop(); };
+    sc.onerror = applyShop;
+    document.head.appendChild(sc);
+})();
 
 // ---------------- 画面の切り替え ----------------
 function show(name) {
@@ -925,7 +962,7 @@ const Drive = (() => {
         $('segs').innerHTML = stops.map((_, k) => `<div><i id="seg${k}"></i></div>`).join('');
         const pop = $('pop');   // 名所の写真をふわっと
         pop.classList.remove('show');
-        if (s.pop) setTimeout(() => { if (idx !== i) return; $('popImg').src = s.pop.src; $('popCap').textContent = s.place; $('popCredit').textContent = s.pop.credit ? '写真：' + s.pop.credit : ''; pop.classList.add('show'); }, 450);
+        if (s.pop) setTimeout(() => { if (idx !== i) return; $('popImg').src = s.pop.src; $('popCap').textContent = s.arrive ? SHOP.name : s.place; $('popTag').textContent = s.pop.tag; $('popTag').hidden = !s.pop.tag; $('popCredit').textContent = s.pop.credit ? '写真：' + s.pop.credit : ''; pop.classList.add('show'); }, 450);
     }
     function frame(t) {
         if (!running) return;
@@ -1370,7 +1407,7 @@ const Cheers = (() => {
     return {
         start() {
             const goal = Drive.lastStop() || buildStops().pop();
-            $('chBg').style.backgroundImage = `url(${IMG_DIR}${GOAL.img[goal.s]})`;
+            $('chBg').style.backgroundImage = `url(${goal.pop ? goal.pop.src : IMG_DIR + goal.bg + '_' + goal.s + '.webp'})`;
             $('chSeason').textContent = SEASONS[mode].jp + 'ルート';
             $('chName').textContent = pourResult.name || 'まろやか！ バランスビール';
             $('chRank').textContent = pourResult.rank || 'A';
@@ -1400,7 +1437,7 @@ const RANK_STYLE = {
 };
 const MyCard = (() => {
     const wrap = $('myCard'), cv = $('cardCv');
-    let face = null, serial = '', raf = 0, running = false, touched = 0, t0 = 0;
+    let face = null, serial = '', raf = 0, running = false, touched = 0, t0 = 0, cardPhoto = null;
     function rr(c, x, y, w, h, r) { c.beginPath(); c.roundRect(x, y, w, h, r); }
     function cover(c, im, x, y, w, h, fx = 0.5, fy = 0.5) {   // 画像を枠いっぱいに（はみ出しは切る）
         const iw = im.naturalWidth || im.width, ih = im.naturalHeight || im.height, sc = Math.max(w / iw, h / ih);
@@ -1420,10 +1457,16 @@ const MyCard = (() => {
         const ix = 22 * u, iy = 22 * u, iw = W - 44 * u, ih = H - 44 * u;
         const bg = c.createLinearGradient(0, iy, 0, iy + ih); bg.addColorStop(0, '#171a33'); bg.addColorStop(1, '#07080f');
         rr(c, ix, iy, iw, ih, 18 * u); c.fillStyle = bg; c.fill();
+        // 保存用：光の帯を焼きこむ（写真より先に描くので、写真には色がかからない）
+        if (opts.shine) {
+            c.globalCompositeOperation = 'screen';
+            const lg = c.createLinearGradient(0, 0, W, H); lg.addColorStop(.3, 'rgba(255,255,255,0)'); lg.addColorStop(.5, pourResult.rank === 'S' ? 'rgba(200,160,255,.35)' : 'rgba(255,255,255,.28)'); lg.addColorStop(.7, 'rgba(255,255,255,0)');
+            c.fillStyle = lg; c.fillRect(0, 0, W, H); c.globalCompositeOperation = 'source-over';
+        }
         // 見出し・ランク
         c.textBaseline = 'alphabetic'; c.textAlign = 'left';
         c.fillStyle = '#ffc53d'; c.font = `${40 * u}px 'Dela Gothic One'`; c.fillText('速達生便。', 50 * u, 86 * u);
-        c.fillStyle = '#6fd6ff'; c.font = `700 ${14 * u}px 'Oswald'`; c.fillText('FRESH BEER EXPRESS  ·  MY CARD', 52 * u, 108 * u);
+        c.fillStyle = '#6fd6ff'; c.font = `900 ${15 * u}px 'Zen Kaku Gothic New'`; c.fillText(`MY CARD ｜ ${SHOP.name}`, 52 * u, 110 * u);
         const ex = W - 92 * u, ey = 74 * u, er = 40 * u;
         c.beginPath(); c.arc(ex, ey, er, 0, 7); c.fillStyle = fg; c.fill(); c.lineWidth = 3 * u; c.strokeStyle = 'rgba(255,255,255,.85)'; c.stroke();
         c.fillStyle = R.ink; c.textAlign = 'center'; c.font = `700 ${50 * u}px 'Oswald'`; c.fillText(pourResult.rank || 'A', ex, ey + 18 * u);
@@ -1431,11 +1474,14 @@ const MyCard = (() => {
         const ax = 44 * u, ay = 128 * u, aw = W - 88 * u, ah = 368 * u;
         c.save(); rr(c, ax, ay, aw, ah, 14 * u); c.clip();
         const gim = goal && goal.im && goal.im.ok ? goal.im : null;
-        if (gim) cover(c, gim, ax, ay, aw, ah, GOAL.focus, 0.5); else { c.fillStyle = '#2a2140'; c.fillRect(ax, ay, aw, ah); }
-        const sh = c.createLinearGradient(0, ay + ah * .45, 0, ay + ah); sh.addColorStop(0, 'rgba(0,0,0,0)'); sh.addColorStop(1, 'rgba(0,0,0,.55)');
-        c.fillStyle = sh; c.fillRect(ax, ay, aw, ah);
+        const photo = cardPhoto && cardPhoto.complete && cardPhoto.naturalWidth ? cardPhoto : null;   // お店の外観写真があれば、そちらを使う
+        if (photo) cover(c, photo, ax, ay, aw, ah, .5, .5);
+        else if (gim) {   // お店の画像から、お店の建物まわりを大きく切りだす（色はかけない）
+            const nw = gim.naturalWidth, nh = gim.naturalHeight, sh = nh * 0.8, sw = sh * aw / ah;
+            c.drawImage(gim, clamp(nw * (goal.focus || .5) - sw / 2, 0, nw - sw), 0, sw, sh, ax, ay, aw, ah);
+        } else { c.fillStyle = '#2a2140'; c.fillRect(ax, ay, aw, ah); }
         const jug = $('chJug');
-        if (jug && jug.width) { const jh = ah * 0.86, jw = jh * jug.width / jug.height; c.drawImage(jug, ax + aw - jw + 18 * u, ay + ah - jh + 6 * u, jw, jh); }
+        if (jug && jug.width) { const jh = ah * 0.62, jw = jh * jug.width / jug.height; c.drawImage(jug, ax + aw - jw + 26 * u, ay + ah - jh + 4 * u, jw, jh); }
         if (face) {
             const fx = ax + 96 * u, fy = ay + ah - 92 * u, fr = 72 * u;
             c.save(); c.beginPath(); c.arc(fx, fy, fr, 0, 7); c.clip(); cover(c, face, fx - fr, fy - fr, fr * 2, fr * 2, .5, .42); c.restore();
@@ -1469,12 +1515,6 @@ const MyCard = (() => {
         // シリアル・レア度
         c.textAlign = 'left'; c.fillStyle = 'rgba(255,255,255,.6)'; c.font = `500 ${15 * u}px 'Oswald'`; c.fillText('No. ' + serial, 50 * u, H - 44 * u);
         c.textAlign = 'right'; c.fillStyle = R.line; c.font = `700 ${16 * u}px 'Oswald'`; c.fillText(R.label + ' RARE', W - 50 * u, H - 44 * u);
-        // 保存用：光の帯を焼きこむ
-        if (opts.shine) {
-            c.globalCompositeOperation = 'screen';
-            const lg = c.createLinearGradient(0, 0, W, H); lg.addColorStop(.3, 'rgba(255,255,255,0)'); lg.addColorStop(.5, pourResult.rank === 'S' ? 'rgba(200,160,255,.35)' : 'rgba(255,255,255,.28)'); lg.addColorStop(.7, 'rgba(255,255,255,0)');
-            c.fillStyle = lg; c.fillRect(0, 0, W, H); c.globalCompositeOperation = 'source-over';
-        }
         c.restore();
     }
     function render() {
@@ -1512,7 +1552,9 @@ const MyCard = (() => {
     });
     return {
         start() {
-            const rank = pourResult.rank || 'A', R = RANK_STYLE[rank];
+            const rank = pourResult.rank || 'A', R = RANK_STYLE[rank], gs = Drive.lastStop();
+            if (gs && gs.pop && (!cardPhoto || cardPhoto.dataset.src !== gs.pop.src)) { cardPhoto = new Image(); cardPhoto.dataset.src = gs.pop.src; cardPhoto.onload = () => running && render(); cardPhoto.src = gs.pop.src; }
+            else if (!gs || !gs.pop) cardPhoto = null;
             serial = serial || String(Math.floor(rand(100000, 999999)));
             wrap.className = 'mycard r-' + rank;
             $('cardRarity').textContent = R.label; $('cardRarity').style.color = rank === 'S' ? '#d9b8ff' : R.line;
