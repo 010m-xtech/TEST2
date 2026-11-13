@@ -52,8 +52,9 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
    ================================================================== */
 #s-opening { padding: 0; justify-content: flex-start; }
 .hero { position: relative; width: 100%; min-height: 100dvh; flex: none; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; padding: 0 20px 92px; }
-.hero > .hero-bg { position: absolute; z-index: 0; left: 0; right: 0; top: 0; height: 60%; overflow: hidden; background: 62% 100%/cover no-repeat; }
-.hero-bg canvas { position: absolute; bottom: 5.5%; width: 46%; left: -50%; animation: heroDrive 6s linear infinite; filter: drop-shadow(0 8px 6px rgba(0,0,0,.45)); }
+.hero > .hero-bg { position: absolute; z-index: 0; left: 0; right: 0; top: 0; height: 66%; overflow: hidden; background: 62% 100%/cover no-repeat;
+    -webkit-mask-image: linear-gradient(#000 62%, rgba(0,0,0,.6) 80%, transparent); mask-image: linear-gradient(#000 62%, rgba(0,0,0,.6) 80%, transparent); }   /* 景色と文字の境目を、ふわっと */
+.hero-bg canvas { position: absolute; bottom: 14.5%; width: 46%; left: -50%; animation: heroDrive 6s linear infinite; filter: drop-shadow(0 8px 6px rgba(0,0,0,.45)); }
 @keyframes heroDrive { from { left: -50%; } to { left: 105%; } }
 .hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(7,8,15,.5) 0%, rgba(7,8,15,0) 14%, rgba(7,8,15,0) 50%, rgba(7,8,15,.85) 64%, rgba(7,8,15,.95) 85%, var(--night)); }
 .hero > * { position: relative; z-index: 1; }
@@ -207,18 +208,25 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
 .intro .s { font-size: 15px; font-weight: 700; letter-spacing: .1em; color: var(--gold2); margin-top: 10px; line-height: 1.9; }
 
 /* ▼ 3. 注ぐ ▼ */
-#s-pour { justify-content: flex-start; padding-top: max(14px, env(safe-area-inset-top)); }
-.pour-title { margin: 0; font-family: 'Dela Gothic One', sans-serif; font-weight: 400; font-size: 24px; letter-spacing: .06em; }
+#s-pour { padding-top: max(12px, env(safe-area-inset-top)); }
+.pour-wrap { width: 100%; max-width: 420px; margin: auto 0; text-align: center; }
+.pour-title { margin: 2px 0 0; font-family: 'Dela Gothic One', sans-serif; font-weight: 400; font-size: 25px; letter-spacing: .04em; }
 .pour-title span { color: var(--gold); }
-.steps { display: flex; justify-content: center; gap: 6px; margin: 10px 0; }
-.steps span { font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,.25); color: #aab; letter-spacing: .08em; transition: .3s; }
-.steps span.on { border-color: var(--gold); color: #2a1600; background: var(--gold); font-weight: 900; }
-.steps span.done { border-color: var(--gold); color: var(--gold); }
-.pour-stage { position: relative; width: 100%; max-width: 420px; border-radius: 18px; overflow: hidden; box-shadow: 0 20px 50px -12px rgba(0,0,0,.85), 0 0 0 1px rgba(255,197,61,.25); flex: none; }
+.pour-sub { margin: 4px 0 0; font-size: 13px; font-weight: 700; color: #c9cde0; }
+.steps { list-style: none; display: flex; justify-content: center; align-items: center; margin: 12px 0 10px; padding: 0; }
+.steps li { display: flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 700; color: #8f94a8; }
+.steps li + li::before { content: ''; width: 18px; height: 2px; margin: 0 6px; background: rgba(255,255,255,.2); border-radius: 2px; }
+.steps li b { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-family: 'Oswald', sans-serif; font-size: 12px; border: 1.5px solid rgba(255,255,255,.3); }
+.steps li.on { color: #fff; } .steps li.on b { background: var(--gold); border-color: var(--gold); color: #2a1600; box-shadow: 0 0 12px rgba(255,197,61,.6); }
+.steps li.done { color: var(--gold); } .steps li.done b { border-color: var(--gold); color: var(--gold); } .steps li.done + li::before, .steps li.on::before { background: var(--gold); }
+.pour-stage { position: relative; width: 100%; border-radius: 18px; overflow: hidden; box-shadow: 0 20px 50px -12px rgba(0,0,0,.85), 0 0 0 1px rgba(255,197,61,.25); }
 #pourCanvas { display: block; width: 100%; touch-action: none; }
-.gauge { position: absolute; right: 10px; top: 12px; font-size: 12px; font-weight: 900; letter-spacing: .08em; padding: 5px 11px; border-radius: 999px; background: rgba(0,0,0,.5); color: #fff; border: 1px solid rgba(255,197,61,.5); }
-.pour-msg { min-height: 54px; font-size: 17px; font-weight: 900; letter-spacing: .04em; line-height: 1.7; margin: 12px 0 10px; text-align: center; }
-#pourActions { width: 100%; max-width: 380px; }
+.pour-card { margin-top: 12px; padding: 14px 14px 12px; border-radius: 16px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); }
+.pour-msg { min-height: 48px; margin: 0 0 12px; font-size: 15px; font-weight: 700; line-height: 1.65; text-align: center; color: #eef0f8; }
+.pour-msg b { display: block; font-size: 17px; font-weight: 900; color: #fff; }
+.pour-msg em { font-style: normal; color: var(--gold); font-weight: 900; }
+#pourActions { width: 100%; }
+#pourActions .btn-ghost { width: 100%; }
 .hold-btn { user-select: none; -webkit-user-select: none; touch-action: none; }
 .hold-btn.holding { filter: brightness(1.12); transform: translateY(2px) scale(.98); }
 
@@ -254,7 +262,7 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
 .ch-actions { margin-top: 16px; }
 
 /* ▼ 5. マイカード（S：レインボー／A：ゴールド／B：シルバー／C：ホワイト） ▼ */
-#s-card { justify-content: flex-start; padding-top: max(16px, env(safe-area-inset-top)); }
+#s-card { padding-top: max(16px, env(safe-area-inset-top)); }
 .card-wrap { width: 100%; text-align: center; }
 .mycard { position: relative; width: min(78vw, 320px); aspect-ratio: 630 / 880; margin: 0 auto; border-radius: 4.4%/3.2%; touch-action: none;
     transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); box-shadow: 0 30px 60px -15px rgba(0,0,0,.85), 0 0 46px var(--glow, rgba(255,197,61,.3)); }
@@ -279,7 +287,8 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
 .photo-btn { display: block; cursor: pointer; padding: 13px 16px; text-align: center; }
 
 /* ▼ カオハメ ▼ */
-#s-kao { justify-content: flex-start; padding-top: max(16px, env(safe-area-inset-top)); }
+#s-kao { padding-top: max(16px, env(safe-area-inset-top)); }
+#s-kao .qa, #s-card .card-wrap { margin: auto 0; }
 .kao-wrap { border-radius: 14px; overflow: hidden; box-shadow: 0 18px 40px -10px rgba(0,0,0,.8), 0 0 0 2px rgba(255,197,61,.5); }
 #kaoCv { display: block; width: 100%; touch-action: none; cursor: grab; }
 .kao-zoom { display: flex; align-items: center; gap: 10px; margin: 12px 4px 0; font-size: 12px; font-weight: 900; color: #c9cde0; }
@@ -406,13 +415,19 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
 
     <!-- ▼ 3. お店で注ぐ ▼ -->
     <section class="screen" id="s-pour">
-        <h2 class="pour-title">おいしい一杯に<span>チャレンジ</span></h2>
-        <div class="steps" id="pourSteps"><span>注ぐ</span><span>泡をのせる</span><span>すり切る</span></div>
-        <div class="pour-stage">
-            <canvas id="pourCanvas" aria-label="ジョッキにビールを注ぐ様子"></canvas>
+        <div class="pour-wrap">
+            <p class="qa-kicker">LAST STEP</p>
+            <h2 class="pour-title">おいしい一杯に<span>チャレンジ！</span></h2>
+            <p class="pour-sub jp-phrase" id="pourSub">お店に到着！ 最後の仕上げは、あなたの手で。</p>
+            <ol class="steps" id="pourSteps"><li><b>1</b>注ぐ</li><li><b>2</b>泡をのせる</li><li><b>3</b>すり切る</li></ol>
+            <div class="pour-stage">
+                <canvas id="pourCanvas" aria-label="ジョッキにビールを注ぐ様子"></canvas>
+            </div>
+            <div class="pour-card">
+                <p class="pour-msg jp-phrase" id="pourMsg"></p>
+                <div id="pourActions"></div>
+            </div>
         </div>
-        <p class="pour-msg jp-phrase" id="pourMsg"></p>
-        <div id="pourActions"></div>
     </section>
 
     <!-- ▼ 4. 乾杯（お届け完了） ▼ -->
@@ -448,10 +463,11 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
     <section class="screen" id="s-kao">
         <div class="qa">
             <p class="qa-kicker">PHOTO</p>
-            <h2 class="qa-title" style="margin-bottom:12px">記念撮影もできるよ！</h2>
+            <h2 class="qa-title" style="margin-bottom:4px">記念撮影もできるよ！</h2>
+            <p class="pour-sub" style="margin-bottom:14px;text-align:center">お店の前で、自分の一杯と記念にパチリ。</p>
             <div class="kao-wrap"><canvas id="kaoCv" aria-label="カオハメ写真"></canvas></div>
             <div class="kao-zoom" id="kaoZoomRow" hidden><span>小</span><input type="range" id="kaoZoom" min="0.6" max="3" step="0.01" value="1.1" aria-label="顔の大きさ"><span>大</span></div>
-            <p class="op-note" id="kaoNote">顔の穴に、自分の写真をはめよう！</p>
+            <p class="op-note" id="kaoNote">「写真を撮る」で、顔の部分に自分が入ります</p>
             <div class="card-actions">
                 <label class="btn-vino photo-btn">📸 写真を撮る<input type="file" accept="image/*" capture="user" id="kaoCam" hidden></label>
                 <button class="btn-vino" id="kaoDone" hidden>この写真でマイカードへ ›</button>
@@ -470,7 +486,7 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
             <p class="card-rarity" id="cardRarity">RAINBOW</p>
             <p class="op-note" style="margin-top:0">指でなぞると、カードがキラッと光るよ</p>
             <div class="card-actions">
-                <button class="btn-ghost" data-go="kao">📸 カオハメ写真をとりなおす</button>
+                <button class="btn-ghost" data-go="kao">📸 記念撮影をとりなおす</button>
                 <button class="btn-vino" id="cardSave">💾 カードを画像で保存</button>
                 <div class="sub-row"><button class="btn-ghost" data-go="route">別の季節で</button><button class="btn-ghost" data-go="opening">トップへ</button></div>
                 <p class="op-note">※ 写真はこの端末の中だけで使い、どこにも送信しません</p>
@@ -873,7 +889,7 @@ const LOGO_TXT = new Image(); LOGO_TXT.src = '../sakesindan_375060/tg_logo_text_
 const OVERLAP = 0.24;     // 画像どうしを重ねる幅（画像の横はばに対する割合）。広いほどなめらかにつながる
 const HOLD_S = 3;
 const BOOST = 2;          // トラックを押したときの速さ（ふだんの何倍か）。押しつづけると約半分の時間で着く         // 名所で立ち止まる時間（秒）。右タップですぐ出発
-const CRUISE_RATE = 1.3;  // ふだんの流れる速さ（1秒に、景色の高さの何倍ぶん進むか）。景色の大きさが変わっても、1枚を走る時間は同じ
+const CRUISE_RATE = 0.65;  // ふだんの流れる速さ（1秒に、景色の高さの何倍ぶん進むか）。景色の大きさが変わっても、1枚を走る時間は同じ
 function featherLeft(im) {   // 画像の左はしを透明にぼかした版（右どなりから、前の画像に重ねるため）
     if (im.fe) return im.fe;
     const c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight;
@@ -1450,15 +1466,15 @@ const Pour = (() => {
         [...$('pourSteps').children].forEach((el, i) => { el.className = i + 1 < n ? 'done' : i + 1 === n ? 'on' : ''; });
         const A = $('pourActions'), M = $('pourMsg');
         if (n === 1) {
-            M.innerHTML = 'どんな一杯が、いちばんおいしく飲めるかな？<br>長押しでビールを注いでみよう！';
+            M.innerHTML = '<b>ビールを注ごう</b>ボタンを長押しすると注がれます。<br>泡の入るすき間を、少し残すのがコツ！';
             A.innerHTML = '<button class="btn-vino hold-btn" id="pHold">長押しで注ぐ</button><div class="sub-row" id="pSub"></div>';
             bindHold($('pHold'), 'beer');
         } else if (n === 2) {
-            M.innerHTML = 'レバーを奥に倒して、きめ細かな泡をのせよう！<br>ふちを少しこえるくらいがコツ。';
+            M.innerHTML = '<b>泡をのせよう</b>長押しで、きめ細かな泡がのります。<br>ふちを少しこえるくらいがコツ！';
             A.innerHTML = '<button class="btn-vino hold-btn" id="pHold">長押しで泡をのせる</button><div class="sub-row" id="pSub"></div>';
             bindHold($('pHold'), 'foam');
         } else if (n === 3) {
-            M.innerHTML = '仕上げに、へらで泡をすっとすり切ろう！<br>ジョッキの上を ← 左から右へ → スワイプ';
+            M.innerHTML = '<b>すり切って仕上げ！</b>ジョッキの上を左から右へなぞるか、<br>ボタンを押してね。';
             A.innerHTML = '<button class="btn-vino" id="pScrape">すり切る</button>';
             view.scrapeP = 0; view.scrapeAuto = false; view.scraped = false;
             $('pScrape').onclick = () => { view.scrapeAuto = true; };
@@ -1488,13 +1504,13 @@ const Pour = (() => {
     function afterRelease(kind) {
         const sub = $('pSub'), b = view.b;
         if (kind === 'beer' && b > 0.2) {
-            $('pourMsg').innerHTML = b > 0.95 ? 'たっぷり注いだね！<br>泡の入るすき間、残ってるかな？' : b < 0.5 ? 'まだまだ注げるよ。<br>（もう一度長押しで追加）' : 'いい感じ！<br>次は泡をのせてみよう。';
-            sub.innerHTML = '<button class="btn-ghost" id="pToFoam">泡をのせる ›</button>';
+            $('pourMsg').innerHTML = b > 0.95 ? '<b>たっぷり注いだね！</b>泡の入るすき間、残ってるかな？' : b < 0.5 ? '<b>まだまだ注げるよ</b>もう一度長押しで、追加できます。' : '<b>いい感じ！</b>次は、泡をのせよう。';
+            sub.innerHTML = '<button class="btn-ghost" id="pToFoam">次へ：泡をのせる ›</button>';
             $('pToFoam').onclick = () => setStep(2);
         }
         if (kind === 'foam' && view.f > 0.05) {
-            $('pourMsg').innerHTML = view.b + view.f > 1.0 ? 'もこもこの泡！<br>最後にすり切って仕上げよう。' : 'もう少し泡をのせてもいいかも。<br>（もう一度長押しで追加）';
-            sub.innerHTML = '<button class="btn-ghost" id="pToScrape">すり切る ›</button>';
+            $('pourMsg').innerHTML = view.b + view.f > 1.0 ? '<b>もこもこの泡！</b>最後に、すり切って仕上げよう。' : '<b>もう少し泡をのせても◎</b>もう一度長押しで、追加できます。';
+            sub.innerHTML = '<button class="btn-ghost" id="pToScrape">次へ：すり切る ›</button>';
             $('pToScrape').onclick = () => setStep(3);
         }
     }
@@ -1510,8 +1526,8 @@ const Pour = (() => {
         pourResult = { ...r, b: view.b, f: view.f };
         [...$('pourSteps').children].forEach(el => el.className = 'done');
         view.scrapeP = null;
-        $('pourMsg').innerHTML = `できあがり！<br><span style="color:var(--gold)">${r.name}</span>`;
-        $('pourActions').innerHTML = '<button class="btn-vino" id="pCheers">📸 記念撮影へ ›</button><div class="sub-row"><button class="btn-ghost" id="pRetry">注ぎなおす</button></div>';
+        $('pourMsg').innerHTML = `<b>できあがり！</b>あなたの一杯は… <em>${r.name}</em>`;
+        $('pourActions').innerHTML = '<button class="btn-vino" id="pCheers">📸 記念撮影へ ›</button><div class="sub-row"><button class="btn-ghost" id="pRetry">もう一度注ぐ</button></div>';
         $('pRetry').onclick = retry;
         $('pCheers').onclick = () => { Cheers.prep(); show('kao'); };
     }
@@ -1519,6 +1535,7 @@ const Pour = (() => {
     window.addEventListener('resize', () => { if (running) view.resize(); });
     return {
         start() {
+            $('pourSub').textContent = SHOP.name + 'に到着！ 最後の仕上げは、あなたの手で。';
             view.b = 0; view.f = 0; view.mode = null; view.chill = 1; view.guide = false; view.water = []; view.shine = 0;   // ジョッキは最初から冷えた状態
             view.scrapeP = null; view.scraped = false; view.bits = [];
             running = true;
@@ -1631,7 +1648,7 @@ const Kao = (() => {
     function load(e) {
         const f = e.target.files && e.target.files[0]; if (!f) return;
         const rd = new FileReader();
-        rd.onload = () => { const im = new Image(); im.onload = () => { face = im; fx = 0; fy = 0; zoom = 1.1; $('kaoZoom').value = 1.1; $('kaoZoomRow').hidden = false; $('kaoDone').hidden = false; $('kaoSkip').hidden = true; $('kaoNote').textContent = 'ドラッグで位置、スライダーで大きさを合わせてね'; render(); }; im.src = rd.result; };
+        rd.onload = () => { const im = new Image(); im.onload = () => { face = im; fx = 0; fy = 0; zoom = 1.1; $('kaoZoom').value = 1.1; $('kaoZoomRow').hidden = false; $('kaoDone').hidden = false; $('kaoSkip').hidden = true; $('kaoNote').textContent = '写真をドラッグで位置、スライダーで大きさを合わせてね'; render(); }; im.src = rd.result; };
         rd.readAsDataURL(f); e.target.value = '';
     }
     $('kaoCam').addEventListener('change', load);
