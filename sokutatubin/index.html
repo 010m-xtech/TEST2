@@ -1039,7 +1039,20 @@ class StripScene {   // トラックは左から右へ走り、景色は左へ�
                 c.drawImage(LOGO_TXT, cx - sw / 2 + lh + 18, sy + (sh - th) / 2, tw, th);
             }
         });
-        c.fillStyle = bottom; c.fillRect(0, this.y0 + ih - 1, W, H - this.y0 - ih + 1);
+        // 景色の下：景色を上下反転してぼかした「映りこみ」で、文字の所までなめらかにつなぐ
+        const top = this.y0 + ih, gap = H - top;
+        if (gap > 0) {
+            const dpr = this.cv.width / W, rh = Math.min(gap, top), sm = this.refl || (this.refl = document.createElement('canvas'));
+            sm.width = Math.max(1, Math.round(W / 7)); sm.height = Math.max(1, Math.round(gap / 7));
+            const x = sm.getContext('2d'); x.save(); x.translate(0, sm.height); x.scale(1, -1);
+            x.drawImage(this.cv, 0, (top - rh) * dpr, W * dpr, rh * dpr, 0, sm.height - sm.height * rh / gap, sm.width, sm.height * rh / gap); x.restore();
+            c.fillStyle = bottom; c.fillRect(0, top - 1, W, gap + 1);
+            c.imageSmoothingEnabled = true; c.drawImage(sm, 0, top - 1, W, gap + 1);   // 小さく描いてから広げる＝ふんわりぼける
+            const fade = c.createLinearGradient(0, top - 14, 0, H);
+            fade.addColorStop(0, 'rgba(7,8,15,0)'); fade.addColorStop(14 / (gap + 14), 'rgba(7,8,15,.18)');
+            fade.addColorStop(.45, 'rgba(7,8,15,.55)'); fade.addColorStop(1, 'rgba(7,8,15,.92)');
+            c.fillStyle = fade; c.fillRect(0, top - 14, W, gap + 14);
+        }
         const tr = this.truckRect();
         const sl = this.jump > 0 ? 1 - Math.sin(this.jump * Math.PI) * .4 : 1;   // ジャンプ中は影が小さく
         c.fillStyle = 'rgba(0,0,0,.32)'; c.beginPath(); c.ellipse(tr.x + tr.w / 2, tr.base + 1, tr.w * .48 * sl, 5 * sl, 0, 0, 7); c.fill();
