@@ -52,8 +52,10 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
    ================================================================== */
 #s-opening { padding: 0; justify-content: flex-start; }
 .hero { position: relative; width: 100%; min-height: 100dvh; flex: none; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; padding: 0 20px 92px; }
-.hero video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(1.1); }
-.hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(7,8,15,.55) 0%, rgba(7,8,15,0) 22%, rgba(7,8,15,.45) 42%, rgba(7,8,15,.85) 62%, rgba(7,8,15,.95) 85%, var(--night)); }
+.hero > .hero-bg { position: absolute; z-index: 0; left: 0; right: 0; top: 0; height: 60%; overflow: hidden; background: 62% 100%/cover no-repeat; }
+.hero-bg canvas { position: absolute; bottom: 5.5%; width: 46%; left: -50%; animation: heroDrive 6s linear infinite; filter: drop-shadow(0 8px 6px rgba(0,0,0,.45)); }
+@keyframes heroDrive { from { left: -50%; } to { left: 105%; } }
+.hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(7,8,15,.5) 0%, rgba(7,8,15,0) 14%, rgba(7,8,15,0) 50%, rgba(7,8,15,.85) 64%, rgba(7,8,15,.95) 85%, var(--night)); }
 .hero > * { position: relative; z-index: 1; }
 .hero-badge { position: absolute; top: max(16px, env(safe-area-inset-top)); left: 16px; display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 900; letter-spacing: .2em; }
 .hero-badge .stamp-red { width: 46px; height: 46px; font-family: 'Zen Kaku Gothic New', sans-serif; font-weight: 900; font-size: 15px; letter-spacing: -.02em; background: rgba(255,255,255,.95); transform: rotate(-12deg); }
@@ -317,7 +319,7 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
     <!-- ▼ 0. トップ（動画を背景に、コンセプトを大きく） ▼ -->
     <section class="screen active" id="s-opening">
         <div class="hero">
-            <video id="heroVideo" src="image/sokunamatabi.mp4" muted loop playsinline autoplay preload="auto" aria-hidden="true"></video>
+            <div class="hero-bg" id="heroBg" aria-hidden="true"><canvas id="heroTruck"></canvas></div>
             <div class="hero-badge h-in" style="--d:.2s"><span class="stamp-red">速達</span>マルト水谷の速達生ビール</div>
             <p class="hero-kicker h-in" style="--d:.4s">FRESH BEER EXPRESS</p>
             <h1 class="hero-title h-in" style="--d:.6s"><span class="g">速達生便。</span></h1>
@@ -559,7 +561,10 @@ const FALLBACK_SHOP = {
     name: 'トン・ガリアーノ',
     stops: [
         { bg: 'nagoya', name: '出発', title: '速達生ビール、配達中！', text: 'マルト水谷から、できたての生ビールを積んで出発！ 工場出荷から2〜3日以内にお届けします。' },
-        { spot: 'okazaki' }
+        { bg: 'tokyo' }, { bg: 'yokohama' }, { bg: 'fuji' }, { bg: 'kyoto' }, { bg: 'shirakawa' },
+        { spot: 'okazaki', photos: [{ photo: 'okazakijo.webp', caption: '岡崎城', credit: 'Evelyn-rose / Wikimedia Commons（CC0）' }] },
+        { bg: 'tsumago', name: '乙川の桜', title: '乙川の桜', text: '岡崎の春をいろどる、川ぞいの桜並木。',
+          photos: [{ photo: 'otogawa.webp', caption: '乙川の桜', credit: 'Evelyn-rose / Wikimedia Commons（CC0）' }] }
     ],
     goal: { bg: 'tg', logo: true, title: 'トン・ガリアーノに到着！', text: 'ナポリピッツァとワインのお店に、鮮度そのままでお届け。ここからは、おいしく注ぐ番です。' }
 };
@@ -674,12 +679,12 @@ const photoUrl = (p) => /^(https?:|\/|\.\.\/)/.test(p) ? p : SHOP_DIR + p;      
 function shopStop(k, d) {   // shop.js の1か所ぶんを、走るための形に
     const sp = (d.spot && SPOTS[d.spot]) || {}, bg = d.bg || (BG[d.spot] ? d.spot : 'tsumago'), imgs = loadBg(bg) || {};
     return { ...SEASONS[k].stops[k === 'fuyu' ? 1 : 0], s: k, bg, im: imgs[k], road: (BG[bg] || {}).road || 0.88, focus: (BG[bg] || {}).focus,
-        place: d.name || sp.name || '',
-        title: bySeason(d.title, k) || (sp.title && sp.title[k]) || d.name || '',
-        text: bySeason(d.text, k) || (sp.text && sp.text[k]) || '',
+        place: d.name || sp.name || '',   // 景色だけ（bg だけ）の所は、紹介文なしで「配達中」の文に
+        title: bySeason(d.title, k) || (sp.title && sp.title[k]) || d.name || '速達生ビール、配達中！',
+        text: bySeason(d.text, k) || (sp.text && sp.text[k]) || (d.name || d.spot ? '' : 'できたての生ビールを積んで、お店へ向かっています。トラックをタップすると加速！'),
         memo: bySeason(d.memo, k) || (sp.memo && sp.memo[k]) || null,
         pops: [...(d.photo ? [{ photo: d.photo, credit: d.credit, tencho: d.tencho }] : []), ...(d.photos || [])]
-            .map(p => ({ src: photoUrl(p.photo), credit: p.credit || '', caption: p.caption || '', tag: p.tencho ? '👨‍🍳 店長のおすすめ' : '' })) };
+            .map(p => ({ src: photoUrl(p.photo), credit: p.credit || '', caption: p.caption || '', tag: '' })) };
 }
 function goalStop(k) {   // 最後に着くお店
     const g = SHOP.goal || {}, bg = g.bg || 'tg', imgs = loadBg(bg) || {};
@@ -727,7 +732,6 @@ function show(name) {
     if (name !== 'pour') Pour.stop();
     if (name !== 'movie' && typeof Movie !== 'undefined') Movie.stop();
     if (name === 'route') renderSeasons();
-    heroVideo(name === 'opening');
     if (name !== 'cheers') Cheers.stop();
     if (name === 'drive') Drive.start();
     if (name === 'pour') Pour.start();
@@ -810,7 +814,14 @@ function sendSurvey() {   // GAS_URL を入れると、スプレッドシート�
         amb.appendChild(b);
     }
 })();
-function heroVideo(on) { const v = $('heroVideo'); if (!v) return; if (on) { v.muted = true; v.play().catch(() => {}); } else v.pause(); }
+function heroVideo() {   // トップの背景：今の季節の富士山の景色を、トラックが走りぬける（動画は使わない）
+    const k = currentSeason();
+    $('heroBg').style.backgroundImage = `url(${IMG_DIR}fuji_${k}.webp)`;
+    const tr = $('shipTruck'), cv = $('heroTruck');
+    const paint = () => { cv.width = 380; cv.height = Math.round(380 * 178 / 436); cv.getContext('2d').drawImage(truckRight(tr), 0, 0, cv.width, cv.height); };
+    if (tr.complete && tr.naturalWidth) paint(); else tr.addEventListener('load', paint, { once: true });
+}
+heroVideo();
 
 // ---------------- 動画 → お店へ向かう旅 ----------------
 const Movie = (() => {
@@ -860,7 +871,9 @@ $('btnStart').addEventListener('click', () => show('survey'));
 const LOGO_PIG = new Image(); LOGO_PIG.src = '../sakesindan_375060/tg_logo_pig.webp';
 const LOGO_TXT = new Image(); LOGO_TXT.src = '../sakesindan_375060/tg_logo_text_light.webp';
 const OVERLAP = 0.24;     // 画像どうしを重ねる幅（画像の横はばに対する割合）。広いほどなめらかにつながる
-const CRUISE_RATE = 0.3;  // ふだんの流れる速さ（1秒に、景色の高さの何倍ぶん進むか）。景色の大きさが変わっても、1枚を走る時間は同じ
+const HOLD_S = 3;
+const BOOST = 2;          // トラックを押したときの速さ（ふだんの何倍か）。押しつづけると約半分の時間で着く         // 名所で立ち止まる時間（秒）。右タップですぐ出発
+const CRUISE_RATE = 1.3;  // ふだんの流れる速さ（1秒に、景色の高さの何倍ぶん進むか）。景色の大きさが変わっても、1枚を走る時間は同じ
 function featherLeft(im) {   // 画像の左はしを透明にぼかした版（右どなりから、前の画像に重ねるため）
     if (im.fe) return im.fe;
     const c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight;
@@ -924,7 +937,25 @@ class StripScene {   // トラックは左から右へ走り、景色は左へ�
         this.goalPan = g.start + g.w * (g.st.focus || 0.5);   // ゴールのお店の入口が、画面のまん中に来る位置
         if (!keep) this.pan = this.segs[0].start + this.W / 2;
     }
-    setRoute(stops) { this.stops = stops; this.segs = []; this.layout(); this.arrived = false; this.goto = null; this.speed = this.cruise; this.parts = []; this.puffs = []; this.boost = 0; }
+    setRoute(stops) {
+        this.stops = stops; this.segs = []; this.layout(); this.arrived = false; this.goto = null; this.speed = this.cruise; this.parts = []; this.puffs = []; this.boost = 0;
+        // 名所（思い出の写真がある所）では、景色のまん中でトラックが止まる
+        this.holds = this.segs.map((sg, i) => sg.st.arrive || !(sg.st.pops && sg.st.pops.length) ? null : { i, pan: sg.start + sg.w * 0.5, done: false });
+        this.holdT = 0;
+    }
+    nextHold() { return (this.holds || []).find(h => h && !h.done && h.pan > this.pan - 2); }
+    holding() { const h = this.nextHold(); return !!h && Math.abs(h.pan - this.pan) < 2 && this.goto == null; }
+    release() { const h = this.nextHold(); if (h) h.done = true; this.holdT = 0; }   // 立ち止まりをおわって、また走り出す
+    resetHolds() { (this.holds || []).forEach(h => { if (h && h.pan > (this.goto ?? this.pan) - 3) h.done = false; }); }
+    stopPans() { return [...(this.holds || []).filter(Boolean).map(h => h.pan), this.goalPan]; }   // 上のバーに出す「止まる所」
+    stopIndex() { const p = this.stopPans(); let k = p.findIndex(x => this.pan < x - 2); if (k < 0) k = p.length - 1; return k; }
+    stopProgress(k) { const p = this.stopPans(), from = k === 0 ? this.segs[0].start + this.W / 2 : p[k - 1]; return clamp((this.pan - from) / (p[k] - from), 0, 1); }
+    gotoStop(k) {   // k 番目の止まる所へ（早送り・巻きもどし）
+        const p = this.stopPans();
+        if (k < 0) { this.goto = this.segs[0].start + this.W / 2; }
+        else { const t = p[clamp(k, 0, p.length - 1)]; this.goto = Math.max(this.pan, t - this.ih * 0.4); if (this.goto <= this.pan + 1) this.goto = null; }
+        this.arrived = false;
+    }
     index() {   // いま画面のまん中にある景色の番号
         let k = 0;
         this.segs.forEach((sg, i) => { if (this.pan >= sg.start + sg.w * OVERLAP * 0.5) k = i; });
@@ -932,7 +963,7 @@ class StripScene {   // トラックは左から右へ走り、景色は左へ�
     }
     progress(i) { const sg = this.segs[i], nx = this.segs[i + 1]; if (!nx) return this.arrived ? 1 : clamp((this.pan - sg.start) / (this.goalPan - sg.start), 0, 1); return clamp((this.pan - sg.start) / (nx.start - sg.start), 0, 1); }
     gotoIndex(i) { const sg = this.segs[clamp(i, 0, this.segs.length - 1)]; this.goto = i <= 0 ? this.segs[0].start + this.W / 2 : Math.min(this.goalPan, sg.start + sg.w * OVERLAP * 0.5 + 40); this.arrived = false; }
-    dash() { this.boost = 1.6; this.jump = 1; }   // トラックを押したら、ジャンプして加速
+    dash() { this.boost = 2.5; this.jump = 1; if (this.holding()) this.release(); }   // 止まっているときに押すと、すぐ出発   // トラックを押したら、ジャンプして加速
     update(dt) {
         this.t += dt; this.boost = Math.max(0, this.boost - dt);
         if (this.goto != null) {   // 早送り・巻きもどし
@@ -940,11 +971,20 @@ class StripScene {   // トラックは左から右へ走り、景色は左へ�
             this.speed = Math.sign(dist) * clamp(Math.abs(dist) * 3.2, 80, 1600);
             if (Math.abs(dist) < 4) { this.pan = this.goto; this.goto = null; this.speed = this.cruise; }
         } else if (!this.arrived) {
-            const dist = this.goalPan - this.pan, cruise = this.boost > 0 ? this.cruise * 3.2 : this.cruise;
-            this.speed += ((dist < 500 ? clamp(dist * 0.6, 0, cruise) : cruise) - this.speed) * Math.min(1, dt * (this.boost > 0 ? 5 : 2));
-            if (dist <= 1) { this.arrived = true; this.speed = 0; this.pan = this.goalPan; }
+            const h = this.nextHold(), stopAt = h ? h.pan : this.goalPan;
+            const dist = stopAt - this.pan, cruise = this.boost > 0 ? this.cruise * BOOST : this.cruise;
+            if (h && dist < 2) {   // 名所で立ち止まる
+                this.pan = h.pan; this.speed = 0; this.holdT += dt;
+                if (this.holdT >= HOLD_S) this.release();
+            } else {
+                const brake = Math.sqrt(2 * this.ih * 2.6 * Math.max(0, dist)) + 30;   // 止まる所の手前で、すっとブレーキ
+                this.speed += (Math.min(cruise, brake) - this.speed) * Math.min(1, dt * 4);
+                if (!h && dist <= 1) { this.arrived = true; this.speed = 0; this.pan = this.goalPan; }
+            }
         } else this.speed = 0;
+        const hh = this.goto == null ? this.nextHold() : null;   // 進む前に、次に止まる所をおぼえておく（速くても通りこさない）
         this.pan = Math.min(this.goalPan, this.pan + this.speed * dt);
+        if (hh && this.pan > hh.pan) this.pan = hh.pan;
         if (this.pan >= this.goalPan - 1 && this.goto == null) { this.arrived = true; this.speed = 0; }
         // 舞うもの（春：花びら／秋：落ち葉／冬：雪）… 景色といっしょに左へ流れる
         const wt = { haru: 'petal', aki: 'leaf', fuyu: 'snow' }[this.stops[0].s];
@@ -1025,15 +1065,18 @@ const Drive = (() => {
     const cv = $('sceneCanvas'), scene = new StripScene(cv);
     let running = false, raf = 0, last = 0, stops = [], idx = -1, introUntil = 0, honkTimer = 0;
     function size() { const r = $('s-drive').getBoundingClientRect(); scene.resize(r.width, r.height); }
+    let capKey = '';
     function caption(i) {
         idx = i; const s = stops[i];
+        showPops(i);
+        const key = s.place + '|' + s.title;
+        if (key === capKey) return;   // 景色が変わっても、同じ文ならそのまま
+        capKey = key;
         $('capBody').innerHTML = `<div class="cap-in">
-            <p class="lab"><span class="num">0${i + 1}</span><span class="place">${s.place}</span></p>
+            ${s.place ? `<p class="lab"><span class="place">${s.place}</span></p>` : ''}
             <h2 class="jp-phrase">${s.title}</h2>
             <p class="txt jp-phrase">${s.text}</p>
             ${s.memo ? `<p class="memo"><span>歴史メモ</span><b>${s.memo[0]}</b><span class="jp-phrase">${s.memo[1]}</span></p>` : ''}</div>`;
-        $('segs').innerHTML = stops.map((_, k) => `<div><i id="seg${k}"></i></div>`).join('');
-        showPops(i);
     }
     let popTimer = 0;
     function showPops(i) {   // 名所の思い出を、1枚ずつふわっと（複数あれば順番に）
@@ -1065,14 +1108,14 @@ const Drive = (() => {
         bubble(dt);
         if (performance.now() > introUntil || scene.goto != null) scene.update(dt);
         const i = scene.index(); if (i !== idx) caption(i);
-        stops.forEach((_, k) => { const el = $('seg' + k); if (el) el.style.width = (k < i ? 100 : k > i ? 0 : scene.progress(k) * 100) + '%'; });
+        const si = scene.stopIndex(); scene.stopPans().forEach((_, k) => { const el = $('seg' + k); if (el) el.style.width = (k < si ? 100 : k > si ? 0 : scene.stopProgress(k) * 100) + '%'; });
         const arrived = scene.arrived && i === stops.length - 1;
         $('btnNext').hidden = !arrived; $('navHint').hidden = arrived;
         scene.draw();
         raf = requestAnimationFrame(frame);
     }
-    function next() { if (scene.arrived && idx === stops.length - 1) show('pour'); else scene.gotoIndex(idx + 1); }
-    function prev() { scene.gotoIndex(idx - (scene.progress(idx) > 0.25 ? 0 : 1)); }
+    function next() { if (scene.arrived && idx === stops.length - 1) show('pour'); else if (scene.holding()) scene.release(); else scene.gotoStop(scene.stopIndex()); }
+    function prev() { const k = scene.stopIndex(), p = scene.stopPans(); const back = scene.holding() || (k > 0 && scene.pan - p[k - 1] < scene.ih * 0.6) ? k - 2 : k - 1; if (back < 0) scene.gotoStop(-1); else scene.goto = p[back]; scene.arrived = false; scene.resetHolds(); }
     $('btnNext').addEventListener('click', next);
     // ショート動画のように：右をタップで進む／左で戻る。トラックをタップするとジャンプして加速
     $('s-drive').addEventListener('click', (e) => {
@@ -1087,10 +1130,11 @@ const Drive = (() => {
     window.addEventListener('resize', () => { if (running) size(); });
     return {
         start() {
-            stops = buildStops(); honks = 0; idx = -1; bubbleT = 3; bubbleOn = 0; $('honk').classList.remove('show');
+            stops = buildStops(); honks = 0; idx = -1; capKey = ''; bubbleT = 3; bubbleOn = 0; $('honk').classList.remove('show');
             $('chip').textContent = SEASONS[mode].jp + 'ルート';
             requestAnimationFrame(() => {
                 size(); scene.setRoute(stops);
+                $('segs').innerHTML = scene.stopPans().map((_, k) => `<div><i id="seg${k}"></i></div>`).join('');   // 上のバーは、止まる所だけ
                 const intro = $('intro'); intro.classList.remove('hide');
                 introUntil = performance.now() + 1600;
                 setTimeout(() => intro.classList.add('hide'), 1600);
@@ -1120,8 +1164,8 @@ class PourView {
     }
     newBubble(init) { return { u: rand(-.85, .85), y: init ? Math.random() : 0, v: rand(.18, .42), r: rand(.6, 1.6), w: rand(0, 6) }; }
     resize() {
-        const w = this.cv.clientWidth, h = Math.round(w * (this.hero ? 1.25 : 1.12)), d = Math.min(this.hero ? 3 : 2, window.devicePixelRatio || 1);
-        this.cv.style.height = h + 'px';
+        const w = this.cv.clientWidth || this.fixedW || 300, h = Math.round(w * (this.hero ? 1.25 : 1.12)), d = Math.min(this.hero ? 3 : 2, window.devicePixelRatio || 1);
+        if (this.cv.clientWidth) this.cv.style.height = h + 'px';
         this.cv.width = Math.round(w * d); this.cv.height = Math.round(h * d);
         this.ctx.setTransform(d, 0, 0, d, 0, 0);
         this.W = w; this.H = h;
@@ -1454,9 +1498,9 @@ const Pour = (() => {
         [...$('pourSteps').children].forEach(el => el.className = 'done');
         view.scrapeP = null;
         $('pourMsg').innerHTML = `できあがり！<br><span style="color:var(--gold)">${r.name}</span>`;
-        $('pourActions').innerHTML = '<button class="btn-vino" id="pCheers">乾杯する ›</button><div class="sub-row"><button class="btn-ghost" id="pRetry">注ぎなおす</button></div>';
+        $('pourActions').innerHTML = '<button class="btn-vino" id="pCheers">📸 記念撮影へ ›</button><div class="sub-row"><button class="btn-ghost" id="pRetry">注ぎなおす</button></div>';
         $('pRetry').onclick = retry;
-        $('pCheers').onclick = () => show('cheers');
+        $('pCheers').onclick = () => { Cheers.prep(); show('kao'); };
     }
     function retry() { view.b = 0; view.f = 0; view.mode = null; view.guide = false; view.shine = 0; view.scrapeP = null; view.scraped = false; view.bits = []; setStep(1); }
     window.addEventListener('resize', () => { if (running) view.resize(); });
@@ -1517,7 +1561,14 @@ const Cheers = (() => {
                 last = performance.now(); raf = requestAnimationFrame(loop);
             });
         },
-        stop() { running = false; cancelAnimationFrame(raf); }
+        stop() { running = false; cancelAnimationFrame(raf); },
+        prep() {   // 乾杯画面は出さずに、記念撮影とマイカード用のジョッキだけ描いておく
+            view.fixedW = 300;
+            view.b = pourResult.b != null ? Math.min(1.04, pourResult.b) : 0.7;
+            view.f = pourResult.f != null ? Math.min(1.12 - Math.min(1, view.b), pourResult.f) : 0.3;
+            view.chill = 1; view.mode = null; view.guide = false; view.shine = 0; view.water = []; view.scrapeP = null;
+            view.resize(); view.update(0.016); view.draw();
+        }
     };
 })();
 function renderCheers() { Cheers.start(); }
