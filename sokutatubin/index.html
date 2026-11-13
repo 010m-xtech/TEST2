@@ -7,7 +7,7 @@
 <!-- Google Fonts（見出し：Dela Gothic One ／ 本文：Zen Kaku Gothic New ／ 数字：Oswald） -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Oswald:wght@500;700&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Yomogi&family=Oswald:wght@500;700&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
 /* ==================================================================
    ▼ 色（動画の世界観：夜空・金色のビール・白い泡・冷たい鮮度の水色・速達の赤） ▼
@@ -126,14 +126,19 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
 .season-card small { font-size: 11px; font-weight: 900; text-shadow: 0 1px 4px rgba(0,0,0,.8); }
 .season-card .now { position: absolute; top: 8px; right: 8px; font-size: 10px; font-weight: 900; padding: 2px 8px; border-radius: 999px; background: var(--gold); color: #2a1600; }
 /* 名所の写真がふわっと浮かぶ */
-.pop { position: absolute; z-index: 2; left: 50%; top: 13%; width: min(58%, 230px); padding: 8px 8px 10px; background: #fffdf6; color: #1d1b22; border-radius: 4px; box-shadow: 0 18px 40px rgba(0,0,0,.5); text-align: center; pointer-events: none;
-    opacity: 0; transform: translate(-50%, 24px) rotate(-4deg) scale(.85); transition: opacity .8s ease, transform .9s cubic-bezier(.2,.8,.3,1.2); }
-.pop.show { opacity: 1; transform: translate(-50%, 0) rotate(-3deg) scale(1); animation: popFloat 4s ease-in-out .9s infinite; }
-@keyframes popFloat { 50% { transform: translate(-50%, -8px) rotate(-1.5deg) scale(1); } }
-.pop-tag { position: absolute; top: -12px; left: 50%; transform: translateX(-50%) rotate(2deg); white-space: nowrap; padding: 3px 10px; border-radius: 999px; background: var(--red); color: #fff; font-size: 11px; font-weight: 900; box-shadow: 0 3px 8px rgba(0,0,0,.3); }
-.pop img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
-.pop p { margin: 6px 0 0; font-weight: 900; font-size: 14px; letter-spacing: .08em; }
-.pop small { display: block; font-size: 8px; color: #8a8f99; margin-top: 2px; }
+.pop { position: absolute; z-index: 2; left: 50%; top: 9%; width: min(90%, 380px); text-align: center; pointer-events: none;
+    opacity: 0; transform: translate(-50%, 18px) scale(.94); filter: blur(6px); transition: opacity 1.4s ease, transform 1.6s ease, filter 1.4s ease; }
+.pop.show { opacity: 1; transform: translate(-50%, 0) scale(1); filter: blur(0); animation: popFloat 5s ease-in-out 1.6s infinite; }
+@keyframes popFloat { 50% { transform: translate(-50%, -7px) scale(1.01); } }
+.pop::before { content: ''; position: absolute; left: -12%; right: -12%; top: -6%; height: 92%; border-radius: 50%;
+    background: radial-gradient(ellipse at center, rgba(255,250,235,.85) 0%, rgba(255,240,210,.45) 45%, rgba(255,240,210,0) 72%); filter: blur(4px); }
+.pop img { position: relative; display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; opacity: .96;
+    filter: sepia(.18) saturate(.95) brightness(1.06) contrast(.96);
+    -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 62%, rgba(0,0,0,.7) 78%, transparent 100%); mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 62%, rgba(0,0,0,.7) 78%, transparent 100%); }
+.pop p { position: relative; margin: -12px 0 0; font-family: 'Yomogi', 'Zen Kaku Gothic New', sans-serif; font-size: 22px; letter-spacing: .08em; color: #fff; text-shadow: 0 0 8px rgba(0,0,0,.8), 0 2px 4px rgba(0,0,0,.6); }
+.pop small { display: block; font-size: 8px; color: rgba(255,255,255,.8); margin-top: 2px; text-shadow: 0 1px 3px rgba(0,0,0,.8); }
+.pop-tag[hidden] { display: none; }
+.pop-tag { display: inline-block; margin-bottom: -4px; position: relative; z-index: 1; padding: 3px 10px; border-radius: 999px; background: rgba(229,50,45,.92); color: #fff; font-size: 11px; font-weight: 900; box-shadow: 0 3px 8px rgba(0,0,0,.3); }
 /* ショート動画風の左右タップ */
 .nav-edge { position: absolute; top: 50%; z-index: 2; width: 34px; height: 34px; margin-top: -60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 900; color: rgba(255,255,255,.85); background: rgba(0,0,0,.25); pointer-events: none; }
 .nav-edge.l { left: 8px; } .nav-edge.r { right: 8px; }
@@ -191,8 +196,8 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
 .story-btn:disabled { opacity: .3; }
 .story-btn.primary { background: linear-gradient(180deg, #ffe58f, var(--gold) 45%, var(--amber)); color: #2a1600; border-color: transparent; font-weight: 900; }
 .controls .hint { margin-left: auto; font-size: 11px; letter-spacing: .1em; color: rgba(255,255,255,.6); }
-.honk { position: absolute; z-index: 4; padding: 6px 12px; border-radius: 14px; background: #fff; color: var(--ink); font-weight: 900; font-size: 15px; pointer-events: none; opacity: 0; transform: translate(-50%, 6px) scale(.8); transition: opacity .2s, transform .25s cubic-bezier(.3,1.6,.5,1); box-shadow: 0 6px 14px rgba(0,0,0,.35); white-space: nowrap; }
-.honk::after { content: ''; position: absolute; left: 30%; bottom: -7px; border: 7px solid transparent; border-top-color: #fff; border-bottom: 0; }
+.honk { position: absolute; z-index: 4; max-width: 72vw; padding: 7px 13px; border-radius: 16px; background: #fff; color: var(--ink); font-weight: 900; font-size: 14px; line-height: 1.4; pointer-events: none; opacity: 0; transform: translate(-50%, 6px) scale(.8); transition: opacity .25s, transform .3s cubic-bezier(.3,1.6,.5,1); box-shadow: 0 6px 14px rgba(0,0,0,.35); white-space: nowrap; border: 2px solid var(--gold); }
+.honk::after { content: ''; position: absolute; left: 22%; bottom: -8px; border: 8px solid transparent; border-top-color: #fff; border-bottom: 0; }
 .honk.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
 .intro { position: absolute; inset: 0; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; background: rgba(7,8,15,.45); transition: opacity .7s; pointer-events: none; }
 .intro.hide { opacity: 0; }
@@ -270,6 +275,13 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
 .card-rarity { margin: 14px 0 2px; font-family: 'Oswald', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: .45em; padding-left: .45em; }
 .card-actions { max-width: 340px; margin: 14px auto 10px; display: grid; gap: 10px; }
 .photo-btn { display: block; cursor: pointer; padding: 13px 16px; }
+
+/* ▼ カオハメ ▼ */
+#s-kao { justify-content: flex-start; padding-top: max(16px, env(safe-area-inset-top)); }
+.kao-wrap { border-radius: 14px; overflow: hidden; box-shadow: 0 18px 40px -10px rgba(0,0,0,.8), 0 0 0 2px rgba(255,197,61,.5); }
+#kaoCv { display: block; width: 100%; touch-action: none; cursor: grab; }
+.kao-zoom { display: flex; align-items: center; gap: 10px; margin: 12px 4px 0; font-size: 12px; font-weight: 900; color: #c9cde0; }
+.kao-zoom input { flex: 1; accent-color: var(--gold); }
 
 /* ▼ S・A・B の「きらーん」 ▼ */
 .card-stage { position: relative; perspective: 1000px; }
@@ -373,7 +385,7 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
             <div class="segs" id="segs"></div>
             <div class="hud-title"><p>速達生ビール<span>配達中</span></p><span class="chip" id="chip">四季めぐり</span></div>
         </div>
-        <div class="honk" id="honk">プップー！</div>
+        <div class="honk" id="honk"></div>
         <div class="pop" id="pop" aria-hidden="true"><span class="pop-tag" id="popTag" hidden></span><img id="popImg" alt=""><p id="popCap"></p><small id="popCredit"></small></div>
         <div class="nav-edge l" aria-hidden="true">‹</div><div class="nav-edge r" aria-hidden="true">›</div>
         <div class="cap">
@@ -381,12 +393,12 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
             <div class="controls">
                 <button class="story-btn" id="btnPrev" hidden>‹ 戻る</button>
                 <button class="story-btn primary" id="btnNext" hidden>お店に入る ›</button>
-                <span class="hint" id="navHint">◀ 左タップで戻る ／ 右タップで進む ▶</span>
+                <span class="hint" id="navHint">◀ 戻る ／ 進む ▶　トラックをタップで加速！</span>
             </div>
         </div>
         <div class="intro" id="intro">
             <p class="t">出発進行！</p>
-            <p class="s jp-phrase">右をタップで進む／左で戻る<br>トラックをタップするとクラクション！</p>
+            <p class="s jp-phrase">右をタップで進む／左で戻る<br>トラックをタップすると加速＆ジャンプ！</p>
         </div>
     </section>
 
@@ -424,8 +436,25 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
                 <p class="msg-paper jp-phrase" id="chMsg"></p>
             </div>
             <div class="ch-actions">
-                <button class="btn-vino" data-go="card">🃏 マイカードをつくる</button>
+                <button class="btn-vino" data-go="kao">📸 カオハメ写真をとる</button>
                 <div class="sub-row"><button class="btn-ghost" data-go="route">別の季節で</button><button class="btn-ghost" data-go="opening">トップへ</button></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ▼ 4-2. カオハメ写真 ▼ -->
+    <section class="screen" id="s-kao">
+        <div class="qa">
+            <p class="qa-kicker">PHOTO</p>
+            <h2 class="qa-title" style="margin-bottom:12px">カオハメで記念写真！</h2>
+            <div class="kao-wrap"><canvas id="kaoCv" aria-label="カオハメ写真"></canvas></div>
+            <div class="kao-zoom" id="kaoZoomRow" hidden><span>小</span><input type="range" id="kaoZoom" min="0.6" max="3" step="0.01" value="1.1" aria-label="顔の大きさ"><span>大</span></div>
+            <p class="op-note" id="kaoNote">顔の穴に、自分の写真をはめよう！</p>
+            <div class="card-actions">
+                <label class="btn-vino photo-btn">📸 写真を撮る<input type="file" accept="image/*" capture="user" id="kaoCam" hidden></label>
+                <button class="btn-vino" id="kaoDone" hidden>この写真でマイカードへ ›</button>
+                <button class="btn-ghost" data-go="card" id="kaoSkip">写真なしでマイカードへ ›</button>
+                <p class="op-note">※ 写真はこの端末の中だけで使い、どこにも送信しません</p>
             </div>
         </div>
     </section>
@@ -439,8 +468,7 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
             <p class="card-rarity" id="cardRarity">RAINBOW</p>
             <p class="op-note" style="margin-top:0">指でなぞると、カードがキラッと光るよ</p>
             <div class="card-actions">
-                <label class="btn-ghost photo-btn">📷 顔写真を入れる（任意）<input type="file" accept="image/*" capture="user" id="faceInput" hidden></label>
-                <button class="btn-ghost" id="faceClear" hidden>写真をはずす</button>
+                <button class="btn-ghost" data-go="kao">📸 カオハメ写真をとりなおす</button>
                 <button class="btn-vino" id="cardSave">💾 カードを画像で保存</button>
                 <div class="sub-row"><button class="btn-ghost" data-go="route">別の季節で</button><button class="btn-ghost" data-go="opening">トップへ</button></div>
                 <p class="op-note">※ 写真はこの端末の中だけで使い、どこにも送信しません</p>
@@ -529,7 +557,10 @@ const SHOP_DIR = 'shops/' + SHOP_ID + '/';
 // shop.js が読めないときに使う、かわりの設定（トン・ガリアーノ）
 const FALLBACK_SHOP = {
     name: 'トン・ガリアーノ',
-    stops: [{ spot: 'kyoto' }, { spot: 'fuji' }, { spot: 'okazaki' }],
+    stops: [
+        { bg: 'nagoya', name: '出発', title: '速達生ビール、配達中！', text: 'マルト水谷から、できたての生ビールを積んで出発！ 工場出荷から2〜3日以内にお届けします。' },
+        { spot: 'okazaki' }
+    ],
     goal: { bg: 'tg', logo: true, title: 'トン・ガリアーノに到着！', text: 'ナポリピッツァとワインのお店に、鮮度そのままでお届け。ここからは、おいしく注ぐ番です。' }
 };
 let SHOP = FALLBACK_SHOP;
@@ -614,7 +645,8 @@ const SPOTS = {
              aki:   ['名古屋めし', '味噌かつ・ひつまぶし・手羽先。八丁味噌などの豆みそが、名古屋の味を支える。'],
              fuyu:  ['2022年', 'テレビ塔が、電波塔として初めて国の重要文化財になった。'] } }
 };
-const PHOTO_H = 0.68;   // 名所の画像を、画面の高さの何割で表示するか
+const PHOTO_H = 0.6;    // 景色の画像を、画面の高さの何割で表示するか（小さいほど、景色を広く見せる）
+const PHOTO_TOP = 0.07; // 景色を画面の上から何割の位置に表示するか
 const SPOT_IMG = {};
 function loadBg(key) {   // 景色の画像（4季節）を、使うときだけ読みこむ
     if (!BG[key]) return null;
@@ -646,14 +678,15 @@ function shopStop(k, d) {   // shop.js の1か所ぶんを、走るための形�
         title: bySeason(d.title, k) || (sp.title && sp.title[k]) || d.name || '',
         text: bySeason(d.text, k) || (sp.text && sp.text[k]) || '',
         memo: bySeason(d.memo, k) || (sp.memo && sp.memo[k]) || null,
-        pop: d.photo ? { src: photoUrl(d.photo), credit: d.credit || '', tag: d.tencho ? '👨‍🍳 店長のおすすめ' : '' } : null };
+        pops: [...(d.photo ? [{ photo: d.photo, credit: d.credit, tencho: d.tencho }] : []), ...(d.photos || [])]
+            .map(p => ({ src: photoUrl(p.photo), credit: p.credit || '', caption: p.caption || '', tag: p.tencho ? '👨‍🍳 店長のおすすめ' : '' })) };
 }
 function goalStop(k) {   // 最後に着くお店
     const g = SHOP.goal || {}, bg = g.bg || 'tg', imgs = loadBg(bg) || {};
     return { ...SEASONS[k].stops[2], s: k, arrive: true, bg, im: imgs[k], road: (BG[bg] || {}).road || 0.88, focus: (BG[bg] || {}).focus || 0.5,
         sign: !!g.logo, memo: null, place: 'ゴール',
         title: bySeason(g.title, k) || SHOP.name + 'に到着！', text: bySeason(g.text, k) || '鮮度そのままでお届け。ここからは、おいしく注ぐ番です。',
-        pop: g.photo ? { src: photoUrl(g.photo), credit: g.credit || '', tag: SHOP.name } : null };
+        pop: g.photo ? { src: photoUrl(g.photo), credit: g.credit || '' } : null, pops: g.photo ? [{ src: photoUrl(g.photo), credit: g.credit || '', caption: SHOP.name }] : [] };
 }
 const STOP_MS = 8000;        // 1つの景色を走る時間（すぎると自動で次へ）
 // ▼ アンケートの送り先（Google Apps Script のURL）。空のままだと送信しません ▼
@@ -700,6 +733,7 @@ function show(name) {
     if (name === 'pour') Pour.start();
     if (name === 'cheers') renderCheers();
     if (name === 'card') MyCard.start(); else if (typeof MyCard !== 'undefined') MyCard.stop();
+    if (name === 'kao') Kao.start();
 }
 document.addEventListener('click', (e) => {
     const b = e.target.closest('[data-go]');
@@ -825,14 +859,14 @@ $('btnStart').addEventListener('click', () => show('survey'));
 // ==================================================================
 const LOGO_PIG = new Image(); LOGO_PIG.src = '../sakesindan_375060/tg_logo_pig.webp';
 const LOGO_TXT = new Image(); LOGO_TXT.src = '../sakesindan_375060/tg_logo_text_light.webp';
-const OVERLAP = 0.16;     // 画像どうしを重ねる幅（画像の横はばに対する割合）
-const CRUISE = 170;       // ふだんの流れる速さ（1秒あたりのピクセル）
-function featherRight(im) {   // 画像の右はしを透明にぼかした版（左となりの画像に重ねるため）
+const OVERLAP = 0.24;     // 画像どうしを重ねる幅（画像の横はばに対する割合）。広いほどなめらかにつながる
+const CRUISE_RATE = 0.3;  // ふだんの流れる速さ（1秒に、景色の高さの何倍ぶん進むか）。景色の大きさが変わっても、1枚を走る時間は同じ
+function featherLeft(im) {   // 画像の左はしを透明にぼかした版（右どなりから、前の画像に重ねるため）
     if (im.fe) return im.fe;
     const c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight;
     const x = c.getContext('2d'); x.drawImage(im, 0, 0);
     x.globalCompositeOperation = 'destination-in';
-    const g = x.createLinearGradient(0, 0, c.width, 0); g.addColorStop(0, '#000'); g.addColorStop(1 - OVERLAP, '#000'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    const g = x.createLinearGradient(0, 0, c.width, 0); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(OVERLAP, '#000'); g.addColorStop(1, '#000');
     x.fillStyle = g; x.fillRect(0, 0, c.width, c.height);   // 1回で塗る（2回に分けると先に塗った部分が消える）
     return (im.fe = c);
 }
@@ -856,31 +890,41 @@ function placeholder(st) {   // 画像がまだ無いときの、かわりの景
     c.naturalWidth = 1600; c.naturalHeight = 808; c.ok = true; c.bottomColor = base.ground[0];
     return c;
 }
-class StripScene {
+// 右向きのトラック：絵を左右反転し、荷台の広告だけ元の向きで貼りなおす（文字が鏡文字にならないように）
+function truckRight(im) {
+    if (im.rt) return im.rt;
+    const w = im.naturalWidth, h = im.naturalHeight, c = document.createElement('canvas'); c.width = w; c.height = h;
+    const x = c.getContext('2d');
+    x.save(); x.translate(w, 0); x.scale(-1, 1); x.drawImage(im, 0, 0); x.restore();
+    const a = 0.33, b = 0.945, t = 0.06, bt = 0.70;   // 広告の範囲（元の絵での割合）
+    x.drawImage(im, w * a, h * t, w * (b - a), h * (bt - t), w * (1 - b), h * t, w * (b - a), h * (bt - t));
+    return (im.rt = c);
+}
+class StripScene {   // トラックは左から右へ走り、景色は左へ流れる（次の景色は右から来る）
     constructor(cv) {
         this.cv = cv; this.ctx = cv.getContext('2d'); this.truck = $('shipTruck');
-        this.parts = []; this.puffs = []; this.t = 0; this.jump = 0; this.speed = 0; this.pan = 0; this.goto = null; this.segs = []; this.puffT = 0; this.arrived = false;
+        this.parts = []; this.puffs = []; this.t = 0; this.jump = 0; this.speed = 0; this.pan = 0; this.goto = null; this.segs = []; this.puffT = 0; this.arrived = false; this.boost = 0;
     }
     resize(w, h) {
         const d = Math.min(2, window.devicePixelRatio || 1);
         this.cv.width = Math.round(w * d); this.cv.height = Math.round(h * d); this.ctx.setTransform(d, 0, 0, d, 0, 0);
-        this.W = w; this.H = h; this.ih = Math.max(h * PHOTO_H, w / 1.98);
-        this.TW = Math.min(w * 0.5, 240); this.TH = this.TW * 178 / 436;
+        this.W = w; this.H = h; this.ih = Math.max(h * PHOTO_H, w / 1.98); this.cruise = this.ih * CRUISE_RATE; this.y0 = Math.round(h * PHOTO_TOP);
+        this.TW = Math.min(w * 0.42, this.ih * 0.52); this.TH = this.TW * 178 / 436;
         if (this.stops) this.layout();
     }
     imgOf(seg) { const im = seg.st.im; return im && im.ok ? im : (seg.ph || (seg.ph = placeholder(seg.st))); }
     layout() {
-        const keep = this.segs.length ? (this.pan - this.segs[0].start) : null;
+        const keep = this.segs.length;
         let u = 0;
         this.segs = this.stops.map(st => {
             const seg = { st, start: u }; const im = this.imgOf(seg);
             seg.w = this.ih * im.naturalWidth / im.naturalHeight; u += seg.w * (1 - OVERLAP); return seg;
         });
         const g = this.segs[this.segs.length - 1];
-        this.goalPan = g.start + g.w - g.w * (g.st.focus || 0.5);   // ゴールのお店の入口が、画面のまん中に来る位置
-        if (keep == null) this.pan = this.segs[0].start + this.W / 2;
+        this.goalPan = g.start + g.w * (g.st.focus || 0.5);   // ゴールのお店の入口が、画面のまん中に来る位置
+        if (!keep) this.pan = this.segs[0].start + this.W / 2;
     }
-    setRoute(stops) { this.stops = stops; this.segs = []; this.layout(); this.arrived = false; this.goto = null; this.speed = CRUISE; this.parts = []; this.puffs = []; }
+    setRoute(stops) { this.stops = stops; this.segs = []; this.layout(); this.arrived = false; this.goto = null; this.speed = this.cruise; this.parts = []; this.puffs = []; this.boost = 0; }
     index() {   // いま画面のまん中にある景色の番号
         let k = 0;
         this.segs.forEach((sg, i) => { if (this.pan >= sg.start + sg.w * OVERLAP * 0.5) k = i; });
@@ -888,67 +932,66 @@ class StripScene {
     }
     progress(i) { const sg = this.segs[i], nx = this.segs[i + 1]; if (!nx) return this.arrived ? 1 : clamp((this.pan - sg.start) / (this.goalPan - sg.start), 0, 1); return clamp((this.pan - sg.start) / (nx.start - sg.start), 0, 1); }
     gotoIndex(i) { const sg = this.segs[clamp(i, 0, this.segs.length - 1)]; this.goto = i <= 0 ? this.segs[0].start + this.W / 2 : Math.min(this.goalPan, sg.start + sg.w * OVERLAP * 0.5 + 40); this.arrived = false; }
+    dash() { this.boost = 1.6; this.jump = 1; }   // トラックを押したら、ジャンプして加速
     update(dt) {
-        this.t += dt;
+        this.t += dt; this.boost = Math.max(0, this.boost - dt);
         if (this.goto != null) {   // 早送り・巻きもどし
             const dist = this.goto - this.pan;
             this.speed = Math.sign(dist) * clamp(Math.abs(dist) * 3.2, 80, 1600);
-            if (Math.abs(dist) < 4) { this.pan = this.goto; this.goto = null; this.speed = CRUISE; }
+            if (Math.abs(dist) < 4) { this.pan = this.goto; this.goto = null; this.speed = this.cruise; }
         } else if (!this.arrived) {
-            const dist = this.goalPan - this.pan;
-            this.speed += ((dist < 500 ? clamp(dist * 0.6, 0, CRUISE) : CRUISE) - this.speed) * Math.min(1, dt * 2);
+            const dist = this.goalPan - this.pan, cruise = this.boost > 0 ? this.cruise * 3.2 : this.cruise;
+            this.speed += ((dist < 500 ? clamp(dist * 0.6, 0, cruise) : cruise) - this.speed) * Math.min(1, dt * (this.boost > 0 ? 5 : 2));
             if (dist <= 1) { this.arrived = true; this.speed = 0; this.pan = this.goalPan; }
         } else this.speed = 0;
         this.pan = Math.min(this.goalPan, this.pan + this.speed * dt);
         if (this.pan >= this.goalPan - 1 && this.goto == null) { this.arrived = true; this.speed = 0; }
-        // 舞うもの（春：花びら／秋：落ち葉／冬：雪）
+        // 舞うもの（春：花びら／秋：落ち葉／冬：雪）… 景色といっしょに左へ流れる
         const wt = { haru: 'petal', aki: 'leaf', fuyu: 'snow' }[this.stops[0].s];
         if (wt && Math.random() < dt * 7) {
-            const p = { type: wt, x: rand(-40, this.W), y: rand(-30, this.ih * .3), r: rand(0, 6.28), vr: rand(-3, 3), vy: rand(30, 70), vx: rand(-10, 25), s: wt === 'snow' ? rand(1.3, 3.2) : rand(3, 6), c: wt === 'leaf' ? pick(LEAF_COLORS) : pick(['#f7bfd0', '#fbd6e0', '#f3a6bb']) };
+            const p = { type: wt, x: rand(0, this.W + 40), y: rand(-30, this.ih * .3), r: rand(0, 6.28), vr: rand(-3, 3), vy: rand(30, 70), vx: rand(-25, 10), s: wt === 'snow' ? rand(1.3, 3.2) : rand(3, 6), c: wt === 'leaf' ? pick(LEAF_COLORS) : pick(['#f7bfd0', '#fbd6e0', '#f3a6bb']) };
             this.parts.push(p);
         }
-        this.parts.forEach(p => { p.x += (p.vx + this.speed * 0.9) * dt; p.y += p.vy * dt; p.r += p.vr * dt; });
-        this.parts = this.parts.filter(p => p.y < this.H && p.x < this.W + 40 && p.x > -60);
-        // 排気のけむり
+        this.parts.forEach(p => { p.x += (p.vx - this.speed * 0.9) * dt; p.y += p.vy * dt; p.r += p.vr * dt; });
+        this.parts = this.parts.filter(p => p.y < this.H && p.x > -40 && p.x < this.W + 60);
+        // 排気のけむり（トラックの後ろ＝左へ）
         this.puffT -= dt;
-        if (Math.abs(this.speed) > 20 && this.puffT <= 0) { this.puffT = 0.12; const tr = this.truckRect(); this.puffs.push({ x: tr.x + tr.w * 0.98, y: tr.y + tr.h * 0.86, r: 3, a: .45 }); }
-        this.puffs.forEach(p => { p.x += (40 + Math.abs(this.speed) * 0.4) * dt; p.y -= 12 * dt; p.r += 14 * dt; p.a -= 0.5 * dt; });
+        if (Math.abs(this.speed) > 20 && this.puffT <= 0) { this.puffT = this.boost > 0 ? 0.05 : 0.12; const tr = this.truckRect(); this.puffs.push({ x: tr.x + tr.w * 0.02, y: tr.y + tr.h * 0.86, r: 3, a: .45 }); }
+        this.puffs.forEach(p => { p.x -= (40 + Math.abs(this.speed) * 0.4) * dt; p.y -= 12 * dt; p.r += 14 * dt; p.a -= 0.5 * dt; });
         this.puffs = this.puffs.filter(p => p.a > 0);
-        this.jump = Math.max(0, this.jump - dt * 2.4);
+        this.jump = Math.max(0, this.jump - dt * 1.8);
     }
     roadAt(sx) {   // 画面の横位置 sx での道路の高さ（つなぎ目では2枚の画像の間をなめらかに）
-        const u = this.pan - (sx - this.W / 2);
-        let y = null;
+        const u = this.pan + (sx - this.W / 2);
         for (let i = this.segs.length - 1; i >= 0; i--) {
-            const sg = this.segs[i], r = (sg.st.road || 0.88) * this.ih;
-            if (u >= sg.start) {
-                const nx = this.segs[i + 1];
-                if (nx && u > nx.start - 1) continue;
-                y = r;
-                const pv = this.segs[i - 1];   // 左（前の画像）と重なっているところ
-                if (pv && u < pv.start + pv.w) { const tt = clamp((pv.start + pv.w - u) / (pv.w * OVERLAP), 0, 1); y = r * (1 - tt) + (pv.st.road || 0.88) * this.ih * tt; }
-                break;
+            const sg = this.segs[i];
+            if (u >= sg.start || i === 0) {
+                const r = (sg.st.road || 0.88) * this.ih, pv = this.segs[i - 1];
+                if (pv && u < pv.start + pv.w) { const tt = clamp((pv.start + pv.w - u) / (pv.w * OVERLAP), 0, 1); return this.y0 + r * (1 - tt) + (pv.st.road || 0.88) * this.ih * tt; }
+                return this.y0 + r;
             }
         }
-        return y == null ? 0.88 * this.ih : y;
+        return this.y0 + 0.88 * this.ih;
     }
     truckRect() {
-        const bob = Math.abs(this.speed) > 5 ? Math.sin(this.t * 22) * 0.8 : 0, jump = this.jump > 0 ? Math.sin(this.jump * Math.PI) * 10 : 0;
-        const x = this.W * 0.52 - this.TW / 2, base = this.roadAt(x + this.TW / 2);
+        const bob = Math.abs(this.speed) > 5 ? Math.sin(this.t * 22) * 0.8 : 0, jump = this.jump > 0 ? Math.sin(this.jump * Math.PI) * 34 : 0;
+        const x = this.W * 0.48 - this.TW / 2, base = this.roadAt(x + this.TW / 2);
         return { x, y: base - this.TH + bob - jump, w: this.TW, h: this.TH, base };
     }
     draw() {
         const c = this.ctx, W = this.W, H = this.H, ih = this.ih;
         c.fillStyle = '#07080f'; c.fillRect(0, 0, W, H);
         let bottom = '#3b3d3f';
-        this.segs.forEach((sg, i) => {   // 右（前の景色）から順に描き、左の画像を上に重ねる
-            const xr = W / 2 + this.pan - sg.start, xl = xr - sg.w;
+        this.segs.forEach((sg, i) => {   // 左（前の景色）から順に描き、右の画像を上に重ねる
+            const xl = W / 2 + sg.start - this.pan, xr = xl + sg.w;
             if (xr < 0 || xl > W) return;
             const im = this.imgOf(sg);
-            c.drawImage(i === 0 ? im : featherRight(im), xl, 0, sg.w, ih);
+            const src = i === 0 ? im : featherLeft(im), y0 = this.y0;
+            c.drawImage(src, 0, 0, src.width, src.height * 0.02, xl, 0, sg.w, y0 + 1);   // 上のすき間は、景色の上の端を引きのばして
+            c.drawImage(src, xl, y0, sg.w, ih);
             if (xl < W / 2 && xr > W / 2) bottom = im.bottomColor || bottom;
             if (sg.st.sign && LOGO_TXT.complete && LOGO_TXT.naturalWidth) {   // トン・ガリアーノの看板（本物のロゴを重ねる）
-                const cx = xl + sg.w * (sg.st.focus || 0.5), sw = Math.min(W * 0.62, 260), sh = sw * 0.36, sy = ih * 0.2;
+                const cx = xl + sg.w * (sg.st.focus || 0.5), sw = Math.min(W * 0.62, 260), sh = sw * 0.36, sy = this.y0 + ih * 0.2;
                 c.fillStyle = 'rgba(31,58,44,.94)'; c.beginPath(); c.roundRect(cx - sw / 2, sy, sw, sh, 10); c.fill();
                 c.strokeStyle = '#c8a45c'; c.lineWidth = 2; c.stroke();
                 const lh = sh * 0.78; c.drawImage(LOGO_PIG, cx - sw / 2 + 10, sy + (sh - lh) / 2, lh, lh);
@@ -956,11 +999,20 @@ class StripScene {
                 c.drawImage(LOGO_TXT, cx - sw / 2 + lh + 18, sy + (sh - th) / 2, tw, th);
             }
         });
-        c.fillStyle = bottom; c.fillRect(0, ih - 1, W, H - ih + 1);
+        c.fillStyle = bottom; c.fillRect(0, this.y0 + ih - 1, W, H - this.y0 - ih + 1);
         const tr = this.truckRect();
-        c.fillStyle = 'rgba(0,0,0,.32)'; c.beginPath(); c.ellipse(tr.x + tr.w / 2, tr.base + 1, tr.w * .48, 5, 0, 0, 7); c.fill();
+        const sl = this.jump > 0 ? 1 - Math.sin(this.jump * Math.PI) * .4 : 1;   // ジャンプ中は影が小さく
+        c.fillStyle = 'rgba(0,0,0,.32)'; c.beginPath(); c.ellipse(tr.x + tr.w / 2, tr.base + 1, tr.w * .48 * sl, 5 * sl, 0, 0, 7); c.fill();
+        if (this.boost > 0) {   // 加速中のスピード線
+            c.strokeStyle = `rgba(255,255,255,${Math.min(1, this.boost) * .8})`; c.lineCap = 'round';
+            for (let k = 0; k < 5; k++) { const y = tr.y + tr.h * (0.2 + k * 0.16), l = 40 + ((this.t * 400 + k * 53) % 60); c.lineWidth = 2.5; c.beginPath(); c.moveTo(tr.x - 8 - l, y); c.lineTo(tr.x - 8, y); c.stroke(); }
+        }
         this.puffs.forEach(p => { c.fillStyle = `rgba(230,230,230,${p.a})`; c.beginPath(); c.arc(p.x, p.y, p.r, 0, 7); c.fill(); });
-        if (this.truck.complete && this.truck.naturalWidth) c.drawImage(this.truck, tr.x, tr.y, tr.w, tr.h);
+        if (this.truck.complete && this.truck.naturalWidth) {   // 右向きのトラック（広告の文字はそのまま）
+            c.save(); c.translate(tr.x, tr.y);
+            if (this.jump > 0) { c.translate(tr.w / 2, tr.h); c.rotate(-Math.sin(this.jump * Math.PI) * 0.06); c.translate(-tr.w / 2, -tr.h); }
+            c.drawImage(truckRight(this.truck), 0, 0, tr.w, tr.h); c.restore();
+        }
         this.parts.forEach(p => {
             if (p.type === 'snow') { c.fillStyle = 'rgba(255,255,255,.95)'; c.beginPath(); c.arc(p.x, p.y, p.s, 0, 7); c.fill(); }
             else { c.save(); c.translate(p.x, p.y); c.rotate(p.r); c.fillStyle = p.c; c.beginPath(); c.ellipse(0, 0, p.s, p.s * .6, 0, 0, 7); c.fill(); c.restore(); }
@@ -981,13 +1033,36 @@ const Drive = (() => {
             <p class="txt jp-phrase">${s.text}</p>
             ${s.memo ? `<p class="memo"><span>歴史メモ</span><b>${s.memo[0]}</b><span class="jp-phrase">${s.memo[1]}</span></p>` : ''}</div>`;
         $('segs').innerHTML = stops.map((_, k) => `<div><i id="seg${k}"></i></div>`).join('');
-        const pop = $('pop');   // 名所の写真をふわっと
-        pop.classList.remove('show');
-        if (s.pop) setTimeout(() => { if (idx !== i) return; $('popImg').src = s.pop.src; $('popCap').textContent = s.arrive ? SHOP.name : s.place; $('popTag').textContent = s.pop.tag; $('popTag').hidden = !s.pop.tag; $('popCredit').textContent = s.pop.credit ? '写真：' + s.pop.credit : ''; pop.classList.add('show'); }, 450);
+        showPops(i);
+    }
+    let popTimer = 0;
+    function showPops(i) {   // 名所の思い出を、1枚ずつふわっと（複数あれば順番に）
+        const pop = $('pop'), list = stops[i].pops || [];
+        clearTimeout(popTimer); pop.classList.remove('show');
+        let n = 0;
+        const one = () => {
+            if (idx !== i || !list.length) return;
+            const p = list[n % list.length];
+            $('popImg').src = p.src; $('popCap').textContent = p.caption || (stops[i].arrive ? SHOP.name : stops[i].place);
+            $('popTag').textContent = p.tag || ''; $('popTag').hidden = !p.tag; $('popCredit').textContent = p.credit ? '写真：' + p.credit : '';
+            pop.classList.add('show');
+            if (list.length > 1) popTimer = setTimeout(() => { pop.classList.remove('show'); n++; popTimer = setTimeout(one, 900); }, 3400);
+        };
+        popTimer = setTimeout(one, 500);
+    }
+    // ときどき出る吹き出し
+    const LINES = ['工場出荷2〜3日以内にビール届けます！', '新鮮なビール運んでいるよ！', '速達生配達中！'];
+    let bubbleT = 3, bubbleOn = 0, lineN = 0;
+    function bubble(dt) {
+        const h = $('honk');
+        if (bubbleOn > 0) { bubbleOn -= dt; if (bubbleOn <= 0) h.classList.remove('show'); }
+        else if (!scene.arrived && (bubbleT -= dt) <= 0) { h.textContent = LINES[lineN++ % LINES.length]; h.classList.add('show'); bubbleOn = 2.8; bubbleT = rand(7, 10); }
+        const tr = scene.truckRect(); h.style.left = (tr.x + tr.w * 0.62) + 'px'; h.style.top = (tr.y - 50) + 'px';
     }
     function frame(t) {
         if (!running) return;
         const dt = Math.min(0.05, (t - last) / 1000 || 0); last = t;
+        bubble(dt);
         if (performance.now() > introUntil || scene.goto != null) scene.update(dt);
         const i = scene.index(); if (i !== idx) caption(i);
         stops.forEach((_, k) => { const el = $('seg' + k); if (el) el.style.width = (k < i ? 100 : k > i ? 0 : scene.progress(k) * 100) + '%'; });
@@ -999,14 +1074,12 @@ const Drive = (() => {
     function next() { if (scene.arrived && idx === stops.length - 1) show('pour'); else scene.gotoIndex(idx + 1); }
     function prev() { scene.gotoIndex(idx - (scene.progress(idx) > 0.25 ? 0 : 1)); }
     $('btnNext').addEventListener('click', next);
-    // ショート動画のように：右をタップで進む／左で戻る。トラックをタップするとクラクション
+    // ショート動画のように：右をタップで進む／左で戻る。トラックをタップするとジャンプして加速
     $('s-drive').addEventListener('click', (e) => {
         if (!running || e.target.closest('button')) return;
         const r = $('s-drive').getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top, tr = scene.truckRect();
-        if (x > tr.x - 10 && x < tr.x + tr.w + 10 && y > tr.y - 20 && y < tr.y + tr.h + 10) {
-            scene.jump = 1; honks++;
-            const h = $('honk'); h.style.left = (tr.x + tr.w * 0.25) + 'px'; h.style.top = (tr.y - 44) + 'px';
-            h.classList.add('show'); clearTimeout(honkTimer); honkTimer = setTimeout(() => h.classList.remove('show'), 900);
+        if (x > tr.x - 10 && x < tr.x + tr.w + 10 && y > tr.y - 30 && y < tr.y + tr.h + 10) {
+            if (!scene.arrived) { scene.dash(); honks++; if (navigator.vibrate) try { navigator.vibrate(30); } catch (_) {} }
             return;
         }
         if (x < r.width * 0.35) prev(); else next();
@@ -1014,7 +1087,7 @@ const Drive = (() => {
     window.addEventListener('resize', () => { if (running) size(); });
     return {
         start() {
-            stops = buildStops(); honks = 0; idx = -1;
+            stops = buildStops(); honks = 0; idx = -1; bubbleT = 3; bubbleOn = 0; $('honk').classList.remove('show');
             $('chip').textContent = SEASONS[mode].jp + 'ルート';
             requestAnimationFrame(() => {
                 size(); scene.setRoute(stops);
@@ -1024,7 +1097,7 @@ const Drive = (() => {
                 running = true; last = performance.now(); raf = requestAnimationFrame(frame);
             });
         },
-        stop() { running = false; cancelAnimationFrame(raf); },
+        stop() { running = false; cancelAnimationFrame(raf); clearTimeout(popTimer); },
         lastStop() { return stops[stops.length - 1]; }
     };
 })();
@@ -1432,7 +1505,7 @@ const Cheers = (() => {
             $('chSeason').textContent = SEASONS[mode].jp + 'ルート';
             $('chName').textContent = pourResult.name || 'まろやか！ バランスビール';
             $('chRank').textContent = pourResult.rank || 'A';
-            $('chMsg').innerHTML = `工場出荷から2〜3日以内。できたての生ビールを、あなたのジョッキへお届けしました。<br>${pourResult.msg || ''}${honks ? `（クラクション ${honks}回）` : ''}`;
+            $('chMsg').innerHTML = `工場出荷から2〜3日以内。できたての生ビールを、あなたのジョッキへお届けしました。<br>${pourResult.msg || ''}${honks ? `（ダッシュ ${honks}回）` : ''}`;
             $('chStage').classList.remove('clink');
             view.b = pourResult.b != null ? Math.min(1.04, pourResult.b) : 0.7;
             view.f = pourResult.f != null ? Math.min(1.12 - Math.min(1, view.b), pourResult.f) : 0.3;
@@ -1448,6 +1521,67 @@ const Cheers = (() => {
     };
 })();
 function renderCheers() { Cheers.start(); }
+
+// ---------------- ④-2 カオハメ写真 ----------------
+//   お店を背景に、ジョッキを掲げた体の絵。顔の穴に自分の写真をはめます（写真は端末の中だけで使う）
+const Kao = (() => {
+    const cv = $('kaoCv');
+    let face = null, fx = 0, fy = 0, zoom = 1.1, drag = null;
+    // 体のイラスト（顔とジョッキの部分を透明にぬいたもの）。HOLE … 顔の穴の中心と半径／GRIP … にぎった手（ジョッキの取っ手を持たせる位置）
+    const BODY = new Image(); BODY.src = IMG_DIR + 'kaohame_body.webp';
+    const BODY_W = 690, BODY_H = 662,   // 胴体だけ（足はなし）
+          HOLE = { x: 372, y: 300, rx: 142, ry: 168 }, GRIP = { x: 112, y: 318 };   // 頭は消して、顔の写真を大きく
+    BODY.onload = () => { if ($('s-kao').classList.contains('active')) render(); };
+    function board(c, X, Y, W, H) {   // 看板の絵（W:H ＝ 542:368 の横長）。お店の右下に、ビールを持った人
+        const u = H / 736, goal = Drive.lastStop() || buildStops().pop(), gim = goal && goal.im && goal.im.ok ? goal.im : null;
+        c.save(); c.beginPath(); c.rect(X, Y, W, H); c.clip();
+        if (gim) { const nw = gim.naturalWidth, nh = gim.naturalHeight, sh = nh * 0.8, sw = sh * W / H; c.drawImage(gim, clamp(nw * (goal.focus || .5) - sw / 2, 0, nw - sw), 0, sw, sh, X, Y, W, H); }
+        else { c.fillStyle = '#3a2a22'; c.fillRect(X, Y, W, H); }
+        const s = H * 0.0009, bw = BODY_W * s, bx = X + W - bw * 0.97, by = Y + H - BODY_H * s;   // 右下から胴体が出ているように（お店がよく見える大きさ）   // 体の大きさと位置（右下）
+        const hx = bx + HOLE.x * s, hy = by + HOLE.y * s, rx = HOLE.rx * s, ry = HOLE.ry * s;
+        if (BODY.complete && BODY.naturalWidth) c.drawImage(BODY, bx, by, bw, BODY_H * s);
+        // 顔（体の上に、大きな楕円で）
+        c.save(); c.shadowColor = 'rgba(0,0,0,.35)'; c.shadowBlur = 10 * u; c.shadowOffsetY = 4 * u;
+        c.fillStyle = '#fffdf6'; c.beginPath(); c.ellipse(hx, hy, rx + 7 * u, ry + 7 * u, 0, 0, 7); c.fill(); c.restore();
+        if (face) {
+            c.save(); c.beginPath(); c.ellipse(hx, hy, rx, ry, 0, 0, 7); c.clip();
+            const k = Math.max(rx * 2 / face.naturalWidth, ry * 2 / face.naturalHeight) * zoom, fw = face.naturalWidth * k, fh = face.naturalHeight * k;
+            c.drawImage(face, hx - fw / 2 + fx * u, hy - fh / 2 + fy * u, fw, fh); c.restore();
+        } else {
+            c.fillStyle = '#000'; c.beginPath(); c.ellipse(hx, hy, rx, ry, 0, 0, 7); c.fill();   // 写真を撮るまでは、まっ黒
+        }
+        // ジョッキ（自分で注いだもの）を、にぎった手に持たせる
+        const jug = $('chJug');
+        if (jug && jug.width) {
+            const jw = 250 * s, jh = jw * jug.height / jug.width, gx = bx + GRIP.x * s, gy = by + GRIP.y * s;
+            c.save(); c.translate(gx, gy); c.rotate(-0.16);
+            c.drawImage(jug, -jw * 0.86, -jh * 0.6, jw, jh); c.restore();
+        }
+        c.restore();
+    }
+    function render() {
+        const w = cv.clientWidth, h = Math.round(w * 368 / 542), d = Math.min(2, window.devicePixelRatio || 1);
+        cv.style.height = h + 'px'; cv.width = Math.round(w * d); cv.height = Math.round(h * d);
+        board(cv.getContext('2d'), 0, 0, cv.width, cv.height);
+    }
+    function load(e) {
+        const f = e.target.files && e.target.files[0]; if (!f) return;
+        const rd = new FileReader();
+        rd.onload = () => { const im = new Image(); im.onload = () => { face = im; fx = 0; fy = 0; zoom = 1.1; $('kaoZoom').value = 1.1; $('kaoZoomRow').hidden = false; $('kaoDone').hidden = false; $('kaoSkip').hidden = true; $('kaoNote').textContent = 'ドラッグで位置、スライダーで大きさを合わせてね'; render(); }; im.src = rd.result; };
+        rd.readAsDataURL(f); e.target.value = '';
+    }
+    $('kaoCam').addEventListener('change', load);
+    $('kaoZoom').addEventListener('input', (e) => { zoom = +e.target.value; render(); });
+    cv.addEventListener('pointerdown', (e) => { if (!face) return; drag = { x: e.clientX, y: e.clientY, fx, fy }; try { cv.setPointerCapture(e.pointerId); } catch (_) {} });
+    cv.addEventListener('pointermove', (e) => { if (!drag) return; const k = 736 / cv.clientHeight; fx = drag.fx + (e.clientX - drag.x) * k; fy = drag.fy + (e.clientY - drag.y) * k; render(); });
+    cv.addEventListener('pointerup', () => { drag = null; });
+    $('kaoDone').addEventListener('click', () => show('card'));
+    return {
+        start() { requestAnimationFrame(() => (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(render)); },
+        hasFace() { return !!face; },
+        draw(c, x, y, w, h) { board(c, x, y, w, h); }
+    };
+})();
 
 // ---------------- ⑤ マイカード ----------------
 const RANK_STYLE = {
@@ -1502,12 +1636,8 @@ const MyCard = (() => {
             c.drawImage(gim, clamp(nw * (goal.focus || .5) - sw / 2, 0, nw - sw), 0, sw, sh, ax, ay, aw, ah);
         } else { c.fillStyle = '#2a2140'; c.fillRect(ax, ay, aw, ah); }
         const jug = $('chJug');
-        if (jug && jug.width) { const jh = ah * 0.62, jw = jh * jug.width / jug.height; c.drawImage(jug, ax + aw - jw + 26 * u, ay + ah - jh + 4 * u, jw, jh); }
-        if (face) {
-            const fx = ax + 96 * u, fy = ay + ah - 92 * u, fr = 72 * u;
-            c.save(); c.beginPath(); c.arc(fx, fy, fr, 0, 7); c.clip(); cover(c, face, fx - fr, fy - fr, fr * 2, fr * 2, .5, .42); c.restore();
-            c.beginPath(); c.arc(fx, fy, fr, 0, 7); c.lineWidth = 7 * u; c.strokeStyle = R.line; c.stroke();
-        }
+        if (jug && jug.width && !Kao.hasFace()) { const jh = ah * 0.62, jw = jh * jug.width / jug.height; c.drawImage(jug, ax + aw - jw + 26 * u, ay + ah - jh + 4 * u, jw, jh); }
+        if (Kao.hasFace()) Kao.draw(c, ax, ay, aw, ah);   // カオハメ写真があれば、カードの絵はそれに
         c.restore();
         rr(c, ax, ay, aw, ah, 14 * u); c.lineWidth = 3 * u; c.strokeStyle = R.line; c.stroke();
         // できた一杯の名前
@@ -1517,7 +1647,7 @@ const MyCard = (() => {
         c.fillText(pourResult.name || '', W / 2, ny + nh / 2 + 11 * u);
         // データ（横1列）
         const d = new Date(), date = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
-        const rows = [['ルート', SEASONS[mode].jp], ['ランク', `${pourResult.rank || 'A'}`], ['日付', date.slice(5)], ['クラクション', honks + '回']];
+        const rows = [['ルート', SEASONS[mode].jp], ['ランク', `${pourResult.rank || 'A'}`], ['日付', date.slice(5)], ['ダッシュ', honks + '回']];
         rows.forEach(([k, v], i) => {
             const cx = ax + (i + 0.5) * (aw / 4), cy = 610 * u;
             c.textAlign = 'center'; c.fillStyle = '#ffc53d'; c.font = `900 ${13 * u}px 'Zen Kaku Gothic New'`; c.fillText(k, cx, cy);
@@ -1567,13 +1697,6 @@ const MyCard = (() => {
     }
     wrap.addEventListener('pointermove', (e) => { const r = wrap.getBoundingClientRect(); touched = performance.now(); tilt(clamp((e.clientX - r.left) / r.width, 0, 1), clamp((e.clientY - r.top) / r.height, 0, 1)); });
     window.addEventListener('deviceorientation', (e) => { if (!running || e.gamma == null) return; touched = performance.now(); tilt(clamp(0.5 + e.gamma / 60, 0, 1), clamp(0.5 + (e.beta - 45) / 60, 0, 1)); });
-    $('faceInput').addEventListener('change', (e) => {
-        const f = e.target.files && e.target.files[0]; if (!f) return;
-        const rd = new FileReader();
-        rd.onload = () => { const im = new Image(); im.onload = () => { face = im; $('faceClear').hidden = false; render(); }; im.src = rd.result; };
-        rd.readAsDataURL(f); e.target.value = '';
-    });
-    $('faceClear').addEventListener('click', () => { face = null; $('faceClear').hidden = true; render(); });
     $('cardSave').addEventListener('click', () => {
         const o = document.createElement('canvas'); o.width = 1260; o.height = 1760; draw(o.getContext('2d'), o.width, o.height, { shine: true });
         o.toBlob(async (blob) => {
