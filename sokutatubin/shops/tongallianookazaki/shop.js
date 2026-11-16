@@ -26,12 +26,13 @@ window.SHOP_DATA = {
     { bg: 'nagoya', name: '出発', title: '速達生ビール、配達中！',
       text: 'できたての生ビールを積んで出発！ 工場出荷から2〜3日以内にお届けします。' },
     // ↓ 景色だけ（bg だけ書く）。止まらずに流れていきます（紹介文は出ません）
-    { bg: 'tokyo' }, { bg: 'yokohama' }, { bg: 'fuji' }, { bg: 'kyoto' }, { bg: 'shirakawa' },
-    // ↓ 写真（photos）がある所は、トラックが止まって思い出がふわっと出ます
+    { bg: 'tokyo' },
     { spot: 'okazaki',
       photos: [{ photo: 'okazakijo.webp', caption: '岡崎城', credit: 'Evelyn-rose / Wikimedia Commons（CC0）' }] },
+    { bg: 'yokohama' }, { bg: 'fuji' },
     { bg: 'tsumago', name: '乙川の桜', title: '乙川の桜', text: '岡崎の春をいろどる、川ぞいの桜並木。',
-      photos: [{ photo: 'otogawa.webp', caption: '乙川の桜', credit: 'Evelyn-rose / Wikimedia Commons（CC0）' }] }
+      photos: [{ photo: 'otogawa.webp', caption: '乙川の桜', credit: 'Evelyn-rose / Wikimedia Commons（CC0）' }] },
+    { bg: 'kyoto' }, { bg: 'shirakawa' }
   ],
 
   // ▼ 最後に着くお店
