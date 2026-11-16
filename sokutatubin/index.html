@@ -592,10 +592,12 @@ const FALLBACK_SHOP = {
     name: 'トン・ガリアーノ',
     stops: [
         { bg: 'nagoya', name: '出発', title: '速達生ビール、配達中！', text: 'できたての生ビールを積んで出発！ 工場出荷から2〜3日以内にお届けします。' },
-        { bg: 'tokyo' }, { bg: 'yokohama' }, { bg: 'fuji' }, { bg: 'kyoto' }, { bg: 'shirakawa' },
+        { bg: 'tokyo' },
         { spot: 'okazaki', photos: [{ photo: 'okazakijo.webp', caption: '岡崎城', credit: 'Evelyn-rose / Wikimedia Commons（CC0）' }] },
+        { bg: 'yokohama' }, { bg: 'fuji' },
         { bg: 'tsumago', name: '乙川の桜', title: '乙川の桜', text: '岡崎の春をいろどる、川ぞいの桜並木。',
-          photos: [{ photo: 'otogawa.webp', caption: '乙川の桜', credit: 'Evelyn-rose / Wikimedia Commons（CC0）' }] }
+          photos: [{ photo: 'otogawa.webp', caption: '乙川の桜', credit: 'Evelyn-rose / Wikimedia Commons（CC0）' }] },
+        { bg: 'kyoto' }, { bg: 'shirakawa' }
     ],
     goal: { bg: 'tg', logo: true, title: 'トン・ガリアーノに到着！', text: 'ナポリピッツァとワインのお店に、鮮度そのままでお届け。ここからは、おいしく注ぐ番です。' }
 };
@@ -909,8 +911,8 @@ const LOGO_PIG = new Image(); LOGO_PIG.src = '../sakesindan_375060/tg_logo_pig.w
 const LOGO_TXT = new Image(); LOGO_TXT.src = '../sakesindan_375060/tg_logo_text_light.webp';
 const OVERLAP = 0.24;     // 画像どうしを重ねる幅（画像の横はばに対する割合）。広いほどなめらかにつながる
 const HOLD_S = 3;
-const LEG_S = 7;          // 出発→1か所目→2か所目→お店、どの区間も同じ時間（秒）で走る。景色の並びとは関係なし
-const EASE_A = 0.12, EASE_B = 0.22;   // 走り出し・止まる前の、ゆっくりの長さ（区間の割合）
+const LEG_S = 7.5;          // 出発→1か所目→2か所目→お店、どの区間も同じ時間（秒）で走る。景色の並びとは関係なし
+const EASE_A = 0.06, EASE_B = 0.14;   // 走り出し・止まる前の、ゆっくりの長さ（区間の割合）
 function legEase(u) {   // 区間の進み具合（0〜1）→ 道のりの割合。走り出しと止まる前だけゆっくり、あとは一定の速さ
     const A = 1 - EASE_A / 2 - EASE_B / 2;
     if (u <= 0) return 0; if (u >= 1) return 1;
@@ -986,7 +988,10 @@ class StripScene {   // トラックは左から右へ走り、景色は左へ�
     setRoute(stops) {
         this.stops = stops; this.segs = []; this.layout(); this.arrived = false; this.goto = null; this.speed = this.cruise; this.parts = []; this.puffs = []; this.boost = 0;
         // 名所（思い出の写真がある所）では、景色のまん中でトラックが止まる
-        this.holds = this.segs.map((sg, i) => sg.st.arrive || !(sg.st.pops && sg.st.pops.length) ? null : { i, pan: sg.start + sg.w * 0.5, done: false });
+        // 止まる所は、道のり全体を等分した位置に（背景はずっと同じ速さで流れ、止まる間かくも同じになる）
+        const ps = this.segs.map((sg, i) => sg.st.arrive || !(sg.st.pops && sg.st.pops.length) ? -1 : i).filter(i => i >= 0);
+        const s0 = this.segs[0].start + this.W / 2, D = this.goalPan - s0;
+        this.holds = ps.map((i, k) => ({ i, pan: s0 + D * (k + 1) / (ps.length + 1), done: false }));
         this.holdT = 0; this.leg = 0; this.legT = 0; this.isHold = false; this.after = null;
     }
     startPan() { return this.segs[0].start + this.W / 2; }
@@ -1121,8 +1126,11 @@ const Drive = (() => {
     let running = false, raf = 0, last = 0, stops = [], idx = -1, introUntil = 0, honkTimer = 0;
     function size() { const r = $('s-drive').getBoundingClientRect(); scene.resize(r.width, r.height); }
     let capKey = '';
+    const RUN = { place: '', title: '速達生ビール、配達中！', text: 'できたての生ビールを積んで、お店へ向かっています。トラックをタップすると加速！' };
     function caption(i) {
-        idx = i; const s = stops[i];
+        idx = i;
+        // 文は「走っている」「止まっている（名所）」「到着」で切りかえる（背景の景色とは関係なし）
+        const s = scene.isHold ? stops[scene.holds[scene.leg].i] : scene.arrived ? stops[stops.length - 1] : (scene.leg === 0 && !scene.isHold ? stops[0] : RUN);
         const key = s.place + '|' + s.title;
         if (key === capKey) return;   // 景色が変わっても、同じ文ならそのまま
         capKey = key;
@@ -1161,10 +1169,10 @@ const Drive = (() => {
         const dt = Math.min(0.05, (t - last) / 1000 || 0); last = t;
         bubble(dt);
         if (performance.now() > introUntil || scene.goto != null) scene.update(dt);
-        const i = scene.index(); if (i !== idx) caption(i);
+        const i = scene.index(); caption(i);
         // 思い出の写真は、トラックが止まったときに出す
         const hk = scene.isHold ? scene.leg : scene.arrived ? 'goal' : null;
-        if (hk !== popKey) { popKey = hk; if (hk === null) { clearTimeout(popTimer); $('pop').classList.remove('show'); } else showPops(hk === 'goal' ? stops.length - 1 : scene.holds.filter(Boolean)[hk].i); }
+        if (hk !== popKey) { popKey = hk; if (hk === null) { clearTimeout(popTimer); $('pop').classList.remove('show'); } else showPops(hk === 'goal' ? stops.length - 1 : scene.holds[hk].i); }
         const si = scene.stopIndex(); scene.stopPans().forEach((_, k) => { const el = $('seg' + k); if (el) el.style.width = (k < si ? 100 : k > si ? 0 : scene.stopProgress(k) * 100) + '%'; });
         const arrived = scene.arrived;
         $('btnNext').hidden = !arrived; $('navHint').hidden = arrived;
@@ -1187,7 +1195,7 @@ const Drive = (() => {
     window.addEventListener('resize', () => { if (running) size(); });
     return {
         start() {
-            stops = buildStops(); honks = 0; idx = -1; popKey = null; capKey = ''; bubbleT = 3; bubbleOn = 0; $('honk').classList.remove('show');
+            stops = buildStops(); honks = 0; idx = -1; popKey = null; capKey = ''; capKey = ''; bubbleT = 3; bubbleOn = 0; $('honk').classList.remove('show');
             $('chip').textContent = SEASONS[mode].jp + 'ルート';
             requestAnimationFrame(() => {
                 size(); scene.setRoute(stops);
