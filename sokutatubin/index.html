@@ -909,6 +909,15 @@ const LOGO_PIG = new Image(); LOGO_PIG.src = '../sakesindan_375060/tg_logo_pig.w
 const LOGO_TXT = new Image(); LOGO_TXT.src = '../sakesindan_375060/tg_logo_text_light.webp';
 const OVERLAP = 0.24;     // 画像どうしを重ねる幅（画像の横はばに対する割合）。広いほどなめらかにつながる
 const HOLD_S = 3;
+const LEG_S = 7;          // 出発→1か所目→2か所目→お店、どの区間も同じ時間（秒）で走る。景色の並びとは関係なし
+const EASE_A = 0.12, EASE_B = 0.22;   // 走り出し・止まる前の、ゆっくりの長さ（区間の割合）
+function legEase(u) {   // 区間の進み具合（0〜1）→ 道のりの割合。走り出しと止まる前だけゆっくり、あとは一定の速さ
+    const A = 1 - EASE_A / 2 - EASE_B / 2;
+    if (u <= 0) return 0; if (u >= 1) return 1;
+    if (u < EASE_A) return (u * u / (2 * EASE_A)) / A;
+    if (u <= 1 - EASE_B) return (EASE_A / 2 + (u - EASE_A)) / A;
+    return (EASE_A / 2 + (1 - EASE_B - EASE_A) + (EASE_B * EASE_B - (1 - u) * (1 - u)) / (2 * EASE_B)) / A;
+}
 const BOOST = 2;          // トラックを押したときの速さ（ふだんの何倍か）。押しつづけると約半分の時間で着く         // 名所で立ち止まる時間（秒）。右タップですぐ出発
 const CRUISE_RATE = 0.65;  // ふだんの流れる速さ（1秒に、景色の高さの何倍ぶん進むか）。景色の大きさが変わっても、1枚を走る時間は同じ
 function featherLeft(im) {   // 画像の左はしを透明にぼかした版（右どなりから、前の画像に重ねるため）
@@ -978,19 +987,19 @@ class StripScene {   // トラックは左から右へ走り、景色は左へ�
         this.stops = stops; this.segs = []; this.layout(); this.arrived = false; this.goto = null; this.speed = this.cruise; this.parts = []; this.puffs = []; this.boost = 0;
         // 名所（思い出の写真がある所）では、景色のまん中でトラックが止まる
         this.holds = this.segs.map((sg, i) => sg.st.arrive || !(sg.st.pops && sg.st.pops.length) ? null : { i, pan: sg.start + sg.w * 0.5, done: false });
-        this.holdT = 0;
+        this.holdT = 0; this.leg = 0; this.legT = 0; this.isHold = false; this.after = null;
     }
-    nextHold() { return (this.holds || []).find(h => h && !h.done && h.pan > this.pan - 2); }
-    holding() { const h = this.nextHold(); return !!h && Math.abs(h.pan - this.pan) < 2 && this.goto == null; }
-    release() { const h = this.nextHold(); if (h) h.done = true; this.holdT = 0; }   // 立ち止まりをおわって、また走り出す
-    resetHolds() { (this.holds || []).forEach(h => { if (h && h.pan > (this.goto ?? this.pan) - 3) h.done = false; }); }
+    startPan() { return this.segs[0].start + this.W / 2; }
     stopPans() { return [...(this.holds || []).filter(Boolean).map(h => h.pan), this.goalPan]; }   // 上のバーに出す「止まる所」
-    stopIndex() { const p = this.stopPans(); let k = p.findIndex(x => this.pan < x - 2); if (k < 0) k = p.length - 1; return k; }
-    stopProgress(k) { const p = this.stopPans(), from = k === 0 ? this.segs[0].start + this.W / 2 : p[k - 1]; return clamp((this.pan - from) / (p[k] - from), 0, 1); }
-    gotoStop(k) {   // k 番目の止まる所へ（早送り・巻きもどし）
-        const p = this.stopPans();
-        if (k < 0) { this.goto = this.segs[0].start + this.W / 2; }
-        else { const t = p[clamp(k, 0, p.length - 1)]; this.goto = Math.max(this.pan, t - this.ih * 0.4); if (this.goto <= this.pan + 1) this.goto = null; }
+    holding() { return this.isHold && this.goto == null; }
+    release() { if (!this.isHold) return; this.isHold = false; this.holdT = 0; this.leg++; this.legT = 0; }   // 立ち止まりをおわって、また走り出す
+    stopIndex() { return Math.min(this.leg, this.stopPans().length - 1); }
+    stopProgress(k) { return k < this.leg ? 1 : k > this.leg ? 0 : (this.isHold || this.arrived ? 1 : legEase(Math.min(1, this.legT / LEG_S))); }
+    fastForward() { if (!this.isHold && !this.arrived) this.legT = Math.max(this.legT, LEG_S * 0.8); }   // 右タップ：次の止まる所の手前まで早送り
+    backStop() {   // 左タップ：1つ前の止まる所へもどる
+        const p = this.stopPans(), b = this.leg - 1;
+        this.goto = b < 0 ? this.startPan() : p[b];
+        this.after = b < 0 ? { leg: 0, legT: 0, isHold: false } : { leg: b, legT: LEG_S, isHold: true };
         this.arrived = false;
     }
     index() {   // いま画面のまん中にある景色の番号
@@ -1000,29 +1009,25 @@ class StripScene {   // トラックは左から右へ走り、景色は左へ�
     }
     progress(i) { const sg = this.segs[i], nx = this.segs[i + 1]; if (!nx) return this.arrived ? 1 : clamp((this.pan - sg.start) / (this.goalPan - sg.start), 0, 1); return clamp((this.pan - sg.start) / (nx.start - sg.start), 0, 1); }
     gotoIndex(i) { const sg = this.segs[clamp(i, 0, this.segs.length - 1)]; this.goto = i <= 0 ? this.segs[0].start + this.W / 2 : Math.min(this.goalPan, sg.start + sg.w * OVERLAP * 0.5 + 40); this.arrived = false; }
-    dash() { this.boost = 2.5; this.jump = 1; if (this.holding()) this.release(); }   // 止まっているときに押すと、すぐ出発   // トラックを押したら、ジャンプして加速
+    dash() { this.boost = 2.5; this.jump = 1; if (this.isHold) this.release(); }   // 止まっているときに押すと、すぐ出発   // トラックを押したら、ジャンプして加速
     update(dt) {
         this.t += dt; this.boost = Math.max(0, this.boost - dt);
-        if (this.goto != null) {   // 早送り・巻きもどし
+        if (this.goto != null) {   // 巻きもどし
             const dist = this.goto - this.pan;
             this.speed = Math.sign(dist) * clamp(Math.abs(dist) * 3.2, 80, 1600);
-            if (Math.abs(dist) < 4) { this.pan = this.goto; this.goto = null; this.speed = this.cruise; }
-        } else if (!this.arrived) {
-            const h = this.nextHold(), stopAt = h ? h.pan : this.goalPan;
-            const dist = stopAt - this.pan, cruise = this.boost > 0 ? this.cruise * BOOST : this.cruise;
-            if (h && dist < 2) {   // 名所で立ち止まる
-                this.pan = h.pan; this.speed = 0; this.holdT += dt;
-                if (this.holdT >= HOLD_S) this.release();
-            } else {
-                const brake = Math.sqrt(2 * this.ih * 2.6 * Math.max(0, dist)) + 30;   // 止まる所の手前で、すっとブレーキ
-                this.speed += (Math.min(cruise, brake) - this.speed) * Math.min(1, dt * 4);
-                if (!h && dist <= 1) { this.arrived = true; this.speed = 0; this.pan = this.goalPan; }
-            }
-        } else this.speed = 0;
-        const hh = this.goto == null ? this.nextHold() : null;   // 進む前に、次に止まる所をおぼえておく（速くても通りこさない）
-        this.pan = Math.min(this.goalPan, this.pan + this.speed * dt);
-        if (hh && this.pan > hh.pan) this.pan = hh.pan;
-        if (this.pan >= this.goalPan - 1 && this.goto == null) { this.arrived = true; this.speed = 0; }
+            this.pan += this.speed * dt;
+            if (Math.abs(dist) < 4 || Math.sign(this.goto - this.pan) !== Math.sign(dist)) { this.pan = this.goto; this.goto = null; this.speed = 0; if (this.after) { Object.assign(this, this.after); this.holdT = 0; this.after = null; } }
+        } else if (this.arrived) this.speed = 0;
+        else if (this.isHold) {   // 名所で立ち止まる
+            this.speed = 0; this.holdT += dt;
+            if (this.holdT >= HOLD_S) this.release();
+        } else {   // 区間ごとに同じ時間で走る（押すと速く）
+            const p = this.stopPans(), from = this.leg === 0 ? this.startPan() : p[this.leg - 1], to = p[this.leg];
+            this.legT += dt * (this.boost > 0 ? BOOST : 1);
+            const u = Math.min(1, this.legT / LEG_S), np = from + (to - from) * legEase(u);
+            this.speed = dt > 0 ? (np - this.pan) / dt : 0; this.pan = np;
+            if (u >= 1) { if (this.leg >= p.length - 1) { this.arrived = true; this.speed = 0; } else { this.isHold = true; this.holdT = 0; } }
+        }
         // 舞うもの（春：花びら／秋：落ち葉／冬：雪）… 景色といっしょに左へ流れる
         const wt = { haru: 'petal', aki: 'leaf', fuyu: 'snow' }[this.stops[0].s];
         if (wt && Math.random() < dt * 7) {
@@ -1118,7 +1123,6 @@ const Drive = (() => {
     let capKey = '';
     function caption(i) {
         idx = i; const s = stops[i];
-        showPops(i);
         const key = s.place + '|' + s.title;
         if (key === capKey) return;   // 景色が変わっても、同じ文ならそのまま
         capKey = key;
@@ -1128,13 +1132,13 @@ const Drive = (() => {
             <p class="txt jp-phrase">${s.text}</p>
             ${s.memo ? `<p class="memo"><span>歴史メモ</span><b>${s.memo[0]}</b><span class="jp-phrase">${s.memo[1]}</span></p>` : ''}</div>`;
     }
-    let popTimer = 0;
+    let popTimer = 0, popKey = null;
     function showPops(i) {   // 名所の思い出を、1枚ずつふわっと（複数あれば順番に）
         const pop = $('pop'), list = stops[i].pops || [];
         clearTimeout(popTimer); pop.classList.remove('show');
         let n = 0;
         const one = () => {
-            if (idx !== i || !list.length) return;
+            if (!list.length || popKey === null) return;
             const p = list[n % list.length];
             $('popImg').src = p.src; $('popCap').textContent = p.caption || (stops[i].arrive ? SHOP.name : stops[i].place);
             $('popTag').textContent = p.tag || ''; $('popTag').hidden = !p.tag; $('popCredit').textContent = p.credit ? '写真：' + p.credit : '';
@@ -1158,14 +1162,17 @@ const Drive = (() => {
         bubble(dt);
         if (performance.now() > introUntil || scene.goto != null) scene.update(dt);
         const i = scene.index(); if (i !== idx) caption(i);
+        // 思い出の写真は、トラックが止まったときに出す
+        const hk = scene.isHold ? scene.leg : scene.arrived ? 'goal' : null;
+        if (hk !== popKey) { popKey = hk; if (hk === null) { clearTimeout(popTimer); $('pop').classList.remove('show'); } else showPops(hk === 'goal' ? stops.length - 1 : scene.holds.filter(Boolean)[hk].i); }
         const si = scene.stopIndex(); scene.stopPans().forEach((_, k) => { const el = $('seg' + k); if (el) el.style.width = (k < si ? 100 : k > si ? 0 : scene.stopProgress(k) * 100) + '%'; });
-        const arrived = scene.arrived && i === stops.length - 1;
+        const arrived = scene.arrived;
         $('btnNext').hidden = !arrived; $('navHint').hidden = arrived;
         scene.draw();
         raf = requestAnimationFrame(frame);
     }
-    function next() { if (scene.arrived && idx === stops.length - 1) show('pour'); else if (scene.holding()) scene.release(); else scene.gotoStop(scene.stopIndex()); }
-    function prev() { const k = scene.stopIndex(), p = scene.stopPans(); const back = scene.holding() || (k > 0 && scene.pan - p[k - 1] < scene.ih * 0.6) ? k - 2 : k - 1; if (back < 0) scene.gotoStop(-1); else scene.goto = p[back]; scene.arrived = false; scene.resetHolds(); }
+    function next() { if (scene.arrived) show('pour'); else if (scene.holding()) scene.release(); else scene.fastForward(); }
+    function prev() { scene.backStop(); }
     $('btnNext').addEventListener('click', next);
     // ショート動画のように：右をタップで進む／左で戻る。トラックをタップするとジャンプして加速
     $('s-drive').addEventListener('click', (e) => {
@@ -1180,7 +1187,7 @@ const Drive = (() => {
     window.addEventListener('resize', () => { if (running) size(); });
     return {
         start() {
-            stops = buildStops(); honks = 0; idx = -1; capKey = ''; bubbleT = 3; bubbleOn = 0; $('honk').classList.remove('show');
+            stops = buildStops(); honks = 0; idx = -1; popKey = null; capKey = ''; bubbleT = 3; bubbleOn = 0; $('honk').classList.remove('show');
             $('chip').textContent = SEASONS[mode].jp + 'ルート';
             requestAnimationFrame(() => {
                 size(); scene.setRoute(stops);
@@ -1214,12 +1221,12 @@ class PourView {
     }
     newBubble(init) { return { u: rand(-.85, .85), y: init ? Math.random() : 0, v: rand(.18, .42), r: rand(.6, 1.6), w: rand(0, 6) }; }
     resize() {
-        const w = this.cv.clientWidth || this.fixedW || 300, fit = this.hero ? Infinity : Math.max(220, window.innerHeight - 390), h = Math.round(Math.min(w * (this.hero ? 1.25 : 1.12), fit)) /* 注ぐ画面は、スクロールなしで1画面に */, d = Math.min(this.hero ? 3 : 2, window.devicePixelRatio || 1);
+        const w = this.cv.clientWidth || this.fixedW || 300, fit = this.hero ? Infinity : Math.max(240, window.innerHeight - 330), h = Math.round(Math.min(w * (this.hero ? 1.25 : 1.3), fit)) /* 注ぐ画面は、スクロールなしで1画面に */, d = Math.min(this.hero ? 3 : 2, window.devicePixelRatio || 1);
         if (this.cv.clientWidth) this.cv.style.height = h + 'px';
         this.cv.width = Math.round(w * d); this.cv.height = Math.round(h * d);
         this.ctx.setTransform(d, 0, 0, d, 0, 0);
         this.W = w; this.H = h;
-        const R = Math.min(w, h / (this.hero ? 1.25 : 1.12)) * (this.hero ? 0.3 : 0.21);
+        const R = this.hero ? Math.min(w, h / 1.25) * 0.3 : Math.min(w * 0.25, h * 0.185);   // 注ぐ画面のジョッキは、画面に入るいちばん大きいサイズ
         const g = { cx: w * (this.hero ? 0.42 : 0.45), R, ry: R * 0.2, gB: h * (this.hero ? 0.95 : 0.9) };
         g.gT = g.gB - R * 2.7; g.bt = R * 0.3; g.inBot = g.gB - g.bt; g.Ri = R - 3.5; g.Hi = g.inBot - g.gT; g.ny = g.gT - R * 0.95;
         this.g = g;
