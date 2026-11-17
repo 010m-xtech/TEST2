@@ -1,0 +1,2199 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#e6f4ef">
+<title>おぢおば診断 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Shippori+Mincho+B1:wght@700;800&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+/* Layout concept: 総合クリニックの待合室。ECG用紙の方眼の上に、問診票と診断書が乗る。
+   色は「病院のミント × 信号の赤 × 注意のカラシ」。見出しだけ極太ゴシックで遊ぶ。 */
+:root {
+  color-scheme: light;
+  --bg: #DDEEE9;
+  --grid: rgba(17, 35, 58, .06);
+  --grid-major: rgba(17, 35, 58, .11);
+  --paper: #FBFDFC;
+  --paper-2: #EAF4F0;
+  --ink: #11233A;
+  --ink-soft: #44596B;
+  --line: #A9C9C0;
+  --teal: #12786C;
+  --on-teal: #FFFFFF;
+  --mustard: #F0B429;
+  --on-mustard: #11233A;
+  --red: #D3302A;
+  --on-red: #FFFFFF;
+  --shadow: #11233A;
+  --g-a: #2F9E8F;
+  --g-b: #8BBE4E;
+  --g-c: #F0B429;
+  --g-d: #EC7D2E;
+  --g-e: #D3302A;
+  --font-display: "Dela Gothic One", "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic", sans-serif;
+  --font-body: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+  --font-seal: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(var(--grid-major) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-major) 1px, transparent 1px),
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 19px;
+  line-height: 1.7;
+  font-weight: 500;
+  margin: 0;
+  padding-block: 16px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 760px; margin: 0 auto; }
+.wrap.z1 { zoom: 1.15; }
+.wrap.z2 { zoom: 1.3; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; }
+
+/* ---- clinic bar ---- */
+.clinic-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 8px 16px; flex-wrap: wrap; margin-bottom: 16px;
+  font-size: 15px; font-weight: 900; letter-spacing: .04em;
+}
+.brand { display: inline-flex; align-items: center; gap: 10px; min-width: 0; }
+.brand svg { width: 30px; height: 30px; flex: none; }
+.brand .cross-bg { fill: var(--teal); }
+.brand .cross-fg { fill: var(--on-teal); }
+.bar-right { display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.today { font-variant-numeric: tabular-nums; color: var(--ink-soft); }
+.size-btn {
+  min-height: 44px; padding: 2px 16px; border: 2px solid var(--ink); border-radius: 999px;
+  background: var(--paper); font-weight: 900; font-size: 15px; box-shadow: 0 3px 0 var(--ink);
+}
+.size-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+
+/* ---- paper ---- */
+.paper {
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  box-shadow: 6px 6px 0 var(--shadow);
+  padding: clamp(18px, 4.4vw, 34px);
+  position: relative;
+}
+.screen.enter { animation: enter .32s ease-out both; }
+@keyframes enter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+.label { font-size: 14px; font-weight: 900; letter-spacing: .14em; color: var(--ink-soft); }
+.tag {
+  display: inline-block; background: var(--mustard); color: var(--on-mustard);
+  font-weight: 900; font-size: 16px; padding: 1px 14px; border-radius: 999px;
+  border: 2px solid var(--ink); transform: rotate(-2.5deg); letter-spacing: .06em;
+}
+
+/* ---- start ---- */
+h1 {
+  font-family: var(--font-display); font-weight: 400;
+  font-size: clamp(38px, 10.5vw, 68px); line-height: 1.15; margin: 14px 0 10px;
+  text-wrap: balance; letter-spacing: -.01em; white-space: nowrap;
+}
+h1 .hl { background: linear-gradient(transparent 62%, var(--mustard) 62%, var(--mustard) 92%, transparent 92%); padding: 0 .08em; }
+.lead { margin: 0 0 6px; font-size: clamp(13px, 4.2vw, 21px); }
+.lead .ln { display: block; white-space: nowrap; }
+.ecg { display: block; width: 100%; height: auto; margin: 6px 0 18px; overflow: visible; }
+.ecg path { fill: none; stroke: var(--red); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 100; stroke-dashoffset: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .ecg path { animation: ecg 3.4s linear infinite; }
+}
+@keyframes ecg {
+  0% { stroke-dashoffset: 100; opacity: 1; }
+  68% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 0; }
+}
+.ticket {
+  background: var(--paper-2); border: 2px dashed var(--ink-soft); border-radius: 10px;
+  padding: clamp(14px, 3.4vw, 22px); display: grid; gap: 12px;
+}
+.start-btns { display: grid; gap: 14px; }
+.start-btn { min-height: 76px; font-size: clamp(21px, 5.2vw, 26px); }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 64px; padding: 8px 22px; border: 2px solid var(--ink); border-radius: 10px;
+  font-weight: 900; font-size: 20px; letter-spacing: .04em; line-height: 1.3;
+  background: var(--paper); transition: transform .08s ease, box-shadow .08s ease;
+}
+.btn-primary { background: var(--teal); color: var(--on-teal); box-shadow: 0 5px 0 var(--ink); }
+.btn-primary:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
+.btn-ghost { box-shadow: 0 4px 0 var(--ink); }
+.btn-ghost:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 2px 0 var(--ink); }
+.btn-warm { background: var(--mustard); color: var(--on-mustard); box-shadow: 0 5px 0 var(--ink); }
+.btn-warm:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
+.btn:disabled { opacity: .4; cursor: not-allowed; box-shadow: none; }
+.btn.block { width: 100%; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 0; padding: 0; list-style: none; font-size: 15px; font-weight: 900; }
+.facts li { border: 2px solid var(--ink); border-radius: 999px; padding: 0 14px; background: var(--paper); }
+
+.honest { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; margin: 8px 0 4px; padding: 8px 14px; border-left: 6px solid var(--red); background: var(--paper-2); border-radius: 4px 10px 10px 4px; font-weight: 900; font-size: clamp(17px, 4.2vw, 20px); line-height: 1.6; text-wrap: pretty; }
+.honest b { color: var(--red); font-family: var(--font-seal); letter-spacing: .12em; }
+
+/* ---- お店の処方薬(結果) ---- */
+.shop-rx { margin-top: 16px; padding: 12px 16px 14px; background: var(--mustard); color: var(--on-mustard); border: 2px solid var(--ink); border-radius: 10px; box-shadow: 4px 4px 0 var(--shadow); }
+.shop-rx-head { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; font-weight: 900; font-size: 16px; }
+.rxmark { font-family: var(--font-seal); font-weight: 800; font-size: 17px; border: 2px solid currentColor; border-radius: 6px; padding: 0 7px; line-height: 1.4; }
+.shop-rx-shop { margin-left: auto; font-size: 14px; letter-spacing: .06em; }
+.shop-rx-name { margin: 4px 0 2px; font-family: var(--font-body); font-weight: 900; letter-spacing: .02em; font-size: clamp(24px, 6.6vw, 34px); line-height: 1.3; text-wrap: balance; }
+.shop-rx-note { margin: 0; font-weight: 700; text-wrap: pretty; }
+.shop-rx-note:empty, .shop-rx-order:empty { display: none; }
+.shop-rx-order { margin: 6px 0 0; font-size: 14px; font-weight: 700; opacity: .85; }
+.shop-rx-body { display: flex; align-items: center; gap: 14px; margin-top: 8px; }
+.shop-rx-text { min-width: 0; flex: 1; }
+.shop-rx-body .shop-rx-name { margin-top: 0; }
+.shop-rx-photo { flex: none; display: block; width: clamp(96px, 28vw, 140px); max-width: 100%; aspect-ratio: 1; object-fit: cover; border: 2px solid var(--ink); border-radius: 8px; background: var(--paper); }
+
+/* ---- 自己申告 ---- */
+.self-title { font-size: clamp(25px, 6.4vw, 34px); font-weight: 900; line-height: 1.5; margin: 14px 0 4px; text-wrap: balance; }
+.self-sub { margin: 0; color: var(--ink-soft); font-weight: 700; }
+.self-big { text-align: center; font-family: var(--font-display); font-size: clamp(80px, 24vw, 132px); line-height: 1.1; margin: 10px 0 0; font-variant-numeric: tabular-nums; }
+.self-big small { font-size: .4em; margin-left: 4px; }
+.self-opts { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 6px; }
+.self-opt { min-height: 64px; padding: 0; border: 3px solid var(--ink); border-radius: 12px; background: var(--paper); color: var(--ink); font: inherit; font-size: clamp(17px, 5vw, 22px); font-weight: 900; box-shadow: 0 3px 0 var(--ink); cursor: pointer; }
+.self-opt:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+.self-opt[aria-pressed="true"] { background: var(--teal); color: var(--on-teal); }
+.self-scale { display: flex; justify-content: space-between; font-size: 15px; font-weight: 900; color: var(--ink-soft); margin: 8px 0 22px; }
+input[type="range"] { display: block; width: 100%; min-width: 0; height: 48px; margin: 0; -webkit-appearance: none; appearance: none; background: transparent; cursor: pointer; }
+input[type="range"]::-webkit-slider-runnable-track { box-sizing: border-box; height: 20px; border: 2px solid var(--ink); border-radius: 999px; background: linear-gradient(90deg, var(--g-a), var(--g-b), var(--g-c), var(--g-d), var(--g-e)); }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; box-sizing: border-box; width: 42px; height: 42px; margin-top: -12px; border-radius: 50%; background: var(--paper); border: 3px solid var(--ink); box-shadow: 0 3px 0 var(--ink); }
+input[type="range"]::-moz-range-track { box-sizing: border-box; height: 20px; border: 2px solid var(--ink); border-radius: 999px; background: linear-gradient(90deg, var(--g-a), var(--g-b), var(--g-c), var(--g-d), var(--g-e)); }
+input[type="range"]::-moz-range-thumb { box-sizing: border-box; width: 42px; height: 42px; border-radius: 50%; background: var(--paper); border: 3px solid var(--ink); box-shadow: 0 3px 0 var(--ink); }
+.self-nav { display: flex; gap: 12px; }
+.self-nav .btn-primary { flex: 1; }
+.self-nav .btn-ghost { min-width: 104px; }
+
+/* ---- quiz ---- */
+.quiz-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.dept { display: inline-flex; align-items: center; gap: 8px; font-weight: 900; font-size: 15px; }
+.dept b { background: var(--mustard); color: var(--on-mustard); border: 2px solid var(--ink); border-radius: 6px; padding: 0 10px; font-size: 17px; }
+.count { font-family: var(--font-display); font-size: 26px; font-variant-numeric: tabular-nums; }
+.ticks { display: flex; gap: 6px; margin-bottom: 24px; }
+.ticks i { flex: 1; height: 14px; border: 2px solid var(--ink); border-radius: 3px; background: var(--paper); }
+.ticks i.done { background: var(--teal); }
+.ticks i.cur { background: var(--mustard); }
+.qbox.enter { animation: enter .26s ease-out both; }
+.qtext.wrapfb { text-wrap: balance; }
+.qtext .ln { display: block; width: max-content; white-space: nowrap; }
+.fixed-lines { white-space: nowrap !important; text-wrap: nowrap !important; }
+.fixed-lines .ln { white-space: nowrap !important; }
+.honest .lines { display: inline-block; }
+.karte b { display: block; margin-bottom: 2px; }
+.note p, .gloss span, .loading .msg { text-wrap: balance; }
+.qtext { font-size: clamp(24px, 6vw, 34px); font-weight: 900; line-height: 1.5; margin: 0 0 22px; text-wrap: pretty; min-height: 3em; }
+.gloss { display: grid; gap: 2px; margin: 14px 0 0; padding: 10px 14px; background: var(--paper-2); border-left: 6px solid var(--mustard); border-radius: 4px 10px 10px 4px; font-size: 17px; font-weight: 700; line-height: 1.6; text-wrap: pretty; }
+.gloss b { font-size: 14px; letter-spacing: .14em; color: var(--ink-soft); }
+.answers { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.ans-unk { border-style: dashed; }
+.ans {
+  display: flex; align-items: center; gap: 14px; min-height: 72px; padding: 10px 16px; text-align: left;
+  background: var(--paper); border: 2px solid var(--ink); border-radius: 10px;
+  font-weight: 900; font-size: clamp(20px, 5vw, 24px); line-height: 1.35;
+  transition: transform .08s ease, background .12s ease;
+}
+.ans:hover { background: var(--paper-2); }
+.ans:active { transform: translateY(2px); }
+.ans .dot { width: 28px; height: 28px; flex: none; border: 2px solid currentColor; border-radius: 50%; display: grid; place-items: center; font-size: 16px; font-weight: 900; line-height: 1; }
+.ans .qmark { margin-left: auto; font-family: var(--font-display); font-size: 24px; line-height: 1; opacity: .6; }
+.ans[aria-pressed="true"] { background: var(--teal); color: var(--on-teal); }
+.ans[aria-pressed="true"] .dot { background: var(--on-teal); color: var(--teal); }
+.ans[aria-pressed="true"] .dot::after { content: "✓"; }
+.note {
+  margin-top: 18px; min-height: 5.6em; display: flex; gap: 12px; align-items: flex-start;
+  border: 2px dashed var(--ink-soft); border-radius: 10px; padding: 12px 14px; background: var(--paper-2);
+}
+.note .who { flex: none; background: var(--ink); color: var(--paper); font-size: 14px; font-weight: 900; border-radius: 6px; padding: 0 8px; margin-top: 3px; letter-spacing: .06em; }
+.note p { margin: 0; font-size: 17px; line-height: 1.65; }
+.note p.empty { color: var(--ink-soft); }
+.note.pop p { animation: pop .3s ease-out; }
+@keyframes pop { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.nav { display: flex; gap: 12px; margin-top: 22px; }
+.nav .btn-primary { flex: 1; }
+.nav .btn-ghost { min-width: 124px; border-width: 3px; font-weight: 900; }
+.fine { margin: 16px 0 0; font-size: 14px; color: var(--ink-soft); }
+
+/* ---- loading ---- */
+.loading { text-align: center; padding-block: 28px; }
+.loading h2 { font-family: var(--font-display); font-weight: 400; font-size: clamp(26px, 6.5vw, 40px); margin: 6px 0; }
+.loading .msg { min-height: 2em; font-weight: 700; color: var(--ink-soft); margin: 0; }
+.board { margin: 14px auto 8px; max-width: 340px; padding: 10px 18px 12px; background: var(--ink); color: var(--paper); border-radius: 10px; }
+.board .cap { font-size: 14px; font-weight: 900; letter-spacing: .14em; opacity: .85; }
+.board .no { font-family: var(--font-display); font-size: clamp(48px, 14vw, 68px); line-height: 1.15; letter-spacing: .12em; font-variant-numeric: tabular-nums; }
+.board .in { font-size: 15px; font-weight: 900; letter-spacing: .06em; }
+@media (prefers-reduced-motion: no-preference) {
+  .board .in { animation: blink 1.2s steps(2, jump-none) infinite; }
+}
+@keyframes blink { 0% { opacity: 1; } 100% { opacity: .35; } }
+
+/* ---- result(1画面で読み切れる量に) ---- */
+.confetti { position: absolute; inset: 0; overflow: hidden; pointer-events: none; border-radius: 8px; }
+.confetti i { position: absolute; top: -20px; width: 10px; height: 16px; border-radius: 2px; opacity: 0; animation: fall 3.2s ease-in both; }
+@keyframes fall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  85% { opacity: 1; }
+  100% { transform: translateY(720px) rotate(560deg); opacity: 0; }
+}
+.r-head { text-align: center; border-bottom: 3px double var(--ink); padding-bottom: 8px; }
+.r-clinic { font-size: 15px; font-weight: 900; letter-spacing: .12em; color: var(--teal); line-height: 1.4; }
+.r-head h2 { font-family: var(--font-seal); font-weight: 800; font-size: clamp(22px, 5.6vw, 30px); margin: 2px 0 8px; line-height: 1.3; letter-spacing: .1em; }
+.r-meta { display: flex; justify-content: space-between; align-items: baseline; gap: 4px 12px; font-size: 14px; font-weight: 700; text-align: left; line-height: 1.5; font-variant-numeric: tabular-nums; }
+.banner {
+  margin: 14px 0 0; padding: 8px 14px; border: 2px solid var(--ink); border-radius: 8px; text-align: center;
+  font-family: var(--font-seal); font-weight: 800; font-size: clamp(17px, 4.6vw, 24px); line-height: 1.55;
+  letter-spacing: .06em; white-space: pre-line; text-wrap: balance;
+}
+.banner.A { background: var(--paper-2); color: var(--teal); border-color: var(--teal); }
+.banner.E { background: var(--mustard); color: var(--on-mustard); border: 5px double var(--ink); }
+.verdict-top { display: flex; align-items: center; gap: 16px; margin-top: 16px; }
+.verdict-top .vt { min-width: 0; }
+.stamp {
+  flex: none; width: 88px; height: 88px; border-radius: 50%; border: 4px double var(--red); color: var(--red);
+  display: grid; place-content: center; text-align: center; font-family: var(--font-seal); font-weight: 800;
+  transform: rotate(-14deg); opacity: 0;
+}
+.stamp.on { opacity: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  .stamp.on { animation: stampIn .5s cubic-bezier(.2, 1.5, .4, 1) both; }
+}
+@keyframes stampIn { from { opacity: 0; transform: rotate(-14deg) scale(2.6); } to { opacity: 1; transform: rotate(-14deg) scale(1); } }
+.stamp small { font-size: 14px; letter-spacing: .2em; line-height: 1.2; }
+.stamp b { font-size: 44px; line-height: 1; }
+.verdict-top .sub { font-family: var(--font-seal); font-weight: 800; font-size: 18px; line-height: 1.4; margin: 0; color: var(--ink-soft); }
+.verdict-top h3 { font-family: var(--font-display); font-weight: 400; font-size: clamp(28px, 7.4vw, 44px); line-height: 1.25; margin: 2px 0 6px; text-wrap: balance; }
+.nick { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0; }
+.nick b { background: var(--mustard); color: var(--on-mustard); border: 2px solid var(--ink); border-radius: 999px; padding: 0 14px; font-size: clamp(17px, 4.4vw, 21px); }
+
+.meter { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 4px 16px; margin: 6px auto 0; max-width: 520px; }
+.gauge-box { min-width: 0; }
+.gauge { display: block; width: 100%; height: auto; overflow: visible; }
+.gauge .seg { fill: none; stroke-width: 24; }
+.seg0 { stroke: var(--g-a); } .seg1 { stroke: var(--g-b); } .seg2 { stroke: var(--g-c); } .seg3 { stroke: var(--g-d); } .seg4 { stroke: var(--g-e); }
+.gauge .gl { fill: var(--ink-soft); font-family: var(--font-display); font-size: 15px; text-anchor: middle; dominant-baseline: central; }
+.gauge .gl.cur { fill: var(--ink); font-size: 22px; }
+.gauge #needle path:first-child { fill: url(#gNeedle); }
+.gauge .hub { }
+.gauge .hub-dot { fill: var(--mustard); }
+.pct { text-align: center; padding-bottom: 6px; }
+.pct .cap { font-weight: 900; font-size: 15px; letter-spacing: .08em; line-height: 1.3; }
+.pct .num { font-family: var(--font-display); font-size: clamp(52px, 15vw, 84px); line-height: 1.05; font-variant-numeric: tabular-nums; }
+.pct .num small { font-size: .42em; margin-left: 2px; }
+.pct .bar { height: 8px; margin: 2px auto 0; border-radius: 999px; background: var(--line); overflow: hidden; }
+.pct .bar i { display: block; height: 100%; width: 0; background: var(--ink); transition: width 1.5s cubic-bezier(.2, .8, .2, 1); }
+@media (max-width: 420px) {
+  .meter { grid-template-columns: 1fr; justify-items: center; }
+  .gauge-box { width: 100%; max-width: 330px; }
+}
+.r-body { margin: 12px 0 0; text-wrap: pretty; }
+
+.gapcard { margin-top: 16px; border: 2px solid var(--ink); border-radius: 10px; padding: 12px 14px; background: var(--paper-2); }
+.gap-line { display: flex; align-items: center; justify-content: center; gap: 6px 14px; flex-wrap: wrap; }
+.gap-tile { text-align: center; line-height: 1.2; }
+.gap-tile small { display: block; font-size: 14px; font-weight: 900; color: var(--ink-soft); letter-spacing: .08em; }
+.gap-tile b { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 8vw, 40px); font-variant-numeric: tabular-nums; }
+.gap-arrow { font-family: var(--font-display); font-size: 26px; }
+.gap-badge { background: var(--mustard); color: var(--on-mustard); border: 2px solid var(--ink); border-radius: 999px; padding: 0 14px; font-weight: 900; font-size: clamp(18px, 4.6vw, 22px); font-variant-numeric: tabular-nums; }
+.gap-msg { margin: 8px 0 0; text-align: center; font-weight: 700; text-wrap: balance; }
+
+.rx1 { margin: 14px 0 0; padding: 10px 14px; border-left: 6px solid var(--teal); background: var(--paper-2); border-radius: 4px 10px 10px 4px; font-weight: 700; text-wrap: pretty; }
+.rx1 b { margin-right: .6em; font-family: var(--font-seal); font-weight: 800; letter-spacing: .1em; }
+
+.more { margin-top: 18px; }
+.more summary {
+  list-style: none; cursor: pointer; min-height: 52px; display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--ink); border-radius: 10px; background: var(--paper); font-weight: 900; box-shadow: 0 3px 0 var(--ink);
+}
+.more summary::-webkit-details-marker { display: none; }
+.more summary::after { content: "＋"; margin-left: 10px; }
+.more[open] summary::after { content: "－"; }
+.more[open] summary { box-shadow: none; }
+.more-body { padding-top: 6px; }
+.block-title { display: flex; align-items: center; gap: 10px; margin: 20px 0 10px; font-family: var(--font-seal); font-weight: 800; font-size: 20px; letter-spacing: .1em; }
+.block-title::after { content: ""; flex: 1; height: 2px; background: var(--ink); opacity: .25; }
+.lab { border: 2px solid var(--ink); border-radius: 8px; overflow: hidden; }
+.lab-row { display: grid; grid-template-columns: minmax(0, 1fr) 5.6em 2.6em; align-items: center; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--line); }
+.lab-row:first-child { border-top: 0; }
+.lab-head { background: var(--ink); color: var(--paper); font-size: 14px; font-weight: 900; letter-spacing: .1em; padding-block: 4px; }
+.lab-head span:nth-child(2) { text-align: right; }
+.lab-head span:nth-child(3) { text-align: center; }
+.lab-name { min-width: 0; }
+.lab-name b { display: block; font-size: 17px; line-height: 1.4; }
+.lab-name small { display: block; font-size: 14px; color: var(--ink-soft); font-weight: 700; line-height: 1.4; }
+.lab-val { text-align: right; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.lab-val b { display: block; font-family: var(--font-display); font-weight: 400; font-size: 26px; }
+.lab-val small { font-size: 14px; color: var(--ink-soft); font-weight: 700; }
+.lab-flag { text-align: center; }
+.lab-flag span { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; font-weight: 900; font-size: 17px; }
+.flag-H { background: var(--red); color: var(--on-red); }
+.flag-L { background: var(--teal); color: var(--on-teal); }
+.flag-ok { color: var(--ink-soft); }
+.lab-row.fH, .lab-row.fL { background: var(--paper-2); }
+.chief { margin: 0; padding: 12px 14px; background: var(--paper-2); border-left: 6px solid var(--red); border-radius: 4px 10px 10px 4px; font-weight: 700; text-wrap: pretty; }
+.chief small .nw, .nw { white-space: nowrap; }
+.chief small { display: block; color: var(--ink-soft); font-size: 15px; margin-top: 4px; }
+.karte { margin: 14px 0 0; padding: 10px 14px; border: 2px dashed var(--ink-soft); border-radius: 8px; font-family: var(--font-seal); font-weight: 700; font-size: 17px; line-height: 1.7; text-wrap: pretty; }
+.karte b { font-weight: 800; letter-spacing: .1em; margin-right: .5em; }
+.doctor { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-wrap: wrap; margin: 16px 0 0; font-family: var(--font-seal); font-weight: 800; font-size: 18px; }
+.hanko { display: inline-grid; place-items: center; width: 34px; height: 34px; border: 2px solid var(--red); border-radius: 50%; color: var(--red); font-style: normal; font-size: 16px; transform: rotate(-8deg); }
+
+.actions { display: grid; gap: 8px; margin-top: 22px; }
+.actions .hint { margin: 0; text-align: center; font-size: 15px; font-weight: 700; color: var(--ink-soft); }
+.disclaimer { margin: 16px 0 0; font-size: 14px; color: var(--ink-soft); line-height: 1.6; }
+
+@media (max-width: 420px) {
+  .lab-row { grid-template-columns: minmax(0, 1fr) 4.8em 2.4em; padding-inline: 8px; }
+  .lab-val b { font-size: 22px; }
+  .lab-name b { font-size: 15px; }
+  .stamp { width: 78px; height: 78px; }
+  .stamp b { font-size: 38px; }
+  .verdict-top { gap: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .screen.enter, .qbox.enter, .note.pop p { animation: none; }
+  .pct .bar i { transition: none; }
+}
+
+/* ---- スマホ最適化 ---- */
+.nb { display: inline-block; }
+html { overflow-x: hidden; }
+body { word-break: keep-all; }
+body { overflow-wrap: anywhere; -webkit-tap-highlight-color: transparent; }
+button, summary { touch-action: manipulation; }
+img, svg { max-width: 100%; }
+@media (max-width: 400px) {
+  body { font-size: 18px; }
+  .clinic-bar { font-size: 14px; }
+  .qtext { font-size: clamp(21px, 5.8vw, 26px); margin-bottom: 16px; }
+  .ans { min-height: 68px; gap: 10px; padding: 8px 12px; }
+  .shop-rx-name { font-size: clamp(21px, 6.2vw, 26px); }
+  .verdict-top h3 { font-size: clamp(24px, 7vw, 32px); }
+}
+
+/* ---- スマホ: なるべくスクロール不要に(各画面を1画面に収める) ---- */
+@media (max-width: 480px) {
+  body { padding-block: 8px 20px; }
+  .clinic-bar { flex-wrap: nowrap; margin-bottom: 8px; }
+  .clinic-bar .today { display: none; }
+  .brand { gap: 6px; font-size: 14px; white-space: nowrap; }
+  .brand svg { width: 26px; height: 26px; }
+  .size-btn { min-height: 40px; padding: 0 12px; font-size: 14px; white-space: nowrap; flex: none; box-shadow: 0 2px 0 var(--ink); }
+  .paper { padding: 14px 14px 16px; box-shadow: 4px 4px 0 var(--shadow); }
+  .btn { min-height: 54px; font-size: 19px; }
+  .fine { margin-top: 10px; font-size: 13px; }
+
+  /* スタート */
+  h1 { font-size: clamp(32px, 9.4vw, 40px); margin-block: 6px 6px; }
+  .lead { font-size: clamp(13px, 4.2vw, 19px); margin-bottom: 4px; }
+  .facts { display: none; }
+  .honest { margin: 6px 0 2px; padding: 6px 12px; font-size: 16px; }
+  .ecg { margin: 4px 0 8px; }
+  .start-btns { gap: 10px; }
+  .start-btn { min-height: 64px; font-size: clamp(20px, 5.4vw, 24px); }
+
+  /* 自己申告 */
+  .self-title { font-size: clamp(22px, 6vw, 28px); margin-block: 8px 2px; }
+  .self-big { font-size: clamp(64px, 20vw, 88px); margin-top: 4px; }
+  .self-scale { margin-bottom: 10px; }
+
+  /* 質問(スクロールなしで答えられる) */
+  .quiz-head { margin-bottom: 6px; }
+  .count { font-size: 22px; }
+  .ticks { margin-bottom: 12px; }
+  .ticks i { height: 10px; }
+  .qtext { font-size: clamp(21px, 5.6vw, 25px); margin-bottom: 12px; min-height: 1.5em; line-height: 1.45; }
+  .gloss { margin: -2px 0 10px; padding: 6px 12px; font-size: 14px; line-height: 1.5; }
+  .answers { gap: 8px; }
+  .ans { min-height: 58px; padding: 6px 12px; font-size: clamp(18px, 4.8vw, 21px); }
+  .ans .dot { width: 24px; height: 24px; }
+  .note { display: block; margin-top: 10px; min-height: 0; padding: 8px 12px; }
+  .note .who { display: block; width: fit-content; margin: 0 0 4px; font-size: 12px; line-height: 1.6; padding: 0 7px; }
+  .note p { display: block; font-size: 15px; line-height: 1.5; }
+  .nav { margin-top: 12px; }
+  #s-quiz .fine { display: none; }
+  .in-quiz .clinic-bar { display: none; }   /* 質問中は上のバーを隠して、縦の余裕をつくる */
+  .in-quiz { padding-top: 10px; }
+  #s-quiz.paper { padding: 10px 12px 12px; }
+  .quiz-head { margin-bottom: 4px; }
+  .ticks { margin-bottom: 8px; }
+  .qtext { margin-bottom: 18px; }
+  .answers { gap: 12px; }
+  .ans { min-height: 68px; padding: 6px 14px; font-size: clamp(20px, 5.8vw, 23px); }
+  .gloss { margin: 12px 0 0; padding: 8px 12px; font-size: 16px; line-height: 1.5; }
+  .note { margin-top: 14px; padding: 9px 12px; }
+  .note .who { font-size: 14px; }
+  .note p { font-size: 17px; line-height: 1.5; }
+  .nav { margin-top: 14px; }
+  .nav .btn { min-height: 58px; font-size: 20px; }
+  .nav .btn-ghost { min-width: 112px; }
+  /* ことば解説つきの問いは、4つ目の選択肢もあるので少しだけ詰める */
+  #s-quiz.dense .qtext { margin-bottom: 10px; }
+  #s-quiz.dense .answers { gap: 7px; }
+  #s-quiz.dense .ans { min-height: 54px; padding-block: 4px; font-size: clamp(18px, 5.2vw, 21px); }
+  #s-quiz.dense .gloss { margin: 10px 0 0; padding: 6px 10px; font-size: 15px; line-height: 1.45; }
+  #s-quiz.dense .note { margin-top: 8px; padding: 6px 10px; }
+  #s-quiz.dense .note p { font-size: 15px; }
+  #s-quiz.dense .nav { margin-top: 8px; }
+  #s-quiz.dense .nav .btn { min-height: 50px; }
+
+  /* 診断書: 判定・メーター・処方薬が最初の1画面に入る */
+  .r-head { padding-bottom: 4px; }
+  .r-clinic { font-size: 15px; }
+  .r-head h2 { font-size: 21px; margin-bottom: 4px; }
+  .r-meta { font-size: 14px; }
+  .verdict-top { margin-top: 12px; gap: 14px; }
+  .stamp { width: 74px; height: 74px; }
+  .stamp small { font-size: 11px; }
+  .stamp b { font-size: 36px; }
+  .verdict-top .sub { font-size: 15px; }
+  .verdict-top h3 { font-size: clamp(21px, 6.2vw, 28px); margin-block: 0 4px; }
+  .nick b { font-size: 17px; padding: 0 10px; }
+  .gauge-box { max-width: 290px; }
+  .meter { margin-top: 0; gap: 0; }
+  .pct { padding-bottom: 0; }
+  .pct .cap { font-size: 15px; }
+  .pct .num { font-size: clamp(52px, 15vw, 66px); }
+  .r-body { margin-top: 10px; font-size: 18px; line-height: 1.6; }
+  .r-body.fixed-lines { margin-inline: -8px; }
+  .shop-rx { margin-top: 12px; padding: 10px 12px 12px; }
+  .shop-rx-body { margin-top: 4px; gap: 12px; }
+  .shop-rx-photo { width: 96px; }
+  .shop-rx-note { font-size: 17px; line-height: 1.5; }
+  .gapcard { margin-top: 12px; padding: 10px 12px; }
+  .gap-tile b { font-size: 30px; }
+  .gap-msg { margin-top: 6px; font-size: 17px; line-height: 1.55; }
+  .more { margin-top: 10px; }
+  .actions { margin-top: 12px; }
+  .disclaimer { margin-top: 10px; font-size: 14px; }
+}
+
+/* ===== 3D(診断中のカプセル) ===== */
+.pill3d { display: block; width: 100%; max-width: 360px; height: 190px; margin: 2px auto 0; }
+.loading.has3d .ecg { display: none; }
+@media (max-width: 480px) { .pill3d { height: 170px; } }
+
+/* ===== 紙の診断書(紙の目・端の影) ===== */
+#s-result.paper, #s-quiz.paper {
+  background-color: #FCFAF3;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012 .22' numOctaves='2' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 .55 0 0 0 0 .47 0 0 0 0 .33 0 0 0 .14 -.04'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .42 0 0 0 0 .36 0 0 0 0 .27 0 0 0 .16 -.02'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse 85% 75% at 50% 42%, rgba(255, 255, 255, 0) 62%, rgba(150, 120, 70, .09) 100%);
+  border: 1px solid rgba(17, 35, 58, .16);
+  border-radius: 3px;
+  box-shadow:
+    0 1px 1px rgba(17, 35, 58, .10),
+    0 3px 6px rgba(17, 35, 58, .08),
+    0 16px 30px -8px rgba(17, 35, 58, .30),
+    inset 0 0 0 1px rgba(255, 255, 255, .6);
+}
+/* 紙の下端の、わずかな反り影 */
+#s-result.paper::after, #s-quiz.paper::after {
+  content: ""; position: absolute; left: 6%; right: 6%; bottom: -2px; height: 14px; z-index: -1;
+  border-radius: 50%; box-shadow: 0 10px 14px -6px rgba(17, 35, 58, .35);
+}
+
+/* ===== 判定ハンコ(朱肉のかすれ・にじみ) ===== */
+.stamp {
+  color: #C3302A; border-color: #C3302A;
+  mix-blend-mode: multiply;
+  text-shadow: 0 0 .6px rgba(195, 48, 42, .95), 0 0 2px rgba(195, 48, 42, .35);
+  box-shadow: 0 0 1.5px rgba(195, 48, 42, .55), inset 0 0 1.5px rgba(195, 48, 42, .55);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='k'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' seed='3'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 -16 0 0 0 10.4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23k)'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.045' numOctaves='2' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 -2.6 0 0 0 2.25'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)'/%3E%3C/svg%3E");
+  -webkit-mask-composite: source-in;
+          mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='k'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' seed='3'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 -16 0 0 0 10.4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23k)'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.045' numOctaves='2' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 -2.6 0 0 0 2.25'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)'/%3E%3C/svg%3E");
+          mask-composite: intersect;
+  -webkit-mask-size: 160px 160px; mask-size: 160px 160px;
+}
+
+/* ===== 処方薬 = 南風薬局の薬袋 ===== */
+.shop-rx.bag {
+  position: relative; margin-top: 22px; padding: 16px 16px 12px;
+  color: var(--ink);
+  background-color: #FFFEFA;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .4 0 0 0 0 .4 0 0 0 0 .38 0 0 0 .10 -.02'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    linear-gradient(90deg, rgba(17, 35, 58, .06), rgba(17, 35, 58, 0) 6%, rgba(17, 35, 58, 0) 94%, rgba(17, 35, 58, .06));
+  border: 1px solid rgba(17, 35, 58, .14); border-top: 0; border-radius: 0 0 6px 6px;
+  box-shadow: 0 1px 1px rgba(17, 35, 58, .08), 0 8px 16px -6px rgba(17, 35, 58, .28);
+}
+/* 上端: ギザギザの圧着(シール)部分 */
+.bag-crimp {
+  position: absolute; left: -1px; right: -1px; top: -9px; height: 10px;
+  background:
+    linear-gradient(-45deg, #FFFEFA 5px, transparent 0) 0 100% / 10px 10px repeat-x,
+    linear-gradient(45deg, #FFFEFA 5px, transparent 0) 0 100% / 10px 10px repeat-x;
+  filter: drop-shadow(0 -.5px 0 rgba(17, 35, 58, .22));
+}
+.shop-rx.bag::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 9px;
+  background: repeating-linear-gradient(180deg, rgba(17, 35, 58, .07) 0 1px, transparent 1px 3px);
+}
+.bag-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 0 8px; border-bottom: 2px solid var(--teal); }
+.bag-kind {
+  background: var(--teal); color: var(--on-teal); font-family: var(--font-seal); font-weight: 800;
+  font-size: 20px; letter-spacing: .32em; padding: 2px 6px 2px 13px; border-radius: 3px; line-height: 1.35;
+}
+.bag-to { display: inline-flex; align-items: baseline; gap: 6px; font-size: 13px; color: var(--ink-soft); font-weight: 700; white-space: nowrap; }
+.bag-to b { font-size: 18px; color: var(--ink); font-weight: 900; padding: 0 12px; border-bottom: 1.5px solid var(--ink-soft); }
+.shop-rx.bag .shop-rx-name { margin: 10px 0 8px; color: var(--ink); }
+.shop-rx.bag .shop-rx-body { margin-top: 0; gap: 14px; }
+.bag-window {
+  position: relative; flex: none; display: block; width: clamp(96px, 28vw, 132px); aspect-ratio: 1;
+  border-radius: 10px; overflow: hidden; background: #fff;
+  box-shadow: 0 0 0 4px #fff, 0 0 0 5px rgba(17, 35, 58, .18), inset 0 0 0 1px rgba(17, 35, 58, .18);
+}
+.bag-window .shop-rx-photo { width: 100%; height: 100%; border: 0; border-radius: 0; }
+.bag-window::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+  background: linear-gradient(118deg, rgba(255, 255, 255, .55) 0%, rgba(255, 255, 255, .14) 30%, rgba(255, 255, 255, 0) 31%,
+    rgba(255, 255, 255, 0) 64%, rgba(255, 255, 255, .20) 65%, rgba(255, 255, 255, 0) 78%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .5), inset 0 -6px 12px rgba(17, 35, 58, .12);
+}
+.shop-rx.bag .shop-rx-note { color: var(--ink); }
+/* ===== デモ表示: 処方薬袋の写真と文言を空白にして「変更可能」と表示 ===== */
+.bag-window.demo {
+  display: grid; place-items: center; text-align: center;
+  background: repeating-linear-gradient(135deg, #F1F6F4 0 9px, #FFFFFF 9px 18px);
+  box-shadow: 0 0 0 4px #fff, 0 0 0 5px rgba(17, 35, 58, .18), inset 0 0 0 2px rgba(18, 120, 108, .55);
+}
+.bag-window.demo::before {
+  content: "写真\A変更可能"; white-space: pre; font-weight: 900; font-size: 15px; line-height: 1.5; color: var(--teal);
+}
+.demo-ph { color: var(--ink-soft) !important; font-weight: 700 !important; }
+.shop-rx.bag .shop-rx-name.demo-ph { font-weight: 900 !important; opacity: .75; }
+.bag-usage dd.demo-ph { border-bottom: 1.5px dashed rgba(17, 35, 58, .35); }
+.bag-usage { margin: 12px 0 0; padding: 9px 0 0; border-top: 1px dashed rgba(17, 35, 58, .32); display: grid; gap: 5px; }
+.bag-usage div { display: flex; align-items: center; gap: 10px; }
+.bag-usage dt {
+  flex: none; font-weight: 900; color: var(--teal); border: 1.5px solid var(--teal); border-radius: 3px;
+  padding: 0 6px; font-size: 13px; line-height: 1.6; letter-spacing: .1em;
+}
+.bag-usage dd { margin: 0; font-weight: 700; font-size: 16px; white-space: nowrap; }
+.bag-foot {
+  margin-top: 10px; padding-top: 8px; border-top: 2px solid var(--teal); color: var(--teal);
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  font-family: var(--font-seal); font-weight: 800; font-size: 18px; letter-spacing: .14em;
+}
+@media (max-width: 480px) {
+  .shop-rx.bag { margin-top: 20px; padding: 14px 13px 11px; }
+  .bag-kind { font-size: 18px; }
+  .bag-to b { font-size: 17px; padding: 0 10px; }
+  .bag-window { width: 96px; }
+  .bag-usage dd { font-size: 15px; }
+}
+@media (max-width: 350px) {
+  .shop-rx.bag { padding: 13px 11px 10px; }
+  .shop-rx.bag .shop-rx-body { gap: 11px; }
+  .bag-window { width: 78px; border-radius: 8px; }
+  .bag-to small:first-child { display: none; }
+  .bag-usage div { gap: 7px; }
+  .bag-usage dd { font-size: 14px; }
+}
+
+/* ===== メーター(金属のふち・ガラスのツヤ) ===== */
+.gauge { filter: drop-shadow(0 6px 7px rgba(17, 35, 58, .22)); }
+.gauge .seg-hi { fill: none; stroke: rgba(255, 255, 255, .26); stroke-width: 4; stroke-linecap: butt; }
+.gauge .seg-lo { fill: none; stroke: rgba(17, 35, 58, .13); stroke-width: 5; }
+.gauge .g-num { fill: #6A7782; font-family: var(--font-body); font-weight: 900; font-size: 10.5px; text-anchor: middle; dominant-baseline: central; }
+.gauge .g-brand { fill: #8A949C; font-family: var(--font-seal); font-weight: 800; font-size: 8.5px; letter-spacing: .26em; text-anchor: middle; }
+.gauge .g-unit { fill: #9AA3AA; font-family: var(--font-body); font-weight: 700; font-size: 9px; letter-spacing: .2em; text-anchor: middle; }
+.gauge .tk { stroke: rgba(17, 35, 58, .38); stroke-width: 1.2; stroke-linecap: round; }
+.gauge .tk-major { stroke: rgba(17, 35, 58, .7); stroke-width: 2.4; }
+.gauge .gl { fill: #4A5A68; }
+.gauge .gl.cur { fill: var(--ink); }
+
+/* ===== 問診票(質問画面) ===== */
+.form-title {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  padding: 0 2px 6px; margin: 0 0 10px; border-bottom: 3px double rgba(17, 35, 58, .7);
+}
+.form-title b { font-family: var(--font-seal); font-weight: 800; font-size: 22px; letter-spacing: .5em; margin-right: -.5em; color: var(--ink); }
+.form-title span { font-family: var(--font-seal); font-weight: 800; font-size: 13px; letter-spacing: .12em; color: var(--ink-soft); white-space: nowrap; }
+#s-quiz .dept { gap: 6px; }
+#s-quiz .dept .label { letter-spacing: .1em; }
+#s-quiz .dept b {
+  background: transparent; color: var(--teal); border: 0; border-bottom: 1.5px solid var(--ink-soft); border-radius: 0;
+  font-family: var(--font-seal); font-weight: 800; font-size: 17px; padding: 0 10px 0 6px;
+}
+#s-quiz .count { font-family: var(--font-seal); font-weight: 800; font-size: 15px; letter-spacing: .06em; color: var(--ink-soft); }
+/* 進み具合: 記入欄の小さな四角 */
+#s-quiz .ticks { counter-reset: tk; gap: 5px; }
+#s-quiz .ticks i {
+  height: 18px; border: 1.5px solid rgba(17, 35, 58, .55); border-radius: 2px; background: rgba(255, 255, 255, .55);
+  display: grid; place-items: center; font-style: normal; font-size: 11px; font-weight: 900; color: var(--ink-soft);
+}
+#s-quiz .ticks i::before { counter-increment: tk; content: counter(tk); }
+#s-quiz .ticks i.done { background: var(--teal); border-color: var(--teal); color: #fff; }
+#s-quiz .ticks i.cur { background: rgba(240, 180, 41, .28); border-color: var(--ink); color: var(--ink); }
+/* 問い: 記入用の罫線の上に */
+#s-quiz .qtext {
+  line-height: 1.45; padding: 0;
+  background-image: linear-gradient(to bottom, transparent calc(100% - 1.5px), rgba(17, 35, 58, .26) 0);
+  background-size: 100% 1.45em; background-position: 0 0; background-repeat: repeat-y;
+}
+/* 回答: チェック欄つきの選択肢。選ぶと赤ペンのチェック */
+#s-quiz .ans {
+  background: rgba(255, 255, 255, .72); border: 1.5px solid rgba(17, 35, 58, .55); border-radius: 6px;
+  box-shadow: 0 1px 0 rgba(17, 35, 58, .10);
+}
+#s-quiz .ans:hover { background: rgba(255, 255, 255, .9); }
+#s-quiz .ans .dot {
+  width: 26px; height: 26px; border: 2px solid var(--ink); border-radius: 3px; background: #fff; position: relative; color: transparent;
+}
+#s-quiz .ans[aria-pressed="true"] { background: rgba(18, 120, 108, .09); color: var(--ink); border: 2px solid var(--teal); box-shadow: inset 0 0 0 1px rgba(18, 120, 108, .25); }
+#s-quiz .ans[aria-pressed="true"] .dot { background: #fff; color: transparent; }
+#s-quiz .ans[aria-pressed="true"] .dot::after {
+  content: ""; position: absolute; left: -3px; top: -11px; width: 36px; height: 36px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M6 21 C9 23 12 27 15 32 C20 20 27 11 37 3' fill='none' stroke='%23C3302A' stroke-width='5.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+@media (prefers-reduced-motion: no-preference) {
+  #s-quiz .ans[aria-pressed="true"] .dot::after { animation: penCheck .28s ease-out both; }
+}
+@keyframes penCheck { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+#s-quiz .ans-unk { border-style: dashed; }
+/* 先生のひとこと: 所見欄 */
+#s-quiz .note {
+  background: rgba(240, 180, 41, .10); border: 0; border-left: 4px solid var(--mustard); border-radius: 2px 8px 8px 2px;
+  box-shadow: inset 0 0 0 1px rgba(17, 35, 58, .08);
+}
+#s-quiz .note .who { background: transparent; color: var(--ink-soft); border: 1px solid rgba(17, 35, 58, .45); border-radius: 3px; font-family: var(--font-seal); font-weight: 800; }
+#s-quiz .gloss { background: rgba(255, 255, 255, .7); }
+@media (max-width: 480px) {
+  .form-title { margin-bottom: 6px; padding-bottom: 4px; }
+  .form-title b { font-size: 19px; }
+  .form-title span { font-size: 12px; }
+  #s-quiz .ticks i { height: 16px; font-size: 10px; }
+  #s-quiz .ans .dot { width: 24px; height: 24px; }
+  #s-quiz .ans[aria-pressed="true"] .dot::after { width: 31px; height: 31px; top: -9px; left: -2px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap">
+  <div class="clinic-bar">
+    <span class="brand">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect class="cross-bg" x="1" y="1" width="30" height="30" rx="7"></rect><path class="cross-fg" d="M13 6h6v7h7v6h-7v7h-6v-7H6v-6h7z"></path></svg>
+      <span id="clinicName">おぢおば総合クリニック</span>
+    </span>
+    <span class="bar-right">
+      <span class="today" id="today"></span>
+    </span>
+  </div>
+
+  <main>
+    <!-- スタート -->
+    <section class="screen paper" id="s-start">
+      <span class="tag">2026年版</span>
+      <h1>おぢおば<span class="hl">診断</span></h1>
+      <p class="lead"><span class="ln">「まだ若い」と思う人も、若い人も。</span><span class="ln">たった4問で、こっそり測定します。</span></p>
+      <p class="honest fixed-lines" data-fit="13"><span class="lines"><span class="ln">盛らずに、正直にお答えください。</span><br><span class="ln">先生にはお見通しです。</span></span></p>
+      <svg class="ecg" viewBox="0 0 600 60" aria-hidden="true"><path pathLength="100" d="M0 32 H110 l8 -6 l10 6 H190 l7 6 l11 -32 l13 50 l9 -24 H320 l9 -7 l12 7 H430 l7 6 l11 -32 l13 50 l9 -24 H600"></path></svg>
+
+      <div class="ticket">
+        <span class="label">診断メニューを選んで、タッチ</span>
+        <div class="start-btns">
+          <button type="button" class="btn btn-primary block start-btn" data-mode="oji">おぢさん度を測る</button>
+          <button type="button" class="btn btn-warm block start-btn" data-mode="oba">おばさん度を測る</button>
+          <button type="button" class="btn btn-ghost block start-btn" data-mode="both">どっちも気になる</button>
+        </div>
+      </div>
+      <ul class="facts">
+        <li>全4問</li>
+        <li>約1分</li>
+        <li>質問は毎回ちがう</li>
+        <li>ことば解説つき</li>
+      </ul>
+    </section>
+
+    <!-- 自己申告 -->
+    <section class="screen paper" id="s-self" hidden>
+      <span class="tag">まずは自己申告</span>
+      <h2 class="self-title" id="selfTitle"></h2>
+      <p class="self-sub fixed-lines" data-fit="13"><span class="ln">診断のあとで、答え合わせをします。</span><br><span class="ln">盛らずに、正直にどうぞ。</span></p>
+      <div class="self-big"><span id="selfOut">30</span><small>%</small></div>
+      <div class="self-opts" id="selfOpts" role="group" aria-label="自己申告のパーセント">
+        <button type="button" class="self-opt" data-v="10">10%</button>
+        <button type="button" class="self-opt" data-v="30">30%</button>
+        <button type="button" class="self-opt" data-v="50">50%</button>
+        <button type="button" class="self-opt" data-v="70">70%</button>
+        <button type="button" class="self-opt" data-v="90">90%</button>
+      </div>
+      <div class="self-scale"><span>ぜんぜん</span><span>ばっちり</span></div>
+      <div class="self-nav">
+        <button type="button" class="btn btn-ghost" id="btnSelfBack">戻る</button>
+        <button type="button" class="btn btn-primary" id="btnSelf">この数字で申告する</button>
+      </div>
+      <p class="fine">タッチして、数字を選んでください。</p>
+    </section>
+
+    <!-- 問診 -->
+    <section class="screen paper" id="s-quiz" hidden>
+      <div class="form-title" aria-hidden="true"><b>問診票</b><span id="formClinic">南風クリニック</span></div>
+      <div class="quiz-head">
+        <span class="dept"><span class="label">診察科</span><b id="qDept"></b></span>
+        <span class="count" id="qNum"></span>
+      </div>
+      <div class="ticks" id="ticks" aria-hidden="true"></div>
+      <div class="qbox" id="qbox">
+        <h2 class="qtext" id="qText"></h2>
+        <div class="answers" id="answers" role="group" aria-label="回答"></div>
+        <div class="note" id="note" aria-live="polite">
+          <span class="who" id="who">おぢ川先生</span>
+          <p id="quip" class="empty">選ぶと、先生がひとこと添えます。</p>
+        </div>
+      </div>
+      <div class="nav">
+        <button type="button" class="btn btn-ghost" id="btnBack">戻る</button>
+        <button type="button" class="btn btn-primary" id="btnNext" disabled>次へ</button>
+      </div>
+        <p class="gloss" id="qGloss" hidden><b>ことば解説</b><span id="qGlossText"></span></p>
+      <p class="fine fixed-lines" data-fit="12"><span class="ln">盛らずに、正直にお答えください。</span><br><span class="ln">しばらく操作が無いと、最初の画面に戻ります。</span></p>
+    </section>
+
+    <!-- 診断中 -->
+    <section class="screen paper loading" id="s-loading" hidden>
+      <span class="label">ただいま診断中</span>
+      <h2>診断書を作成しています</h2>
+      <canvas class="pill3d" id="pill3d" aria-hidden="true" hidden></canvas>
+      <div class="board">
+        <div class="cap">ただいまの診察番号</div>
+        <div class="no" id="boardNo">000</div>
+        <div class="in">診察室へ、お入りください</div>
+      </div>
+      <svg class="ecg" viewBox="0 0 600 60" aria-hidden="true"><path pathLength="100" d="M0 32 H110 l8 -6 l10 6 H190 l7 6 l11 -32 l13 50 l9 -24 H320 l9 -7 l12 7 H430 l7 6 l11 -32 l13 50 l9 -24 H600"></path></svg>
+      <p class="msg" id="loadMsg" aria-live="polite"></p>
+    </section>
+
+    <!-- 診断書 -->
+    <section class="screen paper" id="s-result" hidden>
+      <div class="confetti" id="confetti" aria-hidden="true"></div>
+      <div class="r-head">
+        <div class="r-clinic" id="rClinic"></div>
+        <h2 id="rTitleLabel"></h2>
+        <div class="r-meta"><span id="rNo"></span><span id="rDate"></span></div>
+      </div>
+
+      <div class="verdict-top">
+        <div class="stamp" id="stamp" aria-hidden="true"><small>判定</small><b id="stampLetter">A</b></div>
+        <div class="vt">
+          <p class="sub" id="rSub"></p>
+          <h3 id="rHead"></h3>
+          <p class="nick" id="rNick"><span class="label">二つ名</span><b id="rNickV"></b></p>
+        </div>
+      </div>
+
+      <div class="meter">
+        <div class="gauge-box">
+          <svg class="gauge" id="gauge" viewBox="-2 -12 344 200" role="img" aria-label="おぢさん度メーター">
+            <defs>
+              <radialGradient id="gFace" cx="170" cy="150" r="160" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stop-color="#FFFFFC"/><stop offset=".6" stop-color="#FAF7EF"/><stop offset=".9" stop-color="#EFE9DC"/><stop offset="1" stop-color="#DCD4C2"/>
+              </radialGradient>
+              <linearGradient id="gChrome" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#FFFFFF"/><stop offset=".08" stop-color="#E9EDF0"/><stop offset=".2" stop-color="#9BA4AB"/>
+                <stop offset=".32" stop-color="#F7F9FA"/><stop offset=".5" stop-color="#C3CAD0"/><stop offset=".68" stop-color="#727C84"/>
+                <stop offset=".86" stop-color="#D9DEE2"/><stop offset="1" stop-color="#8C959C"/>
+              </linearGradient>
+              <linearGradient id="gChromeSide" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".35" stop-color="#fff" stop-opacity="0"/>
+                <stop offset=".7" stop-color="#11233A" stop-opacity="0"/><stop offset="1" stop-color="#11233A" stop-opacity=".35"/>
+              </linearGradient>
+              <linearGradient id="gBase" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#F4F6F7"/><stop offset=".18" stop-color="#D3D9DD"/><stop offset=".55" stop-color="#AEB6BC"/><stop offset="1" stop-color="#7A848B"/>
+              </linearGradient>
+              <linearGradient id="gGlass" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset=".38" stop-color="#fff" stop-opacity=".1"/><stop offset=".40" stop-color="#fff" stop-opacity="0"/>
+                <stop offset=".9" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".12"/>
+              </linearGradient>
+              <linearGradient id="gNeedle" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#4A6382"/><stop offset=".48" stop-color="#1F3550"/><stop offset=".52" stop-color="#0B1726"/><stop offset="1" stop-color="#13263D"/>
+              </linearGradient>
+              <radialGradient id="gHub" cx=".36" cy=".3" r=".85">
+                <stop offset="0" stop-color="#FFFFFF"/><stop offset=".25" stop-color="#E3E8EB"/><stop offset=".6" stop-color="#9AA3AA"/><stop offset="1" stop-color="#4E585F"/>
+              </radialGradient>
+              <radialGradient id="gScrew" cx=".35" cy=".3" r=".9">
+                <stop offset="0" stop-color="#FFFFFF"/><stop offset=".45" stop-color="#C2C9CE"/><stop offset="1" stop-color="#5E686F"/>
+              </radialGradient>
+              <filter id="gBlur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.2"/></filter>
+              <filter id="gSoft" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation=".5"/></filter>
+              <filter id="gInner" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="6"/></filter>
+              <filter id="gGrain" x="0" y="0" width="100%" height="100%">
+                <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="5"/>
+                <feColorMatrix values="0 0 0 0 .3  0 0 0 0 .26  0 0 0 0 .2  0 0 0 .14 -.03"/>
+              </filter>
+              <filter id="gBrush" x="0" y="0" width="100%" height="100%">
+                <feTurbulence type="fractalNoise" baseFrequency=".004 .9" numOctaves="2" seed="9"/>
+                <feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.1 -.42"/>
+              </filter>
+              <filter id="gBrushDark" x="0" y="0" width="100%" height="100%">
+                <feTurbulence type="fractalNoise" baseFrequency=".003 .7" numOctaves="2" seed="21"/>
+                <feColorMatrix values="0 0 0 0 .1  0 0 0 0 .14  0 0 0 0 .2  0 0 0 .9 -.46"/>
+              </filter>
+              <clipPath id="gFaceClip"><path d="M12 160 A158 158 0 0 1 328 160 Z"/></clipPath>
+              <clipPath id="gBaseClip"><rect x="-1" y="157" width="342" height="19" rx="5"/></clipPath>
+            </defs>
+
+            <!-- 文字盤(エナメル) -->
+            <path d="M12 160 A158 158 0 0 1 328 160 Z" fill="url(#gFace)"/>
+            <g clip-path="url(#gFaceClip)">
+              <rect x="10" y="0" width="320" height="162" filter="url(#gGrain)"/>
+              <path d="M12 160 A158 158 0 0 1 328 160" fill="none" stroke="rgba(17,35,58,.32)" stroke-width="18" filter="url(#gInner)"/>
+            </g>
+            <!-- 印刷: 目盛り・数字・銘板 -->
+            <g id="gTicks"></g>
+            <g id="gNums"></g>
+            <text class="g-brand" x="170" y="137">NANPU CLINIC</text>
+            <g id="gSegs"></g>
+            <g id="gLetters"></g>
+
+            <!-- 針 -->
+            <g id="needleSh" transform="translate(3 5) rotate(4 170 160)" filter="url(#gBlur)"><path d="M184 160 L170 151.5 L48 160 L170 168.5 Z" fill="rgba(17,35,58,.42)"/><circle cx="181" cy="160" r="7" fill="rgba(17,35,58,.42)"/></g>
+            <g id="needle" transform="rotate(4 170 160)">
+              <path d="M184 160 L170 151.5 L48 160 L170 168.5 Z"/>
+              <path d="M170 152.6 L50 160 L170 160 Z" fill="rgba(255,255,255,.2)"/>
+              <circle cx="181" cy="160" r="7" fill="#13263D"/><circle cx="181" cy="160" r="7" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1"/>
+            </g>
+
+            <!-- ガラス -->
+            <path d="M12 160 A158 158 0 0 1 328 160 Z" fill="url(#gGlass)" pointer-events="none"/>
+            <path d="M36 116 A152 152 0 0 1 246 20 A172 172 0 0 0 56 124 Z" fill="#fff" opacity=".2" pointer-events="none"/>
+            <path d="M47.31 100.16 A136.5 136.5 0 0 1 151.00 24.83" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".7" filter="url(#gSoft)"/>
+            <path d="M12.5 160 A157.5 157.5 0 0 1 327.5 160" fill="none" stroke="rgba(17,35,58,.28)" stroke-width="2.5"/>
+
+            <!-- 金属のふち(クローム) -->
+            <path d="M6 160 A164 164 0 0 1 334 160" fill="none" stroke="url(#gChrome)" stroke-width="12"/>
+            <path d="M6 160 A164 164 0 0 1 334 160" fill="none" stroke="url(#gChromeSide)" stroke-width="12"/>
+            <path d="M67.80 29.19 A166 166 0 0 1 272.20 29.19" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".9"/>
+            <path d="M0 160 A170 170 0 0 1 340 160" fill="none" stroke="rgba(17,35,58,.55)" stroke-width="1"/>
+            <path d="M11.4 160 A158.6 158.6 0 0 1 328.6 160" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="1"/>
+
+            <!-- 台座(ヘアライン仕上げ)とネジ -->
+            <rect x="-1" y="157" width="342" height="19" rx="5" fill="url(#gBase)"/>
+            <g clip-path="url(#gBaseClip)">
+              <rect x="-1" y="157" width="342" height="19" filter="url(#gBrush)"/>
+              <rect x="-1" y="157" width="342" height="19" filter="url(#gBrushDark)"/>
+            </g>
+            <path d="M3 157.8 H337" stroke="rgba(255,255,255,.95)" stroke-width="1.2"/>
+            <rect x="-.5" y="157.5" width="341" height="18" rx="4.5" fill="none" stroke="rgba(17,35,58,.45)"/>
+            <g class="g-screw" transform="translate(14 166.5)"><circle r="5.2" fill="url(#gScrew)" stroke="rgba(17,35,58,.5)" stroke-width=".8"/><path d="M-3 -.6 H3 M-.6 -3 V3" stroke="rgba(17,35,58,.6)" stroke-width="1.3" transform="rotate(20)"/></g>
+            <g class="g-screw" transform="translate(326 166.5)"><circle r="5.2" fill="url(#gScrew)" stroke="rgba(17,35,58,.5)" stroke-width=".8"/><path d="M-3 -.6 H3 M-.6 -3 V3" stroke="rgba(17,35,58,.6)" stroke-width="1.3" transform="rotate(-35)"/></g>
+
+            <!-- 軸 -->
+            <circle cx="172" cy="163.5" r="15" fill="rgba(17,35,58,.38)" filter="url(#gBlur)"/>
+            <circle class="hub" cx="170" cy="160" r="13.5" fill="url(#gHub)" stroke="#4C565C" stroke-width="1"/>
+            <circle cx="170" cy="160" r="9" fill="none" stroke="rgba(17,35,58,.25)" stroke-width="1"/>
+            <circle class="hub-dot" cx="170" cy="160" r="4"/>
+            <circle cx="166.2" cy="155.8" r="2.6" fill="#fff" opacity=".85"/>
+          </svg>
+        </div>
+        <div class="pct">
+          <div class="cap" id="rCap"></div>
+          <div class="num"><span id="rPct">0</span><small>%</small></div>
+          <div class="bar"><i id="rBar"></i></div>
+        </div>
+      </div>
+
+      <p class="r-body" id="rBody"></p>
+
+      <div class="shop-rx bag" id="shopRx" hidden>
+        <div class="bag-crimp" aria-hidden="true"></div>
+        <div class="bag-head">
+          <span class="bag-kind">内服薬</span>
+          <span class="bag-to"><small>お名前</small><b>あなた</b><small>様</small></span>
+        </div>
+        <p class="shop-rx-name" id="shopRxName"></p>
+        <div class="shop-rx-body">
+          <span class="bag-window" id="shopRxWin" hidden><img class="shop-rx-photo" id="shopRxPhoto" alt="" hidden></span>
+          <div class="shop-rx-text">
+            <p class="shop-rx-note" id="shopRxNote"></p>
+            <p class="shop-rx-order" id="shopRxOrder"></p>
+          </div>
+        </div>
+        <dl class="bag-usage">
+          <div><dt>用法</dt><dd class="nw">温かいうちに、ゆっくり服用</dd></div>
+          <div><dt>用量</dt><dd class="nw">1回1皿（おかわり可）</dd></div>
+        </dl>
+        <div class="bag-foot"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><rect x="7" y="2" width="6" height="16" rx="1.5" fill="currentColor"/><rect x="2" y="7" width="16" height="6" rx="1.5" fill="currentColor"/></svg><span id="shopRxShop"></span></div>
+      </div>
+
+      <div class="gapcard">
+        <div class="gap-line">
+          <div class="gap-tile"><small>自己申告</small><b id="gapSelfV"></b></div>
+          <span class="gap-arrow" aria-hidden="true">→</span>
+          <div class="gap-tile"><small>実測</small><b id="gapRealV"></b></div>
+          <span class="gap-badge" id="gapBig"></span>
+        </div>
+        <p class="gap-msg" id="gapMsg"></p>
+      </div>
+
+
+
+
+      <div class="actions">
+        <button type="button" class="btn btn-primary block" id="btnAgain">もういちど診断する</button>
+        <p class="hint fixed-lines" data-fit="14"><span class="ln">質問は毎回入れ替わります。</span><br><span class="ln">ご同席の方もどうぞ。</span></p>
+      </div>
+      <p class="disclaimer fixed-lines" data-fit="12"><span class="ln">※お楽しみ用です。医学的な根拠はありません。</span><br><span class="ln">しばらく操作が無いと、最初の画面に戻ります。</span></p>
+    </section>
+  </main>
+</div>
+
+<script>
+/* メニュー写真(imagesフォルダ内のファイル)。差し替えるときは同じ名前のWebP画像を上書きするか、ここのパスを書き換えます */
+window.OJIBA_PHOTOS = {
+  goya: 'images/goya.webp',
+  gyoza: 'images/gyoza.webp',
+  soba: 'images/soba.webp',
+  beniimo: 'images/beniimo.webp',
+  dashimaki: 'images/dashimaki.webp'
+};
+</script>
+<script>
+(function () {
+  'use strict';
+
+  /* ===== 設定(お店の運用に合わせて変更できます) ===== */
+  /* --- お店の設定(ここだけ書き換えれば、お店仕様になります) ---
+     name      : 店名(クリニック名・薬局名を自動で作るときの元になります)
+     clinic    : クリニック名(画面上部と診断書の発行元に出ます。空なら name から自動で作ります)
+     pharmacy  : 処方薬のカードに出す薬局名(空なら「name 薬局」)
+     orderNote : 処方薬の下に出す一言(例: 'ご注文はスタッフまで')。空なら出しません
+     menus     : 判定A〜Eごとの「処方薬」(=お店のメニュー)。複数入れると、ランダムに1つ出ます
+                 { name: 'メニュー名', note: 'ひとこと', price: '600円(任意)', photo: 写真(任意) }
+                 note や name の中の {S} は「おぢさん/おばさん」に置き換わります。
+                 どの判定も空のままなら、処方薬の枠は出ません。
+     写真は、すぐ上の <script> に埋め込んだもの(P.〇〇)を使っています。 */
+  var P = window.OJIBA_PHOTOS || {};
+  var SHOP = {
+    name: '南風',
+    clinic: '南風クリニック　日進院',
+    pharmacy: '南風薬局　日進店',
+    orderNote: '',
+    menus: {
+      A: [{ name: '島豆腐のゴーヤチャンプル', note: '若々しいあなたには、\nシャキッと元気の\n一皿を。', photo: P.goya }],
+      B: [{ name: 'シンプルだしまき玉子', note: '予備軍には、\nまずやさしい味で\nひと息。', photo: P.dashimaki }],
+      C: [{ name: '島唐辛子ぎょうざ', note: '境界線でゆれる\nあなたには、\nピリッと一発、\n気合いを。', photo: P.gyoza }],
+      D: [{ name: '紅芋コロッケ', note: 'どっしり構えた\n立派な{S}には、\nホクホクの紅芋を。', photo: P.beniimo }],
+      E: [{ name: '沖縄そば', note: '国宝級には、\nとっておきの\n一杯を。', photo: P.soba }]
+    }
+  };
+
+  var DEMO = false;          // true: 処方薬袋の写真・文言を空白(変更可能)にしたデモ表示
+  var SESSION_N = 4;        // 1回の診断で出す質問数
+  var MAX_PER_DEPT = 2;     // 同じ診察科から出す質問の上限(偏り防止)
+  var IDLE_MS = 120000;     // 操作がないまま経つと最初の画面に戻る(ミリ秒)
+  var LOADING_MS = 2400;    // 「診断中」演出の長さ(ミリ秒)
+  var ADVANCE_MS = 2500;    // 回答後、先生のひとことを読んでから自動で次へ進むまで(ミリ秒)
+  var DEFAULT_SELF = 30;    // 自己申告スライダーの初期値(%)
+
+  var CLINIC = SHOP.clinic || ((SHOP.name ? SHOP.name + ' ' : '') + 'おぢおば総合クリニック');
+  var MODES = { oji: 'おぢさん', oba: 'おばさん', both: 'おぢおば' };
+  var DOCTORS = {
+    oji: { short: 'おぢ川先生', full: 'おぢ川 よいしょ' },
+    oba: { short: 'おば山先生', full: 'おば山 どっこいしょ' },
+    both: { short: '院長先生', full: 'おぢ川 よいしょ ／ おば山 どっこいしょ' }
+  };
+  var KIMI = { oji: '貴公子', oba: '貴婦人', both: '達人' };
+  var DEPTS = ['言動科', '流行科', 'デジタル科', '身体科', '生活科'];
+  var MAXV = 2;             // 1問あたりの最高点
+  var VALUES = [2, 1, 0];   // 点数(強い順)。各設問の a:[…] の並びと対応します
+
+  /* ===== 質問のプール(毎回ここから SESSION_N 問をランダムに出題します) =====
+     who = 'oji' ならおぢさん向け、'oba' ならおばさん向け。書かなければ共通です。
+           「おぢさん度を測る」= 共通 + oji、「おばさん度を測る」= 共通 + oba、
+           「どっちも気になる」= すべて、の中から出題します。
+     d  = 診察科(0:言動 1:流行 2:デジタル 3:身体 4:生活)
+     a  = 選択肢の文言(2点 / 1点 / 0点の順)
+     hi = 2点・1点のときの先生のひとこと、lo = 0点のときのひとこと
+     g  = ことば解説(新しい言葉が出る問いだけ)
+     u  = 「そもそも知らない」選択肢(2点扱い)、un = そのときの先生のひとこと */
+  var QUESTIONS = [
+    /* ---------- 共通 ---------- */
+    { d: 0, t: '「昔は〜だった」と、\n言ったことがある。',
+      a: ['口ぐせになっている', '言った覚えがある', '言わない'],
+      hi: '出ました。昔話の才能です！',
+      lo: '今を生きていますね。' },
+    { d: 0, t: '「最近の若者は〜」と、\n言ったことがある。',
+      a: ['しょっちゅうある', '言ってしまったこともある', 'ない'],
+      hi: '言いたくなる気持ち、わかります。',
+      lo: '世代を超えて寄り添えるタイプです。' },
+    { d: 1, t: '最近の曲より、青春時代の曲のほうがいいと思う。',
+      a: ['断然、あの頃の曲', 'そう思うことがある', 'そうは思わない'],
+      hi: '好きな曲は、人生のBGMです。',
+      lo: '新しい曲も楽しめる柔らかい耳です。' },
+    { d: 1, t: '懐かしの番組で、豆知識や\nウンチクを披露することがある。',
+      a: ['止まらなくなる', 'つい話してしまう', '話さない'],
+      hi: '豆知識は「へえ」で完成します。',
+      lo: '静かに聴き入る、渋い楽しみ方。' },
+    { d: 2, t: 'LINEの文末に、つい「。」を付ける。',
+      a: ['毎回付けている', '付けることがある', '付けない'],
+      hi: '句点は、威厳に見えるそうです。',
+      lo: '文末の空気も読めています。' },
+    { d: 3, t: '立ち上がるとき、つい「よいしょ」と言ってしまう。',
+      a: ['毎回出る', 'ときどき出る', '出ない'],
+      hi: '掛け声は、体の正直な報告です。',
+      lo: '無言で動ける軽やかさ！' },
+    { d: 3, t: '健康診断の結果は、つい「C」の数を数えてしまう。',
+      a: ['毎回数えている', '数えたことがある', '数えない'],
+      hi: '健診の話題は、大人の社交辞令。',
+      lo: '健康に自信がおありですね。' },
+    { d: 3, t: '飲み会のあと、疲れが翌々日まで残る。',
+      a: ['毎回、翌々日まで残る', 'ときどき残る', '翌日には元気'],
+      hi: '回復は「あとで届くもの」です。',
+      lo: '回復力が高いですね。' },
+    { d: 4, t: '新しい店より、つい「いつもの店」に行ってしまう。',
+      a: ['断然、行きつけ', 'どちらかといえば行きつけ', '新しい店のほうが好き'],
+      hi: 'このお店も行きつけに？',
+      lo: '新規開拓の精神、健在です。' },
+    { d: 4, t: '休日は「家でゆっくり」が、いちばん幸せだと思う。',
+      a: ['最高の休日だと思う', 'わりとそう思う', '外に出たい派'],
+      hi: 'それは成熟の証、最高です。',
+      lo: 'アクティブでうらやましい。' },
+
+    /* ---------- 流行の問い(毎回1問は、ここから出題します。「そもそも知らない」は2点扱い) ---------- */
+    { d: 1, trend: true, t: '「推し活」の意味、わかりますか？',
+      a: ['なんとなく知っている', '意味はわかる', '普通に使っている'],
+      g: '推し活は、好きなアイドルやキャラクターなどを応援する活動のこと。',
+      u: 'そもそも知らない',
+      un: '知らないのは健全です。',
+      hi: '知っているだけで立派です。',
+      lo: '最新の流行になじんでいますね。' },
+    { d: 1, trend: true, t: '「エモい」「チルい」の意味、わかりますか？',
+      a: ['なんとなく知っている', '意味はわかる', '普通に使っている'],
+      g: '「エモい」はしみじみ心に響く、「チルい」はまったり落ち着く、という意味の若者言葉です。',
+      u: 'そもそも知らない',
+      un: '知らないのは健全です。',
+      hi: '知っていれば十分です。',
+      lo: '若い感性ですね。' },
+    { d: 1, trend: true, t: '「ワンチャン」の意味、わかりますか？',
+      a: ['なんとなく知っている', '意味はわかる', '普通に使っている'],
+      g: '「ワンチャン」は、「ひょっとしたら可能性があるかも」という意味の若者言葉です。',
+      u: 'そもそも知らない',
+      un: '知らないのは健全です。',
+      hi: '知っていれば会話に入れます。',
+      lo: '最新の言葉に強いですね。' },
+    { d: 1, trend: true, t: 'TikTokを、見たり使ったりしていますか？',
+      a: ['ほとんど見ない', 'ときどき見る', '毎日のように見る'],
+      g: 'TikTokは、短い動画を見たり投稿したりできる、スマホのアプリです。',
+      u: 'そもそもTikTokを知らない',
+      un: '知らなくても大丈夫です。',
+      hi: 'ちょうどいい距離感です。',
+      lo: '流行の最前線にいますね。' },
+    { d: 1, trend: true, t: '「映える」写真を、撮ったことがありますか？',
+      a: ['撮ったことがない', 'たまに撮る', 'よく撮る'],
+      g: '「映える」は、写真や見た目が華やかで、SNSで注目されそうなこと。',
+      u: 'そもそも意味を知らない',
+      un: '知らないのは健全です。',
+      hi: '映えなくても、おいしければ十分です。',
+      lo: '映えの達人ですね。' },
+    { d: 1, trend: true, t: '生成AIを、使ったことがありますか？',
+      a: ['使ったことがない', '数回使った', 'よく使う'],
+      g: '生成AIは、質問すると文章や答えを作ってくれるAIのこと。ChatGPTやClaudeなどがあります。',
+      u: 'そもそも知らない',
+      un: 'これから使う楽しみがありますね。',
+      hi: '使ってみると世界が広がります。',
+      lo: 'AIを使いこなす、頼もしい人です。' },
+    { d: 1, trend: true, t: '「ミーム」の意味、わかりますか？',
+      a: ['なんとなく知っている', '意味はわかる', '普通に使っている'],
+      g: '「ミーム」は、ネットで広まって流行する、画像・動画・言葉のこと。',
+      u: 'そもそも知らない',
+      un: '知らないのは健全です。',
+      hi: '知っていれば、会話に入れます。',
+      lo: 'ネット文化にも強いですね。' },
+
+    /* ---------- おぢさん向け ---------- */
+    { who: 'oji', d: 0, t: '聞かれてないのに、武勇伝を語った経験がある。',
+      a: ['語りたくて仕方ない', '語った覚えがある', '語らない'],
+      hi: '武勇伝は、話すたび盛られます。',
+      lo: '謙虚ですね。実はお持ちでは？' },
+    { who: 'oji', d: 0, t: '頼まれてないのに、後輩や部下につい助言してしまう。',
+      a: ['気づけば語っている', 'つい口を出してしまう', '聞かれるまで言わない'],
+      hi: '聞かれてから出すと感謝されます。',
+      lo: '聞き上手で慕われるタイプです。' },
+    { who: 'oji', d: 0, t: 'ダジャレを思いつくと、つい言ってしまう。',
+      a: ['毎回、言わずにいられない', 'ときどき言ってしまう', '思いついても言わない'],
+      hi: 'ダジャレは心の余裕の表れです。',
+      lo: '飲み込める大人ですね。' },
+    { who: 'oji', d: 0, t: '後輩や部下を飲みに誘う時、迷惑かとつい気にしてしまう。',
+      a: ['いつも気にしている', '気にすることがある', '気にせず誘う'],
+      hi: '気にかけられるのは立派な気配り。',
+      lo: '堂々と誘える頼れる先輩です。' },
+    { who: 'oji', d: 2, t: 'スマホの文字入力が面倒で、つい電話で済ませてしまう。',
+      a: ['ほぼ電話で済ませる', '面倒に感じることがある', '入力は苦にならない'],
+      hi: '電話は声の温度が伝わります。',
+      lo: '入力が速い、現代の達人！' },
+    { who: 'oji', d: 4, t: '趣味（釣り・車など）の道具に、つい凝ってしまう。',
+      a: ['道具選びがいちばん楽しい', 'つい凝ってしまう', '道具にはこだわらない'],
+      hi: '道具選びは趣味の半分です。',
+      lo: '腕前で勝負するタイプですね。' },
+    { who: 'oji', d: 4, t: '〆のラーメンや一品がないと、\n飲み会が終われない。',
+      a: ['〆がないと終われない', 'ときどき食べたくなる', '〆はいらない'],
+      hi: '〆は、飲み会の締めくくりの儀式。',
+      lo: '健康的な食べ方ですね。' },
+    { who: 'oji', d: 4, t: 'ビールや缶コーヒーは、つい同じ銘柄を選ぶ。',
+      a: ['譲れない銘柄がある', 'なんとなく決まっている', '何でもいい'],
+      hi: 'いつもの銘柄は、頼れる相棒です。',
+      lo: 'こだわらない自由さ、素敵です。' },
+
+    /* ---------- おばさん向け ---------- */
+    { who: 'oba', d: 0, t: '知らない人にも、つい話しかけてしまう。',
+      a: ['初対面でも盛り上がる', 'ときどき話しかける', '話しかけない'],
+      hi: '世間話は街を明るくする才能！',
+      lo: '静かな時間も大切にできる方。' },
+    { who: 'oba', d: 0, t: 'つい「あれ」と言って、言葉や名前が出てこない。',
+      a: ['毎日ある', 'ときどきある', 'ない'],
+      hi: '「あれ」で通じるのは絆の証です。',
+      lo: '記憶力が抜群ですね。' },
+    { who: 'oba', d: 2, t: '写真を撮るとき、つい「はい、チーズ」と言ってしまう。',
+      a: ['必ず声をかける', 'つい言ってしまう', '言わない'],
+      hi: 'チーズは笑顔を引き出す魔法です。',
+      lo: '自然な表情を撮れる写真上手。' },
+    { who: 'oba', d: 3, t: 'テレビで「体にいい」と聞くと、すぐ試したくなる。',
+      a: ['すぐに試す', 'ときどき試す', '試さない'],
+      hi: '健康への関心は元気の源です。',
+      lo: '冷静で慎重な判断力ですね。' },
+    { who: 'oba', d: 3, t: '靴は見た目より、歩きやすさで選ぶ。',
+      a: ['絶対に歩きやすさ', 'どちらかといえば歩きやすさ', '見た目を優先する'],
+      hi: '足元の快適さは元気の土台です。',
+      lo: 'おしゃれ心を忘れない素敵さ。' },
+    { who: 'oba', d: 4, t: 'バッグに飴を入れていて、つい配りたくなる。',
+      a: ['いつも常備している', 'ときどき入れている', '入れていない'],
+      hi: '「飴ちゃん」は最強の外交官です。',
+      lo: '身軽でスマートなバッグですね。' },
+    { who: 'oba', d: 4, t: 'お裾分けやお土産を、つい持たせたくなる。',
+      a: ['必ず持たせたくなる', 'ときどき持たせる', 'あまりしない'],
+      hi: 'お裾分けは、優しさのかたちです。',
+      lo: 'さっぱりした付き合い方ですね。' },
+  ];
+
+  /* ===== 検査結果(診察科ごとに1項目。値 = 点数の割合 × max、inv は逆向き) =====
+     LAB_OBA は、おばさん診断のときだけ差し替える項目(診察科番号 → 項目) */
+  var LAB = [
+    { name: '昔話・武勇伝濃度', unit: 'mg/dL', max: 120, lo: 0, hi: 30 },
+    { name: '流行キャッチアップ力', unit: '%', max: 100, lo: 60, hi: 100, inv: true },
+    { name: '句点使用率', unit: '%', max: 100, lo: 0, hi: 20 },
+    { name: '「よいしょ」指数', unit: 'pt', max: 80, lo: 0, hi: 30 },
+    { name: '「いつもの」依存度', unit: '%', max: 100, lo: 0, hi: 40 }
+  ];
+  var LAB_OBA = {
+    0: { name: '世間話・おしゃべり指数', unit: 'pt', max: 100, lo: 0, hi: 30 },
+    3: { name: '「どっこいしょ」指数', unit: 'pt', max: 80, lo: 0, hi: 30 },
+    4: { name: 'お裾分け・おもてなし指数', unit: 'pt', max: 100, lo: 0, hi: 40 }
+  };
+
+  /* ===== 二つ名(診察科ごと [強い, 控えめ])。NICKS_OBA は、おばさん診断のときだけ差し替え ===== */
+  var NICKS = [
+    ['武勇伝ファイター', '昔話の語り部見習い'],
+    ['昭和・平成の守り人', '流行ウォッチャー(遠巻き)'],
+    ['句点の{K}', 'スタンプ迷子'],
+    ['よいしょマスター', '掛け声予備軍'],
+    ['「いつもの」の守護神', '定位置の住人']
+  ];
+  var NICKS_OBA = {
+    0: ['井戸端会議の名手', '世間話の見習い'],
+    3: ['どっこいしょ名人', '掛け声予備軍'],
+    4: ['お裾分けの達人', 'おもてなし見習い']
+  };
+  var NICK_NONE = '令和ネイティブ';
+
+  /* ===== 判定 ===== */
+  var GRADES = [
+    { letter: 'A', sub: '異常なし',
+      title: '{S}成分、ほぼ検出されず',
+      banner: 'おめでとうございます！\n「異常なし」と認定します。',
+      body: '驚くほど若々しい結果です。\n令和の風を感じます。',
+      karte: '特記事項なし。\nあまりに健康で、逆に怪しい。',
+      rx: ['今のまま、新しいことを\nおもしろがりましょう。'] },
+    { letter: 'B', sub: '軽度の所見あり',
+      title: '{S}予備軍',
+      body: '「今の{S}っぽかった？」と\n気づけるうちは、まだ大丈夫。',
+      karte: 'ときどき「よいしょ」の前兆あり。\nご本人は気づいている模様。',
+      rx: ['「よいしょ」が出そうなら、\nそっと飲み込みましょう。'] },
+    { letter: 'C', sub: '要経過観察',
+      title: '{S}境界型',
+      body: '「自分は違う」と言うほど、\n{S}っぽさは増していきます。',
+      karte: 'ご本人は「まだ若い」と主張。\n周囲の見解とは、一致せず。',
+      rx: ['「まだ若い」と思ったら、\n一度お茶を飲みましょう。'] },
+    { letter: 'D', sub: '要精密検査(行きつけの店で)',
+      title: '立派な{S}',
+      body: '昔話も「よいしょ」も、人生経験の勲章。\n胸を張って名乗りましょう。',
+      karte: '{S}成分、安定して高値。\nご本人の受容も良好。',
+      rx: ['武勇伝は、3分以内に\n笑いに変えたら勝ち。'] },
+    { letter: 'E', sub: '要保護(国宝級)',
+      title: '重要無形{S}文化財',
+      banner: 'あなたを\n「{TITLE}」\nに認定します。',
+      body: '貴重すぎる存在です。\n「昔は〜」には、物語が詰まっています。\n長いと、料理も若者も冷めます。',
+      karte: '貴重な生き字引。昭和が抜けていない。\n保護と、料理が冷める前の\n話の切り上げが必要。',
+      rx: ['「昔は〜」は、\n料理が届く前に終えましょう。'] }
+  ];
+
+  var LOADING_MSGS = [
+    'カルテを用意しています…',
+    '「昔は〜」の回数を集計中…',
+    '武勇伝の持ち時間を計測中…',
+    'ポイントカードの枚数を数えています…',
+    '「よいしょ」の音量を測定中…'
+  ];
+
+  /* ===== 状態 ===== */
+  var session = [];         // 今回出題する質問(プールからランダムに選ばれる)
+  var N = SESSION_N;
+  var S = MODES.oji;
+  var modeKey = 'oji';
+  var selfPct = DEFAULT_SELF;
+  var ticketNo = '000';
+  var idx = 0;
+  var answers = [];
+  var unk = [];             // 「そもそも知らない」を選んだ問いは true
+  var cur = 'start';
+  var zoomLevel = 0;
+  var idleTimer = null, loadTimer = null, msgTimer = null, advTimer = null, raf = null;
+  var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  function $(id) { return document.getElementById(id); }
+  function fill(s) { return s.replace(/\{S\}/g, S); }
+  // 質問文: \n の位置で必ず改行し、どの行も横にはみ出さないよう文字サイズを自動調整する
+  var lastQText = '';
+  function renderQText(text, noLater) {
+    var box = $('qText');
+    lastQText = text;
+    box.textContent = '';
+    box.style.fontSize = '';
+    box.classList.remove('fixed');
+    box.classList.remove('wrapfb');
+    var single = text.indexOf('\n') < 0;
+    var lns = single ? [text] : text.split('\n');
+    if (single && text.length > 14) {          // 長い問いは、読点「、」で2行に分ける(中央にいちばん近い「、」)
+      var best = -1, mid = text.length / 2;
+      for (var ci = 0; ci < text.length - 1; ci++) {
+        if (text.charAt(ci) === '、' && ci >= 3 && text.length - ci - 1 >= 4 && (best < 0 || Math.abs(ci + 1 - mid) < Math.abs(best + 1 - mid))) best = ci;
+      }
+      if (best >= 0) { lns = [text.slice(0, best + 1), text.slice(best + 1)]; single = false; }
+    }
+    box.classList.add('fixed');
+    lns.forEach(function (ln) {
+      var s = document.createElement('span');
+      s.className = 'ln';
+      s.textContent = ln;
+      box.appendChild(s);
+    });
+    var ok = fitQText(single ? 16 : 12);
+    if (single && !ok) {          // 1行に収まらない長さのときだけ、バランスよく2行に折り返す
+      box.classList.remove('fixed');
+      box.classList.add('wrapfb');
+      box.style.fontSize = '';
+      box.textContent = text;
+      // 3行にならないよう、文字サイズを少しずつ下げる(下限17px)
+      var fs = parseFloat(window.getComputedStyle(box).fontSize) || 21, guard2 = 0;
+      while (guard2++ < 20 && fs > 17 && box.getBoundingClientRect().height > fs * 1.45 * 2.3) {
+        fs -= 0.5;
+        box.style.fontSize = fs + 'px';
+      }
+    }
+    if (!noLater && window.refitQTextLater) window.refitQTextLater();
+  }
+  // 診断書の文: \n の位置で必ず改行(行は折り返さず、はみ出すときは文字サイズを下げる。下限 minPx)
+  var lineJobs = [];
+  function setLines(target, box, text, minPx, force) {
+    target.textContent = '';
+    box.style.fontSize = '';
+    box.classList.remove('fixed-lines');
+    lineJobs = lineJobs.filter(function (j) { return j.box !== box; });
+    if (text.indexOf('\n') < 0 && !force) { target.textContent = text; return; }
+    box.classList.add('fixed-lines');
+    text.split('\n').forEach(function (ln, i) {
+      if (i) target.appendChild(document.createElement('br'));
+      var s = document.createElement('span');
+      s.className = 'ln';
+      s.textContent = ln;
+      target.appendChild(s);
+    });
+    lineJobs.push({ box: box, target: target, min: minPx });
+  }
+  function fitLineJob(j) {
+    var box = j.box;
+    if (!box.getBoundingClientRect || !window.getComputedStyle) return;
+    box.style.fontSize = '';
+    var cs = window.getComputedStyle(box);
+    var size = parseFloat(cs.fontSize) || 16;
+    var padR = parseFloat(cs.paddingRight) || 0;
+    var spans = j.target.querySelectorAll ? j.target.querySelectorAll('.ln') : [];
+    function over() {
+      var limit = box.getBoundingClientRect().right - padR + 0.5;
+      for (var i = 0; i < spans.length; i++) if (spans[i].getBoundingClientRect().right > limit) return true;
+      return false;
+    }
+    var guard = 0;
+    while (over() && size > j.min && guard++ < 40) {
+      size -= 0.5;
+      box.style.fontSize = size + 'px';
+    }
+  }
+  function fitAllLines() { lineJobs.forEach(fitLineJob); }
+  // HTML に直接書いた改行つきの文言(data-fit = 最小の文字サイズ)
+  Array.prototype.forEach.call(document.querySelectorAll('[data-fit]'), function (b) {
+    lineJobs.push({ box: b, target: b, min: parseFloat(b.getAttribute('data-fit')) || 12 });
+  });
+  function fitQText(minPx) {
+    minPx = minPx || 12;
+    var box = $('qText');
+    if (!box.getBoundingClientRect || !window.getComputedStyle) return;
+    var size = parseFloat(window.getComputedStyle(box).fontSize) || 24;
+    var spans = box.querySelectorAll ? box.querySelectorAll('.ln') : [];
+    function over() {
+      if (box.offsetWidth) {
+        for (var j = 0; j < spans.length; j++) if (spans[j].offsetWidth > box.clientWidth) return true;
+        return false;
+      }
+      var limit = box.getBoundingClientRect().right - 1;
+      for (var i = 0; i < spans.length; i++) if (spans[i].getBoundingClientRect().right > limit) return true;
+      return box.scrollWidth > box.clientWidth + 1;
+    }
+    var guard = 0;
+    while (over() && size > minPx && guard++ < 80) {
+      size -= 0.5;
+      box.style.fontSize = size + 'px';
+    }
+    return !over();
+  }
+  // 先生のひとこと: 1行で収まるなら1行に(文字サイズを少しだけ下げる。下限12px)
+  function fitQuip() {
+    var q = $('quip');
+    if (!q || !q.getBoundingClientRect || !window.getComputedStyle) return;
+    q.style.fontSize = '';
+    var cs = window.getComputedStyle(q);
+    var size = parseFloat(cs.fontSize) || 14;
+    var lh = parseFloat(cs.lineHeight) || size * 1.5;
+    function wrapped() { return q.getBoundingClientRect().height > lh * 1.5; }
+    if (!wrapped()) return;
+    var guard = 0;
+    while (wrapped() && size > 12 && guard++ < 20) { size -= 0.5; q.style.fontSize = size + 'px'; }
+    if (wrapped()) q.style.fontSize = '';
+  }
+  function clamp(x, lo, hi) { return Math.max(lo, Math.min(hi, x)); }
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  function svgEl(tag, attrs) {
+    var e = document.createElementNS(SVGNS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+  function shuffle(a) {
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+  // プールからランダムに SESSION_N 問を選ぶ(同じ診察科は MAX_PER_DEPT 問まで)
+  function pickSession() {
+    var pool = QUESTIONS.filter(function (q) { return !q.who || modeKey === 'both' || q.who === modeKey; });
+    var order = shuffle(pool.map(function (_, i) { return i; }));
+    var cnt = {}, out = [];
+    // 毎回、流行の問いを1問は入れる
+    for (var k = 0; k < order.length; k++) {
+      if (pool[order[k]].trend) { var tq = pool[order[k]]; cnt[tq.d] = 1; out.push(tq); break; }
+    }
+    order.forEach(function (i) {
+      var q = pool[i];
+      if (q.trend) return;
+      if (out.length < SESSION_N && (cnt[q.d] || 0) < MAX_PER_DEPT) {
+        cnt[q.d] = (cnt[q.d] || 0) + 1;
+        out.push(q);
+      }
+    });
+    return shuffle(out.map(function (_, i) { return i; })).map(function (i) { return out[i]; });
+  }
+
+  var screens = { start: $('s-start'), self: $('s-self'), quiz: $('s-quiz'), loading: $('s-loading'), result: $('s-result') };
+
+  function reiwa() {
+    var d = new Date();
+    return '令和' + (d.getFullYear() - 2018) + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日';
+  }
+  function reiwaShowa() {
+    return reiwa() + '(昭和' + (new Date().getFullYear() - 1925) + '年)';
+  }
+  $('today').textContent = reiwaShowa();
+  $('clinicName').textContent = CLINIC;
+  if ($('formClinic')) $('formClinic').textContent = CLINIC;
+
+  function show(which) {
+    cur = which;
+    clearTimeout(advTimer);
+    for (var k in screens) screens[k].hidden = (k !== which);
+    var s = screens[which];
+    s.classList.remove('enter');
+    void s.offsetWidth;
+    s.classList.add('enter');
+    armIdle();
+    try { window.scrollTo(0, 0); } catch (e) {}
+    try { if (document.body && document.body.classList) document.body.classList[which === 'quiz' ? 'add' : 'remove']('in-quiz'); } catch (e) {}
+    fitAllLines();
+  }
+
+  /* ===== 放置で最初に戻る ===== */
+  function armIdle() {
+    clearTimeout(idleTimer);
+    if (cur === 'start') return;
+    idleTimer = setTimeout(resetAll, IDLE_MS);
+  }
+  ['pointerdown', 'keydown', 'touchstart'].forEach(function (ev) {
+    document.addEventListener(ev, armIdle, { passive: true });
+  });
+
+  function setSelf(v) {
+    selfPct = Number(v);
+    $('selfOut').textContent = String(v);
+    var opts = $('selfOpts').children;
+    for (var i = 0; i < opts.length; i++) opts[i].setAttribute('aria-pressed', String(Number(opts[i].dataset.v) === selfPct));
+  }
+
+  function resetAll() {
+    clearTimeout(loadTimer); clearTimeout(advTimer); clearInterval(msgTimer);
+    if (raf) cancelAnimationFrame(raf);
+    session = []; answers = []; unk = []; idx = 0;
+    setSelf(DEFAULT_SELF);
+    $('confetti').textContent = '';
+    show('start');
+  }
+
+  /* ===== スタート → 自己申告 ===== */
+  var startBtns = document.querySelectorAll('.start-btn');
+  Array.prototype.forEach.call(startBtns, function (b) {
+    b.addEventListener('click', function () {
+      modeKey = MODES[b.dataset.mode] ? b.dataset.mode : 'oji';
+      S = MODES[modeKey];
+      setLines($('selfTitle'), $('selfTitle'), 'あなたの「' + S + '度」は、\n何%だと思いますか？', 18);
+      setSelf(DEFAULT_SELF);
+      show('self');
+    });
+  });
+  $('selfOpts').addEventListener('click', function (e) {
+    var t = e.target;
+    while (t && t !== this && !(t.dataset && t.dataset.v)) t = t.parentNode;
+    if (t && t.dataset && t.dataset.v) setSelf(t.dataset.v);
+  });
+  $('btnSelfBack').addEventListener('click', function () { show('start'); });
+  $('btnSelf').addEventListener('click', function () {
+    session = pickSession();
+    N = session.length;
+    answers = []; unk = []; idx = 0;
+    buildTicks();
+    $('who').textContent = DOCTORS[modeKey].short;
+    renderQ(false);
+    show('quiz');
+  });
+
+  /* ===== 問診 ===== */
+  var ticksBox = $('ticks'), ansBox = $('answers');
+  function buildTicks() {
+    ticksBox.textContent = '';
+    for (var i = 0; i < N; i++) ticksBox.appendChild(el('i'));
+  }
+
+  VALUES.forEach(function (v) {
+    var b = el('button', 'ans');
+    b.type = 'button';
+    b.setAttribute('aria-pressed', 'false');
+    b.dataset.v = String(v);
+    b.appendChild(el('span', 'dot'));
+    b.appendChild(el('span', 'lbl', ''));
+    b.addEventListener('click', function () { choose(v); });
+    ansBox.appendChild(b);
+  });
+  // 「そもそも知らない」ボタン(用意されている問いだけ表示。2点扱い)
+  (function () {
+    var ub = el('button', 'ans ans-unk');
+    ub.type = 'button';
+    ub.setAttribute('aria-pressed', 'false');
+    ub.dataset.u = '1';
+    ub.dataset.v = String(MAXV);
+    ub.appendChild(el('span', 'dot'));
+    ub.appendChild(el('span', 'lbl', ''));
+    ub.appendChild(el('span', 'qmark', '？'));
+    ub.addEventListener('click', function () { choose(MAXV, true); });
+    ansBox.appendChild(ub);
+  })();
+
+  function renderQ(animate) {
+    var q = session[idx];
+    try { window.scrollTo(0, 0); } catch (e) {}
+    $('qDept').textContent = DEPTS[q.d];
+    $('qNum').textContent = '問' + (idx + 1) + ' ／ 全' + N + '問';
+    var ticks = ticksBox.children;
+    for (var i = 0; i < ticks.length; i++) {
+      ticks[i].className = i < idx ? 'done' : (i === idx ? 'cur' : '');
+    }
+    renderQText(fill(q.t));
+    $('s-quiz').classList.toggle('dense', !!(q.g || q.u));
+    var gdone = answers[idx] != null;
+    $('qGloss').hidden = !(q.g && gdone);
+    $('qGlossText').textContent = q.g || '';
+    var a = answers[idx];
+    var btns = ansBox.children;
+    for (var j = 0; j < btns.length; j++) {
+      var isU = btns[j].dataset.u === '1';
+      if (isU) {
+        btns[j].hidden = !q.u;
+        btns[j].querySelector('.lbl').textContent = q.u || '';
+      } else {
+        btns[j].querySelector('.lbl').textContent = q.a[MAXV - Number(btns[j].dataset.v)];
+      }
+      var on = a != null && (isU ? !!unk[idx] : (!unk[idx] && Number(btns[j].dataset.v) === a));
+      btns[j].setAttribute('aria-pressed', String(on));
+    }
+    var quip = $('quip');
+    if (a == null) {
+      quip.className = 'empty';
+      quip.textContent = '選ぶと、先生がひとこと添えます。';
+    } else {
+      quip.className = '';
+      quip.textContent = fill((unk[idx] && q.un) ? q.un : (a >= 1 ? q.hi : q.lo));
+    }
+    fitQuip();
+    $('btnNext').disabled = (a == null);
+    $('btnNext').textContent = idx === N - 1 ? '診断書を受け取る' : '次へ';
+    if (animate) {
+      var qb = $('qbox');
+      qb.classList.remove('enter'); void qb.offsetWidth; qb.classList.add('enter');
+    }
+  }
+
+  function goNext() {
+    clearTimeout(advTimer);
+    if (cur !== 'quiz' || answers[idx] == null) return;
+    if (idx < N - 1) { idx++; renderQ(true); }
+    else startLoading();
+  }
+
+  function choose(v, isUnknown) {
+    answers[idx] = v;
+    unk[idx] = !!isUnknown;
+    renderQ(false);
+    var note = $('note');
+    note.classList.remove('pop'); void note.offsetWidth; note.classList.add('pop');
+    // 画面の下にある「先生のひとこと」と「次へ」が見切れないよう、必要なぶんだけスクロールする
+    var gl = session[idx] && session[idx].g;
+    try { var tgt = gl ? $('qGloss') : $('btnNext'); if (tgt.scrollIntoView) tgt.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) {}
+    clearTimeout(advTimer);
+    advTimer = setTimeout(goNext, gl ? ADVANCE_MS + 3000 : ADVANCE_MS);   // ことば解説があるときは、読む時間を長めに
+  }
+
+  $('btnBack').addEventListener('click', function () {
+    clearTimeout(advTimer);
+    if (idx > 0) { idx--; renderQ(true); } else { show('self'); }
+  });
+  $('btnNext').addEventListener('click', goNext);
+
+  /* ===== 診断中(診察番号の呼び出し) ===== */
+  function startLoading() {
+    ticketNo = String(Math.floor(Math.random() * 900) + 100);
+    $('boardNo').textContent = ticketNo;
+    show('loading');
+    if (window.ojiba3d && window.ojiba3d.ready) window.ojiba3d.start(reduce ? 700 : LOADING_MS);
+    var k = 0, msg = $('loadMsg');
+    msg.textContent = LOADING_MSGS[0];
+    clearInterval(msgTimer);
+    msgTimer = setInterval(function () {
+      k = (k + 1) % LOADING_MSGS.length;
+      msg.textContent = LOADING_MSGS[k];
+    }, 650);
+    clearTimeout(loadTimer);
+    loadTimer = setTimeout(function () {
+      clearInterval(msgTimer);
+      if (window.ojiba3d) window.ojiba3d.stop();
+      buildResult();
+      show('result');
+      animateResult();
+    }, reduce ? 700 : LOADING_MS);
+  }
+
+  /* ===== ゲージ(静的パーツ) ===== */
+  var CX = 170, CY = 160, R = 120;
+  function pt(t, r) { var a = Math.PI * (4 + 172 * t) / 180; return [CX - r * Math.cos(a), CY - r * Math.sin(a)]; }   // 針と同じく 4°〜176° に割り付け
+  (function buildGauge() {
+    var segs = $('gSegs'), letters = $('gLetters');
+    for (var g = 0; g < 5; g++) {
+      var a = pt(g * 0.2 + 0.006, R), b = pt((g + 1) * 0.2 - 0.006, R);
+      segs.appendChild(svgEl('path', {
+        'class': 'seg seg' + g,
+        d: 'M' + a[0].toFixed(2) + ' ' + a[1].toFixed(2) + ' A' + R + ' ' + R + ' 0 0 1 ' + b[0].toFixed(2) + ' ' + b[1].toFixed(2)
+      }));
+      segs.appendChild(svgEl('path', {
+        'class': 'seg-hi',
+        d: 'M' + pt(g * 0.2 + 0.006, R + 7)[0].toFixed(2) + ' ' + pt(g * 0.2 + 0.006, R + 7)[1].toFixed(2) + ' A' + (R + 7) + ' ' + (R + 7) + ' 0 0 1 ' + pt((g + 1) * 0.2 - 0.006, R + 7)[0].toFixed(2) + ' ' + pt((g + 1) * 0.2 - 0.006, R + 7)[1].toFixed(2)
+      }));
+      segs.appendChild(svgEl('path', {
+        'class': 'seg-lo',
+        d: 'M' + pt(g * 0.2 + 0.006, R - 9)[0].toFixed(2) + ' ' + pt(g * 0.2 + 0.006, R - 9)[1].toFixed(2) + ' A' + (R - 9) + ' ' + (R - 9) + ' 0 0 1 ' + pt((g + 1) * 0.2 - 0.006, R - 9)[0].toFixed(2) + ' ' + pt((g + 1) * 0.2 - 0.006, R - 9)[1].toFixed(2)
+      }));
+      var p = pt(0.1 + g * 0.2, 148);
+      var tx = svgEl('text', { 'class': 'gl', x: p[0].toFixed(2), y: p[1].toFixed(2), id: 'gl' + g });
+      tx.textContent = GRADES[g].letter;
+      letters.appendChild(tx);
+    }
+    // 目盛りの数字(20%ごと)
+    var nums = $('gNums');
+    for (var nv = 20; nv <= 80; nv += 20) {
+      var np = pt(nv / 100, 76);
+      var nt = svgEl('text', { 'class': 'g-num', x: np[0].toFixed(2), y: np[1].toFixed(2) });
+      nt.textContent = String(nv);
+      nums.appendChild(nt);
+    }
+    // 目盛り(5%ごと。20%ごとに長い線)
+    var ticks = $('gTicks');
+    for (var v = 0; v <= 100; v += 5) {
+      var major = v % 20 === 0, t = v / 100;
+      var p1 = pt(t, major ? 88 : 93), p2 = pt(t, 101);
+      ticks.appendChild(svgEl('line', { 'class': major ? 'tk tk-major' : 'tk', x1: p1[0].toFixed(2), y1: p1[1].toFixed(2), x2: p2[0].toFixed(2), y2: p2[1].toFixed(2) }));
+    }
+  })();
+
+  /* ===== 結果 ===== */
+  var result = null;
+
+  function gapText(diff) {
+    if (diff >= 40) return '認めたくない度：最高。\n周りは温かく見守っています。';
+    if (diff >= 20) return '認めたくない度：高。\n「まだ若い」は、少し盛り気味。';
+    if (diff >= 5) return '認めたくない度：中。\nおおむね、自分のことが見えています。';
+    if (diff >= -4) return '自己申告とほぼ一致。\n自分をよく分かっている方です。';
+    return '認めたくない度：マイナス。\nもっと自信を持って大丈夫です。';
+  }
+
+  function buildLab(catSum, catCnt) {
+    var box = $('lab');
+    box.textContent = '';
+    var head = el('div', 'lab-row lab-head');
+    head.appendChild(el('span', '', '検査項目'));
+    head.appendChild(el('span', '', '結果'));
+    head.appendChild(el('span', '', '判定'));
+    box.appendChild(head);
+    for (var d = 0; d < LAB.length; d++) {
+      if (!catCnt[d]) continue;            // 今回出題されなかった診察科は載せない
+      var L = (modeKey === 'oba' && LAB_OBA[d]) || LAB[d];
+      var ratio = catSum[d] / (catCnt[d] * MAXV);
+      var v = Math.round((L.inv ? (1 - ratio) : ratio) * L.max);
+      var flag = v > L.hi ? 'H' : (v < L.lo ? 'L' : '');
+      var row = el('div', 'lab-row' + (flag ? ' f' + flag : ''));
+      var nm = el('div', 'lab-name');
+      nm.appendChild(el('b', '', L.name));
+      nm.appendChild(el('small', '', '基準値 ' + L.lo + '〜' + L.hi));
+      var val = el('div', 'lab-val');
+      val.appendChild(el('b', '', String(v)));
+      val.appendChild(el('small', '', L.unit));
+      var fl = el('div', 'lab-flag');
+      fl.appendChild(el('span', flag ? 'flag-' + flag : 'flag-ok', flag || '—'));
+      row.appendChild(nm); row.appendChild(val); row.appendChild(fl);
+      box.appendChild(row);
+    }
+  }
+
+  function buildResult() {
+    var total = 0, catSum = [0, 0, 0, 0, 0], catCnt = [0, 0, 0, 0, 0], top = -1, topV = 0;
+    for (var i = 0; i < N; i++) {
+      var v = answers[i] || 0, d = session[i].d;
+      total += v;
+      catSum[d] += v;
+      catCnt[d]++;
+      if (v > topV) { topV = v; top = i; }
+    }
+    var pct = Math.round(total / (N * MAXV) * 100);
+    var gi = pct < 20 ? 0 : pct < 40 ? 1 : pct < 60 ? 2 : pct < 80 ? 3 : 4;
+    var G = GRADES[gi];
+    result = { pct: pct, gi: gi };
+
+    $('rTitleLabel').textContent = S + '度 診断書';
+    $('rDate').textContent = reiwaShowa();
+    $('rNo').textContent = '診察番号 ' + ticketNo;
+    $('rClinic').textContent = CLINIC;
+    $('rCap').textContent = S + '度';
+    $('gauge').setAttribute('aria-label', S + '度メーター ' + pct + '%、判定' + G.letter);
+    $('stampLetter').textContent = G.letter;
+    $('rSub').textContent = G.sub;
+    $('rHead').textContent = fill(G.title);
+    setLines($('rBody'), $('rBody'), fill(G.body), 13);
+
+    // お店のメニュー(処方薬)。その判定に設定があるときだけ表示
+    var picks = (SHOP.menus && SHOP.menus[G.letter]) || [];
+    var shopRx = $('shopRx');
+    if (picks.length) {
+      var m = picks[Math.floor(Math.random() * picks.length)];
+      shopRx.hidden = false;
+      $('shopRxShop').textContent = SHOP.pharmacy || (SHOP.name ? SHOP.name + ' 薬局' : '');
+      setLines($('shopRxName'), $('shopRxName'), fill(m.name) + (m.price ? '　' + m.price : ''), 12, true);
+      setLines($('shopRxNote'), $('shopRxNote'), m.note ? fill(m.note) : '', 12);
+      $('shopRxOrder').textContent = SHOP.orderNote || '';
+      var photo = $('shopRxPhoto');
+      if (DEMO) {
+        // デモ: メニュー固有の写真・文言を空白(=「変更可能」表示)にする
+        setLines($('shopRxName'), $('shopRxName'), 'メニュー名（変更可能）', 12, true);
+        setLines($('shopRxNote'), $('shopRxNote'), 'おすすめの一言\n（変更可能）', 12);
+        $('shopRxName').classList.add('demo-ph');
+        $('shopRxNote').classList.add('demo-ph');
+        photo.hidden = true;
+        $('shopRxWin').hidden = false;
+        $('shopRxWin').classList.add('demo');
+        var us = document.querySelectorAll('.bag-usage dd');
+        for (var u = 0; u < us.length; u++) { us[u].textContent = '変更可能'; us[u].classList.add('demo-ph'); }
+      } else if (m.photo) {
+        photo.src = m.photo;
+        photo.alt = fill(m.name);
+        photo.hidden = false;
+        $('shopRxWin').hidden = false;
+      } else {
+        photo.hidden = true;
+        $('shopRxWin').hidden = true;
+      }
+    } else {
+      shopRx.hidden = true;
+    }
+
+    // 二つ名(出題された診察科のうち、割合がいちばん高いもの)
+    var best = -1, bestR = -1;
+    for (var c = 0; c < catCnt.length; c++) {
+      if (!catCnt[c]) continue;
+      var r = catSum[c] / (catCnt[c] * MAXV);
+      if (r > bestR || (r === bestR && catCnt[c] > catCnt[best])) { best = c; bestR = r; }
+    }
+    var nick = NICK_NONE;
+    if (total > 0 && best >= 0) {
+      nick = ((modeKey === 'oba' && NICKS_OBA[best]) || NICKS[best])[bestR >= 0.75 ? 0 : 1].replace('{K}', KIMI[modeKey]);
+    }
+    $('rNickV').textContent = nick;
+
+    // 自覚ギャップ
+    var diff = pct - selfPct;
+    $('gapSelfV').textContent = selfPct + '%';
+    $('gapRealV').textContent = pct + '%';
+    $('gapBig').textContent = 'ギャップ ' + (diff > 0 ? '+' : (diff < 0 ? '−' : '±')) + Math.abs(diff) + 'pt';
+    setLines($('gapMsg'), $('gapMsg'), gapText(diff), 14);
+
+
+    // 初期状態へ
+    $('confetti').textContent = '';
+    $('stamp').classList.remove('on');
+    $('needle').setAttribute('transform', 'rotate(4 170 160)');
+    $('needleSh').setAttribute('transform', 'translate(3 5) rotate(4 170 160)');
+    $('rPct').textContent = '0';
+    $('rBar').style.width = '0';
+    for (var g = 0; g < 5; g++) $('gl' + g).setAttribute('class', 'gl');
+  }
+  function labelFor(qi, v) {
+    var q = session[qi];
+    if (unk[qi] && q.u) return q.u;
+    return q.a[MAXV - v] || '';
+  }
+
+  /* ===== 紙吹雪(判定AとEだけ) ===== */
+  function confetti(gi) {
+    var box = $('confetti');
+    box.textContent = '';
+    var colors = gi === 4
+      ? ['var(--mustard)', 'var(--red)', 'var(--g-d)', 'var(--mustard)']
+      : ['var(--g-a)', 'var(--g-b)', 'var(--mustard)', 'var(--g-a)'];
+    for (var i = 0; i < 44; i++) {
+      var p = el('i');
+      p.style.left = (Math.random() * 100).toFixed(1) + '%';
+      p.style.background = colors[i % colors.length];
+      p.style.animationDelay = (Math.random() * 1.2).toFixed(2) + 's';
+      p.style.animationDuration = (2.4 + Math.random() * 1.6).toFixed(2) + 's';
+      box.appendChild(p);
+    }
+    setTimeout(function () { box.textContent = ''; }, 6000);
+  }
+
+  /* ===== 結果の演出(針の動きは判定ごとに違う) ===== */
+  function animateResult() {
+    var pct = result.pct, gi = result.gi;
+    var needle = $('needle'), num = $('rPct');
+    var needleSh = $('needleSh');
+    function setAngle(p) {
+      var a = (4 + clamp(p, -2, 103) / 100 * 172).toFixed(2);   // 0%と100%でも針が台に隠れないよう、両端を少し内側に
+      needle.setAttribute('transform', 'rotate(' + a + ' 170 160)');
+      needleSh.setAttribute('transform', 'translate(3 5) rotate(' + a + ' 170 160)');
+    }
+    function setVal(p) {
+      setAngle(p);
+      num.textContent = String(Math.round(clamp(p, 0, 100)));
+    }
+    function wobble() {           // 止まったあと、針がわずかに揺れて落ち着く
+      var w0 = null;
+      function wstep(ts) {
+        if (w0 === null) w0 = ts;
+        var t = ts - w0;
+        if (t > 900) { setAngle(pct); return; }
+        setAngle(pct + 1.8 * Math.exp(-t / 260) * Math.sin(t / 55));
+        raf = requestAnimationFrame(wstep);
+      }
+      raf = requestAnimationFrame(wstep);
+    }
+    function finish() {
+      setVal(pct);
+      if (!reduce) wobble();
+      $('gl' + gi).setAttribute('class', 'gl cur');
+      $('stamp').classList.add('on');
+      if (!reduce && (gi === 0 || gi === 4)) confetti(gi);
+    }
+    if (reduce) {
+      $('rBar').style.width = pct + '%';
+      finish();
+      return;
+    }
+    requestAnimationFrame(function () { $('rBar').style.width = pct + '%'; });
+
+    var total, valueAt;
+    if (gi === 2) {
+      // 境界型: 針が行ったり来たりして迷ってから止まる
+      var w = [0, pct + 24, pct - 20, pct + 10, pct - 5, pct].map(function (x) { return clamp(x, 0, 100); });
+      var seg = 500;
+      total = seg * (w.length - 1);
+      valueAt = function (t) {
+        var s = Math.min(w.length - 2, Math.floor(t / seg));
+        var k = clamp((t - s * seg) / seg, 0, 1);
+        var e = 0.5 - 0.5 * Math.cos(Math.PI * k);
+        return w[s] + (w[s + 1] - w[s]) * e;
+      };
+    } else {
+      // それ以外: 行き過ぎてから戻る
+      total = 1700;
+      valueAt = function (t) {
+        var k = Math.min(1, t / total), c1 = 1.7, c3 = c1 + 1;
+        var e = 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2);
+        return pct * e;
+      };
+    }
+    var t0 = null;
+    function step(ts) {
+      if (t0 === null) t0 = ts;
+      var t = ts - t0;
+      if (t >= total) { finish(); return; }
+      setVal(valueAt(t));
+      raf = requestAnimationFrame(step);
+    }
+    raf = requestAnimationFrame(step);
+  }
+
+  $('btnAgain').addEventListener('click', resetAll);
+
+  setSelf(DEFAULT_SELF);
+  // フォントの読み込み完了・画面の向き変更のあとに、質問文の文字サイズを合わせ直す
+  function refitQText() {
+    var box = $('qText');
+    if (lastQText && cur === 'quiz') { renderQText(lastQText, true); fitQuip(); }
+    else if (box.querySelector && box.querySelector('.ln')) { box.style.fontSize = ''; fitQText(); }
+    fitAllLines();
+  }
+  if (document.fonts) {
+    if (document.fonts.ready) document.fonts.ready.then(refitQText);
+    if (document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', refitQText);
+  }
+  if (window.addEventListener) window.addEventListener('load', refitQText);
+  window.refitQTextLater = function () { setTimeout(refitQText, 250); setTimeout(refitQText, 1200); };
+  if (window.addEventListener) window.addEventListener('resize', refitQText);
+
+  /* ===== 日本語の改行(単語の途中で切れないよう、文節の切れ目だけで改行) =====
+     Intl.Segmenter で区切り、助詞などの短いひらがなは前の語にくっつけて、<wbr> を挟みます。 */
+  (function () {
+    if (typeof Intl === 'undefined' || !Intl.Segmenter || typeof MutationObserver === 'undefined' || !document.createTreeWalker) return;
+    var seg = new Intl.Segmenter('ja', { granularity: 'word' });
+    var SKIP = { SCRIPT: 1, STYLE: 1, TEXTAREA: 1, INPUT: 1 };
+    var busy = false;
+    // 改行してよい位置: 助詞のあと・句読点のあと・「・」のあと・長い複合語の切れ目だけ。
+    // 「若い|人」「回|答」のような、語の途中では切らない。
+    var PART = { 'は': 1, 'が': 1, 'を': 1, 'に': 1, 'へ': 1, 'で': 1, 'と': 1, 'も': 1, 'の': 1, 'や': 1, 'ね': 1, 'よ': 1,
+                 'って': 1, 'から': 1, 'まで': 1, 'より': 1, 'など': 1, 'ので': 1, 'けど': 1, 'ば': 1 };
+    var OPEN = /[「『(（]/g, CLOSE = /[」』)）]/g;
+    function canBreak(cur, nx, acc, depth, prev) {
+      if (depth > 0) return false;                                   // かぎ括弧の中では切らない
+      if (/\s$/.test(cur) || /^\s/.test(nx)) return false;
+      if (/^[「『]/.test(nx) && acc >= 2 && !/[「『(（]$/.test(cur)) return true;   // 括弧の前で切れる
+      if (/^[、。,.\uFF01\uFF1F!?」』)）…ー〜~]/.test(nx)) return false;   // 行頭に来てはいけないもの
+      if (/[「『(（]$/.test(cur)) return false;                       // 行末に来てはいけないもの
+      if (/^[、。\uFF01\uFF1F!?]$/.test(cur)) return true;
+      if (cur === '・') return true;
+      if (PART[cur] && /^[ぁ-ん]$/.test(prev || '')) return false;     // 「と|って」のように、動詞・語の途中の助詞では切らない
+      if (PART[cur] && !PART[nx] && !/^[ぁ-ん]$/.test(nx) && !/^(いえ|いう|いっ|いわ)/.test(nx)) return true;
+      if (acc >= 4 && cur.length >= 2 && nx.length >= 2 && /^[一-龥ァ-ヶー]/.test(nx) && !PART[cur]) return true; // 長い複合語(1文字の語の直後は切らない)
+      if (acc >= 9 && cur.length >= 2 && nx.length >= 2) return true;   // 切れ目のない長い連なりは、語の境目で切る
+      if (acc >= 10 && !/^[ぁ-ん]$/.test(cur)) return true;            // それでも長いときの最後の手段(語の途中は避ける)
+      return false;
+    }
+    function phrasify(root) {
+      var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null), nodes = [], n;
+      while ((n = w.nextNode())) {
+        var p = n.parentNode;
+        if (!p || SKIP[p.nodeName] || (p.classList && (p.classList.contains('ln') || p.classList.contains('nw'))) || !/[\u3040-\u30ff\u4e00-\u9fff]{2}/.test(n.nodeValue)) continue;
+        nodes.push(n);
+      }
+      nodes.forEach(function (t) {
+        var parts = [], toks = Array.from(seg.segment(t.nodeValue)).map(function (s) { return s.segment; });
+        var text = t.nodeValue, offs = [], o = 0, noBreak = [];
+        toks.forEach(function (x) { offs.push(o); o += x.length; });
+        var KEEP = /お[ぢじ]さん|おばさん|お[ぢじ]おば|おぢ川|おば山|だしまき玉子|沖縄そば|島唐辛子|紅芋/g, km;
+        while ((km = KEEP.exec(text))) {
+          for (var q = 0; q < toks.length; q++) {
+            var en = offs[q] + toks[q].length;
+            if (en > km.index && en < km.index + km[0].length) noBreak[q] = true;   // 語の内側では切らない
+          }
+        }
+        var acc = 0, depth = 0;
+        toks.forEach(function (cur, k) {
+          // 閉じかっこのすぐ後ろの助詞(「へえ」と)は、行の頭に離れないようにする
+          parts.push(/[」』)）]$/.test(cur) && toks[k + 1] && toks[k + 1].length === 1 && /^[ぁ-ん]$/.test(toks[k + 1]) ? cur + '\u2060' : cur);
+          acc += cur.length;
+          depth += (cur.match(OPEN) || []).length - (cur.match(CLOSE) || []).length;
+          if (k < toks.length - 1 && !noBreak[k] && canBreak(cur, toks[k + 1], acc, depth, toks[k - 1])) { parts.push(null); acc = 0; }
+        });
+        if (parts.indexOf(null) < 0) return;
+        var frag = document.createDocumentFragment();
+        parts.forEach(function (x) { frag.appendChild(x === null ? document.createElement('wbr') : document.createTextNode(x)); });
+        t.parentNode.replaceChild(frag, t);
+      });
+    }
+    var root = document.getElementById('wrap');
+    if (!root) return;
+    var mo = new MutationObserver(function () {
+      if (busy) return;
+      busy = true;
+      try { phrasify(root); } finally { mo.takeRecords(); busy = false; }
+    });
+    busy = true; phrasify(root); busy = false;
+    mo.observe(root, { childList: true, subtree: true, characterData: true });
+  })();
+})();
+</script>
+<script>
+/* ===== 3D: 処方カプセル(WebGL・外部ライブラリなし) =====
+   診断中の画面で、ツヤのあるカプセルが回転し、最後にパカッと開いて粒が飛び出す。
+   WebGLが使えない端末では何もせず、従来の心電図の演出のまま。 */
+(function () {
+  var canvas = document.getElementById('pill3d');
+  var section = document.getElementById('s-loading');
+  var api = { ready: false, start: function () {}, stop: function () {} };
+  window.ojiba3d = api;
+  if (!canvas || !section) return;
+  var gl;
+  try { gl = canvas.getContext('webgl', { antialias: true, alpha: true, premultipliedAlpha: true }) || canvas.getContext('experimental-webgl'); } catch (e) { gl = null; }
+  if (!gl) return;
+
+  /* ---- 行列 ---- */
+  function I() { return [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]; }
+  function mul(a, b) {
+    var o = new Array(16);
+    for (var c = 0; c < 4; c++) for (var r = 0; r < 4; r++) {
+      o[c * 4 + r] = a[r] * b[c * 4] + a[4 + r] * b[c * 4 + 1] + a[8 + r] * b[c * 4 + 2] + a[12 + r] * b[c * 4 + 3];
+    }
+    return o;
+  }
+  function T(x, y, z) { var m = I(); m[12] = x; m[13] = y; m[14] = z; return m; }
+  function S(s) { var m = I(); m[0] = m[5] = m[10] = s; return m; }
+  function RX(a) { var c = Math.cos(a), s = Math.sin(a); return [1,0,0,0, 0,c,s,0, 0,-s,c,0, 0,0,0,1]; }
+  function RY(a) { var c = Math.cos(a), s = Math.sin(a); return [c,0,-s,0, 0,1,0,0, s,0,c,0, 0,0,0,1]; }
+  function RZ(a) { var c = Math.cos(a), s = Math.sin(a); return [c,s,0,0, -s,c,0,0, 0,0,1,0, 0,0,0,1]; }
+  function persp(fov, asp, n, f) {
+    var t = 1 / Math.tan(fov / 2), nf = 1 / (n - f);
+    return [t / asp,0,0,0, 0,t,0,0, 0,0,(f + n) * nf,-1, 0,0,2 * f * n * nf,0];
+  }
+
+  /* ---- シェーダ ---- */
+  var VS = 'attribute vec3 p;attribute vec3 n;attribute vec2 uv;uniform mat4 M,V,P;varying vec3 vN,vW;varying vec2 vUv;' +
+    'void main(){vec4 w=M*vec4(p,1.);vW=w.xyz;vN=mat3(M)*n;vUv=uv;gl_Position=P*V*w;}';
+  var FS = 'precision mediump float;varying vec3 vN,vW;varying vec2 vUv;uniform vec3 col,eye;uniform float useTex,alpha;uniform vec3 tcol;uniform sampler2D tex;' +
+    'void main(){vec3 N=normalize(vN);vec3 Vd=normalize(eye-vW);' +
+    'vec3 base=col;if(useTex>.5){float t=texture2D(tex,vUv).a;base=mix(base,tcol,t*.92);}' +
+    'vec3 L1=normalize(vec3(.55,.8,.75)),L2=normalize(vec3(-.8,.25,-.4));' +
+    'float d1=max(dot(N,L1),0.),d2=max(dot(N,L2),0.);' +
+    'float sky=N.y*.5+.5;vec3 amb=mix(vec3(.30,.27,.24),vec3(.62,.70,.72),sky);' +
+    'vec3 c=base*(amb*.75+d1*.85+d2*.22);' +
+    'float s1=pow(max(dot(N,normalize(L1+Vd)),0.),90.);float s2=pow(max(dot(N,normalize(L2+Vd)),0.),40.);' +
+    'float fr=pow(1.-max(dot(N,Vd),0.),3.);' +
+    'c+=vec3(1.)*(s1*1.1+s2*.25)+vec3(.85,.95,1.)*fr*.35;' +
+    'gl_FragColor=vec4(pow(c,vec3(.95))*alpha,alpha);}';
+  var SVS = 'attribute vec3 p;uniform mat4 V,P;uniform vec3 c;uniform vec2 sz;varying vec2 q;void main(){q=p.xz;gl_Position=P*V*vec4(c+vec3(p.x*sz.x,0.,p.z*sz.y),1.);}';
+  var SFS = 'precision mediump float;varying vec2 q;uniform float k;void main(){float d=length(q);float a=smoothstep(1.,0.,d)*.30*k;gl_FragColor=vec4(vec3(.07,.14,.23)*a,a);}';
+
+  function prog(vs, fs) {
+    function sh(t, s) { var o = gl.createShader(t); gl.shaderSource(o, s); gl.compileShader(o); if (!gl.getShaderParameter(o, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(o)); return o; }
+    var p = gl.createProgram(); gl.attachShader(p, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(p, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(p);
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error('link');
+    return p;
+  }
+  function buf(data, isIndex) {
+    var b = gl.createBuffer(), t = isIndex ? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER;
+    gl.bindBuffer(t, b); gl.bufferData(t, isIndex ? new Uint16Array(data) : new Float32Array(data), gl.STATIC_DRAW); return b;
+  }
+
+  /* ---- 形: 回転体(レース)。prof = [[r, y, nr, ny], ...] ---- */
+  function lathe(prof, seg) {
+    var P = [], N = [], U = [], X = [], rows = prof.length;
+    for (var i = 0; i < rows; i++) {
+      for (var j = 0; j <= seg; j++) {
+        var a = j / seg * Math.PI * 2, ca = Math.cos(a), sa = Math.sin(a), q = prof[i];
+        P.push(q[0] * ca, q[1], q[0] * sa); N.push(q[2] * ca, q[3], q[2] * sa); U.push(j / seg, q.length > 4 ? q[4] : i / (rows - 1));
+      }
+    }
+    for (i = 0; i < rows - 1; i++) for (j = 0; j < seg; j++) {
+      var a0 = i * (seg + 1) + j, b0 = a0 + seg + 1;
+      X.push(a0, b0, a0 + 1, b0, b0 + 1, a0 + 1);
+    }
+    return { p: buf(P), n: buf(N), uv: buf(U), i: buf(X, true), count: X.length };
+  }
+  // カプセルの片側(下向き)。r=半径、len=円柱部の長さ。y=0が合わせ目
+  function halfProfile(r, len, flip) {
+    var pr = [], k, steps = 18;
+    for (k = 0; k <= steps; k++) {           // 先端の半球(極→赤道)
+      var t = -Math.PI / 2 + (k / steps) * (Math.PI / 2);
+      pr.push([r * Math.cos(t), -len + r * Math.sin(t), Math.cos(t), Math.sin(t), 0.85 + 0.15 * (1 - k / steps)]);
+    }
+    for (k = 1; k <= 6; k++) pr.push([r, -len + len * k / 6, 1, 0, 0.85 - 0.7 * k / 6]);   // 円柱(印字はここ)
+    pr.push([r * 0.94, 0, 0, 1, 0.08]);                                                     // 合わせ目のふち
+    pr.push([0.001, 0, 0, 1, 0]);
+    if (flip) pr = pr.map(function (q) { return [q[0], -q[1], q[2], -q[3], q[4]]; }).reverse();
+    return pr;
+  }
+  function sphere(r, seg) {
+    var pr = [];
+    for (var k = 0; k <= seg; k++) { var t = -Math.PI / 2 + Math.PI * k / seg; pr.push([Math.max(r * Math.cos(t), 0.0001), r * Math.sin(t), Math.cos(t), Math.sin(t)]); }
+    return lathe(pr, seg * 2);
+  }
+
+  var main, shadowP, bottom, top, grain, quad, texObj, texObj2, loc = {}, sloc = {};
+  try {
+    main = prog(VS, FS); shadowP = prog(SVS, SFS);
+    bottom = lathe(halfProfile(0.5, 0.62, false), 64);
+    top = lathe(halfProfile(0.53, 0.70, true), 64);
+    grain = sphere(0.075, 10);
+    quad = { p: buf([-1,0,-1, 1,0,-1, 1,0,1, -1,0,-1, 1,0,1, -1,0,1]) };
+    ['p','n','uv'].forEach(function (k) { loc[k] = gl.getAttribLocation(main, k); });
+    ['M','V','P','col','eye','useTex','alpha','tex','tcol'].forEach(function (k) { loc[k] = gl.getUniformLocation(main, k); });
+    sloc.p = gl.getAttribLocation(shadowP, 'p');
+    ['V','P','c','sz','k'].forEach(function (k) { sloc[k] = gl.getUniformLocation(shadowP, k); });
+
+    // カプセルに印字する文字: 上半分=「南風」(白)、下半分=「日進」(濃紺)
+    function mkTex(txt, color, rot, flip) {
+      var tc = document.createElement('canvas'); tc.width = 512; tc.height = 128;
+      var cx = tc.getContext('2d');
+      cx.clearRect(0, 0, 512, 128);
+      cx.fillStyle = color; cx.textAlign = 'center'; cx.textBaseline = 'middle';
+      cx.font = '900 44px "Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans",sans-serif';
+      [128, 384].forEach(function (x) { cx.save(); cx.translate(x, 64); cx.rotate(rot); if (flip) cx.scale(-1, 1); cx.fillText(txt, 0, 0); cx.restore(); });
+      var t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tc);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      return t;
+    }
+    texObj = mkTex('南風', '#fff', Math.PI);
+    texObj2 = mkTex('日進', '#fff', 0, true);
+  } catch (e) { return; }
+
+  var COL_TOP = [0.07, 0.47, 0.42], COL_BOT = [0.94, 0.71, 0.16];
+  var GRAIN_COLS = [[0.18,0.62,0.56],[0.55,0.75,0.31],[0.94,0.71,0.16],[0.93,0.49,0.18],[0.83,0.19,0.16],[0.98,0.98,0.96]];
+  var grains = [];
+  for (var g = 0; g < 22; g++) {
+    var ang = Math.random() * Math.PI * 2, el = (Math.random() - 0.3) * 1.4;
+    grains.push({ d: [Math.cos(ang) * Math.cos(el), Math.sin(el) + 0.5, Math.sin(ang) * Math.cos(el)], sp: 0.9 + Math.random() * 1.1,
+      c: GRAIN_COLS[g % GRAIN_COLS.length], s: 0.7 + Math.random() * 0.7 });
+  }
+
+  function draw(mesh, M, col, useTex, alpha, V, P, eye, texo, tcol) {
+    gl.useProgram(main);
+    gl.bindBuffer(gl.ARRAY_BUFFER, mesh.p); gl.enableVertexAttribArray(loc.p); gl.vertexAttribPointer(loc.p, 3, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, mesh.n); gl.enableVertexAttribArray(loc.n); gl.vertexAttribPointer(loc.n, 3, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, mesh.uv); gl.enableVertexAttribArray(loc.uv); gl.vertexAttribPointer(loc.uv, 2, gl.FLOAT, false, 0, 0);
+    gl.uniformMatrix4fv(loc.M, false, M); gl.uniformMatrix4fv(loc.V, false, V); gl.uniformMatrix4fv(loc.P, false, P);
+    gl.uniform3fv(loc.col, col); gl.uniform3fv(loc.eye, eye); gl.uniform1f(loc.useTex, useTex); gl.uniform1f(loc.alpha, alpha);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, texo || texObj); gl.uniform1i(loc.tex, 0); gl.uniform3fv(loc.tcol, tcol || [1, 1, 1]);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.i); gl.drawElements(gl.TRIANGLES, mesh.count, gl.UNSIGNED_SHORT, 0);
+  }
+
+  var raf = 0, t0 = 0, dur = 2400, running = false, W = 0, H = 0;
+  function resize() {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var w = Math.round(canvas.clientWidth * dpr), h = Math.round(canvas.clientHeight * dpr);
+    if (w && h && (w !== W || h !== H)) { canvas.width = W = w; canvas.height = H = h; }
+  }
+  function ease(x) { return x < 0 ? 0 : x > 1 ? 1 : 1 - Math.pow(1 - x, 3); }
+
+  function frame(now) {
+    if (!running) return;
+    resize();
+    var el = (now - t0) / 1000, u = Math.min((now - t0) / dur, 1);
+    gl.viewport(0, 0, W, H);
+    gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    var eye = [0, 0.5, 4.6];
+    var V = mul(RX(0.13), T(-eye[0], -eye[1], -eye[2]));
+    var P = persp(0.62, W / H, 0.1, 50);
+
+    var open = ease((u - 0.68) / 0.26);                 // 終盤に開く
+    var bob = Math.sin(el * 2.4) * 0.06 * (1 - open);
+    var spin = el * 2.6 + open * 1.2;
+    // カプセル全体の向き: 斜めに傾けて回転
+    var base = mul(T(0, 0.12 + bob, 0), mul(RY(spin), mul(RZ(1.15 - open * 0.2), RX(0.18))));
+
+    // 影
+    gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA); gl.disable(gl.DEPTH_TEST);
+    gl.useProgram(shadowP);
+    gl.bindBuffer(gl.ARRAY_BUFFER, quad.p); gl.enableVertexAttribArray(sloc.p); gl.vertexAttribPointer(sloc.p, 3, gl.FLOAT, false, 0, 0);
+    gl.uniformMatrix4fv(sloc.V, false, V); gl.uniformMatrix4fv(sloc.P, false, P);
+    gl.uniform3fv(sloc.c, [0, -0.95, 0]); gl.uniform2fv(sloc.sz, [1.2 + open * 0.3, 0.4 + open * 0.06]); gl.uniform1f(sloc.k, 1 - bob * 2);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+    gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL);
+    gl.disable(gl.CULL_FACE);
+    var gap = open * 0.55;
+    draw(bottom, mul(base, T(0, -gap * 0.55, 0)), COL_BOT, 1, 1, V, P, eye, texObj2, [0.07, 0.14, 0.23]);
+    draw(top, mul(base, T(0, 0.06 + gap * 0.55, 0)), COL_TOP, 1, 1, V, P, eye);
+
+    // 粒(開いたあとに飛び出す)
+    if (open > 0.02) {
+      for (var i = 0; i < grains.length; i++) {
+        var q = grains[i], d = open * q.sp;
+        var gx = q.d[0] * d * 0.95, gy = 0.1 + q.d[1] * d * 0.55 - d * d * 0.12, gz = q.d[2] * d * 0.7;
+        var a = Math.min(1, open * 3);
+        draw(grain, mul(T(gx, gy, gz), mul(S(q.s * (0.4 + open * 0.6)), RY(el * 3 + i))), q.c, 0, a, V, P, eye);
+      }
+    }
+    if (u < 1 || running) raf = requestAnimationFrame(frame);
+  }
+
+  api.start = function (ms) {
+    dur = Math.max(600, (ms || 2400) - 150);
+    section.classList.add('has3d');
+    canvas.hidden = false;
+    running = true; t0 = performance.now();
+    cancelAnimationFrame(raf); raf = requestAnimationFrame(frame);
+  };
+  api.stop = function () { running = false; cancelAnimationFrame(raf); };
+  api.ready = true;
+})();
+</script>
+</body>
+</html>
