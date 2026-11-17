@@ -57,8 +57,13 @@ button { font-family: inherit; color: inherit; border: 0; background: none; curs
 .hero { position: relative; width: 100%; min-height: 100dvh; flex: none; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; padding: 0 20px 92px; }
 .hero > .hero-bg { position: absolute; z-index: 0; left: 0; right: 0; top: 0; height: 58%; overflow: hidden; background: 62% 100%/cover no-repeat;
     -webkit-mask-image: linear-gradient(#000 62%, rgba(0,0,0,.6) 80%, transparent); mask-image: linear-gradient(#000 62%, rgba(0,0,0,.6) 80%, transparent); }   /* 景色と文字の境目を、ふわっと */
-.hero-bg canvas { position: absolute; bottom: 21%; width: 40%; left: -50%; animation: heroDrive 6s linear infinite; filter: drop-shadow(0 8px 6px rgba(0,0,0,.45)); }
-@keyframes heroDrive { from { left: -50%; } to { left: 105%; } }
+.hero-bg canvas { position: absolute; bottom: 17%; width: 64%; left: -80%; animation: heroDrive 9s infinite; filter: drop-shadow(0 8px 6px rgba(0,0,0,.45)); }
+@keyframes heroDrive {   /* 左から走ってきて、まん中で少し止まり、右へ走りぬける */
+    0% { left: -80%; animation-timing-function: cubic-bezier(.2,.6,.35,1); }
+    30% { left: 18%; animation-timing-function: ease-in-out; }
+    68% { left: 18%; animation-timing-function: cubic-bezier(.6,0,.9,.5); }
+    100% { left: 115%; }
+}
 .hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(7,8,15,.5) 0%, rgba(7,8,15,0) 14%, rgba(7,8,15,0) 50%, rgba(7,8,15,.85) 64%, rgba(7,8,15,.95) 85%, var(--night)); }
 .hero > * { position: relative; z-index: 1; }
 .hero-badge { position: absolute; top: max(16px, env(safe-area-inset-top)); left: 16px; display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 900; letter-spacing: .2em; }
@@ -857,7 +862,7 @@ function heroVideo() {   // トップの背景：今の季節の富士山の景�
     const k = currentSeason();
     $('heroBg').style.backgroundImage = `url(${IMG_DIR}fuji_${k}.webp)`;
     const tr = $('shipTruck'), cv = $('heroTruck');
-    const paint = () => { cv.width = 380; cv.height = Math.round(380 * 178 / 436); cv.getContext('2d').drawImage(truckRight(tr), 0, 0, cv.width, cv.height); };
+    const paint = () => { cv.width = 640; cv.height = Math.round(640 * 178 / 436); cv.getContext('2d').drawImage(truckRight(tr), 0, 0, cv.width, cv.height); };
     if (tr.complete && tr.naturalWidth) paint(); else tr.addEventListener('load', paint, { once: true });
 }
 heroVideo();
