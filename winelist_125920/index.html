@@ -6061,7 +6061,7 @@ const CONFIG = {
        失敗しても、画面の動作に影響しません。通信できないときは、そのイベントは捨てます(再送しません)
      ---- 導入時の確認 ----
        enabled:true にして、?t=3 付きの URL を開き、シートに行が増えることを確認する。enabled:false なら、通信はまったく発生しません */
-  log:{ enabled:true, url:"https://script.google.com/macros/s/AKfycbzbBOEuPL82Ecz24JPqsmzViLfaY8rPMeeAnmFiBi33rhkLWgssb0QIkAwE-6ocy6lHXA/exec", table:"t", notice:"利用状況とお好みを、匿名で記録します|(性別・年代の区分を含みます)" },
+  log:{ enabled:true, url:"https://script.google.com/macros/s/AKfycbzbBOEuPL82Ecz24JPqsmzViLfaY8rPMeeAnmFiBi33rhkLWgssb0QIkAwE-6ocy6lHXA/exec", table:"t", notice:"" },
   /* 「感じる」のパネルのいちばん下の「お好みでしたか? 任意」(答えなくても進めます。相性度の計算には使いません)。押すと logEv("rate") を送る。もう一度押すと、取り消し(r:"")
      「店主との相性を見る」を押したとき、選んでいれば、最終の値で、もう一度送る(final:true)。「えらび直す」で、選択は外れる
      showWhenLogOff:ログが無効(enabled:false か url が空)のときも出すか(true でも、何も記録されません)/ labels:ボタンの文言 / thanks:押した直後に1.5秒だけ出す言葉 */
@@ -8447,7 +8447,7 @@ ovSync(); ovMeasure(); if(DEBUG){ ovPanel(); glassPanel(); }
     r.classList.add("bgph"); r.style.setProperty("--bgIn",u(ph.bg)); r.style.setProperty("--bgSel",SEL.on?u(selKey(0)):u(ph.bg)); r.style.setProperty("--bgExt",u(ph.opening)); }
 }
 validateData();
-if(LOG_ON){ $("logn").innerHTML=brk(CONFIG.log.notice); requestAnimationFrame(()=>document.documentElement.style.setProperty("--logh",$("logn").offsetHeight+"px")); $("logn").hidden=false; document.documentElement.classList.add("logon");
+if(LOG_ON){ if(String(CONFIG.log.notice||"").trim()){ $("logn").innerHTML=brk(CONFIG.log.notice); requestAnimationFrame(()=>document.documentElement.style.setProperty("--logh",$("logn").offsetHeight+"px")); $("logn").hidden=false; document.documentElement.classList.add("logon"); }
   logEv("visit",{ w:innerWidth, h:innerHeight, q:QLOCK>=0?["high","mid","low"][QLOCK]:"" }); }
 wineDefaults(); P.heavy=P.heavyT; P.fruit=P.fruitT; P.light=P.lightT.slice(); P.bubbles=P.bubblesT;
 initText(); resize();
